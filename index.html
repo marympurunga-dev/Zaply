@@ -16,7 +16,7 @@
     <canvas id="chart"></canvas>
   </div>
   <script>
-    fetch('/api/chart')
+    fetch('https://zaply-gamma.vercel.app/api/chart')
       .then(r => r.json())
       .then(rows => {
         new Chart(document.getElementById('chart'), {
