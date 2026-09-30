@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zaply</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f7fb; --card: #ffffff; --text: #1a1d29; --muted: #6b7280;
+      --accent: #4f46e5; --border: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1117; --card: #181b24; --text: #f3f4f6; --muted: #9ca3af;
+        --accent: #818cf8; --border: #2a2f3b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 16px; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .app { max-width: 720px; margin: 0 auto; }
+    .hidden { display: none !important; }
+    h1 { font-size: 22px; margin: 0; }
+    h2 { font-size: 20px; margin: 0 0 6px; }
+    .sub { color: var(--muted); font-size: 14px; margin: 2px 0 14px; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px;
+    }
+    .auth { max-width: 420px; margin: 8vh auto 0; }
+    input {
+      width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; margin-bottom: 12px;
+      border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--text);
+    }
+    input.code { letter-spacing: 8px; text-align: center; font-size: 22px; }
+    button {
+      font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px;
+      border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer;
+    }
+    button.active, button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary { width: 100%; font-size: 16px; padding: 12px; border-radius: 12px; }
+    button:disabled { opacity: 0.6; }
+    .link { border: none; color: var(--muted); font-size: 13px; padding: 8px 0; }
+    .msg { color: #dc2626; font-size: 14px; min-height: 20px; margin-bottom: 8px; }
+    .hint { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+    header { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 16px; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    button.refresh { margin-left: auto; }
+    .chart-wrap { position: relative; height: 320px; }
+    .status { text-align: center; color: var(--muted); padding: 40px 0; }
+    .error { color: #dc2626; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .stat { border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; }
+    .stat b { display: block; font-size: 18px; }
+    .stat span { font-size: 12px; color: var(--muted); }
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- SIGN-IN SCREENS -->
+    <div id="authView" class="auth hidden">
+      <div class="card">
+
+        <div id="stepPhone">
+          <h2>Welcome to Zaply</h2>
+          <div class="sub">Enter your phone number with country code to continue.</div>
+          <input id="phone" type="tel" inputmode="tel" placeholder="+27 82 123 4567" autocomplete="tel">
+          <div class="msg" id="msgPhone"></div>
+          <button class="primary" id="btnSend">Send code</button>
+        </div>
+
+        <div id="stepCode" class="hidden">
+          <h2>Enter the code</h2>
+          <div class="sub" id="codeSub">We sent a 6-digit code.</div>
+          <input id="code" class="code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
+          <div class="hint" id="testHint">Test mode: use code 123456</div>
+          <div class="msg" id="msgCode"></div>
+          <button class="primary" id="btnVerify">Verify</button>
+          <button class="link" id="btnBack">Change number</button>
+        </div>
+
+        <div id="stepName" class="hidden">
+          <h2>Your name</h2>
+          <div class="sub">This is how you'll appear in the app.</div>
+          <input id="name" type="text" maxlength="50" placeholder="Your name" autocomplete="name">
+          <div class="msg" id="msgName"></div>
+          <button class="primary" id="btnName">Continue</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appView" class="hidden">
+      <header>
+        <div>
+          <h1>Zaply Chart</h1>
+          <div class="sub" id="hello" style="margin:2px 0 0"></div>
+        </div>
+        <button id="btnLogout">Log out</button>
+      </header>
+
+      <div class="card">
+        <div class="toolbar">
+          <button data-type="bar" class="active">Bar</button>
+          <button data-type="line">Line</button>
+          <button data-type="pie">Pie</button>
+          <button class="refresh" id="refresh">Refresh</button>
+        </div>
+
+        <div id="status" class="status">Loading...</div>
+        <div class="chart-wrap hidden" id="wrap"><canvas id="chart"></canvas></div>
+
+        <div class="stats hidden" id="stats">
+          <div class="stat"><b id="sTotal">0</b><span>Total</span></div>
+          <div class="stat"><b id="sMax">0</b><span>Highest</span></div>
+          <div class="stat"><b id="sAvg">0</b><span>Average</span></div>
+        </div>
+      </div>
+      <footer id="updated"></footer>
+    </div>
+
+  </div>
+
+  <script>
+    var API = 'https://zaply-gamma.vercel.app/api';
+    var TOKEN_KEY = 'zaply_token';
+
+    function $(id) { return document.getElementById(id); }
+
+    function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
+    function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} }
+    function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} }
+
+    function call(action, data) {
+      var payload = Object.assign({ action: action, token: getToken() }, data || {});
+      return fetch(API + '/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (r) {
+        return r.json().then(function (j) {
+          if (!r.ok) throw new Error(j.error || 'Something went wrong');
+          return j;
+        });
+      });
+    }
+
+    function showStep(id) {
+      ['stepPhone', 'stepCode', 'stepName'].forEach(function (s) {
+        $(s).classList.toggle('hidden', s !== id);
+      });
+      $('authView').classList.remove('hidden');
+      $('appView').classList.add('hidden');
+    }
+
+    var phoneValue = '';
+    function busy(btn, on, label) { btn.disabled = on; if (label) btn.textContent = label; }
+
+    $('btnSend').addEventListener('click', function () {
+      var btn = $('btnSend');
+      phoneValue = $('phone').value.replace(/[\s()-]/g, '');
+      $('msgPhone').textContent = '';
+      busy(btn, true, 'Sending...');
+      call('send', { phone: phoneValue })
+        .then(function () {
+          $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
+          $('code').value = '';
+          $('msgCode').textContent = '';
+          showStep('stepCode');
+        })
+        .catch(function (e) { $('msgPhone').textContent = e.message; })
+        .then(function () { busy(btn, false, 'Send code'); });
+    });
+
+    $('btnVerify').addEventListener('click', function () {
+      var btn = $('btnVerify');
+      $('msgCode').textContent = '';
+      busy(btn, true, 'Checking...');
+      call('verify', { phone: phoneValue, code: $('code').value })
+        .then(function (res) {
+          setToken(res.token);
+          if (res.user.name) startApp(res.user); else showStep('stepName');
+        })
+        .catch(function (e) { $('msgCode').textContent = e.message; })
+        .then(function () { busy(btn, false, 'Verify'); });
+    });
+
+    $('btnBack').addEventListener('click', function () { showStep('stepPhone'); });
+
+    $('btnName').addEventListener('click', function () {
+      var btn = $('btnName');
+      $('msgName').textContent = '';
+      busy(btn, true, 'Saving...');
+      call('profile', { name: $('name').value })
+        .then(function (res) { startApp(res.user); })
+        .catch(function (e) { $('msgName').textContent = e.message; })
+        .then(function () { busy(btn, false, 'Continue'); });
+    });
+
+    $('btnLogout').addEventListener('click', function () {
+      call('logout').catch(function () {}).then(function () {
+        clearToken();
+        showStep('stepPhone');
+      });
+    });
+
+    /* ---------- chart ---------- */
+    var COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+    var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    Chart.defaults.color = dark ? '#9ca3af' : '#6b7280';
+    Chart.defaults.borderColor = dark ? '#2a2f3b' : '#e5e7eb';
+
+    var chart = null, chartType = 'bar', rows = [];
+
+    function showStatus(msg, isError) {
+      $('status').textContent = msg;
+      $('status').className = 'status' + (isError ? ' error' : '');
+      $('status').classList.remove('hidden');
+      $('wrap').classList.add('hidden');
+      $('stats').classList.add('hidden');
+    }
+
+    function draw() {
+      if (chart) chart.destroy();
+      var isPie = chartType === 'pie';
+      chart = new Chart($('chart'), {
+        type: chartType,
+        data: {
+          labels: rows.map(function (r) { return r.label; }),
+          datasets: [{
+            label: 'Value',
+            data: rows.map(function (r) { return r.value; }),
+            backgroundColor: isPie ? COLORS : COLORS[0],
+            borderColor: COLORS[0],
+            borderWidth: chartType === 'line' ? 3 : 0,
+            borderRadius: chartType === 'bar' ? 8 : 0,
+            tension: 0.3,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: isPie } },
+          scales: isPie ? {} : { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function updateStats() {
+      var vals = rows.map(function (r) { return Number(r.value) || 0; });
+      var total = vals.reduce(function (a, b) { return a + b; }, 0);
+      $('sTotal').textContent = total;
+      $('sMax').textContent = Math.max.apply(null, vals);
+      $('sAvg').textContent = (total / vals.length).toFixed(1);
+    }
+
+    function loadChart() {
+      showStatus('Loading...', false);
+      fetch(API + '/chart')
+        .then(function (r) { if (!r.ok) throw new Error('bad'); return r.json(); })
+        .then(function (data) {
+          if (!Array.isArray(data) || !data.length) { showStatus('No data yet.', false); return; }
+          rows = data;
+          $('status').classList.add('hidden');
+          $('wrap').classList.remove('hidden');
+          $('stats').classList.remove('hidden');
+          draw();
+          updateStats();
+          $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+        })
+        .catch(function () { showStatus('Could not load data. Tap Refresh to try again.', true); });
+    }
+
+    document.querySelectorAll('button[data-type]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('button[data-type]').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        chartType = btn.getAttribute('data-type');
+        if (rows.length) draw();
+      });
+    });
+    $('refresh').addEventListener('click', loadChart);
+
+    function startApp(user) {
+      $('hello').textContent = 'Signed in as ' + user.name;
+      $('authView').classList.add('hidden');
+      $('appView').classList.remove('hidden');
+      loadChart();
+    }
+
+    /* ---------- start ---------- */
+    if (getToken()) {
+      call('me')
+        .then(function (res) {
+          if (res.user.name) startApp(res.user); else showStep('stepName');
+        })
+        .catch(function () { clearToken(); showStep('stepPhone'); });
+    } else {
+      showStep('stepPhone');
+    }
+  </script>
+</body>
+</html>
