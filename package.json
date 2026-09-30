@@ -1,0 +1,7 @@
+{
+  "name": "chart-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "mysql2": "^3.11.0"
+  }
+}
