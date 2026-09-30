@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zaply</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f7fb; --card: #ffffff; --text: #1a1d29; --muted: #6b7280;
+      --accent: #4f46e5; --border: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1117; --card: #181b24; --text: #f3f4f6; --muted: #9ca3af;
+        --accent: #818cf8; --border: #2a2f3b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 16px; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    .app { max-width: 720px; margin: 0 auto; }
+    .hidden { display: none !important; }
+    h1 { font-size: 22px; margin: 0; }
+    h2 { font-size: 20px; margin: 0 0 6px; }
+    .sub { color: var(--muted); font-size: 14px; margin: 2px 0 14px; }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px;
+    }
+    .auth { max-width: 420px; margin: 8vh auto 0; }
+    input {
+      width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; margin-bottom: 12px;
+      border-radius: 12px; border: 1px solid var(--border); background: transparent; color: var(--text);
+    }
+    input.code { letter-spacing: 8px; text-align: center; font-size: 22px; }
+    button {
+      font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 999px;
+      border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer;
+    }
+    button.active, button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    button.primary { width: 100%; font-size: 16px; padding: 12px; border-radius: 12px; }
+    button:disabled { opacity: 0.6; }
+    .link { border: none; color: var(--muted); font-size: 13px; padding: 8px 0; }
+    .msg { color: #dc2626; font-size: 14px; min-height: 20px; margin-bottom: 8px; }
+    .hint { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+    header { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 16px; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    button.refresh { margin-left: auto; }
+    .chart-wrap { position: relative; height: 320px; }
+    .status { text-align: center; color: var(--muted); padding: 40px 0; }
+    .error { color: #dc2626; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+    .stat { border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; }
+    .stat b { display: block; font-size: 18px; }
+    .stat span { font-size: 12px; color: var(--muted); }
+    .welcome {
+      position: fixed; inset: 0; z-index: 10; background: #0b1014; color: #fff;
+      display: flex; flex-direction: column; align-items: center;
+      padding: env(safe-area-inset-top, 0px) 24px calc(32px + env(safe-area-inset-bottom, 0px));
+    }
+    .w-top { flex: 1; display: flex; align-items: center; justify-content: center; }
+    .w-logo { width: 128px; height: 128px; filter: drop-shadow(0 14px 32px rgba(33,192,99,.35)); }
+    .w-bottom { width: 100%; max-width: 420px; text-align: center; }
+    .w-bottom h1 { font-size: 30px; font-weight: 400; margin-bottom: 18px; }
+    .w-terms { color: #9aa3ab; font-size: 15px; line-height: 1.5; margin: 0 0 28px; }
+    .w-terms a { color: #53bdeb; font-weight: 600; text-decoration: none; }
+    .w-lang { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 28px; }
+    .w-lang svg { width: 26px; height: 26px; }
+    .w-lang select {
+      width: auto; margin: 0; padding: 8px 4px; border: none; background: transparent;
+      color: #fff; font: inherit; font-size: 18px;
+    }
+    .w-lang select option { color: #000; }
+    .w-btn {
+      width: 100%; border: none; background: #21c063; color: #06140c;
+      font: inherit; font-size: 18px; font-weight: 600; padding: 16px; border-radius: 999px;
+    }
+    .auth { position: fixed; inset: 0; z-index: 5; max-width: none; margin: 0; overflow-y: auto; background: #0b1014; color: #fff; padding: env(safe-area-inset-top, 0px) 20px env(safe-area-inset-bottom, 0px); }
+    .auth .card { background: transparent; border: none; border-radius: 0; max-width: 420px; margin: 0 auto; padding: 56px 0 24px; text-align: center; }
+    .auth .card > div { display: flex; flex-direction: column; min-height: calc(100dvh - 100px); }
+    .auth h2 { font-size: 26px; font-weight: 400; color: #c5ccd2; margin-bottom: 14px; }
+    .auth .sub, .auth .hint { color: #9aa3ab; font-size: 15px; line-height: 1.5; }
+    .auth input { color: #fff; border: none; border-bottom: 2px solid #21c063; border-radius: 0; padding: 10px 2px; text-align: left; font-size: 20px; margin-bottom: 0; }
+    .auth input.code { text-align: center; }
+    .auth input:focus { outline: none; }
+    .auth .primary { margin-top: auto; background: #21c063; border-color: #21c063; color: #06140c; font-weight: 600; border-radius: 999px; padding: 15px; }
+    .auth .primary:disabled { background: #1c2329; border-color: #1c2329; color: #4a555d; opacity: 1; }
+    .auth .msg { min-height: 20px; margin: 14px 0; text-align: left; }
+    .auth .link { color: #21c063; margin-top: 8px; }
+    .country-btn { position: relative; width: 100%; border: none; border-bottom: 2px solid #21c063; border-radius: 0; padding: 12px 30px; margin: 30px 0 14px; font-size: 18px; color: #fff; }
+    .country-btn::after { content: ""; position: absolute; right: 6px; top: 50%; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 9px solid #21c063; }
+    .phone-row { display: flex; gap: 20px; }
+    .dial-wrap { display: flex; align-items: center; gap: 8px; width: 120px; border-bottom: 2px solid #21c063; color: #9aa3ab; font-size: 20px; }
+    .auth .dial-wrap input { border: none; width: 100%; font-weight: 600; }
+    .phone-row > input { flex: 1; min-width: 0; }
+    .cv { position: fixed; inset: 0; z-index: 30; background: #0b1014; color: #fff; display: flex; flex-direction: column; }
+    .cv-head { display: flex; align-items: center; gap: 14px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 12px; border-bottom: 1px solid #1f262d; }
+    .cv-head button { border: none; padding: 8px; line-height: 0; border-radius: 50%; }
+    .cv-head svg { width: 26px; height: 26px; fill: #fff; }
+    .cv-head h3 { flex: 1; margin: 0; font-size: 22px; font-weight: 500; }
+    .cv-head input { flex: 1; margin: 0; padding: 8px 0; font-size: 18px; border: none; background: transparent; color: #fff; outline: none; }
+    .cv-list { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0 0 env(safe-area-inset-bottom, 0px); }
+    .cv-row { display: flex; align-items: center; gap: 16px; margin: 0 14px; padding: 14px 6px; border-bottom: 1px solid #1a2128; cursor: pointer; }
+    .cv-row .f { font-size: 26px; width: 34px; text-align: center; }
+    .cv-row .n { flex: 1; min-width: 0; }
+    .cv-row .n b { display: block; font-size: 17px; font-weight: 600; }
+    .cv-row .n small { color: #8a949c; font-size: 14px; }
+    .cv-row .c { color: #9aa3ab; font-weight: 600; }
+    .cv-row .ck { width: 20px; color: #21c063; }
+    .cv-row.sel b { color: #21c063; }
+    footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- WELCOME / LANDING -->
+    <div id="welcomeView" class="welcome hidden">
+      <div class="w-top">
+        <svg class="w-logo" viewBox="0 0 96 96" fill="none" aria-label="Zaply">
+          <defs>
+            <linearGradient id="zBg" x1="12" y1="6" x2="84" y2="90" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#3ddc84"/>
+              <stop offset="1" stop-color="#0e8f47"/>
+            </linearGradient>
+          </defs>
+          <rect x="4" y="4" width="88" height="88" rx="26" fill="url(#zBg)"/>
+          <path d="M4 34C20 22 44 12 92 14v-2A26 26 0 0 0 66 4H30A26 26 0 0 0 4 30Z" fill="#fff" opacity=".12"/>
+          <path d="M24 26H72V37L41 59H72V70H24V59L55 37H24Z" fill="#fff" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="w-bottom">
+        <h1>Welcome to Zaply</h1>
+        <p class="w-terms">Read our <a href="#">Privacy Policies</a>. Tap "Agree and continue" to accept our <a href="#">Terms of Service</a>.</p>
+        <div class="w-lang">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4.5" ry="10"/><path d="M2 12h20M4 7h16M4 17h16"/></svg>
+          <select aria-label="Language"><option>English</option></select>
+        </div>
+        <button class="w-btn" id="btnAgree">Agree and continue</button>
+      </div>
+    </div>
+
+    <!-- COUNTRY PICKER -->
+    <div id="countryView" class="cv hidden">
+      <div class="cv-head">
+        <button id="cvBack" aria-label="Back"><svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button>
+        <h3 id="cvTitle">Choose a country</h3>
+        <input id="cvSearch" class="hidden" type="search" placeholder="Search country or code" autocomplete="off">
+        <button id="cvFind" aria-label="Search"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></button>
+      </div>
+      <ul class="cv-list" id="cvList"></ul>
+    </div>
+
+    <!-- SIGN-IN SCREENS -->
+    <div id="authView" class="auth hidden">
+      <div class="card">
+
+        <div id="stepPhone">
+          <h2>Enter your phone number</h2>
+          <div class="sub">Zaply will need to verify your phone number. Carrier charges may apply.</div>
+          <button class="country-btn" id="btnCountry"><span id="cName">Kenya</span></button>
+          <div class="phone-row">
+            <div class="dial-wrap"><span>+</span><input id="dial" type="text" inputmode="numeric" maxlength="4" value="254" aria-label="Country code"></div>
+            <input id="phone" type="tel" inputmode="tel" placeholder="Phone number" autocomplete="tel">
+          </div>
+          <div class="msg" id="msgPhone"></div>
+          <button class="primary" id="btnSend" disabled>Next</button>
+        </div>
+
+        <div id="stepCode" class="hidden">
+          <h2>Enter the code</h2>
+          <div class="sub" id="codeSub">We sent a 6-digit code.</div>
+          <input id="code" class="code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
+          <div class="hint" id="testHint">Test mode: use code 123456</div>
+          <div class="msg" id="msgCode"></div>
+          <button class="primary" id="btnVerify">Verify</button>
+          <button class="link" id="btnBack">Change number</button>
+        </div>
+
+        <div id="stepName" class="hidden">
+          <h2>Your name</h2>
+          <div class="sub">This is how you'll appear in the app.</div>
+          <input id="name" type="text" maxlength="50" placeholder="Your name" autocomplete="name">
+          <div class="msg" id="msgName"></div>
+          <button class="primary" id="btnName">Continue</button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appView" class="hidden">
+      <header>
+        <div>
+          <h1>Zaply Chart</h1>
+          <div class="sub" id="hello" style="margin:2px 0 0"></div>
+        </div>
+        <button id="btnLogout">Log out</button>
+      </header>
+
+      <div class="card">
+        <div class="toolbar">
+          <button data-type="bar" class="active">Bar</button>
+          <button data-type="line">Line</button>
+          <button data-type="pie">Pie</button>
+          <button class="refresh" id="refresh">Refresh</button>
+        </div>
+
+        <div id="status" class="status">Loading...</div>
+        <div class="chart-wrap hidden" id="wrap"><canvas id="chart"></canvas></div>
+
+        <div class="stats hidden" id="stats">
+          <div class="stat"><b id="sTotal">0</b><span>Total</span></div>
+          <div class="stat"><b id="sMax">0</b><span>Highest</span></div>
+          <div class="stat"><b id="sAvg">0</b><span>Average</span></div>
+        </div>
+      </div>
+      <footer id="updated"></footer>
+    </div>
+
+  </div>
+
+  <script>
+    var API = 'https://zaply-gamma.vercel.app/api';
+    var TOKEN_KEY = 'zaply_token';
+
+    function $(id) { return document.getElementById(id); }
+
+    function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
+    function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} }
+    function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} }
+
+    /* Demo mode: no SMS provider yet, so the code is fixed and sign-in is kept on this device.
+       Set DEMO to false when a real SMS provider is connected. */
+    var DEMO = true, DEMO_CODE = '123456';
+    function nameOf(ph) { try { return localStorage.getItem('zaply_name_' + ph) || ''; } catch (e) { return ''; } }
+    function demoCall(action, data) {
+      var t = getToken();
+      if (action === 'send') return Promise.resolve({ ok: true });
+      if (action === 'verify') {
+        if (data.code !== DEMO_CODE) return Promise.reject(new Error('Wrong code. Please try again.'));
+        return Promise.resolve({ token: data.phone, user: { phone: data.phone, name: nameOf(data.phone) } });
+      }
+      if (action === 'profile') {
+        var n = (data.name || '').trim();
+        if (!n) return Promise.reject(new Error('Please enter your name.'));
+        try { localStorage.setItem('zaply_name_' + t, n); } catch (e) {}
+        return Promise.resolve({ user: { phone: t, name: n } });
+      }
+      if (action === 'me') {
+        return t ? Promise.resolve({ user: { phone: t, name: nameOf(t) } }) : Promise.reject(new Error('No session'));
+      }
+      return Promise.resolve({});
+    }
+
+    function call(action, data) {
+      if (DEMO) return demoCall(action, data || {});
+      var payload = Object.assign({ action: action, token: getToken() }, data || {});
+      return fetch(API + '/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (r) {
+        return r.json().then(function (j) {
+          if (!r.ok) throw new Error(j.error || 'Something went wrong');
+          return j;
+        });
+      });
+    }
+
+    function showStep(id) {
+      ['stepPhone', 'stepCode', 'stepName'].forEach(function (s) {
+        $(s).classList.toggle('hidden', s !== id);
+      });
+      $('welcomeView').classList.add('hidden');
+      $('authView').classList.remove('hidden');
+      $('appView').classList.add('hidden');
+    }
+
+    function showWelcome() {
+      $('welcomeView').classList.remove('hidden');
+      $('authView').classList.add('hidden');
+      $('appView').classList.add('hidden');
+    }
+    $('btnAgree').addEventListener('click', function () { showStep('stepPhone'); });
+
+    var phoneValue = '';
+    function busy(btn, on, label) { btn.disabled = on; if (label) btn.textContent = label; }
+
+    var RAW = `AF|Afghanistan|93|افغانستان
+AX|Åland Islands|358|Åland
+AL|Albania|355|Shqipëri
+DZ|Algeria|213|الجزائر
+AS|American Samoa|1
+AD|Andorra|376
+AO|Angola|244
+AI|Anguilla|1
+AG|Antigua & Barbuda|1
+AR|Argentina|54
+AM|Armenia|374|Հայաստան
+AW|Aruba|297
+AU|Australia|61
+AT|Austria|43|Österreich
+AZ|Azerbaijan|994|Azərbaycan
+BS|Bahamas|1
+BH|Bahrain|973|البحرين
+BD|Bangladesh|880|বাংলাদেশ
+BB|Barbados|1
+BY|Belarus|375|Беларусь
+BE|Belgium|32|België
+BZ|Belize|501
+BJ|Benin|229|Bénin
+BM|Bermuda|1
+BT|Bhutan|975
+BO|Bolivia|591
+BA|Bosnia & Herzegovina|387
+BW|Botswana|267
+BR|Brazil|55|Brasil
+VG|British Virgin Islands|1
+BN|Brunei|673
+BG|Bulgaria|359|България
+BF|Burkina Faso|226
+BI|Burundi|257
+KH|Cambodia|855|កម្ពុជា
+CM|Cameroon|237|Cameroun
+CA|Canada|1
+CV|Cape Verde|238|Cabo Verde
+KY|Cayman Islands|1
+CF|Central African Republic|236
+TD|Chad|235|Tchad
+CL|Chile|56
+CN|China|86|中国
+CO|Colombia|57
+KM|Comoros|269
+CG|Congo - Brazzaville|242
+CD|Congo - Kinshasa|243
+CK|Cook Islands|682
+CR|Costa Rica|506
+CI|Côte d'Ivoire|225
+HR|Croatia|385|Hrvatska
+CU|Cuba|53
+CW|Curaçao|599
+CY|Cyprus|357|Κύπρος
+CZ|Czechia|420|Česko
+DK|Denmark|45|Danmark
+DJ|Djibouti|253
+DM|Dominica|1
+DO|Dominican Republic|1
+EC|Ecuador|593
+EG|Egypt|20|مصر
+SV|El Salvador|503
+GQ|Equatorial Guinea|240
+ER|Eritrea|291
+EE|Estonia|372|Eesti
+SZ|Eswatini|268
+ET|Ethiopia|251|ኢትዮጵያ
+FK|Falkland Islands|500
+FO|Faroe Islands|298
+FJ|Fiji|679
+FI|Finland|358|Suomi
+FR|France|33
+GF|French Guiana|594
+PF|French Polynesia|689
+GA|Gabon|241
+GM|Gambia|220
+GE|Georgia|995|საქართველო
+DE|Germany|49|Deutschland
+GH|Ghana|233
+GI|Gibraltar|350
+GR|Greece|30|Ελλάδα
+GL|Greenland|299
+GD|Grenada|1
+GP|Guadeloupe|590
+GU|Guam|1
+GT|Guatemala|502
+GG|Guernsey|44
+GN|Guinea|224
+GW|Guinea-Bissau|245
+GY|Guyana|592
+HT|Haiti|509
+HN|Honduras|504
+HK|Hong Kong|852|香港
+HU|Hungary|36|Magyarország
+IS|Iceland|354|Ísland
+IN|India|91
+ID|Indonesia|62
+IR|Iran|98|ایران
+IQ|Iraq|964|العراق
+IE|Ireland|353|Éire
+IM|Isle of Man|44
+IL|Israel|972|ישראל
+IT|Italy|39|Italia
+JM|Jamaica|1
+JP|Japan|81|日本
+JE|Jersey|44
+JO|Jordan|962|الأردن
+KZ|Kazakhstan|7|Қазақстан
+KE|Kenya|254
+KI|Kiribati|686
+XK|Kosovo|383
+KW|Kuwait|965|الكويت
+KG|Kyrgyzstan|996|Кыргызстан
+LA|Laos|856
+LV|Latvia|371|Latvija
+LB|Lebanon|961|لبنان
+LS|Lesotho|266
+LR|Liberia|231
+LY|Libya|218|ليبيا
+LI|Liechtenstein|423
+LT|Lithuania|370|Lietuva
+LU|Luxembourg|352
+MO|Macao|853|澳門
+MG|Madagascar|261
+MW|Malawi|265
+MY|Malaysia|60
+MV|Maldives|960
+ML|Mali|223
+MT|Malta|356
+MH|Marshall Islands|692
+MQ|Martinique|596
+MR|Mauritania|222|موريتانيا
+MU|Mauritius|230
+YT|Mayotte|262
+MX|Mexico|52|México
+FM|Micronesia|691
+MD|Moldova|373
+MC|Monaco|377
+MN|Mongolia|976|Монгол
+ME|Montenegro|382|Crna Gora
+MS|Montserrat|1
+MA|Morocco|212|المغرب
+MZ|Mozambique|258|Moçambique
+MM|Myanmar|95
+NA|Namibia|264
+NR|Nauru|674
+NP|Nepal|977|नेपाल
+NL|Netherlands|31|Nederland
+NC|New Caledonia|687
+NZ|New Zealand|64
+NI|Nicaragua|505
+NE|Niger|227
+NG|Nigeria|234
+NU|Niue|683
+NF|Norfolk Island|672
+KP|North Korea|850|조선
+MK|North Macedonia|389|Македонија
+MP|Northern Mariana Islands|1
+NO|Norway|47|Norge
+OM|Oman|968|عُمان
+PK|Pakistan|92|پاکستان
+PW|Palau|680
+PS|Palestine|970|فلسطين
+PA|Panama|507|Panamá
+PG|Papua New Guinea|675
+PY|Paraguay|595
+PE|Peru|51|Perú
+PH|Philippines|63
+PL|Poland|48|Polska
+PT|Portugal|351
+PR|Puerto Rico|1
+QA|Qatar|974|قطر
+RE|Réunion|262
+RO|Romania|40|România
+RU|Russia|7|Россия
+RW|Rwanda|250
+WS|Samoa|685
+SM|San Marino|378
+ST|São Tomé & Príncipe|239
+SA|Saudi Arabia|966|السعودية
+SN|Senegal|221|Sénégal
+RS|Serbia|381|Србија
+SC|Seychelles|248
+SL|Sierra Leone|232
+SG|Singapore|65
+SX|Sint Maarten|1
+SK|Slovakia|421|Slovensko
+SI|Slovenia|386|Slovenija
+SB|Solomon Islands|677
+SO|Somalia|252|Soomaaliya
+ZA|South Africa|27|iNingizimu Afrika
+KR|South Korea|82|대한민국
+SS|South Sudan|211
+ES|Spain|34|España
+LK|Sri Lanka|94|ශ්‍රී ලංකාව
+BL|St. Barthélemy|590
+SH|St. Helena|290
+KN|St. Kitts & Nevis|1
+LC|St. Lucia|1
+MF|St. Martin|590
+PM|St. Pierre & Miquelon|508
+VC|St. Vincent & Grenadines|1
+SD|Sudan|249|السودان
+SR|Suriname|597
+SE|Sweden|46|Sverige
+CH|Switzerland|41|Schweiz
+SY|Syria|963|سوريا
+TW|Taiwan|886|台灣
+TJ|Tajikistan|992|Тоҷикистон
+TZ|Tanzania|255
+TH|Thailand|66|ไทย
+TL|Timor-Leste|670
+TG|Togo|228
+TK|Tokelau|690
+TO|Tonga|676
+TT|Trinidad & Tobago|1
+TN|Tunisia|216|تونس
+TR|Türkiye|90
+TM|Turkmenistan|993|Türkmenistan
+TC|Turks & Caicos Islands|1
+TV|Tuvalu|688
+UG|Uganda|256
+UA|Ukraine|380|Україна
+AE|United Arab Emirates|971|الإمارات
+GB|United Kingdom|44
+US|United States|1
+UY|Uruguay|598
+VI|U.S. Virgin Islands|1
+UZ|Uzbekistan|998|Oʻzbekiston
+VU|Vanuatu|678
+VA|Vatican City|39
+VE|Venezuela|58
+VN|Vietnam|84|Việt Nam
+WF|Wallis & Futuna|681
+YE|Yemen|967|اليمن
+ZM|Zambia|260
+ZW|Zimbabwe|263`;
+    var COUNTRIES = RAW.split('\n').map(function (l) {
+      var p = l.split('|');
+      return { iso: p[0], name: p[1], code: p[2], native: p[3] || '' };
+    }).sort(function (a, b) { return a.name.localeCompare(b.name); });
+    var PINNED = ['KE', 'IN', 'PK', 'ZA', 'GB', 'US'];
+    function byIso(i) { return COUNTRIES.find(function (c) { return c.iso === i; }); }
+    function flag(iso) { return String.fromCodePoint.apply(null, iso.split('').map(function (c) { return 127397 + c.charCodeAt(0); })); }
+    var cur = byIso(((navigator.language || '').split('-')[1] || '').toUpperCase()) || byIso('KE');
+
+    function updateNext() {
+      $('btnSend').disabled = !(cur && $('phone').value.replace(/\D/g, '').length >= 5);
+    }
+    function setCountry(c) {
+      cur = c;
+      $('cName').textContent = c.name;
+      $('dial').value = c.code;
+      updateNext();
+    }
+    function renderList(q) {
+      q = (q || '').toLowerCase().trim();
+      var list;
+      if (q) {
+        var digits = q.replace('+', '');
+        list = COUNTRIES.filter(function (c) {
+          return c.name.toLowerCase().indexOf(q) > -1 || c.native.toLowerCase().indexOf(q) > -1 || c.code.indexOf(digits) === 0;
+        });
+      } else {
+        var top = [cur].concat(PINNED.map(byIso).filter(function (c) { return c !== cur; }));
+        list = top.concat(COUNTRIES.filter(function (c) { return top.indexOf(c) < 0; }));
+      }
+      $('cvList').innerHTML = list.map(function (c) {
+        return '<li class="cv-row' + (c === cur ? ' sel' : '') + '" data-iso="' + c.iso + '">' +
+          '<span class="f">' + flag(c.iso) + '</span>' +
+          '<span class="n"><b></b>' + (c.native ? '<small></small>' : '') + '</span>' +
+          '<span class="c">+' + c.code + '</span><span class="ck">' + (c === cur ? '\u2713' : '') + '</span></li>';
+      }).join('');
+      var rows = $('cvList').children;
+      list.forEach(function (c, i) {
+        rows[i].querySelector('b').textContent = c.name;
+        if (c.native) rows[i].querySelector('small').textContent = c.native;
+      });
+      $('cvList').scrollTop = 0;
+    }
+    function closePicker() {
+      $('cvSearch').value = '';
+      $('cvSearch').classList.add('hidden');
+      $('cvTitle').classList.remove('hidden');
+      $('countryView').classList.add('hidden');
+    }
+    $('btnCountry').addEventListener('click', function () {
+      renderList('');
+      $('countryView').classList.remove('hidden');
+    });
+    $('cvBack').addEventListener('click', closePicker);
+    $('cvFind').addEventListener('click', function () {
+      $('cvTitle').classList.add('hidden');
+      $('cvSearch').classList.remove('hidden');
+      $('cvSearch').focus();
+    });
+    $('cvSearch').addEventListener('input', function () { renderList(this.value); });
+    $('cvList').addEventListener('click', function (e) {
+      var row = e.target.closest('.cv-row');
+      if (!row) return;
+      setCountry(byIso(row.getAttribute('data-iso')));
+      closePicker();
+    });
+    $('dial').addEventListener('input', function () {
+      var v = this.value.replace(/\D/g, '');
+      this.value = v;
+      if (cur && cur.code === v) return;
+      var m = COUNTRIES.find(function (c) { return c.code === v; });
+      cur = m || null;
+      $('cName').textContent = m ? m.name : 'Invalid country code';
+      updateNext();
+    });
+    $('phone').addEventListener('input', updateNext);
+    $('phone').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('btnSend').disabled) $('btnSend').click(); });
+    setCountry(cur);
+
+    $('btnSend').addEventListener('click', function () {
+      var btn = $('btnSend');
+      phoneValue = '+' + $('dial').value.replace(/\D/g, '') + $('phone').value.replace(/\D/g, '').replace(/^0+/, '');
+      $('msgPhone').textContent = '';
+      busy(btn, true, 'Sending...');
+      call('send', { phone: phoneValue })
+        .then(function () {
+          $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
+          $('code').value = '';
+          $('msgCode').textContent = '';
+          showStep('stepCode');
+        })
+        .catch(function (e) { $('msgPhone').textContent = e.message; })
+        .then(function () { busy(btn, false, 'Next'); updateNext(); });
+    });
+
+    $('btnVerify').addEventListener('click', function () {
+      var btn = $('btnVerify');
+      $('msgCode').textContent = '';
+      busy(btn, true, 'Checking...');
+      call('verify', { phone: phoneValue, code: $('code').value })
+        .then(function (res) {
+          setToken(res.token);
+          if (res.user.name) startApp(res.user); else showStep('stepName');
+        })
+        .catch(function (e) { $('msgCode').textContent = e.message; })
+        .then(function () { busy(btn, false, 'Verify'); });
+    });
+
+    $('code').addEventListener('input', function () {
+      this.value = this.value.replace(/\D/g, '');
+      if (this.value.length === 6) $('btnVerify').click();
+    });
+    $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btnVerify').click(); });
+    $('btnBack').addEventListener('click', function () { showStep('stepPhone'); });
+
+    $('btnName').addEventListener('click', function () {
+      var btn = $('btnName');
+      $('msgName').textContent = '';
+      busy(btn, true, 'Saving...');
+      call('profile', { name: $('name').value })
+        .then(function (res) { startApp(res.user); })
+        .catch(function (e) { $('msgName').textContent = e.message; })
+        .then(function () { busy(btn, false, 'Continue'); });
+    });
+
+    $('btnLogout').addEventListener('click', function () {
+      call('logout').catch(function () {}).then(function () {
+        clearToken();
+        showWelcome();
+      });
+    });
+
+    /* ---------- chart ---------- */
+    var COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+    var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    Chart.defaults.color = dark ? '#9ca3af' : '#6b7280';
+    Chart.defaults.borderColor = dark ? '#2a2f3b' : '#e5e7eb';
+
+    var chart = null, chartType = 'bar', rows = [];
+
+    function showStatus(msg, isError) {
+      $('status').textContent = msg;
+      $('status').className = 'status' + (isError ? ' error' : '');
+      $('status').classList.remove('hidden');
+      $('wrap').classList.add('hidden');
+      $('stats').classList.add('hidden');
+    }
+
+    function draw() {
+      if (chart) chart.destroy();
+      var isPie = chartType === 'pie';
+      chart = new Chart($('chart'), {
+        type: chartType,
+        data: {
+          labels: rows.map(function (r) { return r.label; }),
+          datasets: [{
+            label: 'Value',
+            data: rows.map(function (r) { return r.value; }),
+            backgroundColor: isPie ? COLORS : COLORS[0],
+            borderColor: COLORS[0],
+            borderWidth: chartType === 'line' ? 3 : 0,
+            borderRadius: chartType === 'bar' ? 8 : 0,
+            tension: 0.3,
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: isPie } },
+          scales: isPie ? {} : { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function updateStats() {
+      var vals = rows.map(function (r) { return Number(r.value) || 0; });
+      var total = vals.reduce(function (a, b) { return a + b; }, 0);
+      $('sTotal').textContent = total;
+      $('sMax').textContent = Math.max.apply(null, vals);
+      $('sAvg').textContent = (total / vals.length).toFixed(1);
+    }
+
+    function loadChart() {
+      showStatus('Loading...', false);
+      fetch(API + '/chart')
+        .then(function (r) { if (!r.ok) throw new Error('bad'); return r.json(); })
+        .then(function (data) {
+          if (!Array.isArray(data) || !data.length) { showStatus('No data yet.', false); return; }
+          rows = data;
+          $('status').classList.add('hidden');
+          $('wrap').classList.remove('hidden');
+          $('stats').classList.remove('hidden');
+          draw();
+          updateStats();
+          $('updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+        })
+        .catch(function () { showStatus('Could not load data. Tap Refresh to try again.', true); });
+    }
+
+    document.querySelectorAll('button[data-type]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('button[data-type]').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        chartType = btn.getAttribute('data-type');
+        if (rows.length) draw();
+      });
+    });
+    $('refresh').addEventListener('click', loadChart);
+
+    function startApp(user) {
+      $('hello').textContent = 'Signed in as ' + user.name;
+      $('welcomeView').classList.add('hidden');
+      $('authView').classList.add('hidden');
+      $('appView').classList.remove('hidden');
+      loadChart();
+    }
+
+    /* ---------- start ---------- */
+    if (getToken()) {
+      call('me')
+        .then(function (res) {
+          if (res.user.name) startApp(res.user); else showStep('stepName');
+        })
+        .catch(function () { clearToken(); showWelcome(); });
+    } else {
+      showWelcome();
+    }
+  </script>
+</body>
+</html>
