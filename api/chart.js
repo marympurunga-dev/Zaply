@@ -24,6 +24,7 @@ module.exports = async (req, res) => {
     const [rows] = await getPool().query(
       'SELECT label, value FROM chart_data ORDER BY id'
     );
+    res.setHeader('Access-Control-Allow-Origin', 'https://zaply.linkpc.net');
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     res.status(200).json(rows);
   } catch (e) {
