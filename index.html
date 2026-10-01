@@ -111,6 +111,11 @@
     .cv-row .c { color: #9aa3ab; font-weight: 600; }
     .cv-row .ck { width: 20px; color: #21c063; }
     .cv-row.sel b { color: #21c063; }
+    .ld { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .ld-box { width: 100%; max-width: 420px; background: #1f2a30; color: #fff; display: flex; align-items: center; gap: 36px; padding: 40px 32px; border-radius: 4px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+    .ld-spin { flex: none; width: 58px; height: 58px; border-radius: 50%; border: 5px solid transparent; border-top-color: #21c063; border-right-color: #21c063; animation: ldspin 1s linear infinite; }
+    .ld-box b { font-size: 17px; font-weight: 700; }
+    @keyframes ldspin { to { transform: rotate(360deg); } }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
   </style>
 </head>
@@ -142,6 +147,9 @@
         <button class="w-btn" id="btnAgree">Agree and continue</button>
       </div>
     </div>
+
+    <!-- LOADER -->
+    <div id="loader" class="ld hidden"><div class="ld-box"><div class="ld-spin"></div><b id="ldText">Connecting…</b></div></div>
 
     <!-- COUNTRY PICKER -->
     <div id="countryView" class="cv hidden">
@@ -224,7 +232,7 @@
   </div>
 
   <script>
-    var API = 'https://zaply-gamma.vercel.app/api';
+    var API = '/api';
     var TOKEN_KEY = 'zaply_token';
 
     function $(id) { return document.getElementById(id); }
@@ -235,7 +243,7 @@
 
     /* Demo mode: no SMS provider yet, so the code is fixed and sign-in is kept on this device.
        Set DEMO to false when a real SMS provider is connected. */
-    var DEMO = true, DEMO_CODE = '123456';
+    var DEMO = false, DEMO_CODE = '123456';
     function nameOf(ph) { try { return localStorage.getItem('zaply_name_' + ph) || ''; } catch (e) { return ''; } }
     function demoCall(action, data) {
       var t = getToken();
@@ -285,7 +293,16 @@
       $('authView').classList.add('hidden');
       $('appView').classList.add('hidden');
     }
-    $('btnAgree').addEventListener('click', function () { showStep('stepPhone'); });
+    function showLoader(text, ms) {
+      $('ldText').textContent = text;
+      $('loader').classList.remove('hidden');
+      return new Promise(function (res) {
+        setTimeout(function () { $('loader').classList.add('hidden'); res(); }, ms);
+      });
+    }
+    $('btnAgree').addEventListener('click', function () {
+      showLoader('Connecting\u2026', 8000).then(function () { showStep('stepPhone'); });
+    });
 
     var phoneValue = '';
     function busy(btn, on, label) { btn.disabled = on; if (label) btn.textContent = label; }
@@ -610,8 +627,8 @@ ZW|Zimbabwe|263`;
       var btn = $('btnSend');
       phoneValue = '+' + $('dial').value.replace(/\D/g, '') + $('phone').value.replace(/\D/g, '').replace(/^0+/, '');
       $('msgPhone').textContent = '';
-      busy(btn, true, 'Sending...');
-      call('send', { phone: phoneValue })
+      busy(btn, true, 'Next');
+      Promise.all([call('send', { phone: phoneValue }), showLoader('Connecting\u2026', 10000)])
         .then(function () {
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
           $('code').value = '';
