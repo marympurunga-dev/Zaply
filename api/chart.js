@@ -1,10 +1,5 @@
 const mysql = require('mysql2/promise');
 
-const ALLOWED_ORIGINS = [
-  'https://zaply.linkpc.net',
-  'http://zaply.linkpc.net',
-];
-
 let pool;
 function getPool() {
   if (!pool) {
@@ -24,23 +19,7 @@ function getPool() {
   return pool;
 }
 
-function setCors(req, res) {
-  const origin = req.headers.origin;
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Vary', 'Origin');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-}
-
 module.exports = async (req, res) => {
-  setCors(req, res);
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-
   try {
     const [rows] = await getPool().query(
       'SELECT label, value FROM chart_data ORDER BY id'
@@ -48,7 +27,6 @@ module.exports = async (req, res) => {
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=300');
     res.status(200).json(rows);
   } catch (e) {
-    console.error(e);
     res.status(500).json({ error: 'Database error' });
   }
 };
