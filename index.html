@@ -122,6 +122,7 @@
     .ld-box b { font-size: 17px; font-weight: 700; }
     @keyframes ldspin { to { transform: rotate(360deg); } }
     .w-install { margin-top: 14px; width: 100%; background: transparent; border: 1px solid #21c063; color: #21c063; font: inherit; font-size: 16px; font-weight: 600; padding: 13px; border-radius: 999px; }
+    .w-help { margin: 12px 0 0; color: #9aa3ab; font-size: 14px; line-height: 1.5; }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
   </style>
 </head>
@@ -151,7 +152,8 @@
           <select aria-label="Language"><option>English</option></select>
         </div>
         <button class="w-btn" id="btnAgree">Agree and continue</button>
-        <button class="w-install hidden" id="btnInstall">Install Zaply app</button>
+        <button class="w-install" id="btnInstall">Download app</button>
+        <p class="w-help hidden" id="installHelp"></p>
       </div>
     </div>
 
@@ -780,18 +782,27 @@ ZW|Zimbabwe|263`;
       showWelcome();
     }
   
-    /* Install as an app (Chrome) */
+    /* Download / install app */
+    var APK_URL = ''; /* put the link to your .apk here when you have one */
     var installEvt = null;
-    window.addEventListener('beforeinstallprompt', function (e) {
-      e.preventDefault(); installEvt = e;
-      $('btnInstall').classList.remove('hidden');
-    });
-    $('btnInstall').addEventListener('click', function () {
-      if (!installEvt) return;
-      installEvt.prompt();
-      installEvt.userChoice.then(function () { installEvt = null; $('btnInstall').classList.add('hidden'); });
-    });
+    var standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (standalone) $('btnInstall').classList.add('hidden');
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEvt = e; });
     window.addEventListener('appinstalled', function () { $('btnInstall').classList.add('hidden'); });
+    $('btnInstall').addEventListener('click', function () {
+      if (APK_URL) { window.location.href = APK_URL; return; }
+      if (installEvt) {
+        installEvt.prompt();
+        installEvt.userChoice.then(function () { installEvt = null; });
+        return;
+      }
+      var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      var h = $('installHelp');
+      h.textContent = ios
+        ? 'On iPhone: tap the Share button, then "Add to Home Screen".'
+        : 'Tap the Chrome menu (\u22EE) at the top right, then "Install app". If you only see "Add to Home screen", use that. If Zaply is already installed, open it from your home screen.';
+      h.classList.remove('hidden');
+    });
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
     }
