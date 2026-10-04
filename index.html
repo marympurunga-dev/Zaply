@@ -248,6 +248,7 @@
       <nav class="tabs"><button id="tabChats" class="active">Chats</button><button id="tabChart">Chart</button></nav>
 
       <div id="paneChats">
+        <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">\ud83d\udd14 Turn on notifications</button>
         <button class="fab" id="btnNew">+ New chat</button>
         <div class="newbox hidden" id="newBox">
           <input id="newPhone" type="tel" inputmode="tel" placeholder="Friend's number, e.g. +254712345678">
@@ -726,6 +727,7 @@ ZW|Zimbabwe|263`;
     });
 
     $('btnLogout').addEventListener('click', function () {
+      unsubPush();
       call('logout').catch(function () {}).then(function () {
         clearToken();
         showWelcome();
@@ -917,12 +919,59 @@ ZW|Zimbabwe|263`;
       if (openWith) fetchMsgs(); else if (!$('paneChats').classList.contains('hidden')) loadChats();
     }, 3000);
 
+    /* ---------- notifications ---------- */
+    function b64ToU8(b) {
+      var s = (b + '='.repeat((4 - b.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/');
+      var r = atob(s), o = new Uint8Array(r.length);
+      for (var i = 0; i < r.length; i++) o[i] = r.charCodeAt(i);
+      return o;
+    }
+    function subscribePush() {
+      navigator.serviceWorker.ready.then(function (reg) {
+        return chatCall('pushkey').then(function (r) {
+          if (!r.key) return null;
+          return reg.pushManager.getSubscription().then(function (sub) {
+            return sub || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(r.key) });
+          });
+        }).then(function (sub) { if (sub) return chatCall('subscribe', { sub: sub.toJSON() }); });
+      }).catch(function () {});
+    }
+    function unsubPush() {
+      if (!('serviceWorker' in navigator)) return;
+      navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); })
+        .then(function (sub) { if (sub) return chatCall('unsubscribe', { endpoint: sub.endpoint }); })
+        .catch(function () {});
+    }
+    function initPush() {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+      if (Notification.permission === 'granted') subscribePush();
+      else if (Notification.permission === 'default') $('btnNotif').classList.remove('hidden');
+    }
+    $('btnNotif').addEventListener('click', function () {
+      Notification.requestPermission().then(function (p) {
+        $('btnNotif').classList.add('hidden');
+        if (p === 'granted') subscribePush();
+      });
+    });
+    function openChatWith(phone) {
+      if (!phone) return;
+      chatCall('start', { phone: phone }).then(function (r) { openThread(r.user); }).catch(function () {});
+    }
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', function (e) {
+        if (e.data && e.data.openChat) openChatWith(e.data.openChat);
+      });
+    }
+
     function startApp(user) {
       $('hello').textContent = 'Signed in as ' + user.name;
       $('welcomeView').classList.add('hidden');
       $('authView').classList.add('hidden');
       $('appView').classList.remove('hidden');
       showTab('chats');
+      initPush();
+      var qc = new URLSearchParams(location.search).get('chat');
+      if (qc) { openChatWith(qc); history.replaceState(null, '', '/'); }
     }
 
     /* ---------- start ---------- */
