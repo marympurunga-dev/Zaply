@@ -249,6 +249,7 @@
 
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">\ud83d\udd14 Turn on notifications</button>
+        <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone</button>
         <button class="fab" id="btnNew">+ New chat</button>
         <div class="newbox hidden" id="newBox">
           <input id="newPhone" type="tel" inputmode="tel" placeholder="Friend's number, e.g. +254712345678">
@@ -926,15 +927,20 @@ ZW|Zimbabwe|263`;
       for (var i = 0; i < r.length; i++) o[i] = r.charCodeAt(i);
       return o;
     }
+    function notifStatus(msg, ok) {
+      var b = $('btnNotif'); b.textContent = msg; b.classList.remove('hidden');
+      if (ok) setTimeout(function () { b.classList.add('hidden'); }, 4000);
+    }
     function subscribePush() {
       navigator.serviceWorker.ready.then(function (reg) {
         return chatCall('pushkey').then(function (r) {
-          if (!r.key) return null;
+          if (!r.key) throw new Error('Server has no push key. Add the 3 VAPID settings in Vercel, then redeploy.');
           return reg.pushManager.getSubscription().then(function (sub) {
             return sub || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(r.key) });
           });
-        }).then(function (sub) { if (sub) return chatCall('subscribe', { sub: sub.toJSON() }); });
-      }).catch(function () {});
+        }).then(function (sub) { return chatCall('subscribe', { sub: sub.toJSON() }); })
+          .then(function () { notifStatus('\u2705 Notifications are on', true); });
+      }).catch(function (e) { notifStatus('\u26A0 ' + (e && e.message ? e.message : 'Could not turn on notifications'), false); });
     }
     function unsubPush() {
       if (!('serviceWorker' in navigator)) return;
@@ -944,14 +950,19 @@ ZW|Zimbabwe|263`;
     }
     function initPush() {
       if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
-      if (Notification.permission === 'granted') subscribePush();
+      if (Notification.permission === 'granted') { subscribePush(); $('btnTest').classList.remove('hidden'); }
       else if (Notification.permission === 'default') $('btnNotif').classList.remove('hidden');
     }
     $('btnNotif').addEventListener('click', function () {
       Notification.requestPermission().then(function (p) {
         $('btnNotif').classList.add('hidden');
-        if (p === 'granted') subscribePush();
+        if (p === 'granted') { subscribePush(); $('btnTest').classList.remove('hidden'); }
       });
+    });
+    $('btnTest').addEventListener('click', function () {
+      var b = $('btnTest'); b.textContent = 'Now close Zaply completely. A test arrives in about 8 seconds...';
+      chatCall('testpush').then(function (r) { b.textContent = 'Server result: ' + r.results.join(', '); })
+        .catch(function (e) { b.textContent = '\u26A0 ' + e.message; });
     });
     function openChatWith(phone) {
       if (!phone) return;
