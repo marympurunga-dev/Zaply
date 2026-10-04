@@ -64,65 +64,73 @@
     .welcome {
       position: fixed; inset: 0; z-index: 10; background: #0b1014; color: #fff;
       display: flex; flex-direction: column; align-items: center;
-      padding: env(safe-area-inset-top, 0px) 24px calc(32px + env(safe-area-inset-bottom, 0px));
+      padding: env(safe-area-inset-top, 0px) 24px calc(22px + env(safe-area-inset-bottom, 0px));
     }
     .w-top { flex: 1; display: flex; align-items: center; justify-content: center; }
-    .w-logo { width: 128px; height: 128px; filter: drop-shadow(0 14px 32px rgba(33,192,99,.35)); }
+    .w-logo { width: 88px; height: 88px; filter: drop-shadow(0 14px 32px rgba(33,192,99,.35)); }
     .w-bottom { width: 100%; max-width: 420px; text-align: center; }
-    .w-bottom h1 { font-size: 30px; font-weight: 400; margin-bottom: 18px; }
-    .w-terms { color: #9aa3ab; font-size: 15px; line-height: 1.5; margin: 0 0 28px; }
+    .w-bottom h1 { font-size: 22px; font-weight: 400; margin-bottom: 12px; }
+    .w-terms { color: #9aa3ab; font-size: 12.5px; line-height: 1.5; margin: 0 0 18px; }
     .w-terms a { color: #53bdeb; font-weight: 600; text-decoration: none; }
-    .w-lang { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 28px; }
-    .w-lang svg { width: 26px; height: 26px; }
+    .w-lang { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px; }
+    .w-lang svg { width: 20px; height: 20px; }
     .w-lang select {
       width: auto; margin: 0; padding: 8px 4px; border: none; background: transparent;
-      color: #fff; font: inherit; font-size: 18px;
+      color: #fff; font: inherit; font-size: 14px;
     }
     .w-lang select option { color: #000; }
     .w-btn {
       width: 100%; border: none; background: #21c063; color: #06140c;
-      font: inherit; font-size: 18px; font-weight: 600; padding: 16px; border-radius: 999px;
+      font: inherit; font-size: 15px; font-weight: 600; padding: 12px; border-radius: 999px;
     }
     .auth { position: fixed; inset: 0; z-index: 5; max-width: none; margin: 0; overflow-y: auto; background: #0b1014; color: #fff; padding: env(safe-area-inset-top, 0px) 20px env(safe-area-inset-bottom, 0px); }
-    .auth .card { background: transparent; border: none; border-radius: 0; max-width: 420px; margin: 0 auto; padding: 56px 0 24px; text-align: center; }
+    .auth .card { background: transparent; border: none; border-radius: 0; max-width: 420px; margin: 0 auto; padding: 36px 0 20px; text-align: center; }
     .auth .card > div { display: flex; flex-direction: column; min-height: calc(100dvh - 100px); }
-    .auth h2 { font-size: 26px; font-weight: 400; color: #c5ccd2; margin-bottom: 14px; }
-    .auth .sub, .auth .hint { color: #9aa3ab; font-size: 15px; line-height: 1.5; }
-    .auth input { color: #fff; border: none; border-bottom: 2px solid #21c063; border-radius: 0; padding: 10px 2px; text-align: left; font-size: 20px; margin-bottom: 0; }
+    .auth h2 { font-size: 20px; font-weight: 400; color: #c5ccd2; margin-bottom: 14px; }
+    .auth .sub, .auth .hint { color: #9aa3ab; font-size: 13px; line-height: 1.5; }
+    .auth input { color: #fff; border: none; border-bottom: 2px solid #21c063; border-radius: 0; padding: 8px 2px; text-align: left; font-size: 16px; margin-bottom: 0; }
     .auth input.code { text-align: center; }
     .auth input:focus { outline: none; }
-    .auth .primary { margin-top: auto; background: #21c063; border-color: #21c063; color: #06140c; font-weight: 600; border-radius: 999px; padding: 15px; }
+    .auth .primary { margin-top: auto; background: #21c063; border-color: #21c063; color: #06140c; font-weight: 600; border-radius: 999px; padding: 12px; font-size: 15px; }
     .auth .primary:disabled { background: #1c2329; border-color: #1c2329; color: #4a555d; opacity: 1; }
     .auth .msg { min-height: 20px; margin: 14px 0; text-align: left; }
     .auth .link { color: #21c063; margin-top: 8px; }
-    .country-btn { position: relative; width: 100%; border: none; border-bottom: 2px solid #21c063; border-radius: 0; padding: 12px 30px; margin: 30px 0 14px; font-size: 18px; color: #fff; }
-    .country-btn::after { content: ""; position: absolute; right: 6px; top: 50%; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 9px solid #21c063; }
-    .phone-row { display: flex; gap: 20px; }
-    .dial-wrap { display: flex; align-items: center; gap: 8px; width: 120px; border-bottom: 2px solid #21c063; color: #9aa3ab; font-size: 20px; }
+    .country-btn { position: relative; width: 100%; border: none; border-bottom: 2px solid #21c063; border-radius: 0; padding: 9px 26px; margin: 20px 0 10px; font-size: 15px; color: #fff; }
+    .country-btn::after { content: ""; position: absolute; right: 6px; top: 50%; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid #21c063; }
+    .phone-row { display: flex; gap: 14px; }
+    .dial-wrap { display: flex; align-items: center; gap: 8px; width: 92px; border-bottom: 2px solid #21c063; color: #9aa3ab; font-size: 16px; }
     .auth .dial-wrap input { border: none; width: 100%; font-weight: 600; }
     .phone-row > input { flex: 1; min-width: 0; }
     .cv { position: fixed; inset: 0; z-index: 30; background: #0b1014; color: #fff; display: flex; flex-direction: column; }
     .cv-head { display: flex; align-items: center; gap: 14px; padding: calc(12px + env(safe-area-inset-top, 0px)) 14px 12px; border-bottom: 1px solid #1f262d; }
     .cv-head button { border: none; padding: 8px; line-height: 0; border-radius: 50%; }
-    .cv-head svg { width: 26px; height: 26px; fill: #fff; }
-    .cv-head h3 { flex: 1; margin: 0; font-size: 22px; font-weight: 500; }
-    .cv-head input { flex: 1; margin: 0; padding: 8px 0; font-size: 18px; border: none; background: transparent; color: #fff; outline: none; }
+    .cv-head svg { width: 22px; height: 22px; fill: #fff; }
+    .cv-head h3 { flex: 1; margin: 0; font-size: 18px; font-weight: 500; }
+    .cv-head input { flex: 1; margin: 0; padding: 6px 0; font-size: 15px; border: none; background: transparent; color: #fff; outline: none; }
     .cv-list { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0 0 env(safe-area-inset-bottom, 0px); }
-    .cv-row { display: flex; align-items: center; gap: 16px; margin: 0 14px; padding: 14px 6px; border-bottom: 1px solid #1a2128; cursor: pointer; }
-    .cv-row .f { font-size: 26px; width: 34px; text-align: center; }
+    .cv-row { display: flex; align-items: center; gap: 12px; margin: 0 14px; padding: 10px 6px; border-bottom: 1px solid #1a2128; cursor: pointer; }
+    .cv-row .f { font-size: 22px; width: 30px; text-align: center; }
     .cv-row .n { flex: 1; min-width: 0; }
-    .cv-row .n b { display: block; font-size: 17px; font-weight: 600; }
-    .cv-row .n small { color: #8a949c; font-size: 14px; }
+    .cv-row .n b { display: block; font-size: 15px; font-weight: 600; }
+    .cv-row .n small { color: #8a949c; font-size: 12px; }
     .cv-row .c { color: #9aa3ab; font-weight: 600; }
     .cv-row .ck { width: 20px; color: #21c063; }
     .cv-row.sel b { color: #21c063; }
-    .ld { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .ld-box { width: 100%; max-width: 420px; background: #1f2a30; color: #fff; display: flex; align-items: center; gap: 36px; padding: 40px 32px; border-radius: 4px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
-    .ld-spin { flex: none; width: 58px; height: 58px; border-radius: 50%; border: 5px solid transparent; border-top-color: #21c063; border-right-color: #21c063; animation: ldspin 1s linear infinite; }
-    .ld-box b { font-size: 17px; font-weight: 700; }
+    .ld { position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .ld-box { width: 100%; max-width: 330px; background: #1f2a30; color: #fff; display: flex; align-items: center; gap: 30px; padding: 28px 30px; border-radius: 2px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+    .ld-spin { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 4px solid transparent; border-top-color: #21c063; border-right-color: #21c063; animation: ldspin 1s linear infinite; }
+    .ld-box b { font-size: 15px; font-weight: 700; }
     @keyframes ldspin { to { transform: rotate(360deg); } }
-    .w-install { margin-top: 14px; width: 100%; background: transparent; border: 1px solid #21c063; color: #21c063; font: inherit; font-size: 16px; font-weight: 600; padding: 13px; border-radius: 999px; }
-    .w-help { margin: 12px 0 0; color: #9aa3ab; font-size: 14px; line-height: 1.5; }
+    .ld-ok { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 3px solid #21c063; display: flex; align-items: center; justify-content: center; animation: ldpop .35s ease-out; }
+    .ld-ok svg { width: 20px; height: 20px; }
+    @keyframes ldpop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .otp { position: relative; display: flex; justify-content: center; gap: 8px; margin: 26px 0 10px; }
+    .otp-box { width: 42px; height: 50px; border: 2px solid #2a343c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; color: #fff; }
+    .otp-box.on { border-color: #21c063; }
+    .otp-box.err { border-color: #dc2626; }
+    .auth .otp input.otp-in { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; border: none; padding: 0; margin: 0; font-size: 16px; caret-color: transparent; letter-spacing: 0; }
+    .w-install { margin-top: 10px; width: 100%; background: transparent; border: 1px solid #21c063; color: #21c063; font: inherit; font-size: 14px; font-weight: 600; padding: 10px; border-radius: 999px; }
+    .w-help { margin: 10px 0 0; color: #9aa3ab; font-size: 12.5px; line-height: 1.5; }
     .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
     .tabs button { flex: 1; }
     .row { display: flex; align-items: center; gap: 14px; padding: 12px 4px; border-bottom: 1px solid var(--border); cursor: pointer; }
@@ -185,7 +193,7 @@
     </div>
 
     <!-- LOADER -->
-    <div id="loader" class="ld hidden"><div class="ld-box"><div class="ld-spin"></div><b id="ldText">Connecting…</b></div></div>
+    <div id="loader" class="ld hidden"><div class="ld-box"><div class="ld-spin" id="ldSpin"></div><div class="ld-ok hidden" id="ldOk"><svg viewBox="0 0 24 24" fill="none" stroke="#21c063" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><b id="ldText">Connecting…</b></div></div>
 
     <!-- COUNTRY PICKER -->
     <div id="countryView" class="cv hidden">
@@ -217,10 +225,11 @@
         <div id="stepCode" class="hidden">
           <h2>Enter the code</h2>
           <div class="sub" id="codeSub">We sent a 6-digit code.</div>
-          <input id="code" class="code" type="text" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code">
-          <div class="hint" id="testHint">Test mode: use code 123456</div>
-          <div class="msg" id="msgCode"></div>
-          <button class="primary" id="btnVerify">Verify</button>
+          <div class="otp" id="otp">
+            <div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div>
+            <input id="code" class="code otp-in" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="6-digit code">
+          </div>
+          <div class="msg" id="msgCode" style="text-align:center"></div>
           <button class="link" id="btnBack">Change number</button>
         </div>
 
@@ -344,6 +353,7 @@
       $('welcomeView').classList.add('hidden');
       $('authView').classList.remove('hidden');
       $('appView').classList.add('hidden');
+      if (id === 'stepCode') { $('code').value = ''; renderOtp(); setTimeout(function () { $('code').focus(); }, 100); }
     }
 
     function showWelcome() {
@@ -351,15 +361,54 @@
       $('authView').classList.add('hidden');
       $('appView').classList.add('hidden');
     }
+    function ldReset() { $('ldSpin').classList.remove('hidden'); $('ldOk').classList.add('hidden'); }
+    function hideLoader() { $('loader').classList.add('hidden'); ldReset(); }
+    function showLoaderWhile(text, promise, minMs) {
+      ldReset();
+      $('ldText').textContent = text;
+      $('loader').classList.remove('hidden');
+      var settled = promise.then(function (v) { return { ok: true, v: v }; }, function (e) { return { ok: false, e: e }; });
+      var wait = new Promise(function (r) { setTimeout(r, minMs); });
+      return Promise.all([settled, wait]).then(function (a) { if (a[0].ok) return a[0].v; throw a[0].e; });
+    }
+    function loaderDone(text, ms) {
+      $('ldSpin').classList.add('hidden');
+      $('ldOk').classList.remove('hidden');
+      $('ldText').textContent = text;
+      return new Promise(function (r) { setTimeout(function () { hideLoader(); r(); }, ms); });
+    }
     function showLoader(text, ms) {
+      ldReset();
       $('ldText').textContent = text;
       $('loader').classList.remove('hidden');
       return new Promise(function (res) {
         setTimeout(function () { $('loader').classList.add('hidden'); res(); }, ms);
       });
     }
+    function fetchIso(url, pick) {
+      var ctl = window.AbortController ? new AbortController() : null;
+      var t = ctl ? setTimeout(function () { ctl.abort(); }, 4000) : 0;
+      return fetch(url, ctl ? { signal: ctl.signal } : {})
+        .then(function (r) { return r.json(); })
+        .then(function (j) { clearTimeout(t); var c = String(pick(j) || '').toUpperCase(); return c.length === 2 ? c : null; })
+        .catch(function () { clearTimeout(t); return null; });
+    }
+    function detectCountry() {
+      return fetchIso('https://ipapi.co/json/', function (j) { return j.country_code; })
+        .then(function (c) { return c || fetchIso('https://ipwho.is/', function (j) { return j.country_code; }); })
+        .then(function (c) { return c || ((navigator.language || '').split('-')[1] || '').toUpperCase() || null; });
+    }
     $('btnAgree').addEventListener('click', function () {
-      showLoader('Connecting\u2026', 8000).then(function () { showStep('stepPhone'); });
+      var detected = detectCountry();
+      showLoader('Connecting\u2026', 5000)
+        .then(function () { return showLoader('Detecting your country\u2026', 5000); })
+        .then(function () { return detected; })
+        .then(function (iso) {
+          var c = (iso && byIso(iso)) || byIso('KE');
+          setCountry(c);
+          showStep('stepPhone');
+          $('phone').focus();
+        });
     });
 
     var phoneValue = '';
@@ -686,7 +735,7 @@ ZW|Zimbabwe|263`;
       phoneValue = '+' + $('dial').value.replace(/\D/g, '') + $('phone').value.replace(/\D/g, '').replace(/^0+/, '');
       $('msgPhone').textContent = '';
       busy(btn, true, 'Next');
-      Promise.all([call('send', { phone: phoneValue }), showLoader('Connecting\u2026', 10000)])
+      Promise.all([call('send', { phone: phoneValue }), showLoader('Connecting\u2026', 3000).then(function () { return showLoader('Observing\u2026', 2000); })])
         .then(function () {
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
           $('code').value = '';
@@ -697,24 +746,46 @@ ZW|Zimbabwe|263`;
         .then(function () { busy(btn, false, 'Next'); updateNext(); });
     });
 
-    $('btnVerify').addEventListener('click', function () {
-      var btn = $('btnVerify');
+    function renderOtp() {
+      var v = $('code').value, boxes = $('otp').children, focused = document.activeElement === $('code');
+      for (var i = 0; i < 6; i++) {
+        boxes[i].textContent = v[i] || '';
+        boxes[i].classList.toggle('on', focused && i === Math.min(v.length, 5));
+        boxes[i].classList.remove('err');
+      }
+    }
+    var verifying = false;
+    function doVerify() {
+      var code = $('code').value;
+      if (code.length !== 6 || verifying) return;
+      verifying = true;
       $('msgCode').textContent = '';
-      busy(btn, true, 'Checking...');
-      call('verify', { phone: phoneValue, code: $('code').value })
+      showLoaderWhile('Checking OTP you just entered\u2026', call('verify', { phone: phoneValue, code: code }), 3000)
         .then(function (res) {
-          setToken(res.token);
-          if (res.user.name) startApp(res.user); else showStep('stepName');
+          return loaderDone('Verified', 1500).then(function () {
+            setToken(res.token);
+            if (res.user.name) startApp(res.user); else showStep('stepName');
+          });
         })
-        .catch(function (e) { $('msgCode').textContent = e.message; })
-        .then(function () { busy(btn, false, 'Verify'); });
-    });
-
+        .catch(function (e) {
+          hideLoader();
+          $('msgCode').textContent = e.message;
+          $('code').value = '';
+          renderOtp();
+          Array.prototype.forEach.call($('otp').children, function (b) { b.classList.add('err'); });
+          $('code').focus();
+        })
+        .then(function () { verifying = false; });
+    }
     $('code').addEventListener('input', function () {
-      this.value = this.value.replace(/\D/g, '');
-      if (this.value.length === 6) $('btnVerify').click();
+      this.value = this.value.replace(/\D/g, '').slice(0, 6);
+      $('msgCode').textContent = '';
+      renderOtp();
+      if (this.value.length === 6) doVerify();
     });
-    $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('btnVerify').click(); });
+    $('code').addEventListener('focus', renderOtp);
+    $('code').addEventListener('blur', renderOtp);
+    $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') doVerify(); });
     $('btnBack').addEventListener('click', function () { showStep('stepPhone'); });
 
     $('btnName').addEventListener('click', function () {
