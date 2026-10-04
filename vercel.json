@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    { "source": "/.well-known/assetlinks.json", "destination": "/wellknown/assetlinks.json" }
+  ],
+  "headers": [
+    { "source": "/zaply.apk", "headers": [
+      { "key": "Content-Type", "value": "application/vnd.android.package-archive" },
+      { "key": "Content-Disposition", "value": "attachment; filename=zaply.apk" } ] },
+    { "source": "/.well-known/assetlinks.json", "headers": [
+      { "key": "Content-Type", "value": "application/json" } ] }
+  ]
+}
