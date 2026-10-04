@@ -7,7 +7,7 @@
   <link rel="icon" type="image/png" href="/icon-192.png">
   <link rel="apple-touch-icon" href="/icon-192.png">
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>Zaply</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
@@ -123,6 +123,30 @@
     @keyframes ldspin { to { transform: rotate(360deg); } }
     .w-install { margin-top: 14px; width: 100%; background: transparent; border: 1px solid #21c063; color: #21c063; font: inherit; font-size: 16px; font-weight: 600; padding: 13px; border-radius: 999px; }
     .w-help { margin: 12px 0 0; color: #9aa3ab; font-size: 14px; line-height: 1.5; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .tabs button { flex: 1; }
+    .row { display: flex; align-items: center; gap: 14px; padding: 12px 4px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .av { flex: none; width: 46px; height: 46px; border-radius: 50%; background: #21c063; color: #06140c; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+    .row .mid { flex: 1; min-width: 0; }
+    .row .mid b { display: block; font-size: 16px; }
+    .row .mid span { display: block; color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row time { color: var(--muted); font-size: 12px; }
+    .empty { text-align: center; color: var(--muted); padding: 48px 12px; line-height: 1.5; }
+    .newbox { display: flex; gap: 8px; margin-bottom: 12px; }
+    .newbox input { margin: 0; flex: 1; min-width: 0; }
+    .nmsg { color: #ef4444; font-size: 14px; min-height: 18px; margin-bottom: 8px; }
+    .fab { width: 100%; background: #21c063; border-color: #21c063; color: #06140c; font-weight: 600; margin-bottom: 12px; }
+    .th { position: fixed; inset: 0; z-index: 8; background: var(--bg); display: flex; flex-direction: column; }
+    .th-head { display: flex; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px; border-bottom: 1px solid var(--border); background: var(--card); }
+    .th-head button { border: none; padding: 6px 10px; font-size: 22px; }
+    .th-head b { display: block; } .th-head small { color: var(--muted); }
+    #msgs { flex: 1; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 6px; }
+    .bub { max-width: 78%; padding: 8px 12px; border-radius: 14px; background: var(--card); border: 1px solid var(--border); align-self: flex-start; word-wrap: break-word; white-space: pre-wrap; }
+    .bub.mine { align-self: flex-end; background: #21c063; border-color: #21c063; color: #06140c; }
+    .bub small { display: block; text-align: right; font-size: 11px; opacity: .65; margin-top: 2px; }
+    .comp { display: flex; gap: 8px; padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border); background: var(--card); }
+    .comp input { margin: 0; flex: 1; min-width: 0; border-radius: 999px; }
+    .comp button { border-radius: 999px; background: #21c063; border-color: #21c063; color: #06140c; font-weight: 600; }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
   </style>
 </head>
@@ -139,8 +163,9 @@
               <stop offset="1" stop-color="#0e8f47"/>
             </linearGradient>
           </defs>
+          <clipPath id="zClip"><rect x="4" y="4" width="88" height="88" rx="26"/></clipPath>
           <rect x="4" y="4" width="88" height="88" rx="26" fill="url(#zBg)"/>
-          <path d="M4 34C20 22 44 12 92 14v-2A26 26 0 0 0 66 4H30A26 26 0 0 0 4 30Z" fill="#fff" opacity=".12"/>
+          <path d="M4 34C20 22 44 12 92 14v-2A26 26 0 0 0 66 4H30A26 26 0 0 0 4 30Z" fill="#fff" opacity=".12" clip-path="url(#zClip)"/>
           <path d="M24 26H72V37L41 59H72V70H24V59L55 37H24Z" fill="#fff" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
         </svg>
       </div>
@@ -212,12 +237,25 @@
     <div id="appView" class="hidden">
       <header>
         <div>
-          <h1>Zaply Chart</h1>
+          <h1>Zaply</h1>
           <div class="sub" id="hello" style="margin:2px 0 0"></div>
         </div>
         <button id="btnLogout">Log out</button>
       </header>
 
+      <nav class="tabs"><button id="tabChats" class="active">Chats</button><button id="tabChart">Chart</button></nav>
+
+      <div id="paneChats">
+        <button class="fab" id="btnNew">+ New chat</button>
+        <div class="newbox hidden" id="newBox">
+          <input id="newPhone" type="tel" inputmode="tel" placeholder="Friend's number, e.g. +254712345678">
+          <button class="primary" id="btnStart">Start</button>
+        </div>
+        <div class="nmsg" id="newMsg"></div>
+        <div id="chatList"></div>
+      </div>
+
+      <div id="paneChart" class="hidden">
       <div class="card">
         <div class="toolbar">
           <button data-type="bar" class="active">Bar</button>
@@ -236,6 +274,13 @@
         </div>
       </div>
       <footer id="updated"></footer>
+      </div>
+    </div>
+
+    <div id="threadView" class="th hidden">
+      <div class="th-head"><button id="thBack" aria-label="Back">\u2190</button><div><b id="thName"></b><small id="thPhone"></small></div></div>
+      <div id="msgs"></div>
+      <div class="comp"><input id="msgInput" type="text" placeholder="Message" autocomplete="off"><button id="btnSendMsg">Send</button></div>
     </div>
 
   </div>
@@ -763,12 +808,119 @@ ZW|Zimbabwe|263`;
     });
     $('refresh').addEventListener('click', loadChart);
 
+    /* ---------- chat ---------- */
+    function chatCall(action, data) {
+      return fetch(API + '/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(Object.assign({ action: action, token: getToken() }, data || {}))
+      }).then(function (r) {
+        return r.json().then(function (j) {
+          if (r.status === 401) { clearToken(); showWelcome(); }
+          if (!r.ok) throw new Error(j.error || 'Something went wrong');
+          return j;
+        });
+      });
+    }
+    function mk(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+    function hhmm(t) { try { return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+    var openWith = null, lastId = 0;
+
+    function showTab(t) {
+      $('paneChats').classList.toggle('hidden', t !== 'chats');
+      $('paneChart').classList.toggle('hidden', t !== 'chart');
+      $('tabChats').classList.toggle('active', t === 'chats');
+      $('tabChart').classList.toggle('active', t === 'chart');
+      if (t === 'chart') loadChart(); else loadChats();
+    }
+    $('tabChats').addEventListener('click', function () { showTab('chats'); });
+    $('tabChart').addEventListener('click', function () { showTab('chart'); });
+
+    function loadChats() {
+      chatCall('list').then(function (res) {
+        var box = $('chatList'); box.innerHTML = '';
+        if (!res.chats.length) {
+          box.appendChild(mk('div', 'empty', 'No chats yet. Tap "New chat" and enter a friend\u2019s phone number. They must be registered on Zaply.'));
+          return;
+        }
+        res.chats.forEach(function (c) {
+          var row = mk('div', 'row');
+          row.appendChild(mk('div', 'av', (c.name || '#').charAt(0).toUpperCase()));
+          var mid = mk('div', 'mid');
+          mid.appendChild(mk('b', '', c.name || c.phone));
+          mid.appendChild(mk('span', '', (c.mine ? 'You: ' : '') + c.last));
+          row.appendChild(mid);
+          row.appendChild(mk('time', '', hhmm(c.at)));
+          row.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name }); });
+          box.appendChild(row);
+        });
+      }).catch(function () {});
+    }
+
+    $('btnNew').addEventListener('click', function () {
+      $('newBox').classList.toggle('hidden'); $('newMsg').textContent = ''; $('newPhone').focus();
+    });
+    function startChat() {
+      var raw = $('newPhone').value.trim(), d = raw.replace(/\D/g, ''), num;
+      if (raw.charAt(0) === '+') num = '+' + d;
+      else if (d.charAt(0) === '0') num = '+' + (cur ? cur.code : '254') + d.replace(/^0+/, '');
+      else num = '+' + d;
+      $('newMsg').textContent = '';
+      chatCall('start', { phone: num }).then(function (res) {
+        $('newPhone').value = ''; $('newBox').classList.add('hidden');
+        openThread(res.user);
+      }).catch(function (e) { $('newMsg').textContent = e.message; });
+    }
+    $('btnStart').addEventListener('click', startChat);
+    $('newPhone').addEventListener('keydown', function (e) { if (e.key === 'Enter') startChat(); });
+
+    function addMsg(m) {
+      if (m.id <= lastId) return false;
+      lastId = m.id;
+      var b = mk('div', 'bub' + (m.mine ? ' mine' : ''), m.body);
+      b.appendChild(mk('small', '', hhmm(m.at)));
+      $('msgs').appendChild(b);
+      return true;
+    }
+    function fetchMsgs() {
+      var who = openWith;
+      if (!who) return;
+      chatCall('history', { with: who, after: lastId }).then(function (res) {
+        if (who !== openWith) return;
+        var added = false;
+        res.messages.forEach(function (m) { if (addMsg(m)) added = true; });
+        if (added) $('msgs').scrollTop = $('msgs').scrollHeight;
+      }).catch(function () {});
+    }
+    function openThread(u) {
+      openWith = u.phone; lastId = 0; $('msgs').innerHTML = '';
+      $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.phone;
+      $('threadView').classList.remove('hidden');
+      fetchMsgs(); $('msgInput').focus();
+    }
+    $('thBack').addEventListener('click', function () {
+      openWith = null; $('threadView').classList.add('hidden'); loadChats();
+    });
+    function sendMsg() {
+      var body = $('msgInput').value.trim();
+      if (!body || !openWith) return;
+      $('msgInput').value = '';
+      chatCall('send', { to: openWith, body: body }).then(function (res) {
+        addMsg(res.message); $('msgs').scrollTop = $('msgs').scrollHeight;
+      }).catch(function (e) { $('msgInput').value = body; alert(e.message); });
+    }
+    $('btnSendMsg').addEventListener('click', sendMsg);
+    $('msgInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') sendMsg(); });
+    setInterval(function () {
+      if ($('appView').classList.contains('hidden') || document.hidden) return;
+      if (openWith) fetchMsgs(); else if (!$('paneChats').classList.contains('hidden')) loadChats();
+    }, 3000);
+
     function startApp(user) {
       $('hello').textContent = 'Signed in as ' + user.name;
       $('welcomeView').classList.add('hidden');
       $('authView').classList.add('hidden');
       $('appView').classList.remove('hidden');
-      loadChart();
+      showTab('chats');
     }
 
     /* ---------- start ---------- */
