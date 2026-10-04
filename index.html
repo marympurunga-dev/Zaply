@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0b1014">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="icon" type="image/png" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Zaply</title>
@@ -116,6 +121,7 @@
     .ld-spin { flex: none; width: 58px; height: 58px; border-radius: 50%; border: 5px solid transparent; border-top-color: #21c063; border-right-color: #21c063; animation: ldspin 1s linear infinite; }
     .ld-box b { font-size: 17px; font-weight: 700; }
     @keyframes ldspin { to { transform: rotate(360deg); } }
+    .w-install { margin-top: 14px; width: 100%; background: transparent; border: 1px solid #21c063; color: #21c063; font: inherit; font-size: 16px; font-weight: 600; padding: 13px; border-radius: 999px; }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
   </style>
 </head>
@@ -145,6 +151,7 @@
           <select aria-label="Language"><option>English</option></select>
         </div>
         <button class="w-btn" id="btnAgree">Agree and continue</button>
+        <button class="w-install hidden" id="btnInstall">Install Zaply app</button>
       </div>
     </div>
 
@@ -771,6 +778,22 @@ ZW|Zimbabwe|263`;
         .catch(function () { clearToken(); showWelcome(); });
     } else {
       showWelcome();
+    }
+  
+    /* Install as an app (Chrome) */
+    var installEvt = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault(); installEvt = e;
+      $('btnInstall').classList.remove('hidden');
+    });
+    $('btnInstall').addEventListener('click', function () {
+      if (!installEvt) return;
+      installEvt.prompt();
+      installEvt.userChoice.then(function () { installEvt = null; $('btnInstall').classList.add('hidden'); });
+    });
+    window.addEventListener('appinstalled', function () { $('btnInstall').classList.add('hidden'); });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
     }
   </script>
 </body>
