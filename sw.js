@@ -1,4 +1,4 @@
-const CACHE = 'zaply-v4';
+const CACHE = 'zaply-v3';
 const SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -26,7 +26,7 @@ self.addEventListener('push', (e) => {
       if (cs.some((c) => c.visibilityState === 'visible')) return; // app is open: no popup needed
       return self.registration.showNotification(d.title || 'Zaply', {
         body: d.body || 'New message',
-        icon: '/icon-192.png', badge: '/icon-badge.png',
+        icon: '/icon-192.png', badge: '/icon-192.png',
         tag: d.tag || 'zaply', renotify: true, data: { from: d.from || '' },
       });
     })
