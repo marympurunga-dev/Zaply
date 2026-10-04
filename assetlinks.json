@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.zaply_gamma.twa",
+        "sha256_cert_fingerprints": ["61:9C:22:83:E6:86:2A:A2:97:F1:CA:FF:FC:D9:21:86:68:25:A3:EC:FC:AF:BB:FD:AC:12:74:99:73:3D:CF:BC"]
+      }
+    }]
