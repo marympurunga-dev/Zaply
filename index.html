@@ -926,15 +926,20 @@ ZW|Zimbabwe|263`;
       for (var i = 0; i < r.length; i++) o[i] = r.charCodeAt(i);
       return o;
     }
+    function notifStatus(msg, ok) {
+      var b = $('btnNotif'); b.textContent = msg; b.classList.remove('hidden');
+      if (ok) setTimeout(function () { b.classList.add('hidden'); }, 4000);
+    }
     function subscribePush() {
       navigator.serviceWorker.ready.then(function (reg) {
         return chatCall('pushkey').then(function (r) {
-          if (!r.key) return null;
+          if (!r.key) throw new Error('Server has no push key. Add the 3 VAPID settings in Vercel, then redeploy.');
           return reg.pushManager.getSubscription().then(function (sub) {
             return sub || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(r.key) });
           });
-        }).then(function (sub) { if (sub) return chatCall('subscribe', { sub: sub.toJSON() }); });
-      }).catch(function () {});
+        }).then(function (sub) { return chatCall('subscribe', { sub: sub.toJSON() }); })
+          .then(function () { notifStatus('\u2705 Notifications are on', true); });
+      }).catch(function (e) { notifStatus('\u26A0 ' + (e && e.message ? e.message : 'Could not turn on notifications'), false); });
     }
     function unsubPush() {
       if (!('serviceWorker' in navigator)) return;
