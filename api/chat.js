@@ -63,7 +63,7 @@ async function notify(from, to, text) {
     const [subs] = await db().query('SELECT id, sub FROM push_subs WHERE phone = ?', [to]);
     const payload = JSON.stringify({ title: (u && u.name) || from, body: text.slice(0, 140), tag: from, from });
     await Promise.allSettled(subs.map(async (r) => {
-      try { await webpush.sendNotification(JSON.parse(r.sub), payload, { TTL: 3600 }); }
+      try { await webpush.sendNotification(JSON.parse(r.sub), payload, { TTL: 86400, urgency: 'high' }); }
       catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db().query('DELETE FROM push_subs WHERE id = ?', [r.id]); }
     }));
   } catch (e) { console.error(e); }
@@ -124,6 +124,23 @@ module.exports = async (req, res) => {
       const [r] = await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [me, b.to, body]);
       await notify(me, b.to, body);
       return res.json({ message: { id: r.insertId, mine: true, body, at: new Date().toISOString() } });
+    }
+
+    if (b.action === 'testpush') {
+      if (!pushOn) return res.status(400).json({ error: 'Server has no push keys. Add the VAPID settings in Vercel and redeploy.' });
+      const [subs] = await db().query('SELECT id, sub FROM push_subs WHERE phone = ?', [me]);
+      if (!subs.length) return res.status(400).json({ error: 'No notification address is saved for this account. Tap the bell button and allow notifications.' });
+      await new Promise((r) => setTimeout(r, 7000));
+      const payload = JSON.stringify({ title: 'Zaply test', body: 'If you can see this, notifications work.', tag: 'test', from: '' });
+      const results = [];
+      for (const r of subs) {
+        try { await webpush.sendNotification(JSON.parse(r.sub), payload, { TTL: 60, urgency: 'high' }); results.push('sent'); }
+        catch (e) {
+          results.push('failed ' + (e.statusCode || '') + ' ' + String(e.body || e.message || '').slice(0, 80));
+          if (e.statusCode === 404 || e.statusCode === 410) await db().query('DELETE FROM push_subs WHERE id = ?', [r.id]);
+        }
+      }
+      return res.json({ results });
     }
 
     if (b.action === 'pushkey') return res.json({ key: pushOn ? process.env.VAPID_PUBLIC_KEY : '' });
