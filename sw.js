@@ -27,7 +27,7 @@ self.addEventListener('push', (e) => {
       return self.registration.showNotification(d.title || 'Zaply', {
         body: d.body || 'New message',
         icon: '/icon-192.png', badge: '/icon-badge.png',
-        tag: d.tag || 'zaply', renotify: true, data: { from: d.from || '' },
+        tag: d.tag || 'zaply', renotify: true, vibrate: [200, 100, 200], silent: false, requireInteraction: false, data: { from: d.from || '' },
       });
     })
   );
