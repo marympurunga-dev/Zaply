@@ -20,6 +20,8 @@ function getPool() {
 }
 
 module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (req.method === 'OPTIONS') return res.status(204).end();
   try {
     const [rows] = await getPool().query(
       'SELECT label, value FROM chart_data ORDER BY id'
