@@ -6,8 +6,7 @@ const mysql = require('mysql2/promise');
 const SECRET = process.env.AUTH_SECRET || 'change-me';
 const CODE = process.env.DEMO_CODE || '123456'; // fixed code until an SMS provider is added
 const DAYS = 30;
-const RESEND_KEY = process.env.RESEND_API_KEY;
-const MAIL_FROM = process.env.RESEND_FROM || 'Zaply <onboarding@resend.dev>'; // set RESEND_FROM to an address on your verified domain
+const { sendCodeEmail } = require('./_mail');
 
 let pool;
 function db() {
@@ -55,27 +54,6 @@ function ensureTable() {
 const USER_COLS = 'phone, name, email, email_verified';
 const hashCode = (c) => crypto.createHash('sha256').update(String(c) + SECRET).digest('hex');
 const emailOk = (e) => typeof e === 'string' && e.length <= 190 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
-
-async function sendCodeEmail(to, code) {
-  if (!RESEND_KEY) throw Object.assign(new Error('Email is not set up yet.'), { status: 500 });
-  const html = '<div style="font-family:Arial,sans-serif;max-width:420px;margin:auto;padding:24px">' +
-    '<h2 style="margin:0 0 12px;color:#111">Your Zaply verification code</h2>' +
-    '<p style="color:#444;margin:0 0 18px">Enter this code in Zaply to confirm your email. It expires in 10 minutes.</p>' +
-    '<div style="font-size:34px;font-weight:700;letter-spacing:8px;color:#0e8f47;margin:0 0 18px">' + code + '</div>' +
-    '<p style="color:#888;font-size:13px;margin:0">If you did not ask for this, you can ignore this email.</p></div>';
-  const r = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: 'Bearer ' + RESEND_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: MAIL_FROM, to: [to], subject: 'Your Zaply verification code ' + code,
-      html, text: 'Your Zaply verification code is ' + code + '. It expires in 10 minutes.',
-    }),
-  });
-  if (!r.ok) {
-    console.error('Resend error', r.status, await r.text());
-    throw Object.assign(new Error('We could not send the email. Check the address and try again.'), { status: 502 });
-  }
-}
 
 const b64 = (b) => Buffer.from(b).toString('base64url');
 function sign(phone) {
