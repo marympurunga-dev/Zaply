@@ -97,7 +97,7 @@
     .auth .link { color: #21c063; margin-top: 8px; }
     .country-btn { position: relative; width: 100%; border: none; border-bottom: 2px solid #21c063; border-radius: 0; padding: 9px 26px; margin: 20px 0 10px; font-size: 15px; color: #fff; }
     .country-btn::after { content: ""; position: absolute; right: 6px; top: 50%; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid #21c063; }
-    .phone-row { display: flex; gap: 14px; }
+    .phone-row { display: flex; gap: 14px; direction: ltr; }
     .dial-wrap { display: flex; align-items: center; gap: 8px; width: 92px; border-bottom: 2px solid #21c063; color: #9aa3ab; font-size: 16px; }
     .auth .dial-wrap input { border: none; width: 100%; font-weight: 600; }
     .phone-row > input { flex: 1; min-width: 0; }
@@ -186,6 +186,25 @@
     .comp button { flex: none; width: auto; padding: 0 22px; }
     .comp button { border-radius: 999px; background: #21c063; border-color: #21c063; color: #06140c; font-weight: 600; }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
+  #backBtn{position:fixed;left:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;width:48px;height:48px;padding:0;border-radius:50%;border:none;font-size:22px;line-height:1;background:#21c063;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+    #backBtn.up{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+    .auth{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+    .auth .card > div{min-height:calc(100dvh - 180px)}
+    #appView{padding-bottom:76px}
+    .cv-list{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+  header h1{font-size:26px}
+    .menuwrap{position:relative}
+    #menuBtn{border:none;font-size:26px;padding:4px 12px;line-height:1}
+    .menubox{position:absolute;right:0;top:100%;z-index:20;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;display:flex;flex-direction:column;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+    .menubox button{border:none;text-align:left;border-radius:8px;padding:10px 12px}
+    .searchbox input{margin:0 0 12px;border-radius:999px;padding:14px 20px;background:var(--card);font-size:16px}
+    .tabs4{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto}
+    .tabs4 button{flex:1;white-space:nowrap;padding:9px 10px;font-size:14px}
+    .row .av{width:56px;height:56px;color:#fff}
+    .fabr{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:60px;height:60px;padding:0;border-radius:50%;border:none;background:#21c063;color:#06140c;font-size:34px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.4);z-index:7}
+    .pf{display:flex;flex-direction:column;align-items:center;gap:8px}
+    .av.big{width:96px;height:96px;font-size:40px;color:#fff;background:#21c063}
+    #lang2{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font:inherit}
   </style>
 </head>
 <body>
@@ -212,7 +231,7 @@
         <p class="w-terms">Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.</p>
         <div class="w-lang">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4.5" ry="10"/><path d="M2 12h20M4 7h16M4 17h16"/></svg>
-          <select aria-label="Language"><option>English</option></select>
+          <select id="lang" aria-label="Language"></select>
         </div>
         <button class="w-btn" id="btnAgree">Next</button>
         <button class="w-install" id="btnInstall">Download app</button>
@@ -275,9 +294,9 @@
         <div id="stepPhone">
           <h2>Enter your phone number</h2>
           <div class="sub">Zaply will need to verify your phone number. Carrier charges may apply.</div>
-          <button class="country-btn" id="btnCountry"><span id="cName">Kenya</span></button>
+          <button class="country-btn" id="btnCountry"><span id="cName">Choose a country</span></button>
           <div class="phone-row">
-            <div class="dial-wrap"><span>+</span><input id="dial" type="text" inputmode="numeric" maxlength="4" value="254" aria-label="Country code"></div>
+            <div class="dial-wrap"><span>+</span><input id="dial" type="text" inputmode="numeric" maxlength="4" value="" aria-label="Country code"></div>
             <input id="phone" type="tel" inputmode="tel" placeholder="Phone number" autocomplete="tel">
           </div>
           <div class="msg" id="msgPhone"></div>
@@ -330,19 +349,17 @@
     <!-- MAIN APP -->
     <div id="appView" class="hidden">
       <header>
-        <div>
-          <h1>Zaply</h1>
-          <div class="sub" id="hello" style="margin:2px 0 0"></div>
-        </div>
-        <button id="btnLogout">Log out</button>
+        <h1>Zaply</h1>
+        <div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
+          <div id="menuBox" class="menubox hidden"><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div>
       </header>
-
-      <nav class="tabs"><button id="tabChats" class="active">Chats</button><button id="tabChart">Chart</button></nav>
+      <div class="searchbox" id="searchBox"><input id="chatSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
+      <nav class="tabs4"><button id="tabChats" class="active">Chats</button><button id="tabContacts">Contacts</button><button id="tabSettings">Settings</button><button id="tabProfile">Profile</button></nav>
 
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">\ud83d\udd14 Turn on notifications</button>
         <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone</button>
-        <button class="fab" id="btnNew">+ New chat</button>
+        <button id="btnNew" class="fabr" aria-label="New chat">+</button>
         <div class="newbox hidden" id="newBox">
           <input id="newPhone" type="tel" inputmode="tel" placeholder="Friend's number, e.g. +254712345678">
           <button class="primary" id="btnStart">Start</button>
@@ -350,6 +367,10 @@
         <div class="nmsg" id="newMsg"></div>
         <div id="chatList"></div>
       </div>
+
+      <div id="paneContacts" class="hidden"><div id="contactList"></div></div>
+      <div id="paneSettings" class="hidden"><div class="card"><div class="sub" style="margin-top:0">Language</div><select id="lang2"></select></div></div>
+      <div id="paneProfile" class="hidden"><div class="card pf"><div class="av big" id="pfAv"></div><b id="pfName" style="font-size:20px"></b><span id="pfPhone" class="sub" style="margin:0"></span><div class="sub" id="hello" style="margin:0"></div></div></div>
 
       <div id="paneChart" class="hidden">
       <div class="card">
@@ -380,6 +401,8 @@
     </div>
 
   </div>
+
+  <button id="backBtn" class="hidden" aria-label="Back">🔙</button>
 
   <script>
     var API = 'https://zaply-gamma.vercel.app/api';
@@ -423,7 +446,7 @@
         body: JSON.stringify(payload)
       }).then(function (r) {
         return r.json().then(function (j) {
-          if (!r.ok) throw new Error(j.error || 'Something went wrong');
+          if (!r.ok) { var er = new Error(j.error || 'Something went wrong'); er.status = r.status; throw er; }
           return j;
         });
       });
@@ -464,7 +487,7 @@
     }
     function showLoader(text, ms) {
       ldReset();
-      $('ldText').textContent = text;
+      $('ldText').textContent = text === 'Connecting\u2026' ? T(22) : text;
       $('loader').classList.remove('hidden');
       return new Promise(function (res) {
         setTimeout(function () { $('loader').classList.add('hidden'); res(); }, ms);
@@ -478,7 +501,7 @@
     });
 
     var phoneValue = '';
-    function busy(btn, on, label) { btn.disabled = on; if (label) btn.textContent = label; }
+    function busy(btn, on, label) { btn.disabled = on; if (label) btn.textContent = label === 'Next' ? T(2) : label === 'Continue' ? T(13) : label; }
 
     var RAW = `AF|Afghanistan|93|افغانستان
 AX|Åland Islands|358|Åland
@@ -724,7 +747,7 @@ ZW|Zimbabwe|263`;
     var PINNED = ['KE', 'IN', 'PK', 'ZA', 'GB', 'US'];
     function byIso(i) { return COUNTRIES.find(function (c) { return c.iso === i; }); }
     function flag(iso) { return String.fromCodePoint.apply(null, iso.split('').map(function (c) { return 127397 + c.charCodeAt(0); })); }
-    var cur = byIso(((navigator.language || '').split('-')[1] || '').toUpperCase()) || byIso('KE');
+    var cur = null;
 
     function updateNext() {
       $('btnSend').disabled = !(cur && $('phone').value.replace(/\D/g, '').length >= 5);
@@ -744,7 +767,7 @@ ZW|Zimbabwe|263`;
           return c.name.toLowerCase().indexOf(q) > -1 || c.native.toLowerCase().indexOf(q) > -1 || c.code.indexOf(digits) === 0;
         });
       } else {
-        var top = [cur].concat(PINNED.map(byIso).filter(function (c) { return c !== cur; }));
+        var top = (cur ? [cur] : []).concat(PINNED.map(byIso).filter(function (c) { return c !== cur; }));
         list = top.concat(COUNTRIES.filter(function (c) { return top.indexOf(c) < 0; }));
       }
       $('cvList').innerHTML = list.map(function (c) {
@@ -767,10 +790,11 @@ ZW|Zimbabwe|263`;
       $('countryView').classList.add('hidden');
     }
     $('btnCountry').addEventListener('click', function () {
+      pushOv(closePicker);
       renderList('');
       $('countryView').classList.remove('hidden');
     });
-    $('cvBack').addEventListener('click', closePicker);
+    $('cvBack').addEventListener('click', closeOv);
     $('cvFind').addEventListener('click', function () {
       $('cvTitle').classList.add('hidden');
       $('cvSearch').classList.remove('hidden');
@@ -781,20 +805,20 @@ ZW|Zimbabwe|263`;
       var row = e.target.closest('.cv-row');
       if (!row) return;
       setCountry(byIso(row.getAttribute('data-iso')));
-      closePicker();
+      closeOv();
     });
     $('dial').addEventListener('input', function () {
       var v = this.value.replace(/\D/g, '');
       this.value = v;
       if (cur && cur.code === v) return;
-      var m = COUNTRIES.find(function (c) { return c.code === v; });
+      var m = v && (COUNTRIES.find(function (c) { return c.code === v && (PINNED.indexOf(c.iso) > -1 || c.iso === 'RU'); }) || COUNTRIES.find(function (c) { return c.code === v; }));
       cur = m || null;
-      $('cName').textContent = m ? m.name : 'Invalid country code';
+      $('cName').textContent = m ? m.name : (v ? 'Invalid country code' : T(7));
       updateNext();
     });
     $('phone').addEventListener('input', updateNext);
     $('phone').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('btnSend').disabled) $('btnSend').click(); });
-    setCountry(cur);
+    updateNext();
 
     function prettyPhone(num) {
       var dial = $('dial').value.replace(/\D/g, '');
@@ -1141,35 +1165,48 @@ ZW|Zimbabwe|263`;
     var openWith = null, lastId = 0;
 
     function showTab(t) {
-      $('paneChats').classList.toggle('hidden', t !== 'chats');
-      $('paneChart').classList.toggle('hidden', t !== 'chart');
-      $('tabChats').classList.toggle('active', t === 'chats');
-      $('tabChart').classList.toggle('active', t === 'chart');
-      if (t === 'chart') loadChart(); else loadChats();
+      ['chats', 'contacts', 'settings', 'profile', 'chart'].forEach(function (n) {
+        var N = n.charAt(0).toUpperCase() + n.slice(1), P = $('pane' + N), B = $('tab' + N);
+        if (P) P.classList.toggle('hidden', n !== t);
+        if (B) B.classList.toggle('active', n === t);
+      });
+      $('searchBox').classList.toggle('hidden', t !== 'chats' && t !== 'contacts');
+      if (t === 'settings') $('lang2').value = lang;
+      if (t === 'chart') loadChart(); else if (t === 'chats' || t === 'contacts') loadChats();
     }
-    $('tabChats').addEventListener('click', function () { showTab('chats'); });
-    $('tabChart').addEventListener('click', function () { showTab('chart'); });
+    ['Chats', 'Contacts', 'Settings', 'Profile'].forEach(function (n) { $('tab' + n).addEventListener('click', function () { showTab(n.toLowerCase()); }); });
+    $('menuBtn').addEventListener('click', function (e) { e.stopPropagation(); $('menuBox').classList.toggle('hidden'); });
+    document.addEventListener('click', function () { $('menuBox').classList.add('hidden'); });
+    $('menuChart').addEventListener('click', function () { showTab('chart'); });
 
-    function loadChats() {
-      chatCall('list').then(function (res) {
-        var box = $('chatList'); box.innerHTML = '';
-        if (!res.chats.length) {
-          box.appendChild(mk('div', 'empty', 'No chats yet. Tap "New chat" and enter a friend\u2019s phone number. They must be registered on Zaply.'));
-          return;
-        }
-        res.chats.forEach(function (c) {
-          var row = mk('div', 'row');
-          row.appendChild(mk('div', 'av', (c.name || '#').charAt(0).toUpperCase()));
-          var mid = mk('div', 'mid');
-          mid.appendChild(mk('b', '', c.name || c.phone));
-          mid.appendChild(mk('span', '', (c.mine ? 'You: ' : '') + c.last));
-          row.appendChild(mid);
-          row.appendChild(mk('time', '', hhmm(c.at)));
-          row.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name }); });
-          box.appendChild(row);
-        });
-      }).catch(function () {});
+    var allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
+    function avatar(c) {
+      var n = c.name || c.phone || '#', a = mk('div', 'av', n.charAt(0).toUpperCase());
+      a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; return a;
     }
+    function renderChats() {
+      var q = ($('chatSearch').value || '').toLowerCase().trim();
+      var list = allChats.filter(function (c) { return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
+      var box = $('chatList'), cb = $('contactList'); box.innerHTML = ''; cb.innerHTML = '';
+      if (!list.length) {
+        box.appendChild(mk('div', 'empty', q ? 'No results.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zaply.'));
+        cb.appendChild(mk('div', 'empty', q ? 'No results.' : 'No contacts yet.'));
+        return;
+      }
+      list.forEach(function (c) {
+        [box, cb].forEach(function (b) {
+          var row = mk('div', 'row'); row.appendChild(avatar(c));
+          var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
+          mid.appendChild(mk('span', '', b === box ? (c.mine ? 'You: ' : '') + c.last : c.phone));
+          row.appendChild(mid);
+          if (b === box) row.appendChild(mk('time', '', hhmm(c.at)));
+          row.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name }); });
+          b.appendChild(row);
+        });
+      });
+    }
+    function loadChats() { chatCall('list').then(function (res) { allChats = res.chats || []; renderChats(); }).catch(function () {}); }
+    $('chatSearch').addEventListener('input', renderChats);
 
     $('btnNew').addEventListener('click', function () {
       $('newBox').classList.toggle('hidden'); $('newMsg').textContent = ''; $('newPhone').focus();
@@ -1207,14 +1244,14 @@ ZW|Zimbabwe|263`;
       }).catch(function () {});
     }
     function openThread(u) {
+      if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
       openWith = u.phone; lastId = 0; $('msgs').innerHTML = '';
       $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.phone;
       $('threadView').classList.remove('hidden');
       fetchMsgs(); $('msgInput').focus();
     }
-    $('thBack').addEventListener('click', function () {
-      openWith = null; $('threadView').classList.add('hidden'); loadChats();
-    });
+    function closeThread() { openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
+    $('thBack').addEventListener('click', closeOv);
     function sendMsg() {
       var body = $('msgInput').value.trim();
       if (!body || !openWith) return;
@@ -1286,6 +1323,7 @@ ZW|Zimbabwe|263`;
 
     function startApp(user) {
       $('hello').textContent = 'Signed in as ' + user.name;
+      $('pfName').textContent = user.name || ''; $('pfPhone').textContent = user.phone || ''; $('pfAv').textContent = (user.name || '#').charAt(0).toUpperCase();
       $('welcomeView').classList.add('hidden');
       $('authView').classList.add('hidden');
       $('appView').classList.remove('hidden');
@@ -1295,14 +1333,297 @@ ZW|Zimbabwe|263`;
       if (qc) { openChatWith(qc); history.replaceState(null, '', '/'); }
     }
 
-    /* ---------- start ---------- */
-    if (getToken()) {
-      call('me')
-        .then(function (res) { afterAuth(res.user); })
-        .catch(function () { clearToken(); showWelcome(); });
-    } else {
-      showWelcome();
+    /* ---------- overlays: Back button closes screens instead of exiting the app ---------- */
+    var overlays = [];
+    function pushOv(close) { overlays.push(close); try { history.pushState({ ov: 1 }, ''); } catch (e) {} }
+    function closeOv() { if (overlays.length) history.back(); }
+    window.addEventListener('popstate', function () { var c = overlays.pop(); if (c) c(); });
+
+    /* ---------- languages ---------- */
+    var LANGS = `en|English
+zh|中文 (简体)
+zh-TW|中文 (繁體)
+es|Español
+hi|हिन्दी
+ar|العربية
+pt|Português
+bn|বাংলা
+ru|Русский
+ja|日本語
+sw|Kiswahili
+fr|Français
+de|Deutsch
+ur|اردو
+id|Bahasa Indonesia
+tr|Türkçe
+it|Italiano
+ko|한국어
+vi|Tiếng Việt
+fa|فارسی
+pa|ਪੰਜਾਬੀ
+mr|मराठी
+te|తెలుగు
+ta|தமிழ்
+gu|ગુજરાતી
+kn|ಕನ್ನಡ
+ml|മലയാളം
+or|ଓଡ଼ିଆ
+as|অসমীয়া
+ne|नेपाली
+si|සිංහල
+my|မြန်မာ
+km|ខ្មែរ
+lo|ລາວ
+th|ไทย
+ms|Bahasa Melayu
+fil|Filipino
+ceb|Cebuano
+jv|Basa Jawa
+su|Basa Sunda
+mg|Malagasy
+am|አማርኛ
+ti|ትግርኛ
+om|Oromoo
+so|Soomaali
+ha|Hausa
+yo|Yorùbá
+ig|Igbo
+zu|isiZulu
+xh|isiXhosa
+af|Afrikaans
+st|Sesotho
+tn|Setswana
+sn|chiShona
+rw|Kinyarwanda
+rn|Ikirundi
+lg|Luganda
+ny|Chichewa
+ln|Lingála
+wo|Wolof
+ff|Pulaar
+bm|Bamanankan
+ee|Eʋegbe
+ts|Xitsonga
+ak|Akan
+ss|SiSwati
+ve|Tshivenda
+nd|isiNdebele
+kg|Kikongo
+lu|Tshiluba
+sg|Sängö
+ki|Gikuyu
+luo|Dholuo
+kam|Kikamba
+gaa|Ga
+nso|Sepedi
+pl|Polski
+uk|Українська
+ro|Română
+nl|Nederlands
+el|Ελληνικά
+cs|Čeština
+sv|Svenska
+hu|Magyar
+be|Беларуская
+bg|Български
+sr|Српски
+hr|Hrvatski
+bs|Bosanski
+sk|Slovenčina
+sl|Slovenščina
+mk|Македонски
+sq|Shqip
+lt|Lietuvių
+lv|Latviešu
+et|Eesti
+fi|Suomi
+da|Dansk
+no|Norsk
+is|Íslenska
+ga|Gaeilge
+cy|Cymraeg
+gd|Gàidhlig
+br|Brezhoneg
+ca|Català
+eu|Euskara
+gl|Galego
+oc|Occitan
+co|Corsu
+lb|Lëtzebuergesch
+mt|Malti
+fo|Føroyskt
+fy|Frysk
+sc|Sardu
+rm|Rumantsch
+an|Aragonés
+ast|Asturianu
+hy|Հայերեն
+ka|ქართული
+az|Azərbaycanca
+kk|Қазақша
+ky|Кыргызча
+uz|Oʻzbekcha
+tk|Türkmençe
+tg|Тоҷикӣ
+mn|Монгол
+ps|پښتو
+ku|Kurdî
+ckb|کوردی
+sd|سنڌي
+ug|ئۇيغۇرچە
+he|עברית
+yi|ייִדיש
+dv|ދިވެހި
+bo|བོད་སྐད
+dz|རྫོང་ཁ
+yue|粵語
+wuu|吴语
+tt|Татар
+ba|Башҡорт
+cv|Чӑваш
+sah|Саха
+ce|Нохчийн
+os|Ирон
+ab|Аҧсуа
+kl|Kalaallisut
+se|Davvisámegiella
+haw|ʻŌlelo Hawaiʻi
+mi|Te Reo Māori
+sm|Gagana Samoa
+to|Lea fakatonga
+fj|Na Vosa Vakaviti
+ty|Reo Tahiti
+ch|Chamoru
+mh|Kajin M̧ajeļ
+tpi|Tok Pisin
+bi|Bislama
+gn|Avañeʼẽ
+qu|Runa Simi
+ay|Aymar aru
+ht|Kreyòl Ayisyen
+pap|Papiamentu
+nah|Nāhuatl
+nv|Diné bizaad
+iu|ᐃᓄᒃᑎᑐᑦ
+chr|ᏣᎳᎩ
+oj|Anishinaabemowin
+cr|Nēhiyawēwin
+eo|Esperanto
+la|Latina
+ia|Interlingua
+vo|Volapük
+io|Ido
+sa|संस्कृतम्
+pi|Pāli
+kok|कोंकणी
+mai|मैथिली
+bho|भोजपुरी
+mwr|मारवाड़ी
+raj|राजस्थानी
+sat|ᱥᱟᱱᱛᱟᱲᱤ
+mni|ꯃꯅꯤꯄꯨꯔꯤ
+doi|डोगरी
+ks|कॉशुर
+brx|बड़ो
+tcy|ತುಳು
+lus|Mizo ṭawng
+kha|Khasi
+hil|Hiligaynon
+ilo|Ilokano
+war|Winaray
+pam|Kapampangan
+min|Minangkabau
+ban|Basa Bali
+ace|Bahsa Acèh
+mad|Madhura
+bug|Basa Ugi
+tet|Tetun
+shn|ၵႂၢမ်းတႆး
+zgh|ⵜⴰⵎⴰⵣⵉⵖⵜ
+kab|Taqbaylit`.split('\n').map(function (l) { var p = l.split('|'); return { c: p[0], n: p[1] }; });
+    var TR_RAW = {
+en:`Welcome to Zaply|Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.|Next|Download app|Enter your phone number|Zaply will need to verify your phone number. Carrier charges may apply.|Phone number|Choose a country|Enter the code|Didn't receive code?|Change number|Add your email|Your name|Continue|Log out|Chats|+ New chat|Message|Send|Is this phone number correct?|Yes|No|Connecting…|Search chats|Contacts|Settings|Profile`,
+zh:`欢迎使用 Zaply|阅读我们的<a href="#">隐私政策</a>。点击“下一步”即表示接受我们的<a href="#">服务条款</a>。|下一步|下载应用|输入你的手机号码|Zaply 需要验证你的手机号码。可能会产生运营商费用。|手机号码|选择国家/地区|输入验证码|没有收到验证码？|更改号码|添加你的电子邮箱|你的名字|继续|退出登录|聊天|+ 新聊天|消息|发送|这个手机号码正确吗？|是|否|正在连接…`,
+es:`Bienvenido a Zaply|Lee nuestras <a href="#">Políticas de privacidad</a>. Toca "Siguiente" para aceptar nuestros <a href="#">Términos del servicio</a>.|Siguiente|Descargar app|Ingresa tu número de teléfono|Zaply necesitará verificar tu número de teléfono. Pueden aplicarse cargos del operador.|Número de teléfono|Elige un país|Ingresa el código|¿No recibiste el código?|Cambiar número|Agrega tu correo|Tu nombre|Continuar|Cerrar sesión|Chats|+ Nuevo chat|Mensaje|Enviar|¿Es correcto este número de teléfono?|Sí|No|Conectando…`,
+fr:`Bienvenue sur Zaply|Lisez nos <a href="#">Politiques de confidentialité</a>. Appuyez sur « Suivant » pour accepter nos <a href="#">Conditions d'utilisation</a>.|Suivant|Télécharger l'app|Saisissez votre numéro de téléphone|Zaply doit vérifier votre numéro de téléphone. Des frais d'opérateur peuvent s'appliquer.|Numéro de téléphone|Choisir un pays|Saisissez le code|Code non reçu ?|Changer de numéro|Ajoutez votre e-mail|Votre nom|Continuer|Se déconnecter|Discussions|+ Nouvelle discussion|Message|Envoyer|Ce numéro est-il correct ?|Oui|Non|Connexion…`,
+ar:`مرحبًا بك في Zaply|اقرأ <a href="#">سياسات الخصوصية</a>. اضغط "التالي" لقبول <a href="#">شروط الخدمة</a>.|التالي|تنزيل التطبيق|أدخل رقم هاتفك|سيحتاج Zaply إلى التحقق من رقم هاتفك. قد تُطبَّق رسوم المشغّل.|رقم الهاتف|اختر دولة|أدخل الرمز|لم يصلك الرمز؟|تغيير الرقم|أضف بريدك الإلكتروني|اسمك|متابعة|تسجيل الخروج|المحادثات|+ محادثة جديدة|رسالة|إرسال|هل رقم الهاتف هذا صحيح؟|نعم|لا|جارٍ الاتصال…`,
+sw:`Karibu Zaply|Soma <a href="#">Sera za Faragha</a>. Gusa "Endelea" ili ukubali <a href="#">Masharti ya Huduma</a>.|Endelea|Pakua programu|Weka namba yako ya simu|Zaply itahitaji kuthibitisha namba yako ya simu. Gharama za mtoa huduma zinaweza kutumika.|Namba ya simu|Chagua nchi|Weka msimbo|Hukupokea msimbo?|Badilisha namba|Ongeza barua pepe yako|Jina lako|Endelea|Toka|Gumzo|+ Gumzo jipya|Ujumbe|Tuma|Je, namba hii ya simu ni sahihi?|Ndiyo|Hapana|Inaunganisha…`,
+hi:`Zaply में आपका स्वागत है|हमारी <a href="#">गोपनीयता नीतियाँ</a> पढ़ें। हमारी <a href="#">सेवा की शर्तें</a> स्वीकार करने के लिए "आगे" पर टैप करें।|आगे|ऐप डाउनलोड करें|अपना फ़ोन नंबर दर्ज करें|Zaply को आपके फ़ोन नंबर की पुष्टि करनी होगी। कैरियर शुल्क लग सकते हैं।|फ़ोन नंबर|देश चुनें|कोड दर्ज करें|कोड नहीं मिला?|नंबर बदलें|अपना ईमेल जोड़ें|आपका नाम|जारी रखें|लॉग आउट|चैट|+ नई चैट|संदेश|भेजें|क्या यह फ़ोन नंबर सही है?|हाँ|नहीं|कनेक्ट हो रहा है…`,
+pt:`Bem-vindo ao Zaply|Leia nossas <a href="#">Políticas de Privacidade</a>. Toque em "Avançar" para aceitar nossos <a href="#">Termos de Serviço</a>.|Avançar|Baixar app|Digite seu número de telefone|O Zaply precisará verificar seu número de telefone. Podem ser aplicadas tarifas da operadora.|Número de telefone|Escolha um país|Digite o código|Não recebeu o código?|Alterar número|Adicione seu e-mail|Seu nome|Continuar|Sair|Conversas|+ Nova conversa|Mensagem|Enviar|Este número de telefone está correto?|Sim|Não|Conectando…`,
+ru:`Добро пожаловать в Zaply|Прочитайте нашу <a href="#">Политику конфиденциальности</a>. Нажмите «Далее», чтобы принять <a href="#">Условия использования</a>.|Далее|Скачать приложение|Введите номер телефона|Zaply необходимо подтвердить ваш номер телефона. Может взиматься плата оператора.|Номер телефона|Выберите страну|Введите код|Не получили код?|Изменить номер|Добавьте свою почту|Ваше имя|Продолжить|Выйти|Чаты|+ Новый чат|Сообщение|Отправить|Этот номер телефона верный?|Да|Нет|Подключение…`,
+de:`Willkommen bei Zaply|Lies unsere <a href="#">Datenschutzrichtlinie</a>. Tippe auf „Weiter“, um unsere <a href="#">Nutzungsbedingungen</a> zu akzeptieren.|Weiter|App herunterladen|Gib deine Telefonnummer ein|Zaply muss deine Telefonnummer bestätigen. Es können Gebühren deines Anbieters anfallen.|Telefonnummer|Land auswählen|Code eingeben|Keinen Code erhalten?|Nummer ändern|E-Mail hinzufügen|Dein Name|Fortfahren|Abmelden|Chats|+ Neuer Chat|Nachricht|Senden|Ist diese Telefonnummer korrekt?|Ja|Nein|Verbindung wird hergestellt…`,
+ja:`Zaplyへようこそ|<a href="#">プライバシーポリシー</a>をお読みください。「次へ」をタップすると<a href="#">利用規約</a>に同意したことになります。|次へ|アプリをダウンロード|電話番号を入力してください|Zaplyは電話番号の確認が必要です。通信料がかかる場合があります。|電話番号|国を選択|コードを入力|コードが届きませんか？|番号を変更|メールアドレスを追加|お名前|続ける|ログアウト|チャット|+ 新しいチャット|メッセージ|送信|この電話番号で合っていますか？|はい|いいえ|接続中…`,
+tr:`Zaply'e hoş geldiniz|<a href="#">Gizlilik Politikalarımızı</a> okuyun. <a href="#">Hizmet Şartlarımızı</a> kabul etmek için "İleri"ye dokunun.|İleri|Uygulamayı indir|Telefon numaranızı girin|Zaply telefon numaranızı doğrulamalıdır. Operatör ücretleri uygulanabilir.|Telefon numarası|Bir ülke seçin|Kodu girin|Kodu almadınız mı?|Numarayı değiştir|E-postanızı ekleyin|Adınız|Devam|Çıkış yap|Sohbetler|+ Yeni sohbet|Mesaj|Gönder|Bu telefon numarası doğru mu?|Evet|Hayır|Bağlanıyor…`,
+id:`Selamat datang di Zaply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "Berikutnya" untuk menerima <a href="#">Ketentuan Layanan</a> kami.|Berikutnya|Unduh aplikasi|Masukkan nomor telepon Anda|Zaply perlu memverifikasi nomor telepon Anda. Biaya operator mungkin berlaku.|Nomor telepon|Pilih negara|Masukkan kode|Tidak menerima kode?|Ubah nomor|Tambahkan email Anda|Nama Anda|Lanjutkan|Keluar|Obrolan|+ Obrolan baru|Pesan|Kirim|Apakah nomor telepon ini benar?|Ya|Tidak|Menghubungkan…`
+    };
+    var TR = {}; Object.keys(TR_RAW).forEach(function (k) { TR[k] = TR_RAW[k].split('|'); });
+    var RTL = ['ar', 'ur', 'fa', 'he', 'yi', 'ps', 'sd', 'ug', 'dv', 'ckb'];
+    var lang = 'en';
+    function T(i) { var d = TR[lang] || TR[lang.split('-')[0]] || TR.en; return d[i] || TR.en[i]; }
+    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats', 15], ['#msgInput', 17, 'p'], ['#btnSendMsg', 18], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#tabContacts', 24], ['#tabSettings', 25], ['#tabProfile', 26], ['#btnSend', 2], ['#btnEmail', 2]];
+    function applyLang() {
+      MAP.forEach(function (m) {
+        var e = document.querySelector(m[0]); if (!e) return;
+        var s = T(m[1]);
+        if (m[2] === 'p') e.placeholder = s; else if (m[2] === 'h') e.innerHTML = s; else e.textContent = s;
+      });
+      if (!cur && !$('dial').value) $('cName').textContent = T(7);
+      document.documentElement.lang = lang;
+      document.documentElement.dir = RTL.indexOf(lang.split('-')[0]) > -1 ? 'rtl' : 'ltr';
     }
+    var langSel = $('lang');
+    LANGS.forEach(function (l) { var o = document.createElement('option'); o.value = l.c; o.textContent = l.n; langSel.appendChild(o); });
+    try { var sv = localStorage.getItem('zaply_lang'); if (sv && LANGS.some(function (l) { return l.c === sv; })) lang = sv; } catch (e) {}
+    langSel.value = lang;
+    langSel.addEventListener('change', function () { lang = langSel.value; try { localStorage.setItem('zaply_lang', lang); } catch (e) {} applyLang(); });
+    applyLang();
+
+    /* ---------- bottom-left Back button on every page ---------- */
+    var backBtn = $('backBtn');
+    function vis(id) { return !$(id).classList.contains('hidden'); }
+    function backAction() {
+      if (vis('loader') || vis('welcomeView')) return null;
+      if (overlays.length) return function () { history.back(); };
+      if (vis('confirmBox')) return function () { $('confirmBox').classList.add('hidden'); };
+      if (vis('vsheet')) return function () { $('vsheet').classList.add('hidden'); };
+      if (vis('authView')) {
+        if (vis('stepPhone')) return showWelcome;
+        if (vis('stepCode') || vis('stepEmail')) return function () { showStep('stepPhone'); };
+        if (vis('stepEmailCode')) return function () { clearPending(); showStep('stepEmail'); };
+        return null;
+      }
+      if (vis('appView') && !vis('paneChats') && !vis('threadView')) return function () { showTab('chats'); };
+      return null;
+    }
+    function updateBack() {
+      var a = backAction();
+      backBtn.classList.toggle('hidden', !a);
+      backBtn.classList.toggle('up', vis('threadView'));
+    }
+    new MutationObserver(function (r) {
+      if (r.every(function (x) { return x.target === backBtn; })) return;
+      updateBack();
+    }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    backBtn.addEventListener('click', function () { var a = backAction(); if (a) a(); });
+    updateBack();
+
+    var l2 = $('lang2');
+    LANGS.forEach(function (l) { var o = document.createElement('option'); o.value = l.c; o.textContent = l.n; l2.appendChild(o); });
+    l2.value = lang;
+    l2.addEventListener('change', function () { lang = l2.value; langSel.value = lang; try { localStorage.setItem('zaply_lang', lang); } catch (e) {} applyLang(); });
+
+    /* ---------- start ---------- */
+    function boot() {
+      if (!getToken()) { showWelcome(); return; }
+      ldReset(); $('ldText').textContent = T(22); $('loader').classList.remove('hidden');
+      call('me')
+        .then(function (res) { hideLoader(); afterAuth(res.user); })
+        .catch(function (e) {
+          if (e && e.status >= 400 && e.status < 500) { hideLoader(); clearToken(); showWelcome(); }
+          else setTimeout(boot, 3000); /* network/server hiccup: stay signed in and retry */
+        });
+    }
+    boot();
   
     /* Download / install app */
     var APK_URL = ''; /* put the link to your .apk here when you have one */
