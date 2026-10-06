@@ -124,6 +124,8 @@
     .ld-ok { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 3px solid #21c063; display: flex; align-items: center; justify-content: center; animation: ldpop .35s ease-out; }
     .ld-ok svg { width: 20px; height: 20px; }
     @keyframes ldpop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .didnt { text-align: center; color: #9aa3ab; font-size: 13px; margin-top: 14px; }
+    .auth .link:disabled { color: #6b757d; opacity: 1; }
     .auth h2.long { font-size: 17px; line-height: 1.45; }
     .auth h2.long b { color: #21c063; font-weight: 600; word-break: break-all; }
     .otp { position: relative; display: flex; justify-content: center; gap: 8px; margin: 26px 0 10px; }
@@ -250,7 +252,8 @@
             <input id="code2" class="code otp-in" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="6-digit email code">
           </div>
           <div class="msg" id="msgEmailCode" style="text-align:center"></div>
-          <button class="link" id="btnEmailResend">Resend code</button>
+          <div class="didnt">Didn't receive the code?</div>
+          <button class="link" id="btnEmailResend" disabled>Resend code in 3:00</button>
           <button class="link" id="btnEmailBack">Change email</button>
         </div>
 
@@ -375,7 +378,7 @@
       $('authView').classList.remove('hidden');
       $('appView').classList.add('hidden');
       if (id === 'stepCode') { phoneOtp.reset(); setTimeout(phoneOtp.focus, 100); }
-      if (id === 'stepEmail') setTimeout(function () { $('email').focus(); }, 100);
+      if (id === 'stepEmail') { $('btnEmail').disabled = !emailOk($('email').value.trim()); setTimeout(function () { $('email').focus(); }, 100); }
       if (id === 'stepEmailCode') { emailOtp.reset(); setTimeout(emailOtp.focus, 100); }
     }
 
@@ -798,8 +801,35 @@ ZW|Zimbabwe|263`;
         }
       };
     }
-    function showEmailCodeStep(email) {
+    var resendTimer = null;
+    function startResendTimer(left) {
+      clearInterval(resendTimer);
+      var btn = $('btnEmailResend');
+      function tick() {
+        if (left <= 0) { clearInterval(resendTimer); btn.disabled = false; btn.textContent = 'Resend code'; return; }
+        btn.disabled = true;
+        btn.textContent = 'Resend code in ' + Math.floor(left / 60) + ':' + ('0' + (left % 60)).slice(-2);
+        left--;
+      }
+      tick();
+      resendTimer = setInterval(tick, 1000);
+    }
+    var PEND_KEY = 'zaply_pending_email';
+    function savePending(email, ageSeconds) {
+      try { localStorage.setItem(PEND_KEY, JSON.stringify({ email: email, at: Date.now() - (ageSeconds || 0) * 1000 })); } catch (e) {}
+    }
+    function clearPending() { try { localStorage.removeItem(PEND_KEY); } catch (e) {} }
+    function readPending() {
+      try {
+        var d = JSON.parse(localStorage.getItem(PEND_KEY) || 'null');
+        if (d && d.email && Date.now() - d.at < 10 * 60 * 1000) return { email: d.email, age: Math.floor((Date.now() - d.at) / 1000) };
+      } catch (e) {}
+      return null;
+    }
+    function showEmailCodeStep(email, ageSeconds) {
+      savePending(email, ageSeconds);
       emailValue = email;
+      startResendTimer(180 - (ageSeconds || 0));
       var t = $('emailCodeTitle');
       t.textContent = 'We just sent an OTP code to ';
       var b = document.createElement('b'); b.textContent = email; t.appendChild(b);
@@ -807,10 +837,11 @@ ZW|Zimbabwe|263`;
       showStep('stepEmailCode');
     }
     function afterAuth(user) {
-      if (!user.email_verified && user.pending_email) showEmailCodeStep(user.pending_email);
+      var pend = !user.email_verified && (user.pending_email ? { email: user.pending_email, age: user.pending_age } : readPending());
+      if (pend) showEmailCodeStep(pend.email, pend.age);
       else if (!user.email_verified) showStep('stepEmail');
-      else if (!user.name) showStep('stepName');
-      else startApp(user);
+      else if (!user.name) { clearPending(); showStep('stepName'); }
+      else { clearPending(); startApp(user); }
     }
 
     /* phone code */
@@ -868,10 +899,10 @@ ZW|Zimbabwe|263`;
     $('btnEmailResend').addEventListener('click', function () {
       $('msgEmailCode').textContent = '';
       showLoaderWhile('Sending\u2026', call('email_send', { email: emailValue }), 1500)
-        .then(function () { hideLoader(); $('msgEmailCode').style.color = '#21c063'; $('msgEmailCode').textContent = 'A new code was sent.'; emailOtp.reset(); emailOtp.focus(); })
+        .then(function () { hideLoader(); $('msgEmailCode').style.color = '#21c063'; $('msgEmailCode').textContent = 'A new code was sent.'; startResendTimer(180); emailOtp.reset(); emailOtp.focus(); })
         .catch(function (e) { hideLoader(); $('msgEmailCode').style.color = ''; $('msgEmailCode').textContent = e.message; });
     });
-    $('btnEmailBack').addEventListener('click', function () { showStep('stepEmail'); });
+    $('btnEmailBack').addEventListener('click', function () { clearPending(); showStep('stepEmail'); });
     $('btnBack').addEventListener('click', function () { showStep('stepPhone'); });
 
     $('btnName').addEventListener('click', function () {
