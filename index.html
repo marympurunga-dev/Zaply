@@ -206,6 +206,9 @@
     .pf{display:flex;flex-direction:column;align-items:center;gap:8px}
     .av.big{width:96px;height:96px;font-size:40px;color:#fff;background:#21c063}
     #lang2{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font:inherit}
+      .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+    .star{border:none;padding:0 2px;font-size:20px;line-height:1;color:#f59e0b}
+    .ub{width:12px;height:12px;border-radius:50%;background:#21c063;display:block}
   </style>
 </head>
 <body>
@@ -352,10 +355,10 @@
       <header>
         <h1>Zaply</h1>
         <div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
-          <div id="menuBox" class="menubox hidden"><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div>
+          <div id="menuBox" class="menubox hidden"><button id="menuContacts">Contacts</button><button id="menuSettings">Settings</button><button id="menuProfile">Profile</button><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div>
       </header>
       <div class="searchbox" id="searchBox"><input id="chatSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
-      <nav class="tabs4"><button id="tabChats" class="active">Chats</button><button id="tabContacts">Contacts</button><button id="tabSettings">Settings</button><button id="tabProfile">Profile</button></nav>
+      <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button></nav>
 
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">\ud83d\udd14 Turn on notifications</button>
@@ -1172,10 +1175,19 @@ ZW|Zimbabwe|263`;
         if (B) B.classList.toggle('active', n === t);
       });
       $('searchBox').classList.toggle('hidden', t !== 'chats' && t !== 'contacts');
+      $('filterNav').classList.toggle('hidden', t !== 'chats');
       if (t === 'settings') $('lang2').value = lang;
       if (t === 'chart') loadChart(); else if (t === 'chats' || t === 'contacts') loadChats();
     }
-    ['Chats', 'Contacts', 'Settings', 'Profile'].forEach(function (n) { $('tab' + n).addEventListener('click', function () { showTab(n.toLowerCase()); }); });
+    ['Contacts', 'Settings', 'Profile'].forEach(function (n) { $('menu' + n).addEventListener('click', function () { showTab(n.toLowerCase()); }); });
+    var filt = 'all', FILTERS = [['fAll', 'all'], ['fUnread', 'unread'], ['fFav', 'fav'], ['fGroups', 'groups']];
+    FILTERS.forEach(function (f) {
+      $(f[0]).addEventListener('click', function () {
+        filt = f[1];
+        FILTERS.forEach(function (g) { $(g[0]).classList.toggle('active', g[1] === filt); });
+        renderChats();
+      });
+    });
     $('menuBtn').addEventListener('click', function (e) { e.stopPropagation(); $('menuBox').classList.toggle('hidden'); });
     document.addEventListener('click', function () { $('menuBox').classList.add('hidden'); });
     $('menuChart').addEventListener('click', function () { showTab('chart'); });
@@ -1185,28 +1197,52 @@ ZW|Zimbabwe|263`;
       var n = c.name || c.phone || '#', a = mk('div', 'av', n.charAt(0).toUpperCase());
       a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; return a;
     }
+    function favs() { try { return JSON.parse(localStorage.getItem('zaply_favs') || '[]'); } catch (e) { return []; } }
+    function markSeen(ph) { try { localStorage.setItem('zaply_seen_' + ph, String(Date.now())); } catch (e) {} }
+    function seenAt(ph) { try { return +localStorage.getItem('zaply_seen_' + ph) || 0; } catch (e) { return 0; } }
+    function isUnread(c) { return !c.mine && new Date(c.at).getTime() > seenAt(c.phone); }
     function renderChats() {
-      var q = ($('chatSearch').value || '').toLowerCase().trim();
-      var list = allChats.filter(function (c) { return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
-      var box = $('chatList'), cb = $('contactList'); box.innerHTML = ''; cb.innerHTML = '';
-      if (!list.length) {
-        box.appendChild(mk('div', 'empty', q ? 'No results.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zaply.'));
-        cb.appendChild(mk('div', 'empty', q ? 'No results.' : 'No contacts yet.'));
-        return;
-      }
-      list.forEach(function (c) {
-        [box, cb].forEach(function (b) {
-          var row = mk('div', 'row'); row.appendChild(avatar(c));
-          var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
-          mid.appendChild(mk('span', '', b === box ? (c.mine ? 'You: ' : '') + c.last : c.phone));
-          row.appendChild(mid);
-          if (b === box) row.appendChild(mk('time', '', hhmm(c.at)));
-          row.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name }); });
-          b.appendChild(row);
-        });
+      var q = ($('chatSearch').value || '').toLowerCase().trim(), fv = favs();
+      var base = allChats.filter(function (c) { return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
+      var shown = base.filter(function (c) {
+        return filt === 'all' ? true : filt === 'unread' ? isUnread(c) : filt === 'fav' ? fv.indexOf(c.phone) > -1 : false;
       });
+      var box = $('chatList'), cb = $('contactList'); box.innerHTML = ''; cb.innerHTML = '';
+      var emptyMsg = q ? 'No results.' : filt === 'unread' ? 'No unread messages.' : filt === 'fav' ? 'No favourites yet. Tap \u2606 on a chat to add it.' : filt === 'groups' ? 'Groups are not available yet.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zaply.';
+      if (!shown.length) box.appendChild(mk('div', 'empty', emptyMsg));
+      if (!base.length) cb.appendChild(mk('div', 'empty', q ? 'No results.' : 'No contacts yet.'));
+      function row(c, withChat) {
+        var r = mk('div', 'row'), un = withChat && isUnread(c), isFav = fv.indexOf(c.phone) > -1;
+        r.appendChild(avatar(c));
+        var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
+        mid.appendChild(mk('span', '', withChat ? (c.mine ? 'You: ' : '') + c.last : c.phone));
+        r.appendChild(mid);
+        if (withChat) {
+          var side = mk('div', 'side'); side.appendChild(mk('time', '', hhmm(c.at)));
+          if (un) side.appendChild(mk('i', 'ub'));
+          var st = mk('button', 'star', isFav ? '\u2605' : '\u2606');
+          st.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var a = favs(), i = a.indexOf(c.phone);
+            if (i > -1) a.splice(i, 1); else a.push(c.phone);
+            try { localStorage.setItem('zaply_favs', JSON.stringify(a)); } catch (x) {}
+            renderChats();
+          });
+          side.appendChild(st); r.appendChild(side);
+        }
+        r.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name }); });
+        return r;
+      }
+      shown.forEach(function (c) { box.appendChild(row(c, true)); });
+      base.forEach(function (c) { cb.appendChild(row(c, false)); });
     }
-    function loadChats() { chatCall('list').then(function (res) { allChats = res.chats || []; renderChats(); }).catch(function () {}); }
+    function loadChats() {
+      chatCall('list').then(function (res) {
+        allChats = res.chats || [];
+        try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
+        renderChats();
+      }).catch(function () {});
+    }
     $('chatSearch').addEventListener('input', renderChats);
 
     $('btnNew').addEventListener('click', function () {
@@ -1246,12 +1282,12 @@ ZW|Zimbabwe|263`;
     }
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
-      openWith = u.phone; lastId = 0; $('msgs').innerHTML = '';
+      markSeen(u.phone); openWith = u.phone; lastId = 0; $('msgs').innerHTML = '';
       $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.phone;
       $('threadView').classList.remove('hidden');
       fetchMsgs(); $('msgInput').focus();
     }
-    function closeThread() { openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
+    function closeThread() { if (openWith) markSeen(openWith); openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
     $('thBack').addEventListener('click', closeOv);
     function sendMsg() {
       var body = $('msgInput').value.trim();
@@ -1543,7 +1579,7 @@ shn|ၵႂၢမ်းတႆး
 zgh|ⵜⴰⵎⴰⵣⵉⵖⵜ
 kab|Taqbaylit`.split('\n').map(function (l) { var p = l.split('|'); return { c: p[0], n: p[1] }; });
     var TR_RAW = {
-en:`Welcome to Zaply|Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.|Next|Download app|Enter your phone number|Zaply will need to verify your phone number. Carrier charges may apply.|Phone number|Choose a country|Enter the code|Didn't receive code?|Change number|Add your email|Your name|Continue|Log out|Chats|+ New chat|Message|Send|Is this phone number correct?|Yes|No|Connecting…|Search chats|Contacts|Settings|Profile`,
+en:`Welcome to Zaply|Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.|Next|Download app|Enter your phone number|Zaply will need to verify your phone number. Carrier charges may apply.|Phone number|Choose a country|Enter the code|Didn't receive code?|Change number|Add your email|Your name|Continue|Log out|Chats|+ New chat|Message|Send|Is this phone number correct?|Yes|No|Connecting…|Search chats|Contacts|Settings|Profile|All|Unread|Favourites|Groups`,
 zh:`欢迎使用 Zaply|阅读我们的<a href="#">隐私政策</a>。点击“下一步”即表示接受我们的<a href="#">服务条款</a>。|下一步|下载应用|输入你的手机号码|Zaply 需要验证你的手机号码。可能会产生运营商费用。|手机号码|选择国家/地区|输入验证码|没有收到验证码？|更改号码|添加你的电子邮箱|你的名字|继续|退出登录|聊天|+ 新聊天|消息|发送|这个手机号码正确吗？|是|否|正在连接…`,
 es:`Bienvenido a Zaply|Lee nuestras <a href="#">Políticas de privacidad</a>. Toca "Siguiente" para aceptar nuestros <a href="#">Términos del servicio</a>.|Siguiente|Descargar app|Ingresa tu número de teléfono|Zaply necesitará verificar tu número de teléfono. Pueden aplicarse cargos del operador.|Número de teléfono|Elige un país|Ingresa el código|¿No recibiste el código?|Cambiar número|Agrega tu correo|Tu nombre|Continuar|Cerrar sesión|Chats|+ Nuevo chat|Mensaje|Enviar|¿Es correcto este número de teléfono?|Sí|No|Conectando…`,
 fr:`Bienvenue sur Zaply|Lisez nos <a href="#">Politiques de confidentialité</a>. Appuyez sur « Suivant » pour accepter nos <a href="#">Conditions d'utilisation</a>.|Suivant|Télécharger l'app|Saisissez votre numéro de téléphone|Zaply doit vérifier votre numéro de téléphone. Des frais d'opérateur peuvent s'appliquer.|Numéro de téléphone|Choisir un pays|Saisissez le code|Code non reçu ?|Changer de numéro|Ajoutez votre e-mail|Votre nom|Continuer|Se déconnecter|Discussions|+ Nouvelle discussion|Message|Envoyer|Ce numéro est-il correct ?|Oui|Non|Connexion…`,
@@ -1561,7 +1597,7 @@ id:`Selamat datang di Zaply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "
     var RTL = ['ar', 'ur', 'fa', 'he', 'yi', 'ps', 'sd', 'ug', 'dv', 'ckb'];
     var lang = 'en';
     function T(i) { var d = TR[lang] || TR[lang.split('-')[0]] || TR.en; return d[i] || TR.en[i]; }
-    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats', 15], ['#msgInput', 17, 'p'], ['#btnSendMsg', 18], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#tabContacts', 24], ['#tabSettings', 25], ['#tabProfile', 26], ['#btnSend', 2], ['#btnEmail', 2]];
+    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats', 15], ['#msgInput', 17, 'p'], ['#btnSendMsg', 18], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnSend', 2], ['#btnEmail', 2]];
     function applyLang() {
       MAP.forEach(function (m) {
         var e = document.querySelector(m[0]); if (!e) return;
