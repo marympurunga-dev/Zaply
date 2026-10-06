@@ -798,8 +798,17 @@ ZW|Zimbabwe|263`;
         }
       };
     }
+    function showEmailCodeStep(email) {
+      emailValue = email;
+      var t = $('emailCodeTitle');
+      t.textContent = 'We just sent an OTP code to ';
+      var b = document.createElement('b'); b.textContent = email; t.appendChild(b);
+      t.appendChild(document.createTextNode(', please enter it to continue.'));
+      showStep('stepEmailCode');
+    }
     function afterAuth(user) {
-      if (!user.email_verified) showStep('stepEmail');
+      if (!user.email_verified && user.pending_email) showEmailCodeStep(user.pending_email);
+      else if (!user.email_verified) showStep('stepEmail');
       else if (!user.name) showStep('stepName');
       else startApp(user);
     }
@@ -836,11 +845,7 @@ ZW|Zimbabwe|263`;
       showLoaderWhile('Verifying\u2026', call('email_send', { email: emailValue }), 3000)
         .then(function () {
           hideLoader();
-          var t = $('emailCodeTitle');
-          t.textContent = 'We just sent an OTP code to ';
-          var b = document.createElement('b'); b.textContent = emailValue; t.appendChild(b);
-          t.appendChild(document.createTextNode(', please enter it to continue.'));
-          showStep('stepEmailCode');
+          showEmailCodeStep(emailValue);
         })
         .catch(function (e) { hideLoader(); $('msgEmail').textContent = e.message; })
         .then(function () { busy(btn, false, 'Next'); $('btnEmail').disabled = !emailOk($('email').value.trim()); });
