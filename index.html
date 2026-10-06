@@ -124,6 +124,8 @@
     .ld-ok { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 3px solid #21c063; display: flex; align-items: center; justify-content: center; animation: ldpop .35s ease-out; }
     .ld-ok svg { width: 20px; height: 20px; }
     @keyframes ldpop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .auth h2.long { font-size: 17px; line-height: 1.45; }
+    .auth h2.long b { color: #21c063; font-weight: 600; word-break: break-all; }
     .otp { position: relative; display: flex; justify-content: center; gap: 8px; margin: 26px 0 10px; }
     .otp-box { width: 42px; height: 50px; border: 2px solid #2a343c; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 600; color: #fff; }
     .otp-box.on { border-color: #21c063; }
@@ -231,6 +233,25 @@
           </div>
           <div class="msg" id="msgCode" style="text-align:center"></div>
           <button class="link" id="btnBack">Change number</button>
+        </div>
+
+        <div id="stepEmail" class="hidden">
+          <h2>Add your email</h2>
+          <div class="sub">Your email is used to recover your chats and your account if you lose your phone or change your number. We'll send a 6-digit code to confirm it.</div>
+          <input id="email" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email" autocapitalize="off" style="margin-top:24px">
+          <div class="msg" id="msgEmail"></div>
+          <button class="primary" id="btnEmail" disabled>Next</button>
+        </div>
+
+        <div id="stepEmailCode" class="hidden">
+          <h2 class="long" id="emailCodeTitle"></h2>
+          <div class="otp" id="otp2">
+            <div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div><div class="otp-box"></div>
+            <input id="code2" class="code otp-in" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="6-digit email code">
+          </div>
+          <div class="msg" id="msgEmailCode" style="text-align:center"></div>
+          <button class="link" id="btnEmailResend">Resend code</button>
+          <button class="link" id="btnEmailBack">Change email</button>
         </div>
 
         <div id="stepName" class="hidden">
@@ -347,13 +368,15 @@
     }
 
     function showStep(id) {
-      ['stepPhone', 'stepCode', 'stepName'].forEach(function (s) {
+      ['stepPhone', 'stepCode', 'stepEmail', 'stepEmailCode', 'stepName'].forEach(function (s) {
         $(s).classList.toggle('hidden', s !== id);
       });
       $('welcomeView').classList.add('hidden');
       $('authView').classList.remove('hidden');
       $('appView').classList.add('hidden');
-      if (id === 'stepCode') { $('code').value = ''; renderOtp(); setTimeout(function () { $('code').focus(); }, 100); }
+      if (id === 'stepCode') { phoneOtp.reset(); setTimeout(phoneOtp.focus, 100); }
+      if (id === 'stepEmail') setTimeout(function () { $('email').focus(); }, 100);
+      if (id === 'stepEmailCode') { emailOtp.reset(); setTimeout(emailOtp.focus, 100); }
     }
 
     function showWelcome() {
@@ -746,46 +769,104 @@ ZW|Zimbabwe|263`;
         .then(function () { busy(btn, false, 'Next'); updateNext(); });
     });
 
-    function renderOtp() {
-      var v = $('code').value, boxes = $('otp').children, focused = document.activeElement === $('code');
-      for (var i = 0; i < 6; i++) {
-        boxes[i].textContent = v[i] || '';
-        boxes[i].classList.toggle('on', focused && i === Math.min(v.length, 5));
-        boxes[i].classList.remove('err');
+    function makeOtp(inputId, wrapId, onDone) {
+      var inp = $(inputId), wrap = $(wrapId);
+      function render() {
+        var v = inp.value, focused = document.activeElement === inp;
+        for (var i = 0; i < 6; i++) {
+          wrap.children[i].textContent = v[i] || '';
+          wrap.children[i].classList.toggle('on', focused && i === Math.min(v.length, 5));
+          wrap.children[i].classList.remove('err');
+        }
       }
+      inp.addEventListener('input', function () {
+        inp.value = inp.value.replace(/\D/g, '').slice(0, 6);
+        render();
+        if (inp.value.length === 6) onDone();
+      });
+      inp.addEventListener('focus', render);
+      inp.addEventListener('blur', render);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') onDone(); });
+      return {
+        value: function () { return inp.value; },
+        focus: function () { inp.focus(); },
+        reset: function () { inp.value = ''; render(); },
+        fail: function () {
+          inp.value = ''; render();
+          for (var i = 0; i < 6; i++) wrap.children[i].classList.add('err');
+          inp.focus();
+        }
+      };
     }
-    var verifying = false;
+    function afterAuth(user) {
+      if (!user.email_verified) showStep('stepEmail');
+      else if (!user.name) showStep('stepName');
+      else startApp(user);
+    }
+
+    /* phone code */
+    var phoneVerifying = false;
     function doVerify() {
-      var code = $('code').value;
-      if (code.length !== 6 || verifying) return;
-      verifying = true;
+      var code = phoneOtp.value();
+      if (code.length !== 6 || phoneVerifying) return;
+      phoneVerifying = true;
       $('msgCode').textContent = '';
       showLoaderWhile('Checking OTP you just entered\u2026', call('verify', { phone: phoneValue, code: code }), 3000)
         .then(function (res) {
-          return loaderDone('Verified', 1500).then(function () {
-            setToken(res.token);
-            if (res.user.name) startApp(res.user); else showStep('stepName');
-          });
+          return loaderDone('Verified', 1500).then(function () { setToken(res.token); afterAuth(res.user); });
         })
-        .catch(function (e) {
-          hideLoader();
-          $('msgCode').textContent = e.message;
-          $('code').value = '';
-          renderOtp();
-          Array.prototype.forEach.call($('otp').children, function (b) { b.classList.add('err'); });
-          $('code').focus();
-        })
-        .then(function () { verifying = false; });
+        .catch(function (e) { hideLoader(); $('msgCode').textContent = e.message; phoneOtp.fail(); })
+        .then(function () { phoneVerifying = false; });
     }
-    $('code').addEventListener('input', function () {
-      this.value = this.value.replace(/\D/g, '').slice(0, 6);
-      $('msgCode').textContent = '';
-      renderOtp();
-      if (this.value.length === 6) doVerify();
+    var phoneOtp = makeOtp('code', 'otp', doVerify);
+
+    /* email */
+    var emailValue = '';
+    var emailOk = function (e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); };
+    $('email').addEventListener('input', function () {
+      $('btnEmail').disabled = !emailOk(this.value.trim());
+      $('msgEmail').textContent = '';
     });
-    $('code').addEventListener('focus', renderOtp);
-    $('code').addEventListener('blur', renderOtp);
-    $('code').addEventListener('keydown', function (e) { if (e.key === 'Enter') doVerify(); });
+    $('email').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('btnEmail').disabled) $('btnEmail').click(); });
+    $('btnEmail').addEventListener('click', function () {
+      var btn = $('btnEmail');
+      emailValue = $('email').value.trim().toLowerCase();
+      $('msgEmail').textContent = '';
+      busy(btn, true, 'Next');
+      showLoaderWhile('Verifying\u2026', call('email_send', { email: emailValue }), 3000)
+        .then(function () {
+          hideLoader();
+          var t = $('emailCodeTitle');
+          t.textContent = 'We just sent an OTP code to ';
+          var b = document.createElement('b'); b.textContent = emailValue; t.appendChild(b);
+          t.appendChild(document.createTextNode(', please enter it to continue.'));
+          showStep('stepEmailCode');
+        })
+        .catch(function (e) { hideLoader(); $('msgEmail').textContent = e.message; })
+        .then(function () { busy(btn, false, 'Next'); $('btnEmail').disabled = !emailOk($('email').value.trim()); });
+    });
+    var emailVerifying = false;
+    function doEmailVerify() {
+      var code = emailOtp.value();
+      if (code.length !== 6 || emailVerifying) return;
+      emailVerifying = true;
+      $('msgEmailCode').style.color = '';
+      $('msgEmailCode').textContent = '';
+      showLoaderWhile('Checking OTP you just entered\u2026', call('email_verify', { code: code }), 3000)
+        .then(function (res) {
+          return loaderDone('Verified', 1500).then(function () { afterAuth(res.user); });
+        })
+        .catch(function (e) { hideLoader(); $('msgEmailCode').textContent = e.message; emailOtp.fail(); })
+        .then(function () { emailVerifying = false; });
+    }
+    var emailOtp = makeOtp('code2', 'otp2', doEmailVerify);
+    $('btnEmailResend').addEventListener('click', function () {
+      $('msgEmailCode').textContent = '';
+      showLoaderWhile('Sending\u2026', call('email_send', { email: emailValue }), 1500)
+        .then(function () { hideLoader(); $('msgEmailCode').style.color = '#21c063'; $('msgEmailCode').textContent = 'A new code was sent.'; emailOtp.reset(); emailOtp.focus(); })
+        .catch(function (e) { hideLoader(); $('msgEmailCode').style.color = ''; $('msgEmailCode').textContent = e.message; });
+    });
+    $('btnEmailBack').addEventListener('click', function () { showStep('stepEmail'); });
     $('btnBack').addEventListener('click', function () { showStep('stepPhone'); });
 
     $('btnName').addEventListener('click', function () {
@@ -1059,9 +1140,7 @@ ZW|Zimbabwe|263`;
     /* ---------- start ---------- */
     if (getToken()) {
       call('me')
-        .then(function (res) {
-          if (res.user.name) startApp(res.user); else showStep('stepName');
-        })
+        .then(function (res) { afterAuth(res.user); })
         .catch(function () { clearToken(); showWelcome(); });
     } else {
       showWelcome();
