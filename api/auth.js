@@ -52,6 +52,17 @@ function ensureTable() {
 }
 
 const USER_COLS = 'phone, name, email, email_verified';
+async function loadUser(phone) {
+  const [rows] = await db().query('SELECT ' + USER_COLS + ' FROM users WHERE phone = ?', [phone]);
+  const user = rows[0];
+  if (!user) return null;
+  if (!user.email_verified) {
+    // a code was already sent and has not expired: lets the app return to the code page after being closed
+    const [p] = await db().query('SELECT email FROM email_codes WHERE phone = ? AND expires_at > NOW()', [phone]);
+    if (p[0]) user.pending_email = p[0].email;
+  }
+  return user;
+}
 const hashCode = (c) => crypto.createHash('sha256').update(String(c) + SECRET).digest('hex');
 const emailOk = (e) => typeof e === 'string' && e.length <= 190 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
 
@@ -96,17 +107,16 @@ module.exports = async (req, res) => {
         'INSERT INTO users (phone, last_login) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE last_login = NOW()',
         [b.phone]
       );
-      const [rows] = await db().query('SELECT ' + USER_COLS + ' FROM users WHERE phone = ?', [b.phone]);
-      return res.json({ token: sign(b.phone), user: rows[0] });
+      return res.json({ token: sign(b.phone), user: await loadUser(b.phone) });
     }
 
     const phone = readToken(b.token);
     if (!phone) return res.status(401).json({ error: 'Session expired. Please sign in again.' });
 
     if (b.action === 'me') {
-      const [rows] = await db().query('SELECT ' + USER_COLS + ' FROM users WHERE phone = ?', [phone]);
-      if (!rows[0]) return res.status(401).json({ error: 'Account not found.' });
-      return res.json({ user: rows[0] });
+      const user = await loadUser(phone);
+      if (!user) return res.status(401).json({ error: 'Account not found.' });
+      return res.json({ user });
     }
 
     if (b.action === 'email_send') {
