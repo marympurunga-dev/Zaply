@@ -120,6 +120,30 @@
     .ld-box { width: 100%; max-width: 330px; background: #1f2a30; color: #fff; display: flex; align-items: center; gap: 30px; padding: 28px 30px; border-radius: 2px; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
     .ld-spin { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 4px solid transparent; border-top-color: #21c063; border-right-color: #21c063; animation: ldspin 1s linear infinite; }
     .ld-box b { font-size: 15px; font-weight: 700; }
+    .cf { position: fixed; inset: 0; z-index: 45; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .cf-box { width: 100%; max-width: 330px; background: #1f2a30; color: #fff; padding: 24px 24px 12px; border-radius: 24px; }
+    .cf-box p { margin: 0 0 18px; color: #9aa3ab; font-size: 15px; }
+    .cf-box b { display: block; font-size: 22px; font-weight: 400; margin-bottom: 22px; }
+    .cf-btns { display: flex; justify-content: flex-end; gap: 8px; }
+    .cf-btns button { border: none; color: #21c063; font-weight: 600; font-size: 15px; padding: 10px 16px; }
+    .vs { position: fixed; inset: 0; z-index: 46; display: flex; flex-direction: column; justify-content: flex-end; }
+    .vs-back { position: absolute; inset: 0; background: rgba(0,0,0,.5); }
+    .vs-panel { position: relative; background: #151b20; color: #fff; border-radius: 28px 28px 0 0; padding: 14px 20px calc(18px + env(safe-area-inset-bottom, 0px)); }
+    .vs-handle { width: 40px; height: 4px; border-radius: 4px; background: #5b666e; margin: 0 auto 22px; }
+    .vs-panel h3 { margin: 0 0 14px; text-align: center; font-size: 22px; font-weight: 400; }
+    .vs-opt { display: flex; align-items: center; gap: 18px; padding: 18px 4px; cursor: pointer; }
+    .vs-opt svg { flex: none; width: 28px; height: 28px; color: #9aa3ab; }
+    .vs-t { flex: 1; min-width: 0; }
+    .vs-t span { display: block; font-size: 17px; }
+    .vs-t small { display: block; margin-top: 4px; font-size: 15px; }
+    .vs-opt.locked { cursor: default; }
+    .vs-opt.locked .vs-t span, .vs-opt.locked svg { color: #4a555d; }
+    .vs-opt.locked .vs-t small { color: #c5ccd2; }
+    .vs-r { flex: none; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #5b666e; position: relative; }
+    .vs-opt.sel .vs-r { border-color: #21c063; }
+    .vs-opt.sel .vs-r::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: #21c063; }
+    #vsGo { width: 100%; margin-top: 8px; padding: 16px; border: none; border-radius: 999px; background: #21c063; color: #06140c; font-size: 16px; font-weight: 600; }
+    #vsGo:disabled { background: #1c2329; color: #4a555d; opacity: 1; }
     @keyframes ldspin { to { transform: rotate(360deg); } }
     .ld-ok { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 3px solid #21c063; display: flex; align-items: center; justify-content: center; animation: ldpop .35s ease-out; }
     .ld-ok svg { width: 20px; height: 20px; }
@@ -185,12 +209,12 @@
       </div>
       <div class="w-bottom">
         <h1>Welcome to Zaply</h1>
-        <p class="w-terms">Read our <a href="#">Privacy Policies</a>. Tap "Agree and continue" to accept our <a href="#">Terms of Service</a>.</p>
+        <p class="w-terms">Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.</p>
         <div class="w-lang">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4.5" ry="10"/><path d="M2 12h20M4 7h16M4 17h16"/></svg>
           <select aria-label="Language"><option>English</option></select>
         </div>
-        <button class="w-btn" id="btnAgree">Agree and continue</button>
+        <button class="w-btn" id="btnAgree">Next</button>
         <button class="w-install" id="btnInstall">Download app</button>
         <p class="w-help hidden" id="installHelp"></p>
       </div>
@@ -198,6 +222,40 @@
 
     <!-- LOADER -->
     <div id="loader" class="ld hidden"><div class="ld-box"><div class="ld-spin" id="ldSpin"></div><div class="ld-ok hidden" id="ldOk"><svg viewBox="0 0 24 24" fill="none" stroke="#21c063" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><b id="ldText">Connecting…</b></div></div>
+
+    <!-- CONFIRM NUMBER -->
+    <div id="confirmBox" class="cf hidden">
+      <div class="cf-box">
+        <p>Is this phone number correct?</p>
+        <b id="confirmNum"></b>
+        <div class="cf-btns"><button id="btnConfirmNo">No</button><button id="btnConfirmYes">Yes</button></div>
+      </div>
+    </div>
+
+    <!-- CHOOSE HOW TO VERIFY -->
+    <div id="vsheet" class="vs hidden">
+      <div class="vs-back" id="vsBack"></div>
+      <div class="vs-panel">
+        <div class="vs-handle"></div>
+        <h3>Choose how to verify</h3>
+        <div class="vs-opt locked" data-m="sms">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg>
+          <div class="vs-t"><span>Receive new SMS</span><small></small></div>
+          <i class="vs-r"></i>
+        </div>
+        <div class="vs-opt locked" data-m="missed">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17"/><path d="M7 9v8h8"/></svg>
+          <div class="vs-t"><span>Missed call</span><small></small></div>
+          <i class="vs-r"></i>
+        </div>
+        <div class="vs-opt locked" data-m="voice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+          <div class="vs-t"><span>Voice call</span><small></small></div>
+          <i class="vs-r"></i>
+        </div>
+        <button id="vsGo" disabled>Continue</button>
+      </div>
+    </div>
 
     <!-- COUNTRY PICKER -->
     <div id="countryView" class="cv hidden">
@@ -234,6 +292,7 @@
             <input id="code" class="code otp-in" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" aria-label="6-digit code">
           </div>
           <div class="msg" id="msgCode" style="text-align:center"></div>
+          <button class="link" id="btnDidnt">Didn't receive code?</button>
           <button class="link" id="btnBack">Change number</button>
         </div>
 
@@ -411,30 +470,11 @@
         setTimeout(function () { $('loader').classList.add('hidden'); res(); }, ms);
       });
     }
-    function fetchIso(url, pick) {
-      var ctl = window.AbortController ? new AbortController() : null;
-      var t = ctl ? setTimeout(function () { ctl.abort(); }, 4000) : 0;
-      return fetch(url, ctl ? { signal: ctl.signal } : {})
-        .then(function (r) { return r.json(); })
-        .then(function (j) { clearTimeout(t); var c = String(pick(j) || '').toUpperCase(); return c.length === 2 ? c : null; })
-        .catch(function () { clearTimeout(t); return null; });
-    }
-    function detectCountry() {
-      return fetchIso('https://ipapi.co/json/', function (j) { return j.country_code; })
-        .then(function (c) { return c || fetchIso('https://ipwho.is/', function (j) { return j.country_code; }); })
-        .then(function (c) { return c || ((navigator.language || '').split('-')[1] || '').toUpperCase() || null; });
-    }
     $('btnAgree').addEventListener('click', function () {
-      var detected = detectCountry();
-      showLoader('Connecting\u2026', 5000)
-        .then(function () { return showLoader('Detecting your country\u2026', 5000); })
-        .then(function () { return detected; })
-        .then(function (iso) {
-          var c = (iso && byIso(iso)) || byIso('KE');
-          setCountry(c);
-          showStep('stepPhone');
-          $('phone').focus();
-        });
+      showLoader('Connecting\u2026', 7000).then(function () {
+        showStep('stepPhone');
+        $('phone').focus();
+      });
     });
 
     var phoneValue = '';
@@ -756,20 +796,97 @@ ZW|Zimbabwe|263`;
     $('phone').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('btnSend').disabled) $('btnSend').click(); });
     setCountry(cur);
 
+    function prettyPhone(num) {
+      var dial = $('dial').value.replace(/\D/g, '');
+      var rest = num.slice(1 + dial.length);
+      return '+' + dial + ' ' + rest.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
+    }
     $('btnSend').addEventListener('click', function () {
-      var btn = $('btnSend');
       phoneValue = '+' + $('dial').value.replace(/\D/g, '') + $('phone').value.replace(/\D/g, '').replace(/^0+/, '');
       $('msgPhone').textContent = '';
-      busy(btn, true, 'Next');
-      Promise.all([call('send', { phone: phoneValue }), showLoader('Connecting\u2026', 3000).then(function () { return showLoader('Observing\u2026', 2000); })])
+      $('btnSend').disabled = true;
+      showLoader('Connecting\u2026', 3000).then(function () {
+        $('confirmNum').textContent = prettyPhone(phoneValue);
+        $('confirmBox').classList.remove('hidden');
+        updateNext();
+      });
+    });
+    $('btnConfirmNo').addEventListener('click', function () {
+      $('confirmBox').classList.add('hidden');
+      $('phone').focus();
+    });
+    $('btnConfirmYes').addEventListener('click', function () {
+      $('confirmBox').classList.add('hidden');
+      $('btnSend').disabled = true;
+      Promise.all([call('send', { phone: phoneValue }), showLoader('Connecting\u2026', 4000)])
         .then(function () {
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
           $('code').value = '';
           $('msgCode').textContent = '';
+          startVerifyTimers();
           showStep('stepCode');
         })
-        .catch(function (e) { $('msgPhone').textContent = e.message; })
-        .then(function () { busy(btn, false, 'Next'); updateNext(); });
+        .catch(function (e) { hideLoader(); $('msgPhone').textContent = e.message; })
+        .then(function () { updateNext(); });
+    });
+
+    /* ---------- "Didn't receive code?" sheet ---------- */
+    /* Seconds an option stays locked after it is used.
+       SMS: 1st send (initial) -> wait 60s, 2nd send -> wait 24h.
+       Missed call / voice call: 3 uses each, wait CALL_WAIT between uses, 24h after the 3rd. */
+    var SMS_WAIT = 60, CALL_WAIT = 74, LOCK_WAIT = 86400, SMS_MAX = 2, CALL_MAX = 3;
+    var vsLeft = { sms: 0, missed: 0, voice: 0 }, vsCount = { sms: 0, missed: 0, voice: 0 }, vsSel = null, vsTimer = null;
+    function vsFmt(s) {
+      var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = ('0' + (s % 60)).slice(-2);
+      return h > 0 ? h + ':' + ('0' + m).slice(-2) + ':' + sec : m + ':' + sec;
+    }
+    function vsWaitFor(m) {
+      if (m === 'sms') return vsCount.sms >= SMS_MAX ? LOCK_WAIT : SMS_WAIT;
+      return vsCount[m] >= CALL_MAX ? LOCK_WAIT : CALL_WAIT;
+    }
+    function vsRender() {
+      document.querySelectorAll('.vs-opt').forEach(function (o) {
+        var m = o.getAttribute('data-m'), left = vsLeft[m];
+        o.classList.toggle('locked', left > 0);
+        o.querySelector('small').textContent = left > 0 ? 'Try again in ' + vsFmt(left) : '';
+        if (left > 0 && vsSel === m) vsSel = null;
+        o.classList.toggle('sel', vsSel === m);
+      });
+      $('vsGo').disabled = !vsSel;
+    }
+    function startVerifyTimers() {
+      vsCount = { sms: 1, missed: 0, voice: 0 }; /* the first SMS was just sent */
+      vsLeft = { sms: vsWaitFor('sms'), missed: CALL_WAIT, voice: CALL_WAIT };
+      vsSel = null;
+      clearInterval(vsTimer);
+      vsTimer = setInterval(function () {
+        ['sms', 'missed', 'voice'].forEach(function (k) { if (vsLeft[k] > 0) vsLeft[k]--; });
+        vsRender();
+      }, 1000);
+      vsRender();
+    }
+    $('btnDidnt').addEventListener('click', function () { vsSel = null; vsRender(); $('vsheet').classList.remove('hidden'); });
+    $('vsBack').addEventListener('click', function () { $('vsheet').classList.add('hidden'); });
+    document.querySelectorAll('.vs-opt').forEach(function (o) {
+      o.addEventListener('click', function () {
+        var m = o.getAttribute('data-m');
+        if (vsLeft[m] > 0) return;
+        vsSel = m; vsRender();
+      });
+    });
+    $('vsGo').addEventListener('click', function () {
+      var method = vsSel;
+      if (!method) return;
+      $('vsheet').classList.add('hidden');
+      $('msgCode').textContent = '';
+      Promise.all([call('send', { phone: phoneValue, method: method }), showLoader('Connecting…', 3000)])
+        .then(function () {
+          vsCount[method]++;
+          vsLeft[method] = vsWaitFor(method);
+          vsSel = null; vsRender();
+          phoneOtp.reset(); phoneOtp.focus();
+        })
+        .catch(function (e) { hideLoader(); $('msgCode').textContent = e.message; });
     });
 
     function makeOtp(inputId, wrapId, onDone) {
@@ -862,6 +979,11 @@ ZW|Zimbabwe|263`;
 
     /* email */
     var emailValue = '';
+    var EMAIL_DELAY = 7000; /* wait before the email code request is actually sent */
+    function emailSend(email) {
+      return new Promise(function (r) { setTimeout(r, EMAIL_DELAY); })
+        .then(function () { return call('email_send', { email: email }); });
+    }
     var emailOk = function (e) { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e); };
     $('email').addEventListener('input', function () {
       $('btnEmail').disabled = !emailOk(this.value.trim());
@@ -873,7 +995,7 @@ ZW|Zimbabwe|263`;
       emailValue = $('email').value.trim().toLowerCase();
       $('msgEmail').textContent = '';
       busy(btn, true, 'Next');
-      showLoaderWhile('Verifying\u2026', call('email_send', { email: emailValue }), 3000)
+      showLoaderWhile('Verifying\u2026', emailSend(emailValue), 3000)
         .then(function () {
           hideLoader();
           showEmailCodeStep(emailValue);
@@ -898,7 +1020,7 @@ ZW|Zimbabwe|263`;
     var emailOtp = makeOtp('code2', 'otp2', doEmailVerify);
     $('btnEmailResend').addEventListener('click', function () {
       $('msgEmailCode').textContent = '';
-      showLoaderWhile('Sending\u2026', call('email_send', { email: emailValue }), 1500)
+      showLoaderWhile('Sending\u2026', emailSend(emailValue), 1500)
         .then(function () { hideLoader(); $('msgEmailCode').style.color = '#21c063'; $('msgEmailCode').textContent = 'A new code was sent.'; startResendTimer(180); emailOtp.reset(); emailOtp.focus(); })
         .catch(function (e) { hideLoader(); $('msgEmailCode').style.color = ''; $('msgEmailCode').textContent = e.message; });
     });
