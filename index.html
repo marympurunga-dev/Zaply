@@ -186,10 +186,7 @@
     .comp button { flex: none; width: auto; padding: 0 22px; }
     .comp button { border-radius: 999px; background: #21c063; border-color: #21c063; color: #06140c; font-weight: 600; }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
-  #backBtn{position:fixed;left:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:60;width:42px;height:42px;padding:0;border-radius:50%;border:none;font-size:24px;line-height:1;background:#21c063;color:#06140c;box-shadow:0 3px 10px rgba(0,0,0,.4)}
-    .auth{padding-top:calc(60px + env(safe-area-inset-top,0px))}
-    #appView{padding-top:54px}
-    .auth{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+  .auth{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
     .auth .card > div{min-height:calc(100dvh - 180px)}
     #appView{padding-bottom:76px}
     .cv-list{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
@@ -325,6 +322,7 @@
           <input id="email" type="email" inputmode="email" placeholder="you@example.com" autocomplete="email" autocapitalize="off" style="margin-top:24px">
           <div class="msg" id="msgEmail"></div>
           <button class="primary" id="btnEmail" disabled>Next</button>
+          <button class="link" id="btnEmailSkip">Skip</button>
         </div>
 
         <div id="stepEmailCode" class="hidden">
@@ -355,7 +353,7 @@
       <header>
         <h1>Zaply</h1>
         <div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
-          <div id="menuBox" class="menubox hidden"><button id="menuContacts">Contacts</button><button id="menuSettings">Settings</button><button id="menuProfile">Profile</button><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div>
+          <div id="menuBox" class="menubox hidden"><button id="menuChats">Chats</button><button id="menuContacts">Contacts</button><button id="menuSettings">Settings</button><button id="menuProfile">Profile</button><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div>
       </header>
       <div class="searchbox" id="searchBox"><input id="chatSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
       <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button></nav>
@@ -405,8 +403,6 @@
     </div>
 
   </div>
-
-  <button id="backBtn" class="hidden" aria-label="Back">←</button>
 
   <script>
     var API = 'https://zaply-gamma.vercel.app/api';
@@ -981,10 +977,14 @@ ZW|Zimbabwe|263`;
       t.appendChild(document.createTextNode(', please enter it to continue.'));
       showStep('stepEmailCode');
     }
+    var curUser = null;
+    function emailSkipped() { try { return localStorage.getItem('zaply_email_skip') === '1'; } catch (e) { return false; } }
     function afterAuth(user) {
-      var pend = !user.email_verified && (user.pending_email ? { email: user.pending_email, age: user.pending_age } : readPending());
+      curUser = user;
+      var skipped = emailSkipped() && !user.email_verified;
+      var pend = !user.email_verified && !skipped && (user.pending_email ? { email: user.pending_email, age: user.pending_age } : readPending());
       if (pend) showEmailCodeStep(pend.email, pend.age);
-      else if (!user.email_verified) showStep('stepEmail');
+      else if (!user.email_verified && !skipped) showStep('stepEmail');
       else if (!user.name) { clearPending(); showStep('stepName'); }
       else { clearPending(); startApp(user); }
     }
@@ -1052,6 +1052,11 @@ ZW|Zimbabwe|263`;
         .then(function () { hideLoader(); $('msgEmailCode').style.color = '#21c063'; $('msgEmailCode').textContent = 'A new code was sent.'; startResendTimer(180); emailOtp.reset(); emailOtp.focus(); })
         .catch(function (e) { hideLoader(); $('msgEmailCode').style.color = ''; $('msgEmailCode').textContent = e.message; });
     });
+    $('btnEmailSkip').addEventListener('click', function () {
+      try { localStorage.setItem('zaply_email_skip', '1'); } catch (e) {}
+      clearPending();
+      afterAuth(curUser || {});
+    });
     $('btnEmailBack').addEventListener('click', function () { clearPending(); showStep('stepEmail'); });
     $('btnBack').addEventListener('click', function () { showStep('stepPhone'); });
 
@@ -1069,6 +1074,7 @@ ZW|Zimbabwe|263`;
       unsubPush();
       call('logout').catch(function () {}).then(function () {
         clearToken();
+        try { localStorage.removeItem('zaply_email_skip'); } catch (e) {}
         showWelcome();
       });
     });
@@ -1190,6 +1196,7 @@ ZW|Zimbabwe|263`;
     });
     $('menuBtn').addEventListener('click', function (e) { e.stopPropagation(); $('menuBox').classList.toggle('hidden'); });
     document.addEventListener('click', function () { $('menuBox').classList.add('hidden'); });
+    $('menuChats').addEventListener('click', function () { showTab('chats'); });
     $('menuChart').addEventListener('click', function () { showTab('chart'); });
 
     var allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
@@ -1579,7 +1586,7 @@ shn|ၵႂၢမ်းတႆး
 zgh|ⵜⴰⵎⴰⵣⵉⵖⵜ
 kab|Taqbaylit`.split('\n').map(function (l) { var p = l.split('|'); return { c: p[0], n: p[1] }; });
     var TR_RAW = {
-en:`Welcome to Zaply|Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.|Next|Download app|Enter your phone number|Zaply will need to verify your phone number. Carrier charges may apply.|Phone number|Choose a country|Enter the code|Didn't receive code?|Change number|Add your email|Your name|Continue|Log out|Chats|+ New chat|Message|Send|Is this phone number correct?|Yes|No|Connecting…|Search chats|Contacts|Settings|Profile|All|Unread|Favourites|Groups`,
+en:`Welcome to Zaply|Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.|Next|Download app|Enter your phone number|Zaply will need to verify your phone number. Carrier charges may apply.|Phone number|Choose a country|Enter the code|Didn't receive code?|Change number|Add your email|Your name|Continue|Log out|Chats|+ New chat|Message|Send|Is this phone number correct?|Yes|No|Connecting…|Search chats|Contacts|Settings|Profile|All|Unread|Favourites|Groups|Skip`,
 zh:`欢迎使用 Zaply|阅读我们的<a href="#">隐私政策</a>。点击“下一步”即表示接受我们的<a href="#">服务条款</a>。|下一步|下载应用|输入你的手机号码|Zaply 需要验证你的手机号码。可能会产生运营商费用。|手机号码|选择国家/地区|输入验证码|没有收到验证码？|更改号码|添加你的电子邮箱|你的名字|继续|退出登录|聊天|+ 新聊天|消息|发送|这个手机号码正确吗？|是|否|正在连接…`,
 es:`Bienvenido a Zaply|Lee nuestras <a href="#">Políticas de privacidad</a>. Toca "Siguiente" para aceptar nuestros <a href="#">Términos del servicio</a>.|Siguiente|Descargar app|Ingresa tu número de teléfono|Zaply necesitará verificar tu número de teléfono. Pueden aplicarse cargos del operador.|Número de teléfono|Elige un país|Ingresa el código|¿No recibiste el código?|Cambiar número|Agrega tu correo|Tu nombre|Continuar|Cerrar sesión|Chats|+ Nuevo chat|Mensaje|Enviar|¿Es correcto este número de teléfono?|Sí|No|Conectando…`,
 fr:`Bienvenue sur Zaply|Lisez nos <a href="#">Politiques de confidentialité</a>. Appuyez sur « Suivant » pour accepter nos <a href="#">Conditions d'utilisation</a>.|Suivant|Télécharger l'app|Saisissez votre numéro de téléphone|Zaply doit vérifier votre numéro de téléphone. Des frais d'opérateur peuvent s'appliquer.|Numéro de téléphone|Choisir un pays|Saisissez le code|Code non reçu ?|Changer de numéro|Ajoutez votre e-mail|Votre nom|Continuer|Se déconnecter|Discussions|+ Nouvelle discussion|Message|Envoyer|Ce numéro est-il correct ?|Oui|Non|Connexion…`,
@@ -1597,7 +1604,7 @@ id:`Selamat datang di Zaply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "
     var RTL = ['ar', 'ur', 'fa', 'he', 'yi', 'ps', 'sd', 'ug', 'dv', 'ckb'];
     var lang = 'en';
     function T(i) { var d = TR[lang] || TR[lang.split('-')[0]] || TR.en; return d[i] || TR.en[i]; }
-    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats', 15], ['#msgInput', 17, 'p'], ['#btnSendMsg', 18], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnSend', 2], ['#btnEmail', 2]];
+    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats', 15], ['#msgInput', 17, 'p'], ['#btnSendMsg', 18], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnEmailSkip', 31], ['#btnSend', 2], ['#btnEmail', 2]];
     function applyLang() {
       MAP.forEach(function (m) {
         var e = document.querySelector(m[0]); if (!e) return;
@@ -1614,35 +1621,6 @@ id:`Selamat datang di Zaply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "
     langSel.value = lang;
     langSel.addEventListener('change', function () { lang = langSel.value; try { localStorage.setItem('zaply_lang', lang); } catch (e) {} applyLang(); });
     applyLang();
-
-    /* ---------- bottom-left Back button on every page ---------- */
-    var backBtn = $('backBtn');
-    function vis(id) { return !$(id).classList.contains('hidden'); }
-    function backAction() {
-      if (vis('loader') || vis('welcomeView')) return null;
-      if (overlays.length) return null; /* chat and country list have their own arrow at top-left */
-      if (vis('confirmBox')) return function () { $('confirmBox').classList.add('hidden'); };
-      if (vis('vsheet')) return function () { $('vsheet').classList.add('hidden'); };
-      if (vis('authView')) {
-        if (vis('stepPhone')) return showWelcome;
-        if (vis('stepCode') || vis('stepEmail')) return function () { showStep('stepPhone'); };
-        if (vis('stepEmailCode')) return function () { clearPending(); showStep('stepEmail'); };
-        return null;
-      }
-      if (vis('appView') && !vis('paneChats') && !vis('threadView')) return function () { showTab('chats'); };
-      return null;
-    }
-    function updateBack() {
-      var a = backAction();
-      backBtn.classList.toggle('hidden', !a);
-      backBtn.classList.toggle('up', vis('threadView'));
-    }
-    new MutationObserver(function (r) {
-      if (r.every(function (x) { return x.target === backBtn; })) return;
-      updateBack();
-    }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
-    backBtn.addEventListener('click', function () { var a = backAction(); if (a) a(); });
-    updateBack();
 
     var l2 = $('lang2');
     LANGS.forEach(function (l) { var o = document.createElement('option'); o.value = l.c; o.textContent = l.n; l2.appendChild(o); });
