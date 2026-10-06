@@ -186,8 +186,9 @@
     .comp button { flex: none; width: auto; padding: 0 22px; }
     .comp button { border-radius: 999px; background: #21c063; border-color: #21c063; color: #06140c; font-weight: 600; }
     footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 14px; }
-  #backBtn{position:fixed;left:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;width:48px;height:48px;padding:0;border-radius:50%;border:none;font-size:22px;line-height:1;background:#21c063;box-shadow:0 4px 14px rgba(0,0,0,.45)}
-    #backBtn.up{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  #backBtn{position:fixed;left:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:60;width:42px;height:42px;padding:0;border-radius:50%;border:none;font-size:24px;line-height:1;background:#21c063;color:#06140c;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+    .auth{padding-top:calc(60px + env(safe-area-inset-top,0px))}
+    #appView{padding-top:54px}
     .auth{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
     .auth .card > div{min-height:calc(100dvh - 180px)}
     #appView{padding-bottom:76px}
@@ -402,7 +403,7 @@
 
   </div>
 
-  <button id="backBtn" class="hidden" aria-label="Back">🔙</button>
+  <button id="backBtn" class="hidden" aria-label="Back">←</button>
 
   <script>
     var API = 'https://zaply-gamma.vercel.app/api';
@@ -1583,7 +1584,7 @@ id:`Selamat datang di Zaply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "
     function vis(id) { return !$(id).classList.contains('hidden'); }
     function backAction() {
       if (vis('loader') || vis('welcomeView')) return null;
-      if (overlays.length) return function () { history.back(); };
+      if (overlays.length) return null; /* chat and country list have their own arrow at top-left */
       if (vis('confirmBox')) return function () { $('confirmBox').classList.add('hidden'); };
       if (vis('vsheet')) return function () { $('vsheet').classList.add('hidden'); };
       if (vis('authView')) {
