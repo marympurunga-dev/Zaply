@@ -8,7 +8,7 @@
   <link rel="apple-touch-icon" href="/icon-192.png">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
-  <title>Zaply</title>
+  <title>Zucket</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     :root {
@@ -206,6 +206,23 @@
       .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
     .star{border:none;padding:0 2px;font-size:20px;line-height:1;color:#f59e0b}
     .ub{width:12px;height:12px;border-radius:50%;background:#21c063;display:block}
+      .th-head .av{width:42px;height:42px;font-size:18px;color:#fff;flex:none}
+    .thinfo{flex:1;min-width:0;cursor:pointer}
+    .th-head #thBack,.th-head #infoBack,.th-head #crBack{color:#7c6cff}
+    .comp{align-items:center}
+    .comp .ic{width:42px;height:42px;padding:0;border-radius:50%;font-size:22px;flex:none}
+    .plusmenu{position:absolute;left:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--card);border:1px solid var(--border);border-radius:16px;padding:6px;z-index:9;display:flex;flex-direction:column;min-width:190px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+    .plusmenu button{border:none;text-align:left;padding:10px 12px;border-radius:10px;width:auto}
+    .emojibox{position:absolute;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--card);border:1px solid var(--border);border-radius:16px;padding:8px;z-index:9;display:flex;flex-wrap:wrap;gap:2px}
+    .emojibox button{border:none;background:transparent;font-size:26px;padding:4px 8px;width:auto}
+    #infoView,#createView{z-index:9}
+    #bottomNav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:var(--card);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0px)}
+    #bottomNav button{flex:1;border:none;border-radius:0;padding:12px 4px;font-size:13px;background:transparent}
+    #bottomNav button.active{color:#21c063;font-weight:700}
+    .plusb{flex:none!important;width:44px;font-size:22px;padding:0!important}
+    .fabr{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+    .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;background:#333;color:#fff;padding:10px 16px;border-radius:12px;z-index:99}
+    .bub.pending{opacity:.6}
   </style>
 </head>
 <body>
@@ -214,7 +231,7 @@
     <!-- WELCOME / LANDING -->
     <div id="welcomeView" class="welcome hidden">
       <div class="w-top">
-        <svg class="w-logo" viewBox="0 0 96 96" fill="none" aria-label="Zaply">
+        <svg class="w-logo" viewBox="0 0 96 96" fill="none" aria-label="Zucket">
           <defs>
             <linearGradient id="zBg" x1="12" y1="6" x2="84" y2="90" gradientUnits="userSpaceOnUse">
               <stop offset="0" stop-color="#3ddc84"/>
@@ -228,7 +245,7 @@
         </svg>
       </div>
       <div class="w-bottom">
-        <h1>Welcome to Zaply</h1>
+        <h1>Welcome to Zucket</h1>
         <p class="w-terms">Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.</p>
         <div class="w-lang">
           <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="10"/><ellipse cx="12" cy="12" rx="4.5" ry="10"/><path d="M2 12h20M4 7h16M4 17h16"/></svg>
@@ -294,7 +311,7 @@
 
         <div id="stepPhone">
           <h2>Enter your phone number</h2>
-          <div class="sub">Zaply will need to verify your phone number. Carrier charges may apply.</div>
+          <div class="sub">Zucket will need to verify your phone number. Carrier charges may apply.</div>
           <button class="country-btn" id="btnCountry"><span id="cName">Choose a country</span></button>
           <div class="phone-row">
             <div class="dial-wrap"><span>+</span><input id="dial" type="text" inputmode="numeric" maxlength="4" value="" aria-label="Country code"></div>
@@ -351,12 +368,12 @@
     <!-- MAIN APP -->
     <div id="appView" class="hidden">
       <header>
-        <h1>Zaply</h1>
+        <h1>Zucket</h1>
         <div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
           <div id="menuBox" class="menubox hidden"><button id="menuChats">Chats</button><button id="menuContacts">Contacts</button><button id="menuSettings">Settings</button><button id="menuProfile">Profile</button><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div>
       </header>
       <div class="searchbox" id="searchBox"><input id="chatSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
-      <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button></nav>
+      <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button><button id="btnPlusList" class="plusb" aria-label="Create">+</button></nav>
 
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">🔔 Turn on notifications</button>
@@ -370,6 +387,10 @@
         <div id="chatList"></div>
       </div>
 
+      <nav id="bottomNav"><button id="tabChats" class="active">Chats</button><button id="tabUpdates">Updates</button><button id="tabCommunities">Communities</button><button id="tabCalls">Calls</button></nav>
+      <div id="paneUpdates" class="hidden"><div class="empty">Updates are coming soon.</div></div>
+      <div id="paneCommunities" class="hidden"><div class="empty">Communities are coming soon.</div></div>
+      <div id="paneCalls" class="hidden"><div class="empty">Calls are coming soon.</div></div>
       <div id="paneContacts" class="hidden"><div id="contactList"></div></div>
       <div id="paneSettings" class="hidden"><div class="card"><div class="sub" style="margin-top:0">Language</div><select id="lang2"></select></div></div>
       <div id="paneProfile" class="hidden"><div class="card pf"><div class="av big" id="pfAv"></div><b id="pfName" style="font-size:20px"></b><span id="pfPhone" class="sub" style="margin:0"></span><div class="sub" id="hello" style="margin:0"></div></div></div>
@@ -396,10 +417,14 @@
       </div>
     </div>
 
+    <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back">←</button><b>Contact info</b></div><div class="card pf" style="margin:16px"><div class="av big" id="inAv"></div><b id="inName" style="font-size:20px"></b><span id="inPhone" class="sub" style="margin:0"></span><span id="inCountry" class="sub" style="margin:0"></span></div></div>
+    <div id="createView" class="th hidden"><div class="th-head"><button id="crBack" aria-label="Back">←</button><b>Create</b></div><div style="padding:12px"><div class="row" data-a="new"><div class="av" style="background:#21c063">💬</div><div class="mid"><b>New chat</b><span>Message someone by phone number</span></div></div><div class="row" data-a="group"><div class="av" style="background:#3b82f6">👥</div><div class="mid"><b>Create group</b><span>Chat with many people</span></div></div><div class="row" data-a="channel"><div class="av" style="background:#8b5cf6">📢</div><div class="mid"><b>Create channel</b><span>Broadcast to followers</span></div></div><div class="row" data-a="community"><div class="av" style="background:#f59e0b">🏘</div><div class="mid"><b>Create community</b><span>Bring groups together</span></div></div></div></div>
     <div id="threadView" class="th hidden">
-      <div class="th-head"><button id="thBack" aria-label="Back">←</button><div><b id="thName"></b><small id="thPhone"></small></div></div>
+      <div class="th-head"><button id="thBack" aria-label="Back">←</button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thAudio" aria-label="Audio call">📞</button><button id="thVideo" aria-label="Video call">📹</button><button id="thInfoBtn" aria-label="Info">ⓘ</button></div>
       <div id="msgs"></div>
-      <div class="comp"><input id="msgInput" type="text" placeholder="Message" autocomplete="off"><button id="btnSendMsg">Send</button></div>
+      <div id="plusMenu" class="plusmenu hidden"><button data-a="image">🖼 Image</button><button data-a="emoji">😀 Emoji</button><button data-a="camera">📷 Camera</button><button data-a="ai">✨ AI image</button><button data-a="files">📁 Files</button><button data-a="play">🎮 Playmates</button><button data-a="loc">📍 Location</button></div>
+      <div id="emojiBox" class="emojibox hidden"></div>
+      <div class="comp"><button id="btnPlus" class="ic" aria-label="More">+</button><button id="btnMic" class="ic" aria-label="Voice message">🎤</button><input id="msgInput" type="text" placeholder="Message" autocomplete="off"><button id="btnSendMsg">Send</button></div>
     </div>
 
   </div>
@@ -981,6 +1006,7 @@ ZW|Zimbabwe|263`;
     function emailSkipped() { try { return localStorage.getItem('zaply_email_skip') === '1'; } catch (e) { return false; } }
     function afterAuth(user) {
       curUser = user;
+      try { localStorage.setItem('zaply_user', JSON.stringify(user)); } catch (e) {}
       var skipped = emailSkipped() && !user.email_verified;
       var pend = !user.email_verified && !skipped && (user.pending_email ? { email: user.pending_email, age: user.pending_age } : readPending());
       if (pend) showEmailCodeStep(pend.email, pend.age);
@@ -1074,7 +1100,7 @@ ZW|Zimbabwe|263`;
       unsubPush();
       call('logout').catch(function () {}).then(function () {
         clearToken();
-        try { localStorage.removeItem('zaply_email_skip'); } catch (e) {}
+        try { ['zaply_email_skip', 'zaply_user', 'zaply_chats', 'zaply_out'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
         showWelcome();
       });
     });
@@ -1165,7 +1191,7 @@ ZW|Zimbabwe|263`;
       }).then(function (r) {
         return r.json().then(function (j) {
           if (r.status === 401) { clearToken(); showWelcome(); }
-          if (!r.ok) throw new Error(j.error || 'Something went wrong');
+          if (!r.ok) { var er2 = new Error(j.error || 'Something went wrong'); er2.status = r.status; throw er2; }
           return j;
         });
       });
@@ -1175,7 +1201,7 @@ ZW|Zimbabwe|263`;
     var openWith = null, lastId = 0;
 
     function showTab(t) {
-      ['chats', 'contacts', 'settings', 'profile', 'chart'].forEach(function (n) {
+      ['chats', 'contacts', 'settings', 'profile', 'chart', 'updates', 'communities', 'calls'].forEach(function (n) {
         var N = n.charAt(0).toUpperCase() + n.slice(1), P = $('pane' + N), B = $('tab' + N);
         if (P) P.classList.toggle('hidden', n !== t);
         if (B) B.classList.toggle('active', n === t);
@@ -1215,7 +1241,7 @@ ZW|Zimbabwe|263`;
         return filt === 'all' ? true : filt === 'unread' ? isUnread(c) : filt === 'fav' ? fv.indexOf(c.phone) > -1 : false;
       });
       var box = $('chatList'), cb = $('contactList'); box.innerHTML = ''; cb.innerHTML = '';
-      var emptyMsg = q ? 'No results.' : filt === 'unread' ? 'No unread messages.' : filt === 'fav' ? 'No favourites yet. Tap \u2606 on a chat to add it.' : filt === 'groups' ? 'Groups are not available yet.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zaply.';
+      var emptyMsg = q ? 'No results.' : filt === 'unread' ? 'No unread messages.' : filt === 'fav' ? 'No favourites yet. Tap \u2606 on a chat to add it.' : filt === 'groups' ? 'Groups are not available yet.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zucket.';
       if (!shown.length) box.appendChild(mk('div', 'empty', emptyMsg));
       if (!base.length) cb.appendChild(mk('div', 'empty', q ? 'No results.' : 'No contacts yet.'));
       function row(c, withChat) {
@@ -1246,6 +1272,7 @@ ZW|Zimbabwe|263`;
     function loadChats() {
       chatCall('list').then(function (res) {
         allChats = res.chats || [];
+        try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
         try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
         renderChats();
       }).catch(function () {});
@@ -1271,7 +1298,7 @@ ZW|Zimbabwe|263`;
 
     function addMsg(m) {
       if (m.id <= lastId) return false;
-      lastId = m.id;
+      lastId = m.id; thCache.push(m);
       var b = mk('div', 'bub' + (m.mine ? ' mine' : ''), m.body);
       b.appendChild(mk('small', '', hhmm(m.at)));
       $('msgs').appendChild(b);
@@ -1284,13 +1311,14 @@ ZW|Zimbabwe|263`;
         if (who !== openWith) return;
         var added = false;
         res.messages.forEach(function (m) { if (addMsg(m)) added = true; });
-        if (added) $('msgs').scrollTop = $('msgs').scrollHeight;
+        if (added) { $('msgs').scrollTop = $('msgs').scrollHeight; saveThread(who); }
       }).catch(function () {});
     }
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
-      markSeen(u.phone); openWith = u.phone; lastId = 0; $('msgs').innerHTML = '';
-      $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.phone;
+      markSeen(u.phone); openWith = u.phone; lastId = 0; $('msgs').innerHTML = ''; thCache = []; openUser = u;
+      $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.phone; setAv($('thAv'), u);
+      loadCachedThread(u.phone);
       $('threadView').classList.remove('hidden');
       fetchMsgs(); $('msgInput').focus();
     }
@@ -1299,10 +1327,7 @@ ZW|Zimbabwe|263`;
     function sendMsg() {
       var body = $('msgInput').value.trim();
       if (!body || !openWith) return;
-      $('msgInput').value = '';
-      chatCall('send', { to: openWith, body: body }).then(function (res) {
-        addMsg(res.message); $('msgs').scrollTop = $('msgs').scrollHeight;
-      }).catch(function (e) { $('msgInput').value = body; alert(e.message); });
+      $('msgInput').value = ''; queueMsg(openWith, body);
     }
     $('btnSendMsg').addEventListener('click', sendMsg);
     $('msgInput').addEventListener('keydown', function (e) { if (e.key === 'Enter') sendMsg(); });
@@ -1310,6 +1335,86 @@ ZW|Zimbabwe|263`;
       if ($('appView').classList.contains('hidden') || document.hidden) return;
       if (openWith) fetchMsgs(); else if (!$('paneChats').classList.contains('hidden')) loadChats();
     }, 3000);
+
+    var thCache = [], openUser = null, flushing = false;
+    function saveThread(ph) { try { localStorage.setItem('zaply_th_' + ph, JSON.stringify(thCache.slice(-200))); } catch (e) {} }
+    function loadCachedThread(ph) {
+      var c = []; try { c = JSON.parse(localStorage.getItem('zaply_th_' + ph) || '[]'); } catch (e) {}
+      c.forEach(addMsg); outbox().filter(function (x) { return x.to === ph; }).forEach(pendBubble);
+      $('msgs').scrollTop = $('msgs').scrollHeight;
+    }
+    function outbox() { try { return JSON.parse(localStorage.getItem('zaply_out') || '[]'); } catch (e) { return []; } }
+    function setOutbox(a) { try { localStorage.setItem('zaply_out', JSON.stringify(a)); } catch (e) {} }
+    function pendBubble(it) {
+      var b = mk('div', 'bub mine pending', it.body); b.setAttribute('data-t', it.t); b.appendChild(mk('small', '', '\u23f3'));
+      $('msgs').appendChild(b); $('msgs').scrollTop = $('msgs').scrollHeight;
+    }
+    function dropPending(it) {
+      setOutbox(outbox().filter(function (x) { return x.t !== it.t; }));
+      var el = document.querySelector('.bub[data-t="' + it.t + '"]'); if (el) el.remove();
+    }
+    function queueMsg(to, body) {
+      var it = { t: Date.now() + '_' + Math.random().toString(36).slice(2), to: to, body: body };
+      var a = outbox(); a.push(it); setOutbox(a); pendBubble(it); flushOutbox();
+    }
+    function flushOutbox() {
+      if (flushing) return; var a = outbox(); if (!a.length) return;
+      flushing = true; var it = a[0];
+      chatCall('send', { to: it.to, body: it.body }).then(function (res) {
+        dropPending(it);
+        if (it.to === openWith) { addMsg(res.message); saveThread(openWith); $('msgs').scrollTop = $('msgs').scrollHeight; }
+        flushing = false; flushOutbox();
+      }).catch(function (e) {
+        flushing = false;
+        if (e && e.status >= 400 && e.status < 500 && e.status !== 401) { dropPending(it); flushOutbox(); }
+      });
+    }
+    window.addEventListener('online', flushOutbox);
+    setInterval(flushOutbox, 5000);
+
+    function setAv(el, u) { var n = u.name || u.phone || '#'; el.textContent = n.charAt(0).toUpperCase(); el.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; }
+    function countryOf(ph) {
+      var d = (ph || '').replace(/\D/g, ''), best = null;
+      COUNTRIES.forEach(function (c) {
+        if (d.indexOf(c.code) !== 0) return;
+        if (!best || c.code.length > best.code.length || (c.code.length === best.code.length && PINNED.indexOf(c.iso) > -1 && PINNED.indexOf(best.iso) < 0)) best = c;
+      });
+      return best;
+    }
+    function toast(m) { var e = mk('div', 'toast', m); document.body.appendChild(e); setTimeout(function () { e.remove(); }, 2200); }
+    function closeInfo() { $('infoView').classList.add('hidden'); }
+    function openInfo() {
+      if (!openUser) return; pushOv(closeInfo); setAv($('inAv'), openUser);
+      $('inName').textContent = openUser.name || openUser.phone; $('inPhone').textContent = openUser.phone || '';
+      var c = countryOf(openUser.phone); $('inCountry').textContent = c ? 'Country: ' + c.name : '';
+      $('infoView').classList.remove('hidden');
+    }
+    $('thInfo').addEventListener('click', openInfo); $('thInfoBtn').addEventListener('click', openInfo);
+    $('infoBack').addEventListener('click', closeOv);
+    $('thAudio').addEventListener('click', function () { toast('Audio calls are coming soon'); });
+    $('thVideo').addEventListener('click', function () { toast('Video calls are coming soon'); });
+    $('btnMic').addEventListener('click', function () { toast('Voice messages are coming soon'); });
+    $('btnPlus').addEventListener('click', function () { $('emojiBox').classList.add('hidden'); $('plusMenu').classList.toggle('hidden'); });
+    '\ud83d\ude00 \ud83d\ude02 \ud83d\ude0d \ud83d\ude0a \ud83d\ude18 \ud83d\ude0e \ud83d\ude22 \ud83d\ude2d \ud83d\ude21 \ud83d\udc4d \ud83d\ude4f \ud83d\udc4f \ud83d\udd25 \u2764\ufe0f \ud83c\udf89 \ud83d\ude4c \ud83e\udd14 \ud83d\ude34'.split(' ').forEach(function (e) {
+      var b = mk('button', '', e); b.addEventListener('click', function () { $('msgInput').value += e; $('msgInput').focus(); }); $('emojiBox').appendChild(b);
+    });
+    $('plusMenu').addEventListener('click', function (e) {
+      var a = e.target.getAttribute('data-a'); if (!a) return; $('plusMenu').classList.add('hidden');
+      if (a === 'emoji') $('emojiBox').classList.remove('hidden');
+      else if (a === 'loc') {
+        if (!navigator.geolocation || !openWith) return toast('Location is not available');
+        navigator.geolocation.getCurrentPosition(function (p) { queueMsg(openWith, '\ud83d\udccd https://maps.google.com/?q=' + p.coords.latitude + ',' + p.coords.longitude); }, function () { toast('Could not get your location'); });
+      } else toast('Coming soon');
+    });
+    document.addEventListener('click', function (e) { if (!e.target.closest('#btnPlus,#plusMenu,#emojiBox')) { $('plusMenu').classList.add('hidden'); $('emojiBox').classList.add('hidden'); } });
+    function closeCreate() { $('createView').classList.add('hidden'); }
+    $('btnPlusList').addEventListener('click', function () { pushOv(closeCreate); $('createView').classList.remove('hidden'); });
+    $('crBack').addEventListener('click', closeOv);
+    $('createView').addEventListener('click', function (e) {
+      var r = e.target.closest('.row'); if (!r) return; var a = r.getAttribute('data-a');
+      if (a === 'new') { closeOv(); setTimeout(function () { $('btnNew').click(); }, 60); } else toast('Groups, channels and communities are coming soon');
+    });
+    ['Chats', 'Updates', 'Communities', 'Calls'].forEach(function (n) { $('tab' + n).addEventListener('click', function () { showTab(n.toLowerCase()); }); });
 
     /* ---------- notifications ---------- */
     function b64ToU8(b) {
@@ -1351,7 +1456,7 @@ ZW|Zimbabwe|263`;
       });
     });
     $('btnTest').addEventListener('click', function () {
-      var b = $('btnTest'); b.textContent = 'Now close Zaply completely. A test arrives in about 8 seconds...';
+      var b = $('btnTest'); b.textContent = 'Now close Zucket completely. A test arrives in about 8 seconds...';
       chatCall('testpush').then(function (r) { b.textContent = 'Server result: ' + r.results.join(', '); })
         .catch(function (e) { b.textContent = '\u26A0 ' + e.message; });
     });
@@ -1366,12 +1471,13 @@ ZW|Zimbabwe|263`;
     }
 
     function startApp(user) {
+      try { allChats = JSON.parse(localStorage.getItem('zaply_chats') || '[]'); } catch (e) {}
       $('hello').textContent = 'Signed in as ' + user.name;
       $('pfName').textContent = user.name || ''; $('pfPhone').textContent = user.phone || ''; $('pfAv').textContent = (user.name || '#').charAt(0).toUpperCase();
       $('welcomeView').classList.add('hidden');
       $('authView').classList.add('hidden');
       $('appView').classList.remove('hidden');
-      showTab('chats');
+      showTab('chats'); renderChats();
       initPush();
       var qc = new URLSearchParams(location.search).get('chat');
       if (qc) { openChatWith(qc); history.replaceState(null, '', '/'); }
@@ -1586,25 +1692,25 @@ shn|ၵႂၢမ်းတႆး
 zgh|ⵜⴰⵎⴰⵣⵉⵖⵜ
 kab|Taqbaylit`.split('\n').map(function (l) { var p = l.split('|'); return { c: p[0], n: p[1] }; });
     var TR_RAW = {
-en:`Welcome to Zaply|Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.|Next|Download app|Enter your phone number|Zaply will need to verify your phone number. Carrier charges may apply.|Phone number|Choose a country|Enter the code|Didn't receive code?|Change number|Add your email|Your name|Continue|Log out|Chats|+ New chat|Message|Send|Is this phone number correct?|Yes|No|Connecting…|Search chats|Contacts|Settings|Profile|All|Unread|Favourites|Groups|Skip`,
-zh:`欢迎使用 Zaply|阅读我们的<a href="#">隐私政策</a>。点击“下一步”即表示接受我们的<a href="#">服务条款</a>。|下一步|下载应用|输入你的手机号码|Zaply 需要验证你的手机号码。可能会产生运营商费用。|手机号码|选择国家/地区|输入验证码|没有收到验证码？|更改号码|添加你的电子邮箱|你的名字|继续|退出登录|聊天|+ 新聊天|消息|发送|这个手机号码正确吗？|是|否|正在连接…`,
-es:`Bienvenido a Zaply|Lee nuestras <a href="#">Políticas de privacidad</a>. Toca "Siguiente" para aceptar nuestros <a href="#">Términos del servicio</a>.|Siguiente|Descargar app|Ingresa tu número de teléfono|Zaply necesitará verificar tu número de teléfono. Pueden aplicarse cargos del operador.|Número de teléfono|Elige un país|Ingresa el código|¿No recibiste el código?|Cambiar número|Agrega tu correo|Tu nombre|Continuar|Cerrar sesión|Chats|+ Nuevo chat|Mensaje|Enviar|¿Es correcto este número de teléfono?|Sí|No|Conectando…`,
-fr:`Bienvenue sur Zaply|Lisez nos <a href="#">Politiques de confidentialité</a>. Appuyez sur « Suivant » pour accepter nos <a href="#">Conditions d'utilisation</a>.|Suivant|Télécharger l'app|Saisissez votre numéro de téléphone|Zaply doit vérifier votre numéro de téléphone. Des frais d'opérateur peuvent s'appliquer.|Numéro de téléphone|Choisir un pays|Saisissez le code|Code non reçu ?|Changer de numéro|Ajoutez votre e-mail|Votre nom|Continuer|Se déconnecter|Discussions|+ Nouvelle discussion|Message|Envoyer|Ce numéro est-il correct ?|Oui|Non|Connexion…`,
-ar:`مرحبًا بك في Zaply|اقرأ <a href="#">سياسات الخصوصية</a>. اضغط "التالي" لقبول <a href="#">شروط الخدمة</a>.|التالي|تنزيل التطبيق|أدخل رقم هاتفك|سيحتاج Zaply إلى التحقق من رقم هاتفك. قد تُطبَّق رسوم المشغّل.|رقم الهاتف|اختر دولة|أدخل الرمز|لم يصلك الرمز؟|تغيير الرقم|أضف بريدك الإلكتروني|اسمك|متابعة|تسجيل الخروج|المحادثات|+ محادثة جديدة|رسالة|إرسال|هل رقم الهاتف هذا صحيح؟|نعم|لا|جارٍ الاتصال…`,
-sw:`Karibu Zaply|Soma <a href="#">Sera za Faragha</a>. Gusa "Endelea" ili ukubali <a href="#">Masharti ya Huduma</a>.|Endelea|Pakua programu|Weka namba yako ya simu|Zaply itahitaji kuthibitisha namba yako ya simu. Gharama za mtoa huduma zinaweza kutumika.|Namba ya simu|Chagua nchi|Weka msimbo|Hukupokea msimbo?|Badilisha namba|Ongeza barua pepe yako|Jina lako|Endelea|Toka|Gumzo|+ Gumzo jipya|Ujumbe|Tuma|Je, namba hii ya simu ni sahihi?|Ndiyo|Hapana|Inaunganisha…`,
-hi:`Zaply में आपका स्वागत है|हमारी <a href="#">गोपनीयता नीतियाँ</a> पढ़ें। हमारी <a href="#">सेवा की शर्तें</a> स्वीकार करने के लिए "आगे" पर टैप करें।|आगे|ऐप डाउनलोड करें|अपना फ़ोन नंबर दर्ज करें|Zaply को आपके फ़ोन नंबर की पुष्टि करनी होगी। कैरियर शुल्क लग सकते हैं।|फ़ोन नंबर|देश चुनें|कोड दर्ज करें|कोड नहीं मिला?|नंबर बदलें|अपना ईमेल जोड़ें|आपका नाम|जारी रखें|लॉग आउट|चैट|+ नई चैट|संदेश|भेजें|क्या यह फ़ोन नंबर सही है?|हाँ|नहीं|कनेक्ट हो रहा है…`,
-pt:`Bem-vindo ao Zaply|Leia nossas <a href="#">Políticas de Privacidade</a>. Toque em "Avançar" para aceitar nossos <a href="#">Termos de Serviço</a>.|Avançar|Baixar app|Digite seu número de telefone|O Zaply precisará verificar seu número de telefone. Podem ser aplicadas tarifas da operadora.|Número de telefone|Escolha um país|Digite o código|Não recebeu o código?|Alterar número|Adicione seu e-mail|Seu nome|Continuar|Sair|Conversas|+ Nova conversa|Mensagem|Enviar|Este número de telefone está correto?|Sim|Não|Conectando…`,
-ru:`Добро пожаловать в Zaply|Прочитайте нашу <a href="#">Политику конфиденциальности</a>. Нажмите «Далее», чтобы принять <a href="#">Условия использования</a>.|Далее|Скачать приложение|Введите номер телефона|Zaply необходимо подтвердить ваш номер телефона. Может взиматься плата оператора.|Номер телефона|Выберите страну|Введите код|Не получили код?|Изменить номер|Добавьте свою почту|Ваше имя|Продолжить|Выйти|Чаты|+ Новый чат|Сообщение|Отправить|Этот номер телефона верный?|Да|Нет|Подключение…`,
-de:`Willkommen bei Zaply|Lies unsere <a href="#">Datenschutzrichtlinie</a>. Tippe auf „Weiter“, um unsere <a href="#">Nutzungsbedingungen</a> zu akzeptieren.|Weiter|App herunterladen|Gib deine Telefonnummer ein|Zaply muss deine Telefonnummer bestätigen. Es können Gebühren deines Anbieters anfallen.|Telefonnummer|Land auswählen|Code eingeben|Keinen Code erhalten?|Nummer ändern|E-Mail hinzufügen|Dein Name|Fortfahren|Abmelden|Chats|+ Neuer Chat|Nachricht|Senden|Ist diese Telefonnummer korrekt?|Ja|Nein|Verbindung wird hergestellt…`,
-ja:`Zaplyへようこそ|<a href="#">プライバシーポリシー</a>をお読みください。「次へ」をタップすると<a href="#">利用規約</a>に同意したことになります。|次へ|アプリをダウンロード|電話番号を入力してください|Zaplyは電話番号の確認が必要です。通信料がかかる場合があります。|電話番号|国を選択|コードを入力|コードが届きませんか？|番号を変更|メールアドレスを追加|お名前|続ける|ログアウト|チャット|+ 新しいチャット|メッセージ|送信|この電話番号で合っていますか？|はい|いいえ|接続中…`,
-tr:`Zaply'e hoş geldiniz|<a href="#">Gizlilik Politikalarımızı</a> okuyun. <a href="#">Hizmet Şartlarımızı</a> kabul etmek için "İleri"ye dokunun.|İleri|Uygulamayı indir|Telefon numaranızı girin|Zaply telefon numaranızı doğrulamalıdır. Operatör ücretleri uygulanabilir.|Telefon numarası|Bir ülke seçin|Kodu girin|Kodu almadınız mı?|Numarayı değiştir|E-postanızı ekleyin|Adınız|Devam|Çıkış yap|Sohbetler|+ Yeni sohbet|Mesaj|Gönder|Bu telefon numarası doğru mu?|Evet|Hayır|Bağlanıyor…`,
-id:`Selamat datang di Zaply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "Berikutnya" untuk menerima <a href="#">Ketentuan Layanan</a> kami.|Berikutnya|Unduh aplikasi|Masukkan nomor telepon Anda|Zaply perlu memverifikasi nomor telepon Anda. Biaya operator mungkin berlaku.|Nomor telepon|Pilih negara|Masukkan kode|Tidak menerima kode?|Ubah nomor|Tambahkan email Anda|Nama Anda|Lanjutkan|Keluar|Obrolan|+ Obrolan baru|Pesan|Kirim|Apakah nomor telepon ini benar?|Ya|Tidak|Menghubungkan…`
+en:`Welcome to Zucket|Read our <a href="#">Privacy Policies</a>. Tap "Next" to accept our <a href="#">Terms of Service</a>.|Next|Download app|Enter your phone number|Zucket will need to verify your phone number. Carrier charges may apply.|Phone number|Choose a country|Enter the code|Didn't receive code?|Change number|Add your email|Your name|Continue|Log out|Chats|+ New chat|Message|Send|Is this phone number correct?|Yes|No|Connecting…|Search chats|Contacts|Settings|Profile|All|Unread|Favourites|Groups|Skip`,
+zh:`欢迎使用 Zucket|阅读我们的<a href="#">隐私政策</a>。点击“下一步”即表示接受我们的<a href="#">服务条款</a>。|下一步|下载应用|输入你的手机号码|Zucket 需要验证你的手机号码。可能会产生运营商费用。|手机号码|选择国家/地区|输入验证码|没有收到验证码？|更改号码|添加你的电子邮箱|你的名字|继续|退出登录|聊天|+ 新聊天|消息|发送|这个手机号码正确吗？|是|否|正在连接…`,
+es:`Bienvenido a Zucket|Lee nuestras <a href="#">Políticas de privacidad</a>. Toca "Siguiente" para aceptar nuestros <a href="#">Términos del servicio</a>.|Siguiente|Descargar app|Ingresa tu número de teléfono|Zucket necesitará verificar tu número de teléfono. Pueden aplicarse cargos del operador.|Número de teléfono|Elige un país|Ingresa el código|¿No recibiste el código?|Cambiar número|Agrega tu correo|Tu nombre|Continuar|Cerrar sesión|Chats|+ Nuevo chat|Mensaje|Enviar|¿Es correcto este número de teléfono?|Sí|No|Conectando…`,
+fr:`Bienvenue sur Zucket|Lisez nos <a href="#">Politiques de confidentialité</a>. Appuyez sur « Suivant » pour accepter nos <a href="#">Conditions d'utilisation</a>.|Suivant|Télécharger l'app|Saisissez votre numéro de téléphone|Zucket doit vérifier votre numéro de téléphone. Des frais d'opérateur peuvent s'appliquer.|Numéro de téléphone|Choisir un pays|Saisissez le code|Code non reçu ?|Changer de numéro|Ajoutez votre e-mail|Votre nom|Continuer|Se déconnecter|Discussions|+ Nouvelle discussion|Message|Envoyer|Ce numéro est-il correct ?|Oui|Non|Connexion…`,
+ar:`مرحبًا بك في Zucket|اقرأ <a href="#">سياسات الخصوصية</a>. اضغط "التالي" لقبول <a href="#">شروط الخدمة</a>.|التالي|تنزيل التطبيق|أدخل رقم هاتفك|سيحتاج Zucket إلى التحقق من رقم هاتفك. قد تُطبَّق رسوم المشغّل.|رقم الهاتف|اختر دولة|أدخل الرمز|لم يصلك الرمز؟|تغيير الرقم|أضف بريدك الإلكتروني|اسمك|متابعة|تسجيل الخروج|المحادثات|+ محادثة جديدة|رسالة|إرسال|هل رقم الهاتف هذا صحيح؟|نعم|لا|جارٍ الاتصال…`,
+sw:`Karibu Zucket|Soma <a href="#">Sera za Faragha</a>. Gusa "Endelea" ili ukubali <a href="#">Masharti ya Huduma</a>.|Endelea|Pakua programu|Weka namba yako ya simu|Zucket itahitaji kuthibitisha namba yako ya simu. Gharama za mtoa huduma zinaweza kutumika.|Namba ya simu|Chagua nchi|Weka msimbo|Hukupokea msimbo?|Badilisha namba|Ongeza barua pepe yako|Jina lako|Endelea|Toka|Gumzo|+ Gumzo jipya|Ujumbe|Tuma|Je, namba hii ya simu ni sahihi?|Ndiyo|Hapana|Inaunganisha…`,
+hi:`Zucket में आपका स्वागत है|हमारी <a href="#">गोपनीयता नीतियाँ</a> पढ़ें। हमारी <a href="#">सेवा की शर्तें</a> स्वीकार करने के लिए "आगे" पर टैप करें।|आगे|ऐप डाउनलोड करें|अपना फ़ोन नंबर दर्ज करें|Zucket को आपके फ़ोन नंबर की पुष्टि करनी होगी। कैरियर शुल्क लग सकते हैं।|फ़ोन नंबर|देश चुनें|कोड दर्ज करें|कोड नहीं मिला?|नंबर बदलें|अपना ईमेल जोड़ें|आपका नाम|जारी रखें|लॉग आउट|चैट|+ नई चैट|संदेश|भेजें|क्या यह फ़ोन नंबर सही है?|हाँ|नहीं|कनेक्ट हो रहा है…`,
+pt:`Bem-vindo ao Zucket|Leia nossas <a href="#">Políticas de Privacidade</a>. Toque em "Avançar" para aceitar nossos <a href="#">Termos de Serviço</a>.|Avançar|Baixar app|Digite seu número de telefone|O Zucket precisará verificar seu número de telefone. Podem ser aplicadas tarifas da operadora.|Número de telefone|Escolha um país|Digite o código|Não recebeu o código?|Alterar número|Adicione seu e-mail|Seu nome|Continuar|Sair|Conversas|+ Nova conversa|Mensagem|Enviar|Este número de telefone está correto?|Sim|Não|Conectando…`,
+ru:`Добро пожаловать в Zucket|Прочитайте нашу <a href="#">Политику конфиденциальности</a>. Нажмите «Далее», чтобы принять <a href="#">Условия использования</a>.|Далее|Скачать приложение|Введите номер телефона|Zucket необходимо подтвердить ваш номер телефона. Может взиматься плата оператора.|Номер телефона|Выберите страну|Введите код|Не получили код?|Изменить номер|Добавьте свою почту|Ваше имя|Продолжить|Выйти|Чаты|+ Новый чат|Сообщение|Отправить|Этот номер телефона верный?|Да|Нет|Подключение…`,
+de:`Willkommen bei Zucket|Lies unsere <a href="#">Datenschutzrichtlinie</a>. Tippe auf „Weiter“, um unsere <a href="#">Nutzungsbedingungen</a> zu akzeptieren.|Weiter|App herunterladen|Gib deine Telefonnummer ein|Zucket muss deine Telefonnummer bestätigen. Es können Gebühren deines Anbieters anfallen.|Telefonnummer|Land auswählen|Code eingeben|Keinen Code erhalten?|Nummer ändern|E-Mail hinzufügen|Dein Name|Fortfahren|Abmelden|Chats|+ Neuer Chat|Nachricht|Senden|Ist diese Telefonnummer korrekt?|Ja|Nein|Verbindung wird hergestellt…`,
+ja:`Zucketへようこそ|<a href="#">プライバシーポリシー</a>をお読みください。「次へ」をタップすると<a href="#">利用規約</a>に同意したことになります。|次へ|アプリをダウンロード|電話番号を入力してください|Zucketは電話番号の確認が必要です。通信料がかかる場合があります。|電話番号|国を選択|コードを入力|コードが届きませんか？|番号を変更|メールアドレスを追加|お名前|続ける|ログアウト|チャット|+ 新しいチャット|メッセージ|送信|この電話番号で合っていますか？|はい|いいえ|接続中…`,
+tr:`Zucket'e hoş geldiniz|<a href="#">Gizlilik Politikalarımızı</a> okuyun. <a href="#">Hizmet Şartlarımızı</a> kabul etmek için "İleri"ye dokunun.|İleri|Uygulamayı indir|Telefon numaranızı girin|Zucket telefon numaranızı doğrulamalıdır. Operatör ücretleri uygulanabilir.|Telefon numarası|Bir ülke seçin|Kodu girin|Kodu almadınız mı?|Numarayı değiştir|E-postanızı ekleyin|Adınız|Devam|Çıkış yap|Sohbetler|+ Yeni sohbet|Mesaj|Gönder|Bu telefon numarası doğru mu?|Evet|Hayır|Bağlanıyor…`,
+id:`Selamat datang di Zucket|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "Berikutnya" untuk menerima <a href="#">Ketentuan Layanan</a> kami.|Berikutnya|Unduh aplikasi|Masukkan nomor telepon Anda|Zucket perlu memverifikasi nomor telepon Anda. Biaya operator mungkin berlaku.|Nomor telepon|Pilih negara|Masukkan kode|Tidak menerima kode?|Ubah nomor|Tambahkan email Anda|Nama Anda|Lanjutkan|Keluar|Obrolan|+ Obrolan baru|Pesan|Kirim|Apakah nomor telepon ini benar?|Ya|Tidak|Menghubungkan…`
     };
     var TR = {}; Object.keys(TR_RAW).forEach(function (k) { TR[k] = TR_RAW[k].split('|'); });
     var RTL = ['ar', 'ur', 'fa', 'he', 'yi', 'ps', 'sd', 'ug', 'dv', 'ckb'];
     var lang = 'en';
     function T(i) { var d = TR[lang] || TR[lang.split('-')[0]] || TR.en; return d[i] || TR.en[i]; }
-    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats', 15], ['#msgInput', 17, 'p'], ['#btnSendMsg', 18], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnEmailSkip', 31], ['#btnSend', 2], ['#btnEmail', 2]];
+    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats', 15], ['#msgInput', 17, 'p'], ['#btnSendMsg', 18], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnEmailSkip', 31], ['#tabChats', 15], ['#btnSend', 2], ['#btnEmail', 2]];
     function applyLang() {
       MAP.forEach(function (m) {
         var e = document.querySelector(m[0]); if (!e) return;
@@ -1630,6 +1736,13 @@ id:`Selamat datang di Zaply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "
     /* ---------- start ---------- */
     function boot() {
       if (!getToken()) { showWelcome(); return; }
+      var cu = null; try { cu = JSON.parse(localStorage.getItem('zaply_user') || 'null'); } catch (e) {}
+      if (cu && cu.name) { /* open instantly, even with no internet */
+        startApp(cu);
+        call('me').then(function (res) { try { localStorage.setItem('zaply_user', JSON.stringify(res.user)); } catch (e) {} })
+          .catch(function (e) { if (e && e.status >= 400 && e.status < 500) { clearToken(); showWelcome(); } });
+        return;
+      }
       ldReset(); $('ldText').textContent = T(22); $('loader').classList.remove('hidden');
       call('me')
         .then(function (res) { hideLoader(); afterAuth(res.user); })
@@ -1658,7 +1771,7 @@ id:`Selamat datang di Zaply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk "
       var h = $('installHelp');
       h.textContent = ios
         ? 'On iPhone: tap the Share button, then "Add to Home Screen".'
-        : 'Tap the Chrome menu (\u22EE) at the top right, then "Install app". If you only see "Add to Home screen", use that. If Zaply is already installed, open it from your home screen.';
+        : 'Tap the Chrome menu (\u22EE) at the top right, then "Install app". If you only see "Add to Home screen", use that. If Zucket is already installed, open it from your home screen.';
       h.classList.remove('hidden');
     });
     if ('serviceWorker' in navigator) {
