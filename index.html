@@ -223,6 +223,41 @@
     .fabr{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
     .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:100px;background:#333;color:#fff;padding:10px 16px;border-radius:12px;z-index:99}
     .bub.pending{opacity:.6}
+      header h1{font-size:30px;font-weight:700}
+    .hr{display:flex;align-items:center;gap:2px}
+    #btnCam{border:none;background:transparent;font-size:24px;padding:4px 10px}
+    .searchbox input{background:#1f2c34;border:none;padding:16px 22px}
+    .tabs4{gap:10px;padding-bottom:2px}
+    .tabs4 button{flex:none;border:1px solid var(--border);background:transparent;border-radius:999px;padding:9px 18px;font-size:16px;color:var(--muted)}
+    .tabs4 button.active{background:#103629;border-color:#103629;color:#25d366}
+    .tabs4 .plusb{width:44px!important;height:44px;border-radius:50%!important;padding:0!important;font-size:24px}
+    .cnt{margin-left:6px}
+    .fabr{width:64px;height:64px;border-radius:20px;display:flex;align-items:center;justify-content:center;background:#25d366}
+    #bottomNav button{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:600;padding:10px 4px 8px;color:var(--text)}
+    .ni{position:relative;width:64px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+    #bottomNav button.active .ni{background:#103629;color:#25d366}
+    #bottomNav button.active{color:var(--text)}
+    .bd{position:absolute;top:-8px;right:0;min-width:22px;padding:0 6px;border-radius:11px;background:#25d366;color:#06140c;font-size:12px;font-weight:700;line-height:20px;text-align:center}
+    .ub{width:16px;height:16px;background:#25d366}
+    .row:has(.ub) time{color:#25d366}
+      .th-head button svg,#btnCam svg{display:block}
+    .th-head #thAudio,.th-head #thVideo,.th-head #thInfoBtn{border:none;background:transparent;padding:6px 8px;color:var(--text)}
+    .thinfo small{display:block;color:var(--muted)}
+    .comp input{background:var(--card);border:none;border-radius:999px;padding:12px 18px}
+    .comp .send{background:#25d366;color:#06140c}
+    .sset{padding:8px 16px 40px;overflow-y:auto}
+    .sset h4{margin:22px 0 6px;font-size:14px}
+    .acts{display:flex;flex-direction:column;align-items:center;gap:8px;margin:10px 0}
+    .cbtn{width:72px;height:72px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;padding:0;background:var(--card);color:var(--text)}
+    .srow{display:flex;align-items:center;gap:16px;padding:10px 0;cursor:pointer}
+    .srow i{width:48px;height:48px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none}
+    .start{text-align:center;padding:40px 24px}
+    .start h3{margin:14px 0 6px;font-size:24px}
+    .start p{color:var(--muted);margin:0 0 20px}
+    .inv{border:1px solid var(--border);background:transparent;color:#25d366;border-radius:999px;padding:12px 28px;font-weight:700}
+    .fl{display:none;margin-left:12px;font-weight:700;color:#06140c;font-size:16px}
+    .fabr.ext{width:auto;padding:0 24px!important}
+    .fabr.ext .fl{display:inline}
   </style>
 </head>
 <body>
@@ -369,8 +404,8 @@
     <div id="appView" class="hidden">
       <header>
         <h1>Zucket</h1>
-        <div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
-          <div id="menuBox" class="menubox hidden"><button id="menuChats">Chats</button><button id="menuContacts">Contacts</button><button id="menuSettings">Settings</button><button id="menuProfile">Profile</button><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div>
+        <div class="hr"><button id="btnCam" aria-label="Camera"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" ><rect x="3" y="6.5" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 6.5 9.5 4h5L16 6.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
+          <div id="menuBox" class="menubox hidden"><button id="menuChats">Chats</button><button id="menuContacts">Contacts</button><button id="menuSettings">Settings</button><button id="menuProfile">Profile</button><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div></div>
       </header>
       <div class="searchbox" id="searchBox"><input id="chatSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
       <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button><button id="btnPlusList" class="plusb" aria-label="Create">+</button></nav>
@@ -378,7 +413,7 @@
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">🔔 Turn on notifications</button>
         <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone</button>
-        <button id="btnNew" class="fabr" aria-label="New chat">+</button>
+        <button id="btnNew" class="fabr" aria-label="New chat"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg><span class="fl">Send message</span></button>
         <div class="newbox hidden" id="newBox">
           <input id="newPhone" type="tel" inputmode="tel" placeholder="Friend's number, e.g. +254712345678">
           <button class="primary" id="btnStart">Start</button>
@@ -387,7 +422,12 @@
         <div id="chatList"></div>
       </div>
 
-      <nav id="bottomNav"><button id="tabChats" class="active">Chats</button><button id="tabUpdates">Updates</button><button id="tabCommunities">Communities</button><button id="tabCalls">Calls</button></nav>
+      <nav id="bottomNav">
+        <button id="tabChats" class="active"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span class="bd hidden" id="navBadge"></span></span><span class="nl">Chats</span></button>
+        <button id="tabUpdates"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3"/></svg></span><span class="nl">Updates</span></button>
+        <button id="tabCommunities"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span><span class="nl">Communities</span></button>
+        <button id="tabCalls"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></span><span class="nl">Calls</span></button>
+      </nav>
       <div id="paneUpdates" class="hidden"><div class="empty">Updates are coming soon.</div></div>
       <div id="paneCommunities" class="hidden"><div class="empty">Communities are coming soon.</div></div>
       <div id="paneCalls" class="hidden"><div class="empty">Calls are coming soon.</div></div>
@@ -417,14 +457,19 @@
       </div>
     </div>
 
-    <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back">←</button><b>Contact info</b></div><div class="card pf" style="margin:16px"><div class="av big" id="inAv"></div><b id="inName" style="font-size:20px"></b><span id="inPhone" class="sub" style="margin:0"></span><span id="inCountry" class="sub" style="margin:0"></span></div></div>
+    <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button></div>
+    <div class="sset"><div class="acts"><button id="sProfileBtn" class="cbtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Profile</span></div>
+    <div id="sProfile" class="card pf hidden"><div class="av big" id="inAv"></div><b id="inName" style="font-size:20px"></b><span id="inPhone" class="sub" style="margin:0"></span><span id="inCountry" class="sub" style="margin:0"></span></div>
+    <h4>Actions</h4><div class="srow" id="sUnread"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></i><span>Mark as unread</span></div><div class="srow" id="sShare"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span>Share contact</span></div><div class="srow" id="sGroup"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></i><span  id="sGroupT">Create group</span></div>
+    <h4>Customization</h4><div class="srow" id="sReact"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Quick reaction</span></div><div class="srow" id="sNick"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Nicknames</span></div>
+    <h4>Privacy &amp; support</h4><div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Disappearing messages</span></div><div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Read receipts</span></div><div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span  id="sBlockT">Block</span></div><div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Report</span></div></div></div>
     <div id="createView" class="th hidden"><div class="th-head"><button id="crBack" aria-label="Back">←</button><b>Create</b></div><div style="padding:12px"><div class="row" data-a="new"><div class="av" style="background:#21c063">💬</div><div class="mid"><b>New chat</b><span>Message someone by phone number</span></div></div><div class="row" data-a="group"><div class="av" style="background:#3b82f6">👥</div><div class="mid"><b>Create group</b><span>Chat with many people</span></div></div><div class="row" data-a="channel"><div class="av" style="background:#8b5cf6">📢</div><div class="mid"><b>Create channel</b><span>Broadcast to followers</span></div></div><div class="row" data-a="community"><div class="av" style="background:#f59e0b">🏘</div><div class="mid"><b>Create community</b><span>Bring groups together</span></div></div></div></div>
     <div id="threadView" class="th hidden">
-      <div class="th-head"><button id="thBack" aria-label="Back">←</button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thAudio" aria-label="Audio call">📞</button><button id="thVideo" aria-label="Video call">📹</button><button id="thInfoBtn" aria-label="Info">ⓘ</button></div>
+      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thInfoBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></div>
       <div id="msgs"></div>
       <div id="plusMenu" class="plusmenu hidden"><button data-a="image">🖼 Image</button><button data-a="emoji">😀 Emoji</button><button data-a="camera">📷 Camera</button><button data-a="ai">✨ AI image</button><button data-a="files">📁 Files</button><button data-a="play">🎮 Playmates</button><button data-a="loc">📍 Location</button></div>
       <div id="emojiBox" class="emojibox hidden"></div>
-      <div class="comp"><button id="btnPlus" class="ic" aria-label="More">+</button><button id="btnMic" class="ic" aria-label="Voice message">🎤</button><input id="msgInput" type="text" placeholder="Message" autocomplete="off"><button id="btnSendMsg">Send</button></div>
+      <div class="comp"><button id="btnPlus" class="ic" aria-label="More">+</button><button id="btnMic" class="ic" aria-label="Voice message"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" ><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button><input id="msgInput" type="text" placeholder="Message" autocomplete="off"><button id="btnSendMsg" class="ic send" aria-label="Send"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" ><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
     </div>
 
   </div>
@@ -1234,7 +1279,14 @@ ZW|Zimbabwe|263`;
     function markSeen(ph) { try { localStorage.setItem('zaply_seen_' + ph, String(Date.now())); } catch (e) {} }
     function seenAt(ph) { try { return +localStorage.getItem('zaply_seen_' + ph) || 0; } catch (e) { return 0; } }
     function isUnread(c) { return !c.mine && new Date(c.at).getTime() > seenAt(c.phone); }
+    function updateCounts() {
+      var n = allChats.filter(isUnread).length;
+      $('fUnread').innerHTML = T(28) + (n ? ' <span class="cnt">' + n + '</span>' : '');
+      $('btnNew').classList.toggle('ext', !allChats.length);
+      var nb = $('navBadge'); nb.textContent = n; nb.classList.toggle('hidden', !n);
+    }
     function renderChats() {
+      updateCounts();
       var q = ($('chatSearch').value || '').toLowerCase().trim(), fv = favs();
       var base = allChats.filter(function (c) { return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
       var shown = base.filter(function (c) {
@@ -1242,7 +1294,8 @@ ZW|Zimbabwe|263`;
       });
       var box = $('chatList'), cb = $('contactList'); box.innerHTML = ''; cb.innerHTML = '';
       var emptyMsg = q ? 'No results.' : filt === 'unread' ? 'No unread messages.' : filt === 'fav' ? 'No favourites yet. Tap \u2606 on a chat to add it.' : filt === 'groups' ? 'Groups are not available yet.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zucket.';
-      if (!shown.length) box.appendChild(mk('div', 'empty', emptyMsg));
+      if (!allChats.length && filt === 'all' && !q) box.innerHTML = '<div class="start"><svg viewBox="0 0 120 100" width="170"><circle cx="60" cy="52" r="30" fill="#25d366"/><path d="M30 52h60M60 22v60M38 36q22 10 44 0M38 68q22-10 44 0" stroke="#0b141a" fill="none" stroke-width="2"/><path d="M12 70 40 28l-6 24z" fill="#fff"/><rect x="80" y="20" width="34" height="26" rx="10" fill="#e8e8e8"/></svg><h3>Start chatting</h3><p>Zucket is better with friends. Use the button below to invite your contacts.</p><button id="btnInvite" class="inv">Invite a friend</button></div>';
+      else if (!shown.length) box.appendChild(mk('div', 'empty', emptyMsg));
       if (!base.length) cb.appendChild(mk('div', 'empty', q ? 'No results.' : 'No contacts yet.'));
       function row(c, withChat) {
         var r = mk('div', 'row'), un = withChat && isUnread(c), isFav = fv.indexOf(c.phone) > -1;
@@ -1278,6 +1331,12 @@ ZW|Zimbabwe|263`;
       }).catch(function () {});
     }
     $('chatSearch').addEventListener('input', renderChats);
+    $('chatList').addEventListener('click', function (e) {
+      if (e.target.id !== 'btnInvite') return;
+      var m = 'Join me on Zucket: ' + location.origin;
+      if (navigator.share) navigator.share({ text: m }).catch(function () {});
+      else if (navigator.clipboard) navigator.clipboard.writeText(m).then(function () { toast('Invite link copied'); });
+    });
 
     $('btnNew').addEventListener('click', function () {
       $('newBox').classList.toggle('hidden'); $('newMsg').textContent = ''; $('newPhone').focus();
@@ -1322,7 +1381,7 @@ ZW|Zimbabwe|263`;
       $('threadView').classList.remove('hidden');
       fetchMsgs(); $('msgInput').focus();
     }
-    function closeThread() { if (openWith) markSeen(openWith); openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
+    function closeThread() { if (openWith && openWith !== keepUnread) markSeen(openWith); keepUnread = null; openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
     $('thBack').addEventListener('click', closeOv);
     function sendMsg() {
       var body = $('msgInput').value.trim();
@@ -1387,12 +1446,28 @@ ZW|Zimbabwe|263`;
       if (!openUser) return; pushOv(closeInfo); setAv($('inAv'), openUser);
       $('inName').textContent = openUser.name || openUser.phone; $('inPhone').textContent = openUser.phone || '';
       var c = countryOf(openUser.phone); $('inCountry').textContent = c ? 'Country: ' + c.name : '';
+      var fn = (openUser.name || openUser.phone || '').split(' ')[0];
+      $('sGroupT').textContent = 'Create group with ' + fn; $('sBlockT').textContent = 'Block ' + fn; $('sProfile').classList.add('hidden');
       $('infoView').classList.remove('hidden');
     }
+    var keepUnread = null;
+    $('infoView').addEventListener('click', function (e) {
+      if (e.target.closest('#sProfileBtn')) return $('sProfile').classList.toggle('hidden');
+      var r = e.target.closest('.srow'); if (!r || !openUser) return;
+      if (r.id === 'sUnread') {
+        try { localStorage.setItem('zaply_seen_' + openUser.phone, '0'); } catch (x) {}
+        keepUnread = openUser.phone; toast('Marked as unread'); closeOv(); setTimeout(closeOv, 80);
+      } else if (r.id === 'sShare') {
+        var tx = (openUser.name || '') + ' ' + openUser.phone;
+        if (navigator.share) navigator.share({ text: tx }).catch(function () {});
+        else if (navigator.clipboard) navigator.clipboard.writeText(tx).then(function () { toast('Contact copied'); });
+      } else toast('Coming soon');
+    });
     $('thInfo').addEventListener('click', openInfo); $('thInfoBtn').addEventListener('click', openInfo);
     $('infoBack').addEventListener('click', closeOv);
     $('thAudio').addEventListener('click', function () { toast('Audio calls are coming soon'); });
     $('thVideo').addEventListener('click', function () { toast('Video calls are coming soon'); });
+    $('btnCam').addEventListener('click', function () { toast('Camera is coming soon'); });
     $('btnMic').addEventListener('click', function () { toast('Voice messages are coming soon'); });
     $('btnPlus').addEventListener('click', function () { $('emojiBox').classList.add('hidden'); $('plusMenu').classList.toggle('hidden'); });
     '\ud83d\ude00 \ud83d\ude02 \ud83d\ude0d \ud83d\ude0a \ud83d\ude18 \ud83d\ude0e \ud83d\ude22 \ud83d\ude2d \ud83d\ude21 \ud83d\udc4d \ud83d\ude4f \ud83d\udc4f \ud83d\udd25 \u2764\ufe0f \ud83c\udf89 \ud83d\ude4c \ud83e\udd14 \ud83d\ude34'.split(' ').forEach(function (e) {
@@ -1710,7 +1785,7 @@ id:`Selamat datang di Zucket|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     var RTL = ['ar', 'ur', 'fa', 'he', 'yi', 'ps', 'sd', 'ug', 'dv', 'ckb'];
     var lang = 'en';
     function T(i) { var d = TR[lang] || TR[lang.split('-')[0]] || TR.en; return d[i] || TR.en[i]; }
-    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats', 15], ['#msgInput', 17, 'p'], ['#btnSendMsg', 18], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnEmailSkip', 31], ['#tabChats', 15], ['#btnSend', 2], ['#btnEmail', 2]];
+    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats .nl', 15], ['#msgInput', 17, 'p'], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnEmailSkip', 31], ['#tabChats', 15], ['#btnSend', 2], ['#btnEmail', 2]];
     function applyLang() {
       MAP.forEach(function (m) {
         var e = document.querySelector(m[0]); if (!e) return;
