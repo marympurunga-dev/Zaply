@@ -258,6 +258,11 @@
     .fl{display:none;margin-left:12px;font-weight:700;color:#06140c;font-size:16px}
     .fabr.ext{width:auto;padding:0 24px!important}
     .fabr.ext .fl{display:inline}
+      .tabs4{gap:6px;overflow-x:auto;scrollbar-width:none}
+    .tabs4::-webkit-scrollbar{display:none}
+    .tabs4 button{padding:7px 11px;font-size:13px}
+    .tabs4 .plusb{width:36px!important;height:36px;font-size:20px}
+    .empty{color:var(--muted);text-align:center;padding:40px 16px}
   </style>
 </head>
 <body>
@@ -476,6 +481,18 @@
 
   <script>
     var API = 'https://zaply-gamma.vercel.app/api';
+    /* try this site's own /api first (works on any domain, e.g. zucket.me), then the old address */
+    var APIS = (location.origin.indexOf('http') === 0 && location.origin + '/api' !== API) ? [location.origin + '/api', API] : [API];
+    function apiFetch(path, opts) {
+      var i = 0;
+      function go() {
+        return fetch(APIS[i] + path, opts).then(function (r) {
+          if ((r.status === 404 || r.status === 405) && i < APIS.length - 1) { i++; return go(); }
+          return r;
+        }).catch(function (e) { if (i < APIS.length - 1) { i++; return go(); } throw e; });
+      }
+      return go();
+    }
     var TOKEN_KEY = 'zaply_token';
 
     function $(id) { return document.getElementById(id); }
@@ -510,7 +527,7 @@
     function call(action, data) {
       if (DEMO) return demoCall(action, data || {});
       var payload = Object.assign({ action: action, token: getToken() }, data || {});
-      return fetch(API + '/auth', {
+      return apiFetch('/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -1203,7 +1220,7 @@ ZW|Zimbabwe|263`;
 
     function loadChart() {
       showStatus('Loading...', false);
-      fetch(API + '/chart')
+      apiFetch('/chart')
         .then(function (r) { if (!r.ok) throw new Error('bad'); return r.json(); })
         .then(function (data) {
           if (!Array.isArray(data) || !data.length) { showStatus('No data yet.', false); return; }
@@ -1230,7 +1247,7 @@ ZW|Zimbabwe|263`;
 
     /* ---------- chat ---------- */
     function chatCall(action, data) {
-      return fetch(API + '/chat', {
+      return apiFetch('/chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(Object.assign({ action: action, token: getToken() }, data || {}))
       }).then(function (r) {
@@ -1270,7 +1287,7 @@ ZW|Zimbabwe|263`;
     $('menuChats').addEventListener('click', function () { showTab('chats'); });
     $('menuChart').addEventListener('click', function () { showTab('chart'); });
 
-    var allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
+    var loadErr = '', allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
     function avatar(c) {
       var n = c.name || c.phone || '#', a = mk('div', 'av', n.charAt(0).toUpperCase());
       a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; return a;
@@ -1294,7 +1311,7 @@ ZW|Zimbabwe|263`;
       });
       var box = $('chatList'), cb = $('contactList'); box.innerHTML = ''; cb.innerHTML = '';
       var emptyMsg = q ? 'No results.' : filt === 'unread' ? 'No unread messages.' : filt === 'fav' ? 'No favourites yet. Tap \u2606 on a chat to add it.' : filt === 'groups' ? 'Groups are not available yet.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zucket.';
-      if (!allChats.length && filt === 'all' && !q) box.innerHTML = '<div class="start"><svg viewBox="0 0 120 100" width="170"><circle cx="60" cy="52" r="30" fill="#25d366"/><path d="M30 52h60M60 22v60M38 36q22 10 44 0M38 68q22-10 44 0" stroke="#0b141a" fill="none" stroke-width="2"/><path d="M12 70 40 28l-6 24z" fill="#fff"/><rect x="80" y="20" width="34" height="26" rx="10" fill="#e8e8e8"/></svg><h3>Start chatting</h3><p>Zucket is better with friends. Use the button below to invite your contacts.</p><button id="btnInvite" class="inv">Invite a friend</button></div>';
+      if (!allChats.length && filt === 'all' && !q) box.innerHTML = '<div class="start"><svg viewBox="0 0 120 100" width="170"><circle cx="60" cy="52" r="30" fill="#25d366"/><path d="M30 52h60M60 22v60M38 36q22 10 44 0M38 68q22-10 44 0" stroke="#0b141a" fill="none" stroke-width="2"/><path d="M12 70 40 28l-6 24z" fill="#fff"/><rect x="80" y="20" width="34" height="26" rx="10" fill="#e8e8e8"/></svg><h3>' + (loadErr ? 'Couldn\u2019t load chats' : 'Start chatting') + '</h3><p>' + (loadErr ? loadErr + '. Check your internet and try again.' : 'Zucket is better with friends. Use the button below to invite your contacts.') + '</p><button id="' + (loadErr ? 'btnRetry' : 'btnInvite') + '" class="inv">' + (loadErr ? 'Try again' : 'Invite a friend') + '</button></div>';
       else if (!shown.length) box.appendChild(mk('div', 'empty', emptyMsg));
       if (!base.length) cb.appendChild(mk('div', 'empty', q ? 'No results.' : 'No contacts yet.'));
       function row(c, withChat) {
@@ -1324,14 +1341,15 @@ ZW|Zimbabwe|263`;
     }
     function loadChats() {
       chatCall('list').then(function (res) {
-        allChats = res.chats || [];
+        allChats = res.chats || []; loadErr = '';
         try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
         try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
         renderChats();
-      }).catch(function () {});
+      }).catch(function (e) { loadErr = e && e.status ? 'Server error (' + e.status + ')' : 'Can\u2019t reach the server'; renderChats(); });
     }
     $('chatSearch').addEventListener('input', renderChats);
     $('chatList').addEventListener('click', function (e) {
+      if (e.target.id === 'btnRetry') { loadErr = ''; loadChats(); return; }
       if (e.target.id !== 'btnInvite') return;
       var m = 'Join me on Zucket: ' + location.origin;
       if (navigator.share) navigator.share({ text: m }).catch(function () {});
@@ -1785,8 +1803,15 @@ id:`Selamat datang di Zucket|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     var RTL = ['ar', 'ur', 'fa', 'he', 'yi', 'ps', 'sd', 'ug', 'dv', 'ckb'];
     var lang = 'en';
     function T(i) { var d = TR[lang] || TR[lang.split('-')[0]] || TR.en; return d[i] || TR.en[i]; }
-    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats .nl', 15], ['#msgInput', 17, 'p'], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnEmailSkip', 31], ['#tabChats', 15], ['#btnSend', 2], ['#btnEmail', 2]];
+    var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats .nl', 15], ['#msgInput', 17, 'p'], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnEmailSkip', 31], ['#btnSend', 2], ['#btnEmail', 2]];
+    var triedLang = {};
     function applyLang() {
+      var b0 = lang.split('-')[0];
+      if (!TR[lang] && !TR[b0] && !triedLang[b0]) { /* load lang/<code>.txt on demand */
+        triedLang[b0] = 1;
+        fetch('lang/' + b0 + '.txt').then(function (r) { if (!r.ok) throw 0; return r.text(); })
+          .then(function (s) { TR[b0] = s.trim().split('|'); applyLang(); }).catch(function () {});
+      }
       MAP.forEach(function (m) {
         var e = document.querySelector(m[0]); if (!e) return;
         var s = T(m[1]);
