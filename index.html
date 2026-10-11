@@ -270,6 +270,20 @@
     .opt{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
     .pfl{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);font-size:14px}
     .toast.ok{background:#1faa59}
+    .pg .opt{font-size:17px}
+    .pg .sub{font-size:14px;color:var(--muted);line-height:1.45}
+    .pg .opt input[type=radio]{-webkit-appearance:none;appearance:none;display:block;width:24px;height:24px;margin:0;padding:0;flex:none;border:2px solid #9aa3ab;border-radius:50%;background:transparent;position:relative}
+    .pg .opt input[type=radio]:checked{border-color:#e4e6eb}
+    .pg .opt input[type=radio]:checked::after{content:'';position:absolute;inset:4px;border-radius:50%;background:#e4e6eb}
+    .pg select,.pg textarea{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:12px}
+    .pg select option{background:var(--card);color:var(--text)}
+    .pg textarea::placeholder{color:var(--muted)}
+    .pg .opt input.sw{-webkit-appearance:none;appearance:none;display:block;width:46px;height:26px;margin:0;padding:0;border:none;border-radius:13px;background:#5b6269;position:relative;flex:none;outline:none;transition:background .2s}
+    .pg .opt input.sw::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
+    .pg .opt input.sw:checked{background:#2f6bff}
+    .pg .opt input.sw:checked::after{left:23px}
+    .encico{width:110px;height:110px;border-radius:50%;border:6px solid #21c063;color:#21c063;display:flex;align-items:center;justify-content:center;margin:34px auto 22px}
+    .encnote{background:#1f6f43;color:#fff;border-radius:16px;padding:18px;margin-top:22px;text-align:left;font-size:15px;line-height:1.55}
     .netb{position:fixed;top:0;left:0;right:0;z-index:99;background:#b3261e;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 16px}
     .netb button{border:1px solid #fff;background:transparent;color:#fff;border-radius:999px;padding:6px 14px}
       #callView,#incoming{position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column}
@@ -289,6 +303,18 @@
     .cvb.on{background:#fff;color:#111}
     #cvBar{position:absolute;left:14px;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));background:rgba(20,28,33,.92);border-radius:40px;padding:10px 12px;display:flex;justify-content:space-between;z-index:3}
     #cvBar .cvb{background:#2a343b}#cvBar .cvb.on{background:#fff;color:#111}#cvBar #cvEnd{background:#e5173f}
+    /* audio call layout */
+    #callView.cvaud{background:#0b141a}
+    #callView.cvaud #cvLocal,#callView.cvaud #cvRemote,#callView.cvaud #cvSide,#callView.cvaud #cvBar{display:none}
+    #callView.cvvid .aui,#callView.cvvid #cvAv{display:none}
+    #callView.cvaud #cvAv{width:186px;height:186px;font-size:72px;top:30%;box-shadow:none}
+    .amin,.aadd{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));z-index:3;background:rgba(255,255,255,.1)!important;width:48px;height:48px}
+    .amin{left:12px}.aadd{right:12px}
+    #aPanel{position:absolute;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:#14191d;border:1px solid #242c32;border-radius:34px;padding:22px 12px 18px;display:grid;grid-template-columns:repeat(3,1fr);row-gap:18px;z-index:3}
+    .ab{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:14px;color:#fff}
+    .ab .cvb{width:64px;height:64px;background:#222c32}
+    .ab .cvb.on{background:#fff;color:#111}
+    .ab #aEnd{background:#e5173f}
   </style>
 </head>
 <body>
@@ -492,10 +518,11 @@
     <div class="sset"><div class="acts"><div class="act"><button id="sCall" class="cbtn" aria-label="Call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><span>Call</span></div><div class="act"><button id="sVideoBtn" class="cbtn" aria-label="Video Chat"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><span>Video Chat</span></div><div class="act"><button id="sProfileBtn" class="cbtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Profile</span></div><div class="act"><button id="sSaveBtn" class="cbtn" aria-label="Save"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Save</span></div></div>
     <div id="sProfile" class="card pf hidden"><div class="av big" id="inAv"></div><b id="inName" style="font-size:20px"></b><span id="inPhone" class="sub" style="margin:0"></span><span id="inCountry" class="sub" style="margin:0"></span><div id="pfFields" style="width:100%"></div></div>
     <h4>Actions</h4><div class="srow" id="sUnread"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></i><span>Mark as unread</span></div><div class="srow" id="sShare"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span>Share contact</span></div><div class="srow" id="sGroup"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></i><span  id="sGroupT">Create group</span></div>
-    <h4>Privacy &amp; support</h4><div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></i><span>Disappearing messages</span></div><div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></i><span>Read receipts</span></div><div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg></i><span  id="sBlockT">Block</span></div><div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></i><span>Report</span></div></div></div>
-    <div id="disapView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Disappearing messages</b></div><div class="pg"><p class="sub">Messages will disappear after the selected duration.</p><label class="opt">off<input type="radio" name="dis" value="off"></label><label class="opt">24 hours<input type="radio" name="dis" value="24h"></label></div></div>
-    <div id="readView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Read receipts</b></div><div class="pg"><label class="opt">Show read receipts<input type="checkbox" id="rrToggle"></label><p class="sub"><span id="rrName"></span> will be able to see when you've read their messages.</p></div></div>
-    <div id="reportView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Report</b></div><div class="pg"><p class="sub">Tell us what you want to report.</p><textarea id="rpText" rows="6" placeholder="Write here…" style="width:100%;border-radius:12px;padding:12px;font:inherit"></textarea><button class="primary" id="rpSend" style="margin-top:16px;width:100%">Submit report</button></div></div>
+    <h4>Privacy &amp; support</h4><div class="srow" id="sEnc"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span>Verify end-to-end encryption</span></div><div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></i><span>Disappearing messages</span></div><div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></i><span>Read receipts</span></div><div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg></i><span  id="sBlockT">Block</span></div><div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></i><span>Report</span></div></div></div>
+    <div id="encView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="thinfo"><b>End-to-end encryption</b><small id="encWho"></small></div></div><div class="pg" style="text-align:center"><div class="encico"><svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div><b style="font-size:19px">End-to-End Encryption</b><div class="encnote">End-to-End Encryption secures your messages with a lock. Only you and the person you're communicating with have the keys to unlock and read or listen to what is sent, not even Zucket.</div></div></div>
+    <div id="disapView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Disappearing messages</b></div><div class="pg"><p class="sub">Messages will disappear after the selected duration. <a href="#" id="disLearn" style="color:#4aa3ff;font-weight:600;text-decoration:none">Learn more.</a></p><label class="opt">off<input type="radio" name="dis" value="off"></label><label class="opt">24 hours<input type="radio" name="dis" value="24h"></label></div></div>
+    <div id="readView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Read receipts</b></div><div class="pg"><label class="opt">Show read receipts<input type="checkbox" id="rrToggle" class="sw"></label><p class="sub"><span id="rrName"></span> will be able to see when you've read their messages.</p></div></div>
+    <div id="reportView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Report</b></div><div class="pg"><p class="sub">Tell us what you want to report.</p><textarea id="rpText" rows="6" placeholder="Write here…" style="width:100%;border-radius:12px;padding:14px;font:inherit;box-sizing:border-box"></textarea><button class="primary" id="rpSend" style="margin-top:16px;width:100%">Submit report</button></div></div>
     <div id="saveView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>New Contact</b></div><div class="pg"><input id="svFirst" placeholder="First name"><input id="svLast" placeholder="Last name"><select id="svCountry"></select><input id="svPhone" type="tel" placeholder="Phone number"><button class="primary" id="svSave" style="margin-top:16px;width:100%">Save</button></div></div>
     <div id="createView" class="th hidden"><div class="th-head"><button id="crBack" aria-label="Back">←</button><b>Create</b></div><div style="padding:12px"><div class="row" data-a="new"><div class="av" style="background:#21c063">💬</div><div class="mid"><b>New chat</b><span>Message someone by phone number</span></div></div><div class="row" data-a="group"><div class="av" style="background:#3b82f6">👥</div><div class="mid"><b>Create group</b><span>Chat with many people</span></div></div><div class="row" data-a="channel"><div class="av" style="background:#8b5cf6">📢</div><div class="mid"><b>Create channel</b><span>Broadcast to followers</span></div></div><div class="row" data-a="community"><div class="av" style="background:#f59e0b">🏘</div><div class="mid"><b>Create community</b><span>Bring groups together</span></div></div></div></div>
     <div id="threadView" class="th hidden">
@@ -511,6 +538,16 @@
   <div id="callView" class="hidden"><video id="cvRemote" autoplay playsinline class="hidden"></video><video id="cvLocal" autoplay playsinline muted></video><audio id="cvAudio" autoplay playsinline></audio>
     <div class="av big" id="cvAv"></div>
     <div id="cvTop"><b id="cvName" style="font-size:18px"></b><div id="cvStat">Calling</div></div>
+    <button class="cvb aui amin" id="aMin" aria-label="Minimize"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M22 3.41 16.71 8.7 20 12h-8V4l3.29 3.29L20.59 2 22 3.41zM3.41 22l5.29-5.29L12 20v-8H4l3.29 3.29L2 20.59 3.41 22z"/></svg></button>
+    <button class="cvb aui aadd" id="aAdd" aria-label="Add person"></button>
+    <div id="aPanel" class="aui">
+      <div class="ab"><button class="cvb" id="aSpk" aria-label="Speaker"></button><span>Speaker</span></div>
+      <div class="ab"><button class="cvb" id="aVid" aria-label="Video"></button><span>Video</span></div>
+      <div class="ab"><button class="cvb" id="aMute" aria-label="Mute"></button><span>Mute</span></div>
+      <div class="ab"><button class="cvb" id="aMore" aria-label="More"></button><span>More</span></div>
+      <div class="ab"><button class="cvb" id="aShare" aria-label="Share"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/></svg></button><span>Share</span></div>
+      <div class="ab"><button class="cvb" id="aEnd" aria-label="End"></button><span>End</span></div>
+    </div>
     <div id="cvSide"><button class="cvb" id="cvAdd"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><button class="cvb" id="cvFlip"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></svg></button><button class="cvb" id="cvFx"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button></div>
     <div id="cvBar"><button class="cvb" id="cvMore"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button><button class="cvb" id="cvVid"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button class="cvb on" id="cvSpk"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></button><button class="cvb" id="cvMute"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button><button class="cvb" id="cvEnd"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" style="transform:rotate(135deg)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button></div></div>
   <div id="incoming" class="hidden"><div class="av big" id="icAv"></div><h2 id="icName"></h2><p id="icType" class="sub"></p><div style="display:flex;gap:40px;margin-top:24px"><button id="icNo" class="rnd" style="background:#e53935">Decline</button><button id="icYes" class="rnd" style="background:#25d366;color:#06140c">Accept</button></div></div>
@@ -1016,7 +1053,7 @@ ZW|Zimbabwe|263`;
       $('confirmBox').classList.add('hidden');
       patchAuth({ confirm: false });
       $('btnSend').disabled = true;
-      sendCodeFlow({ phone: phoneValue })
+      sendCodeFlow({ phone: phoneValue, method: 'sms' })
         .then(function () {
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
           $('code').value = '';
@@ -1637,9 +1674,11 @@ ZW|Zimbabwe|263`;
       else if (id === 'sSaveBtn') openSave();
       else if (id === 'sDisap') { var v = localStorage.getItem('zaply_dis_' + openUser.phone) || 'off'; Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.checked = r.value === v; }); openPage('disapView'); }
       else if (id === 'sRead') { $('rrToggle').checked = localStorage.getItem('zaply_rr') !== 'off'; $('rrName').textContent = (openUser.name || openUser.phone || '').split(' ')[0]; openPage('readView'); }
+      else if (id === 'sEnc') { $('encWho').textContent = 'You, ' + (openUser.name || openUser.phone || ''); openPage('encView'); }
       else if (id === 'sReport') { $('rpText').value = ''; openPage('reportView'); }
     });
     Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.addEventListener('change', function () { try { localStorage.setItem('zaply_dis_' + openUser.phone, r.value); } catch (e) {} }); });
+    $('disLearn').addEventListener('click', function (e) { e.preventDefault(); toast('Messages in this chat disappear after the time you choose.'); });
     $('rrToggle').addEventListener('change', function () { try { localStorage.setItem('zaply_rr', this.checked ? 'on' : 'off'); } catch (e) {} });
     $('rpSend').addEventListener('click', function () {
       var tx = $('rpText').value.trim(); if (!tx) return toast('Please write what you want to report');
@@ -1697,10 +1736,14 @@ ZW|Zimbabwe|263`;
       ['cvLocal', 'cvRemote'].forEach(function (i) { $(i).srcObject = null; }); $('cvAudio').srcObject = null;
       $('callView').classList.add('hidden');
     }
+    function callIcons() {
+      [['aSpk', 'cvSpk'], ['aVid', 'cvVid'], ['aMute', 'cvMute'], ['aMore', 'cvMore'], ['aAdd', 'cvAdd'], ['aEnd', 'cvEnd']].forEach(function (p) { if (!$(p[0]).firstChild) $(p[0]).innerHTML = $(p[1]).innerHTML; });
+    }
     function openCall(url, video, who, caller) {
-      who = who || {}; pushOv(endCall);
+      who = who || {}; pushOv(endCall); callIcons();
       setAv($('cvAv'), who); $('cvAv').classList.remove('hidden'); $('cvName').textContent = who.name || who.phone || '';
       $('cvStat').textContent = caller ? 'Calling' : 'Connecting'; $('cvRemote').classList.add('hidden'); $('cvLocal').classList.remove('pip');
+      $('callView').className = video ? 'cvvid' : 'cvaud'; $('aMute').classList.remove('on');
       $('cvVid').classList.toggle('on', false); $('cvMute').classList.remove('on'); $('callView').classList.remove('hidden');
       loadDaily(function () {
         co = window.DailyIframe.createCallObject();
@@ -1737,6 +1780,11 @@ ZW|Zimbabwe|263`;
     $('cvFlip').addEventListener('click', function () { if (co) co.cycleCamera().catch(function () {}); });
     $('cvSpk').addEventListener('click', function () { toast('Use your volume buttons to change loudness'); });
     ['cvAdd', 'cvFx', 'cvMore'].forEach(function (i) { $(i).addEventListener('click', function () { toast('Coming soon'); }); });
+    $('aEnd').addEventListener('click', closeOv);
+    $('aMute').addEventListener('click', function () { if (!co) return; var on = co.localAudio(); co.setLocalAudio(!on); this.classList.toggle('on', on); $('cvMute').classList.toggle('on', on); });
+    $('aVid').addEventListener('click', function () { if (!co) return; co.setLocalVideo(true); $('callView').className = 'cvvid'; });
+    $('aSpk').addEventListener('click', function () { toast('Use your volume buttons to change loudness'); });
+    ['aMore', 'aShare', 'aAdd', 'aMin'].forEach(function (i) { $(i).addEventListener('click', function () { toast('Coming soon'); }); });
 
     /* ---------- notifications ---------- */
     function b64ToU8(b) {
