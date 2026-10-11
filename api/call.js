@@ -21,7 +21,7 @@ module.exports = async (req, res) => {
     const r = await fetch('https://api.daily.co/v1/rooms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.DAILY_API_KEY },
-      body: JSON.stringify({ properties: { exp: Math.floor(Date.now() / 1000) + 3600, max_participants: 2, start_video_off: !body.video, enable_chat: false } })
+      body: JSON.stringify({ properties: { exp: Math.floor(Date.now() / 1000) + 3600, max_participants: 2, start_video_off: !body.video, enable_prejoin_ui: false, enable_chat: false } })
     });
     const room = await r.json();
     if (!r.ok) return res.status(502).json({ error: room.info || 'Could not create the call' });
