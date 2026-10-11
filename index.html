@@ -10,6 +10,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>Zucket</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <style>
     :root {
       --bg: #f6f7fb; --card: #ffffff; --text: #1a1d29; --muted: #6b7280;
@@ -516,6 +518,7 @@
   <div id="incoming" class="hidden"><div class="av big" id="icAv"></div><h2 id="icName"></h2><p id="icType" class="sub"></p><div style="display:flex;gap:40px;margin-top:24px"><button id="icNo" class="rnd" style="background:#e53935">Decline</button><button id="icYes" class="rnd" style="background:#25d366;color:#06140c">Accept</button></div></div>
   <div id="netBanner" class="netb hidden"><span>No internet connection</span><button id="netRetry">Try again</button></div>
 
+  <div id="recaptcha-container"></div>
   <script>
     var API = 'https://zaply-gamma.vercel.app/api';
     /* try this site's own /api first (works on any domain, e.g. zucket.me), then the old address */
@@ -537,6 +540,47 @@
     function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
     function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} }
     function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} }
+
+    /* ---------- Firebase phone auth (sends the real SMS) ---------- */
+    var fbAuth = null, fbConfirm = null, fbVerifier = null;
+    try {
+      firebase.initializeApp({
+        apiKey: "AIzaSyAFwQDhrZD3FwNdKDZgizJ5UdXUDezgmDA",
+        authDomain: "zaply-85652.firebaseapp.com",
+        projectId: "zaply-85652",
+        storageBucket: "zaply-85652.firebasestorage.app",
+        messagingSenderId: "696809558328",
+        appId: "1:696809558328:web:88e1e3fcb9ca7dc552b1cd"
+      });
+      fbAuth = firebase.auth();
+    } catch (e) { console.error('Firebase init failed', e); }
+    function fbError(e) {
+      var c = (e && e.code) || '';
+      if (c === 'auth/invalid-phone-number') return 'That phone number is not valid.';
+      if (c === 'auth/too-many-requests') return 'Too many attempts. Please try again later.';
+      if (c === 'auth/quota-exceeded') return 'SMS limit reached. Please try again later.';
+      if (c === 'auth/operation-not-allowed') return 'Phone sign-in is not enabled for this region yet.';
+      if (c === 'auth/invalid-verification-code') return 'Wrong code. Please try again.';
+      if (c === 'auth/code-expired') return 'That code has expired. Request a new one.';
+      if (c === 'auth/captcha-check-failed' || c === 'auth/unauthorized-domain') return 'Could not verify this device. Please try again.';
+      console.error(e);
+      return 'We could not send the code. Please try again.';
+    }
+    function fbSendSms(phone) {
+      if (!fbAuth) return Promise.reject(new Error('Sign-in is unavailable right now. Please try again.'));
+      try { if (fbVerifier) fbVerifier.clear(); } catch (e) {}
+      $('recaptcha-container').innerHTML = '';
+      fbVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+      return fbAuth.signInWithPhoneNumber(phone, fbVerifier)
+        .then(function (cr) { fbConfirm = cr; })
+        .catch(function (e) { try { fbVerifier.clear(); } catch (x) {} throw new Error(fbError(e)); });
+    }
+    function fbConfirmCode(code) {
+      if (!fbConfirm) return Promise.reject(new Error('Please request a new code.'));
+      return fbConfirm.confirm(code)
+        .then(function (cred) { return cred.user.getIdToken(); })
+        .catch(function (e) { throw new Error(fbError(e)); });
+    }
 
     /* Demo mode: no SMS provider yet, so the code is fixed and sign-in is kept on this device.
        Set DEMO to false when a real SMS provider is connected. */
@@ -966,7 +1010,7 @@ ZW|Zimbabwe|263`;
     $('btnConfirmYes').addEventListener('click', function () {
       $('confirmBox').classList.add('hidden');
       $('btnSend').disabled = true;
-      Promise.all([call('send', { phone: phoneValue }), showLoader('Connecting\u2026', 4000)])
+      Promise.all([fbSendSms(phoneValue), showLoader('Connecting\u2026', 4000)])
         .then(function () {
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
           $('code').value = '';
@@ -1027,7 +1071,7 @@ ZW|Zimbabwe|263`;
       if (!method) return;
       $('vsheet').classList.add('hidden');
       $('msgCode').textContent = '';
-      Promise.all([call('send', { phone: phoneValue, method: method }), showLoader('Connecting…', 3000)])
+      Promise.all([method === 'sms' ? fbSendSms(phoneValue) : call('send', { phone: phoneValue, method: method }), showLoader('Connecting…', 3000)])
         .then(function () {
           vsCount[method]++;
           vsLeft[method] = vsWaitFor(method);
@@ -1121,7 +1165,7 @@ ZW|Zimbabwe|263`;
       if (code.length !== 6 || phoneVerifying) return;
       phoneVerifying = true;
       $('msgCode').textContent = '';
-      showLoaderWhile('Checking OTP you just entered\u2026', call('verify', { phone: phoneValue, code: code }), 3000)
+      showLoaderWhile('Checking OTP you just entered\u2026', fbConfirmCode(code).then(function (idToken) { return call('verify', { phone: phoneValue, idToken: idToken }); }), 3000)
         .then(function (res) {
           return loaderDone('Verified', 1500).then(function () { setToken(res.token); afterAuth(res.user); });
         })
