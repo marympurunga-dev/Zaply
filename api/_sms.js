@@ -1,5 +1,19 @@
 // Sends the phone login code through Africa's Talking.
-// Env: AT_USERNAME, AT_API_KEY, AT_SENDER (optional approved sender ID). Use AT_USERNAME=sandbox for free tests (no real SMS).
+// Env: AT_USERNAME, AT_API_KEY, AT_SENDER (optional approved sender ID), AT_APP_HASH (optional 11-character Android app hash). Use AT_USERNAME=sandbox for free tests (no real SMS).
+
+// Message layout: "<#>" line, warning, "Your Zucket code: 123-456", then the optional 11-character Android app hash (AT_APP_HASH).
+function buildMessage(code, appHash) {
+  const c = String(code);
+  const shown = c.length === 6 ? c.slice(0, 3) + '-' + c.slice(3) : c;
+  const lines = [
+    '<#> Your number is being registered to Zucket.',
+    '',
+    'Do not share this code with anyone.',
+    'Your Zucket code: ' + shown,
+  ];
+  if (appHash) lines.push(appHash);
+  return lines.join('\n');
+}
 
 async function sendCodeSms(to, code, env = process.env, fetchFn = globalThis.fetch) {
   if (!env.AT_USERNAME || !env.AT_API_KEY) throw Object.assign(new Error('SMS is not set up yet.'), { status: 500 });
@@ -8,7 +22,7 @@ async function sendCodeSms(to, code, env = process.env, fetchFn = globalThis.fet
   const form = new URLSearchParams({
     username: env.AT_USERNAME,
     to,
-    message: 'Your Zaply code is ' + code + '. It expires in 10 minutes.',
+    message: buildMessage(code, env.AT_APP_HASH),
   });
   if (env.AT_SENDER) form.set('from', env.AT_SENDER);
   const r = await fetchFn(url, {
@@ -26,4 +40,4 @@ async function sendCodeSms(to, code, env = process.env, fetchFn = globalThis.fet
   }
 }
 
-module.exports = { sendCodeSms };
+module.exports = { sendCodeSms, buildMessage };
