@@ -277,6 +277,18 @@
     #callEnd{margin:12px;padding:14px;border:none;border-radius:999px;background:#e53935;color:#fff;font-weight:700}
     #incoming{align-items:center;justify-content:center;background:#0b141a;color:#fff;text-align:center}
     .rnd{padding:16px 22px;border:none;border-radius:999px;color:#fff;font-weight:700}
+      #callView{background:#111;overflow:hidden;display:block}
+    #callView video{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+    #cvLocal{transform:scaleX(-1)}
+    #cvLocal.pip{left:auto;top:auto;right:14px;bottom:130px;width:100px;height:150px;border-radius:14px;z-index:2}
+    #cvAv{position:absolute;left:50%;top:28%;transform:translateX(-50%)}
+    #cvTop{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));left:0;right:0;text-align:center;color:#fff;z-index:3;text-shadow:0 1px 4px #000}
+    #cvStat{opacity:.85;font-size:15px}
+    #cvSide{position:absolute;right:16px;top:70px;display:flex;flex-direction:column;gap:14px;z-index:3}
+    .cvb{width:56px;height:56px;border-radius:50%;border:none;background:rgba(20,28,33,.9);color:#fff;display:flex;align-items:center;justify-content:center;padding:0}
+    .cvb.on{background:#fff;color:#111}
+    #cvBar{position:absolute;left:14px;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));background:rgba(20,28,33,.92);border-radius:40px;padding:10px 12px;display:flex;justify-content:space-between;z-index:3}
+    #cvBar .cvb{background:#2a343b}#cvBar .cvb.on{background:#fff;color:#111}#cvBar #cvEnd{background:#e5173f}
   </style>
 </head>
 <body>
@@ -496,7 +508,11 @@
 
   </div>
 
-  <div id="callView" class="hidden"><iframe id="callFrame" allow="camera; microphone; autoplay; display-capture; fullscreen"></iframe><button id="callEnd">End call</button></div>
+  <div id="callView" class="hidden"><video id="cvRemote" autoplay playsinline class="hidden"></video><video id="cvLocal" autoplay playsinline muted></video><audio id="cvAudio" autoplay playsinline></audio>
+    <div class="av big" id="cvAv"></div>
+    <div id="cvTop"><b id="cvName" style="font-size:18px"></b><div id="cvStat">Calling</div></div>
+    <div id="cvSide"><button class="cvb" id="cvAdd"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><button class="cvb" id="cvFlip"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></svg></button><button class="cvb" id="cvFx"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button></div>
+    <div id="cvBar"><button class="cvb" id="cvMore"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button><button class="cvb" id="cvVid"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button class="cvb on" id="cvSpk"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></button><button class="cvb" id="cvMute"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button><button class="cvb" id="cvEnd"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" style="transform:rotate(135deg)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button></div></div>
   <div id="incoming" class="hidden"><div class="av big" id="icAv"></div><h2 id="icName"></h2><p id="icType" class="sub"></p><div style="display:flex;gap:40px;margin-top:24px"><button id="icNo" class="rnd" style="background:#e53935">Decline</button><button id="icYes" class="rnd" style="background:#25d366;color:#06140c">Accept</button></div></div>
   <div id="netBanner" class="netb hidden"><span>No internet connection</span><button id="netRetry">Try again</button></div>
 
@@ -1590,8 +1606,45 @@ ZW|Zimbabwe|263`;
       return apiFetch('/call', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: getToken(), video: !!video }) })
         .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Could not start the call'); return j; }); });
     }
-    function openCall(url) {
-      $('callFrame').src = url; $('callView').classList.remove('hidden'); pushOv(function () { $('callFrame').src = 'about:blank'; $('callView').classList.add('hidden'); });
+    var co = null, cvTimer = null, cvT0 = 0, ringT = null, pendingWho = null;
+    function loadDaily(cb) {
+      if (window.DailyIframe) return cb();
+      var s = document.createElement('script'); s.src = 'https://unpkg.com/@daily-co/daily-js'; s.onload = cb;
+      s.onerror = function () { toast('Could not load calls. Check your internet'); closeOv(); };
+      document.head.appendChild(s);
+    }
+    function others() { return co ? Object.keys(co.participants()).filter(function (k) { return k !== 'local'; }).length : 0; }
+    function callOn() {
+      clearTimeout(ringT); if (cvTimer || !others()) return; cvT0 = Date.now();
+      cvTimer = setInterval(function () { var s = Math.floor((Date.now() - cvT0) / 1000); $('cvStat').textContent = ('0' + Math.floor(s / 60)).slice(-2) + ':' + ('0' + s % 60).slice(-2); }, 1000);
+    }
+    function onTrack(e) {
+      var tr = e.track, p = e.participant; if (!tr || !p) return; var ms = new MediaStream([tr]);
+      if (tr.kind === 'video') {
+        var v = p.local ? $('cvLocal') : $('cvRemote'); v.srcObject = ms;
+        if (!p.local) { v.classList.remove('hidden'); $('cvLocal').classList.add('pip'); $('cvAv').classList.add('hidden'); }
+      } else if (!p.local) { $('cvAudio').srcObject = ms; }
+      callOn();
+    }
+    function endCall() {
+      clearTimeout(ringT); clearInterval(cvTimer); cvTimer = null;
+      if (co) { try { co.leave(); co.destroy(); } catch (e) {} co = null; }
+      ['cvLocal', 'cvRemote'].forEach(function (i) { $(i).srcObject = null; }); $('cvAudio').srcObject = null;
+      $('callView').classList.add('hidden');
+    }
+    function openCall(url, video, who, caller) {
+      who = who || {}; pushOv(endCall);
+      setAv($('cvAv'), who); $('cvAv').classList.remove('hidden'); $('cvName').textContent = who.name || who.phone || '';
+      $('cvStat').textContent = caller ? 'Calling' : 'Connecting'; $('cvRemote').classList.add('hidden'); $('cvLocal').classList.remove('pip');
+      $('cvVid').classList.toggle('on', false); $('cvMute').classList.remove('on'); $('callView').classList.remove('hidden');
+      loadDaily(function () {
+        co = window.DailyIframe.createCallObject();
+        co.on('track-started', onTrack).on('participant-joined', callOn).on('joined-meeting', callOn)
+          .on('participant-left', function (e) { if (e.participant && !e.participant.local) closeOv(); })
+          .on('error', function () { toast('Call failed'); closeOv(); });
+        co.join({ url: url, startVideoOff: !video }).catch(function () { toast('Could not join the call'); closeOv(); });
+        if (caller) ringT = setTimeout(function () { if (!others()) { toast('No answer'); closeOv(); } }, 45000);
+      });
     }
     function startCall(video) {
       if (!openWith) return;
@@ -1599,21 +1652,26 @@ ZW|Zimbabwe|263`;
       toast('Calling\u2026'); var to = openWith;
       callApi(video).then(function (j) {
         chatCall('send', { to: to, body: '__call__' + JSON.stringify({ u: j.url, v: video ? 1 : 0 }) });
-        openCall(j.url);
+        openCall(j.url, video, openUser, true);
       }).catch(function (e) { toast(e && e.offline ? 'No internet connection' : (e.message || 'Could not start the call')); });
     }
     function ringFor(body, at, who) {
       if (rang[body] || Date.now() - new Date(at).getTime() > 45000) return;
       var d; try { d = JSON.parse(body.slice(8)); } catch (e) { return; }
-      rang[body] = 1; pendingCall = d; who = who || {};
+      rang[body] = 1; pendingCall = d; who = who || {}; pendingWho = who;
       setAv($('icAv'), who); $('icName').textContent = who.name || who.phone || 'Someone';
       $('icType').textContent = d.v ? 'Incoming video call' : 'Incoming audio call';
       $('incoming').classList.remove('hidden'); try { navigator.vibrate && navigator.vibrate([300, 150, 300]); } catch (e) {}
       setTimeout(function () { if (pendingCall === d) { $('incoming').classList.add('hidden'); pendingCall = null; } }, 40000);
     }
     $('icNo').addEventListener('click', function () { pendingCall = null; $('incoming').classList.add('hidden'); });
-    $('icYes').addEventListener('click', function () { var d = pendingCall; pendingCall = null; $('incoming').classList.add('hidden'); if (d) openCall(d.u); });
-    $('callEnd').addEventListener('click', closeOv);
+    $('icYes').addEventListener('click', function () { var d = pendingCall; pendingCall = null; $('incoming').classList.add('hidden'); if (d) openCall(d.u, d.v, pendingWho, false); });
+    $('cvEnd').addEventListener('click', closeOv);
+    $('cvMute').addEventListener('click', function () { if (!co) return; var on = co.localAudio(); co.setLocalAudio(!on); this.classList.toggle('on', on); });
+    $('cvVid').addEventListener('click', function () { if (!co) return; var on = co.localVideo(); co.setLocalVideo(!on); this.classList.toggle('on', on); });
+    $('cvFlip').addEventListener('click', function () { if (co) co.cycleCamera().catch(function () {}); });
+    $('cvSpk').addEventListener('click', function () { toast('Use your volume buttons to change loudness'); });
+    ['cvAdd', 'cvFx', 'cvMore'].forEach(function (i) { $(i).addEventListener('click', function () { toast('Coming soon'); }); });
 
     /* ---------- notifications ---------- */
     function b64ToU8(b) {
