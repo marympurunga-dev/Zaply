@@ -380,7 +380,7 @@
           <div class="sub">Zucket will need to verify your phone number. Carrier charges may apply.</div>
           <button class="country-btn" id="btnCountry"><span id="cName">Choose a country</span></button>
           <div class="phone-row">
-            <div class="dial-wrap"><span>+</span><input id="dial" type="text" inputmode="numeric" maxlength="4" value="" aria-label="Country code"></div>
+            <div class="dial-wrap"><span>+</span><input id="dial" type="text" inputmode="numeric" maxlength="4" value="" autocomplete="off" aria-label="Country code"></div>
             <input id="phone" type="tel" inputmode="tel" placeholder="Phone number" autocomplete="tel">
           </div>
           <div class="msg" id="msgPhone"></div>
@@ -535,8 +535,12 @@
     function $(id) { return document.getElementById(id); }
 
     function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
-    function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} }
-    function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} }
+    var AUTH_KEY = 'zaply_auth';
+    function saveAuthStep(step, phone) { try { localStorage.setItem(AUTH_KEY, JSON.stringify({ step: step, phone: phone || '', at: Date.now() })); } catch (e) {} }
+    function readAuthStep() { try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { return null; } }
+    function clearAuthStep() { try { localStorage.removeItem(AUTH_KEY); } catch (e) {} }
+    function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} clearAuthStep(); }
+    function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} clearAuthStep(); }
 
     /* Demo mode: no SMS provider yet, so the code is fixed and sign-in is kept on this device.
        Set DEMO to false when a real SMS provider is connected. */
@@ -620,6 +624,7 @@
     $('btnAgree').addEventListener('click', function () {
       showLoader('Connecting\u2026', 7000).then(function () {
         showStep('stepPhone');
+        saveAuthStep('stepPhone');
         $('phone').focus();
       });
     });
@@ -942,6 +947,7 @@ ZW|Zimbabwe|263`;
     });
     $('phone').addEventListener('input', updateNext);
     $('phone').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('btnSend').disabled) $('btnSend').click(); });
+    $('dial').dispatchEvent(new Event('input')); /* the browser may restore the code without telling us: re-read the country */
     updateNext();
 
     function prettyPhone(num) {
@@ -952,12 +958,8 @@ ZW|Zimbabwe|263`;
     $('btnSend').addEventListener('click', function () {
       phoneValue = '+' + $('dial').value.replace(/\D/g, '') + $('phone').value.replace(/\D/g, '').replace(/^0+/, '');
       $('msgPhone').textContent = '';
-      $('btnSend').disabled = true;
-      showLoader('Connecting\u2026', 3000).then(function () {
-        $('confirmNum').textContent = prettyPhone(phoneValue);
-        $('confirmBox').classList.remove('hidden');
-        updateNext();
-      });
+      $('confirmNum').textContent = prettyPhone(phoneValue);
+      $('confirmBox').classList.remove('hidden');
     });
     $('btnConfirmNo').addEventListener('click', function () {
       $('confirmBox').classList.add('hidden');
@@ -966,13 +968,15 @@ ZW|Zimbabwe|263`;
     $('btnConfirmYes').addEventListener('click', function () {
       $('confirmBox').classList.add('hidden');
       $('btnSend').disabled = true;
-      Promise.all([call('send', { phone: phoneValue }), showLoader('Connecting\u2026', 4000)])
+      showLoaderWhile('Sending code\u2026', call('send', { phone: phoneValue }), 600)
         .then(function () {
+          hideLoader();
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
           $('code').value = '';
           $('msgCode').textContent = '';
           startVerifyTimers();
           showStep('stepCode');
+          saveAuthStep('stepCode', phoneValue);
         })
         .catch(function (e) { hideLoader(); $('msgPhone').textContent = e.message; })
         .then(function () { updateNext(); });
@@ -1027,8 +1031,10 @@ ZW|Zimbabwe|263`;
       if (!method) return;
       $('vsheet').classList.add('hidden');
       $('msgCode').textContent = '';
-      Promise.all([call('send', { phone: phoneValue, method: method }), showLoader('Connecting…', 3000)])
+      showLoaderWhile('Sending code…', call('send', { phone: phoneValue, method: method }), 600)
         .then(function () {
+          hideLoader();
+          saveAuthStep('stepCode', phoneValue);
           vsCount[method]++;
           vsLeft[method] = vsWaitFor(method);
           vsSel = null; vsRender();
@@ -1183,7 +1189,7 @@ ZW|Zimbabwe|263`;
       afterAuth(curUser || {});
     });
     $('btnEmailBack').addEventListener('click', function () { clearPending(); showStep('stepEmail'); });
-    $('btnBack').addEventListener('click', function () { showStep('stepPhone'); });
+    $('btnBack').addEventListener('click', function () { showStep('stepPhone'); saveAuthStep('stepPhone'); });
 
     $('btnName').addEventListener('click', function () {
       var btn = $('btnName');
@@ -1999,7 +2005,22 @@ id:`Selamat datang di Zucket|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
 
     /* ---------- start ---------- */
     function boot() {
-      if (!getToken()) { showWelcome(); return; }
+      if (!getToken()) {
+        var pr = readAuthStep();
+        if (pr && pr.step === 'stepCode' && pr.phone && Date.now() - pr.at < 10 * 60 * 1000) {
+          phoneValue = pr.phone;
+          $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
+          $('code').value = '';
+          $('msgCode').textContent = '';
+          startVerifyTimers();
+          showStep('stepCode');
+        } else if (pr) {
+          $('dial').dispatchEvent(new Event('input'));
+          showStep('stepPhone');
+          updateNext();
+        } else showWelcome();
+        return;
+      }
       var cu = null; try { cu = JSON.parse(localStorage.getItem('zaply_user') || 'null'); } catch (e) {}
       if (cu && cu.name) { /* open instantly, even with no internet */
         startApp(cu);
