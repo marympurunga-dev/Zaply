@@ -564,7 +564,7 @@
       if (c === 'auth/code-expired') return 'That code has expired. Request a new one.';
       if (c === 'auth/captcha-check-failed' || c === 'auth/unauthorized-domain') return 'Could not verify this device. Please try again.';
       console.error(e);
-      return 'We could not send the code. Please try again.';
+      return 'We could not send the code. Please try again.' + (c ? ' (' + c + ')' : e && e.message ? ' (' + String(e.message).slice(0, 80) + ')' : '');
     }
     function fbSendSms(phone) {
       if (!fbAuth) return Promise.reject(new Error('Sign-in is unavailable right now. Please try again.'));
