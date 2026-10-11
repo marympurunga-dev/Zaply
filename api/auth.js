@@ -4,7 +4,20 @@ const crypto = require('crypto');
 const mysql = require('mysql2/promise');
 
 const SECRET = process.env.AUTH_SECRET || 'change-me';
-const CODE = process.env.DEMO_CODE || '123456'; // fixed code until an SMS provider is added
+const CODE = process.env.DEMO_CODE || ''; // demo sign-in is OFF unless you set DEMO_CODE in Vercel
+const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY || '';
+if (SECRET === 'change-me') console.warn('WARNING: set AUTH_SECRET in Vercel, otherwise login tokens can be forged.');
+
+// Ask Google which phone number a Firebase sign-in proof (idToken) belongs to
+async function phoneFromFirebase(idToken) {
+  if (!FIREBASE_API_KEY || typeof idToken !== 'string') return null;
+  const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' + encodeURIComponent(FIREBASE_API_KEY), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken })
+  });
+  if (!r.ok) return null;
+  const j = await r.json();
+  return (j.users && j.users[0] && j.users[0].phoneNumber) || null;
+}
 const DAYS = 30;
 const { sendCodeEmail } = require('./_mail');
 
@@ -97,12 +110,15 @@ module.exports = async (req, res) => {
 
     if (b.action === 'send') {
       if (!phoneOk(b.phone)) return res.status(400).json({ error: 'Enter a valid phone number.' });
-      return res.json({ ok: true }); // real SMS goes here later
+      return res.json({ ok: true }); // the SMS is sent by Firebase from the app
     }
 
     if (b.action === 'verify') {
       if (!phoneOk(b.phone)) return res.status(400).json({ error: 'Enter a valid phone number.' });
-      if (String(b.code) !== CODE) return res.status(400).json({ error: 'Wrong code. Please try again.' });
+      let verified = false;
+      if (b.idToken) verified = (await phoneFromFirebase(b.idToken)) === b.phone;
+      else if (CODE && String(b.code) === CODE) verified = true; // only when DEMO_CODE is set
+      if (!verified) return res.status(400).json({ error: 'Wrong code. Please try again.' });
       await db().query(
         'INSERT INTO users (phone, last_login) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE last_login = NOW()',
         [b.phone]
