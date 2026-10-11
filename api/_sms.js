@@ -21,7 +21,8 @@ async function sendCodeSms(to, code, env = process.env, fetchFn = globalThis.fet
   try { rec = JSON.parse(text).SMSMessageData.Recipients[0]; } catch (e) { rec = null; }
   if (!r.ok || !rec || !/^(100|101|102)$/.test(String(rec.statusCode))) {
     console.error('Africa\'s Talking error', r.status, text);
-    throw Object.assign(new Error('We could not send the SMS. Check the number and try again.'), { status: 502 });
+    const why = rec && rec.status ? rec.status : String(text).replace(/\s+/g, ' ').slice(0, 80);
+    throw Object.assign(new Error('We could not send the SMS. (' + r.status + ': ' + why + ')'), { status: 502 });
   }
 }
 
