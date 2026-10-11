@@ -381,7 +381,7 @@
           <button class="country-btn" id="btnCountry"><span id="cName">Choose a country</span></button>
           <div class="phone-row">
             <div class="dial-wrap"><span>+</span><input id="dial" type="text" inputmode="numeric" maxlength="4" value="" autocomplete="off" aria-label="Country code"></div>
-            <input id="phone" type="tel" inputmode="tel" placeholder="Phone number" autocomplete="tel">
+            <input id="phone" type="tel" inputmode="tel" placeholder="Phone number" autocomplete="off">
           </div>
           <div class="msg" id="msgPhone"></div>
           <button class="primary" id="btnSend" disabled>Next</button>
@@ -536,8 +536,14 @@
 
     function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
     var AUTH_KEY = 'zaply_auth';
-    function saveAuthStep(step, phone) { try { localStorage.setItem(AUTH_KEY, JSON.stringify({ step: step, phone: phone || '', at: Date.now() })); } catch (e) {} }
+    /* Everything the user was doing is saved here and put back as it was when the app is opened again. */
+    var pendingRestore = null;
     function readAuthStep() { try { return JSON.parse(localStorage.getItem(AUTH_KEY) || 'null'); } catch (e) { return null; } }
+    function patchAuth(o) {
+      var d = readAuthStep() || {};
+      for (var k in o) d[k] = o[k];
+      try { localStorage.setItem(AUTH_KEY, JSON.stringify(d)); } catch (e) {}
+    }
     function clearAuthStep() { try { localStorage.removeItem(AUTH_KEY); } catch (e) {} }
     function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} clearAuthStep(); }
     function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} clearAuthStep(); }
@@ -590,6 +596,31 @@
       if (id === 'stepCode') { phoneOtp.reset(); setTimeout(phoneOtp.focus, 100); }
       if (id === 'stepEmail') { $('btnEmail').disabled = !emailOk($('email').value.trim()); setTimeout(function () { $('email').focus(); }, 100); }
       if (id === 'stepEmailCode') { emailOtp.reset(); setTimeout(emailOtp.focus, 100); }
+      patchAuth({ step: id });
+      var rd = pendingRestore;
+      if (rd && rd.step === id) { pendingRestore = null; restoreFields(id, rd); }
+    }
+    function restoreFields(id, rd) {
+      if (id === 'stepPhone') {
+        if (rd.dial != null) { $('dial').value = rd.dial; $('dial').dispatchEvent(new Event('input')); }
+        var c = rd.iso && byIso(rd.iso);
+        if (c && c.code === String(rd.dial)) setCountry(c);
+        if (rd.phone != null) $('phone').value = rd.phone;
+        updateNext();
+        if (rd.confirm && rd.phoneValue) {
+          phoneValue = rd.phoneValue;
+          $('confirmNum').textContent = prettyPhone(phoneValue);
+          $('confirmBox').classList.remove('hidden');
+        }
+      } else if (id === 'stepCode') {
+        if (rd.code) { $('code').value = rd.code; $('code').dispatchEvent(new Event('blur')); }
+      } else if (id === 'stepEmail') {
+        if (rd.email) { $('email').value = rd.email; $('btnEmail').disabled = !emailOk($('email').value.trim()); }
+      } else if (id === 'stepEmailCode') {
+        if (rd.code2) { $('code2').value = rd.code2; $('code2').dispatchEvent(new Event('blur')); }
+      } else if (id === 'stepName') {
+        if (rd.name) $('name').value = rd.name;
+      }
     }
 
     function showWelcome() {
@@ -624,7 +655,6 @@
     $('btnAgree').addEventListener('click', function () {
       showLoader('Connecting\u2026', 7000).then(function () {
         showStep('stepPhone');
-        saveAuthStep('stepPhone');
         $('phone').focus();
       });
     });
@@ -886,7 +916,9 @@ ZW|Zimbabwe|263`;
       $('cName').textContent = c.name;
       $('dial').value = c.code;
       updateNext();
+      savePhoneDraft();
     }
+    function savePhoneDraft() { patchAuth({ dial: $('dial').value, iso: cur ? cur.iso : '', phone: $('phone').value }); }
     function renderList(q) {
       q = (q || '').toLowerCase().trim();
       var list;
@@ -945,9 +977,9 @@ ZW|Zimbabwe|263`;
       $('cName').textContent = m ? m.name : (v ? 'Invalid country code' : T(7));
       updateNext();
     });
-    $('phone').addEventListener('input', updateNext);
+    $('phone').addEventListener('input', function () { updateNext(); savePhoneDraft(); });
+    $('dial').addEventListener('input', function () { setTimeout(savePhoneDraft, 0); });
     $('phone').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !$('btnSend').disabled) $('btnSend').click(); });
-    $('dial').dispatchEvent(new Event('input')); /* the browser may restore the code without telling us: re-read the country */
     updateNext();
 
     function prettyPhone(num) {
@@ -958,25 +990,40 @@ ZW|Zimbabwe|263`;
     $('btnSend').addEventListener('click', function () {
       phoneValue = '+' + $('dial').value.replace(/\D/g, '') + $('phone').value.replace(/\D/g, '').replace(/^0+/, '');
       $('msgPhone').textContent = '';
-      $('confirmNum').textContent = prettyPhone(phoneValue);
-      $('confirmBox').classList.remove('hidden');
+      $('btnSend').disabled = true;
+      showLoader('Connecting\u2026', 4000).then(function () {
+        $('confirmNum').textContent = prettyPhone(phoneValue);
+        $('confirmBox').classList.remove('hidden');
+        patchAuth({ confirm: true, phoneValue: phoneValue });
+        updateNext();
+      });
     });
     $('btnConfirmNo').addEventListener('click', function () {
       $('confirmBox').classList.add('hidden');
+      patchAuth({ confirm: false });
       $('phone').focus();
     });
+    function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+    /* "Connecting" 3s, then "Sending code" 3s. The SMS provider is only called after 5s so the message does not go out instantly. */
+    function sendCodeFlow(data) {
+      var api = delay(5000).then(function () { return call('send', data); });
+      api.catch(function () {});
+      return showLoader('Connecting\u2026', 3000)
+        .then(function () { return showLoaderWhile('Sending code\u2026', api, 3000); })
+        .then(function () { hideLoader(); });
+    }
     $('btnConfirmYes').addEventListener('click', function () {
       $('confirmBox').classList.add('hidden');
+      patchAuth({ confirm: false });
       $('btnSend').disabled = true;
-      showLoaderWhile('Sending code\u2026', call('send', { phone: phoneValue }), 600)
+      sendCodeFlow({ phone: phoneValue })
         .then(function () {
-          hideLoader();
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
           $('code').value = '';
           $('msgCode').textContent = '';
           startVerifyTimers();
           showStep('stepCode');
-          saveAuthStep('stepCode', phoneValue);
+          patchAuth({ phoneValue: phoneValue, code: '' });
         })
         .catch(function (e) { hideLoader(); $('msgPhone').textContent = e.message; })
         .then(function () { updateNext(); });
@@ -1006,9 +1053,18 @@ ZW|Zimbabwe|263`;
       });
       $('vsGo').disabled = !vsSel;
     }
-    function startVerifyTimers() {
-      vsCount = { sms: 1, missed: 0, voice: 0 }; /* the first SMS was just sent */
-      vsLeft = { sms: vsWaitFor('sms'), missed: CALL_WAIT, voice: CALL_WAIT };
+    function persistVs() {
+      var now = Date.now();
+      patchAuth({ vsCount: vsCount, vsEnds: { sms: now + vsLeft.sms * 1000, missed: now + vsLeft.missed * 1000, voice: now + vsLeft.voice * 1000 } });
+    }
+    function startVerifyTimers(rd) {
+      if (rd && rd.vsCount && rd.vsEnds) { /* app was reopened: the waits kept running while it was closed */
+        vsCount = rd.vsCount; vsLeft = {};
+        ['sms', 'missed', 'voice'].forEach(function (k) { vsLeft[k] = Math.max(0, Math.ceil(((rd.vsEnds[k] || 0) - Date.now()) / 1000)); });
+      } else {
+        vsCount = { sms: 1, missed: 0, voice: 0 }; /* the first SMS was just sent */
+        vsLeft = { sms: vsWaitFor('sms'), missed: CALL_WAIT, voice: CALL_WAIT };
+      }
       vsSel = null;
       clearInterval(vsTimer);
       vsTimer = setInterval(function () {
@@ -1016,6 +1072,7 @@ ZW|Zimbabwe|263`;
         vsRender();
       }, 1000);
       vsRender();
+      persistVs();
     }
     $('btnDidnt').addEventListener('click', function () { vsSel = null; vsRender(); $('vsheet').classList.remove('hidden'); });
     $('vsBack').addEventListener('click', function () { $('vsheet').classList.add('hidden'); });
@@ -1031,13 +1088,11 @@ ZW|Zimbabwe|263`;
       if (!method) return;
       $('vsheet').classList.add('hidden');
       $('msgCode').textContent = '';
-      showLoaderWhile('Sending code…', call('send', { phone: phoneValue, method: method }), 600)
+      sendCodeFlow({ phone: phoneValue, method: method })
         .then(function () {
-          hideLoader();
-          saveAuthStep('stepCode', phoneValue);
           vsCount[method]++;
           vsLeft[method] = vsWaitFor(method);
-          vsSel = null; vsRender();
+          vsSel = null; vsRender(); persistVs();
           phoneOtp.reset(); phoneOtp.focus();
         })
         .catch(function (e) { hideLoader(); $('msgCode').textContent = e.message; });
@@ -1177,6 +1232,10 @@ ZW|Zimbabwe|263`;
         .then(function () { emailVerifying = false; });
     }
     var emailOtp = makeOtp('code2', 'otp2', doEmailVerify);
+    $('code').addEventListener('input', function () { patchAuth({ code: $('code').value }); });
+    $('code2').addEventListener('input', function () { patchAuth({ code2: $('code2').value }); });
+    $('email').addEventListener('input', function () { patchAuth({ email: $('email').value }); });
+    $('name').addEventListener('input', function () { patchAuth({ name: $('name').value }); });
     $('btnEmailResend').addEventListener('click', function () {
       $('msgEmailCode').textContent = '';
       showLoaderWhile('Sending\u2026', emailSend(emailValue), 1500)
@@ -1189,7 +1248,7 @@ ZW|Zimbabwe|263`;
       afterAuth(curUser || {});
     });
     $('btnEmailBack').addEventListener('click', function () { clearPending(); showStep('stepEmail'); });
-    $('btnBack').addEventListener('click', function () { showStep('stepPhone'); saveAuthStep('stepPhone'); });
+    $('btnBack').addEventListener('click', function () { showStep('stepPhone'); });
 
     $('btnName').addEventListener('click', function () {
       var btn = $('btnName');
@@ -1734,6 +1793,7 @@ ZW|Zimbabwe|263`;
     }
 
     function startApp(user) {
+      clearAuthStep();
       try { allChats = JSON.parse(localStorage.getItem('zaply_chats') || '[]'); } catch (e) {}
       $('hello').textContent = 'Signed in as ' + user.name;
       $('pfName').textContent = user.name || ''; $('pfPhone').textContent = user.phone || ''; $('pfAv').textContent = (user.name || '#').charAt(0).toUpperCase();
@@ -2005,20 +2065,17 @@ id:`Selamat datang di Zucket|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
 
     /* ---------- start ---------- */
     function boot() {
+      pendingRestore = readAuthStep();
       if (!getToken()) {
-        var pr = readAuthStep();
-        if (pr && pr.step === 'stepCode' && pr.phone && Date.now() - pr.at < 10 * 60 * 1000) {
-          phoneValue = pr.phone;
+        var pr = pendingRestore;
+        if (pr && pr.step === 'stepCode' && pr.phoneValue) {
+          phoneValue = pr.phoneValue;
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
-          $('code').value = '';
-          $('msgCode').textContent = '';
-          startVerifyTimers();
+          restoreFields('stepPhone', { dial: pr.dial, iso: pr.iso, phone: pr.phone }); /* so "Change number" shows what was typed */
+          startVerifyTimers(pr);
           showStep('stepCode');
-        } else if (pr) {
-          $('dial').dispatchEvent(new Event('input'));
-          showStep('stepPhone');
-          updateNext();
-        } else showWelcome();
+        } else if (pr && pr.step === 'stepPhone') showStep('stepPhone');
+        else { pendingRestore = null; showWelcome(); }
         return;
       }
       var cu = null; try { cu = JSON.parse(localStorage.getItem('zaply_user') || 'null'); } catch (e) {}
