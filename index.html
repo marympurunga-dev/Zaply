@@ -315,6 +315,10 @@
     .ab .cvb{width:64px;height:64px;background:#222c32}
     .ab .cvb.on{background:#fff;color:#111}
     .ab #aEnd{background:#e5173f}
+    /* no grey tap flash or stuck focus box when tapping buttons and rows */
+    *{-webkit-tap-highlight-color:transparent}
+    button:focus,.srow:focus,.row:focus,.act:focus,a:focus,[tabindex]:focus{outline:none}
+    button,.srow,.row,.act,.cbtn,.cvb,.th-head,.opt,.thinfo,h4{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
   </style>
 </head>
 <body>
@@ -1432,9 +1436,10 @@ ZW|Zimbabwe|263`;
       a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; return a;
     }
     function favs() { try { return JSON.parse(localStorage.getItem('zaply_favs') || '[]'); } catch (e) { return []; } }
-    function markSeen(ph) { try { localStorage.setItem('zaply_seen_' + ph, String(Date.now())); } catch (e) {} }
+    function markSeen(ph) { try { localStorage.setItem('zaply_seen_' + ph, String(Date.now())); localStorage.removeItem('zaply_unread_' + ph); } catch (e) {} }
     function seenAt(ph) { try { return +localStorage.getItem('zaply_seen_' + ph) || 0; } catch (e) { return 0; } }
-    function isUnread(c) { return !c.mine && new Date(c.at).getTime() > seenAt(c.phone); }
+    function forcedUnread(ph) { try { return localStorage.getItem('zaply_unread_' + ph) === '1'; } catch (e) { return false; } }
+    function isUnread(c) { return forcedUnread(c.phone) || (!c.mine && new Date(c.at).getTime() > seenAt(c.phone)); }
     function updateCounts() {
       var n = allChats.filter(isUnread).length;
       $('fUnread').innerHTML = T(28) + (n ? ' <span class="cnt">' + n + '</span>' : '');
@@ -1614,7 +1619,7 @@ ZW|Zimbabwe|263`;
       if (e.target.closest('#sProfileBtn')) return $('sProfile').classList.toggle('hidden');
       var r = e.target.closest('.srow'); if (!r || !openUser) return;
       if (r.id === 'sUnread') {
-        try { localStorage.setItem('zaply_seen_' + openUser.phone, '0'); } catch (x) {}
+        try { localStorage.setItem('zaply_unread_' + openUser.phone, '1'); } catch (x) {}
         keepUnread = openUser.phone; toast('Marked as unread'); closeOv(); setTimeout(closeOv, 80);
       } else if (r.id === 'sShare') {
         var tx = (openUser.name || '') + ' ' + openUser.phone;
