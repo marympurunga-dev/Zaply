@@ -20,6 +20,7 @@ async function phoneFromFirebase(idToken) {
 }
 const DAYS = 30;
 const { sendCodeEmail } = require('./_mail');
+const { sendCodeSms } = require('./_sms');
 
 let pool;
 function db() {
@@ -52,6 +53,12 @@ function ensureTable() {
       last_login TIMESTAMP NULL)`)
       .then(() => addCol('ALTER TABLE users ADD COLUMN email VARCHAR(190) NULL'))
       .then(() => addCol('ALTER TABLE users ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0'))
+      .then(() => db().query(`CREATE TABLE IF NOT EXISTS phone_codes (
+        phone VARCHAR(20) NOT NULL PRIMARY KEY,
+        code_hash CHAR(64) NOT NULL,
+        attempts TINYINT NOT NULL DEFAULT 0,
+        created_at DATETIME NOT NULL,
+        expires_at DATETIME NOT NULL)`))
       .then(() => db().query(`CREATE TABLE IF NOT EXISTS email_codes (
         phone VARCHAR(20) NOT NULL PRIMARY KEY,
         email VARCHAR(190) NOT NULL,
@@ -110,7 +117,17 @@ module.exports = async (req, res) => {
 
     if (b.action === 'send') {
       if (!phoneOk(b.phone)) return res.status(400).json({ error: 'Enter a valid phone number.' });
-      return res.json({ ok: true }); // the SMS is sent by Firebase from the app
+      const [prev] = await db().query('SELECT TIMESTAMPDIFF(SECOND, created_at, NOW()) AS age FROM phone_codes WHERE phone = ?', [b.phone]);
+      if (prev[0] && prev[0].age < 30) return res.status(429).json({ error: 'Please wait a little before asking for another code.' });
+      const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
+      await db().query(
+        `INSERT INTO phone_codes (phone, code_hash, attempts, created_at, expires_at)
+         VALUES (?, ?, 0, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
+         ON DUPLICATE KEY UPDATE code_hash = VALUES(code_hash), attempts = 0, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE)`,
+        [b.phone, hashCode(code)]
+      );
+      await sendCodeSms(b.phone, code);
+      return res.json({ ok: true });
     }
 
     if (b.action === 'verify') {
@@ -118,6 +135,18 @@ module.exports = async (req, res) => {
       let verified = false;
       if (b.idToken) verified = (await phoneFromFirebase(b.idToken)) === b.phone;
       else if (CODE && String(b.code) === CODE) verified = true; // only when DEMO_CODE is set
+      else if (b.code) {
+        const [rows] = await db().query('SELECT code_hash, attempts, (expires_at > NOW()) AS valid FROM phone_codes WHERE phone = ?', [b.phone]);
+        const row = rows[0];
+        if (!row || !row.valid) return res.status(400).json({ error: 'That code has expired. Request a new one.' });
+        if (row.attempts >= 5) return res.status(429).json({ error: 'Too many tries. Request a new code.' });
+        if (hashCode(b.code) !== row.code_hash) {
+          await db().query('UPDATE phone_codes SET attempts = attempts + 1 WHERE phone = ?', [b.phone]);
+          return res.status(400).json({ error: 'Wrong code. Please try again.' });
+        }
+        await db().query('DELETE FROM phone_codes WHERE phone = ?', [b.phone]);
+        verified = true;
+      }
       if (!verified) return res.status(400).json({ error: 'Wrong code. Please try again.' });
       await db().query(
         'INSERT INTO users (phone, last_login) VALUES (?, NOW()) ON DUPLICATE KEY UPDATE last_login = NOW()',
