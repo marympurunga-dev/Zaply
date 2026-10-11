@@ -263,6 +263,20 @@
     .tabs4 button{padding:7px 11px;font-size:13px}
     .tabs4 .plusb{width:36px!important;height:36px;font-size:20px}
     .empty{color:var(--muted);text-align:center;padding:40px 16px}
+      .acts{flex-direction:row;justify-content:space-around;align-items:flex-start}
+    .act{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px}
+    #disapView,#readView,#reportView,#saveView{z-index:10}
+    .pg{padding:12px 16px}.pg input,.pg select{display:block;width:100%;margin:0 0 12px;padding:14px;border-radius:12px;font:inherit}
+    .opt{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+    .pfl{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);font-size:14px}
+    .toast.ok{background:#1faa59}
+    .netb{position:fixed;top:0;left:0;right:0;z-index:99;background:#b3261e;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:10px 16px}
+    .netb button{border:1px solid #fff;background:transparent;color:#fff;border-radius:999px;padding:6px 14px}
+      #callView,#incoming{position:fixed;inset:0;z-index:100;background:#000;display:flex;flex-direction:column}
+    #callFrame{flex:1;width:100%;border:0}
+    #callEnd{margin:12px;padding:14px;border:none;border-radius:999px;background:#e53935;color:#fff;font-weight:700}
+    #incoming{align-items:center;justify-content:center;background:#0b141a;color:#fff;text-align:center}
+    .rnd{padding:16px 22px;border:none;border-radius:999px;color:#fff;font-weight:700}
   </style>
 </head>
 <body>
@@ -463,14 +477,17 @@
     </div>
 
     <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button></div>
-    <div class="sset"><div class="acts"><button id="sProfileBtn" class="cbtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Profile</span></div>
-    <div id="sProfile" class="card pf hidden"><div class="av big" id="inAv"></div><b id="inName" style="font-size:20px"></b><span id="inPhone" class="sub" style="margin:0"></span><span id="inCountry" class="sub" style="margin:0"></span></div>
+    <div class="sset"><div class="acts"><div class="act"><button id="sCall" class="cbtn" aria-label="Call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><span>Call</span></div><div class="act"><button id="sVideoBtn" class="cbtn" aria-label="Video Chat"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><span>Video Chat</span></div><div class="act"><button id="sProfileBtn" class="cbtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Profile</span></div><div class="act"><button id="sSaveBtn" class="cbtn" aria-label="Save"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Save</span></div></div>
+    <div id="sProfile" class="card pf hidden"><div class="av big" id="inAv"></div><b id="inName" style="font-size:20px"></b><span id="inPhone" class="sub" style="margin:0"></span><span id="inCountry" class="sub" style="margin:0"></span><div id="pfFields" style="width:100%"></div></div>
     <h4>Actions</h4><div class="srow" id="sUnread"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></i><span>Mark as unread</span></div><div class="srow" id="sShare"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span>Share contact</span></div><div class="srow" id="sGroup"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></i><span  id="sGroupT">Create group</span></div>
-    <h4>Customization</h4><div class="srow" id="sReact"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Quick reaction</span></div><div class="srow" id="sNick"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Nicknames</span></div>
-    <h4>Privacy &amp; support</h4><div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Disappearing messages</span></div><div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Read receipts</span></div><div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span  id="sBlockT">Block</span></div><div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span>Report</span></div></div></div>
+    <h4>Privacy &amp; support</h4><div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></i><span>Disappearing messages</span></div><div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></i><span>Read receipts</span></div><div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg></i><span  id="sBlockT">Block</span></div><div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></i><span>Report</span></div></div></div>
+    <div id="disapView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Disappearing messages</b></div><div class="pg"><p class="sub">Messages will disappear after the selected duration.</p><label class="opt">off<input type="radio" name="dis" value="off"></label><label class="opt">24 hours<input type="radio" name="dis" value="24h"></label></div></div>
+    <div id="readView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Read receipts</b></div><div class="pg"><label class="opt">Show read receipts<input type="checkbox" id="rrToggle"></label><p class="sub"><span id="rrName"></span> will be able to see when you've read their messages.</p></div></div>
+    <div id="reportView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Report</b></div><div class="pg"><p class="sub">Tell us what you want to report.</p><textarea id="rpText" rows="6" placeholder="Write here…" style="width:100%;border-radius:12px;padding:12px;font:inherit"></textarea><button class="primary" id="rpSend" style="margin-top:16px;width:100%">Submit report</button></div></div>
+    <div id="saveView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>New Contact</b></div><div class="pg"><input id="svFirst" placeholder="First name"><input id="svLast" placeholder="Last name"><select id="svCountry"></select><input id="svPhone" type="tel" placeholder="Phone number"><button class="primary" id="svSave" style="margin-top:16px;width:100%">Save</button></div></div>
     <div id="createView" class="th hidden"><div class="th-head"><button id="crBack" aria-label="Back">←</button><b>Create</b></div><div style="padding:12px"><div class="row" data-a="new"><div class="av" style="background:#21c063">💬</div><div class="mid"><b>New chat</b><span>Message someone by phone number</span></div></div><div class="row" data-a="group"><div class="av" style="background:#3b82f6">👥</div><div class="mid"><b>Create group</b><span>Chat with many people</span></div></div><div class="row" data-a="channel"><div class="av" style="background:#8b5cf6">📢</div><div class="mid"><b>Create channel</b><span>Broadcast to followers</span></div></div><div class="row" data-a="community"><div class="av" style="background:#f59e0b">🏘</div><div class="mid"><b>Create community</b><span>Bring groups together</span></div></div></div></div>
     <div id="threadView" class="th hidden">
-      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thInfoBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></div>
+      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thInfoBtn" aria-label="More"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></div>
       <div id="msgs"></div>
       <div id="plusMenu" class="plusmenu hidden"><button data-a="image">🖼 Image</button><button data-a="emoji">😀 Emoji</button><button data-a="camera">📷 Camera</button><button data-a="ai">✨ AI image</button><button data-a="files">📁 Files</button><button data-a="play">🎮 Playmates</button><button data-a="loc">📍 Location</button></div>
       <div id="emojiBox" class="emojibox hidden"></div>
@@ -478,6 +495,10 @@
     </div>
 
   </div>
+
+  <div id="callView" class="hidden"><iframe id="callFrame" allow="camera; microphone; autoplay; display-capture; fullscreen"></iframe><button id="callEnd">End call</button></div>
+  <div id="incoming" class="hidden"><div class="av big" id="icAv"></div><h2 id="icName"></h2><p id="icType" class="sub"></p><div style="display:flex;gap:40px;margin-top:24px"><button id="icNo" class="rnd" style="background:#e53935">Decline</button><button id="icYes" class="rnd" style="background:#25d366;color:#06140c">Accept</button></div></div>
+  <div id="netBanner" class="netb hidden"><span>No internet connection</span><button id="netRetry">Try again</button></div>
 
   <script>
     var API = 'https://zaply-gamma.vercel.app/api';
@@ -489,7 +510,7 @@
         return fetch(APIS[i] + path, opts).then(function (r) {
           if ((r.status === 404 || r.status === 405) && i < APIS.length - 1) { i++; return go(); }
           return r;
-        }).catch(function (e) { if (i < APIS.length - 1) { i++; return go(); } throw e; });
+        }).catch(function (e) { if (i < APIS.length - 1) { i++; return go(); } var er = new Error('No internet connection. Check your data or WiFi and try again.'); er.offline = true; if (!$('authView').classList.contains('hidden')) $('netBanner').classList.remove('hidden'); throw er; });
       }
       return go();
     }
@@ -1304,6 +1325,7 @@ ZW|Zimbabwe|263`;
     }
     function renderChats() {
       updateCounts();
+      allChats.forEach(function (c) { var s = savedName(c.phone); if (s) c.name = s; if (!c.mine && isCallMsg(c.last)) ringFor(c.last, c.at, c); });
       var q = ($('chatSearch').value || '').toLowerCase().trim(), fv = favs();
       var base = allChats.filter(function (c) { return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
       var shown = base.filter(function (c) {
@@ -1318,7 +1340,7 @@ ZW|Zimbabwe|263`;
         var r = mk('div', 'row'), un = withChat && isUnread(c), isFav = fv.indexOf(c.phone) > -1;
         r.appendChild(avatar(c));
         var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
-        mid.appendChild(mk('span', '', withChat ? (c.mine ? 'You: ' : '') + c.last : c.phone));
+        mid.appendChild(mk('span', '', withChat ? (c.mine ? 'You: ' : '') + (isCallMsg(c.last) ? '\ud83d\udcde Call' : c.last) : c.phone));
         r.appendChild(mid);
         if (withChat) {
           var side = mk('div', 'side'); side.appendChild(mk('time', '', hhmm(c.at)));
@@ -1376,6 +1398,7 @@ ZW|Zimbabwe|263`;
     function addMsg(m) {
       if (m.id <= lastId) return false;
       lastId = m.id; thCache.push(m);
+      if (isCallMsg(m.body)) { if (!m.mine) ringFor(m.body, m.at, openUser); m = Object.assign({}, m, { body: '\ud83d\udcde Call' }); }
       var b = mk('div', 'bub' + (m.mine ? ' mine' : ''), m.body);
       b.appendChild(mk('small', '', hhmm(m.at)));
       $('msgs').appendChild(b);
@@ -1458,7 +1481,7 @@ ZW|Zimbabwe|263`;
       });
       return best;
     }
-    function toast(m) { var e = mk('div', 'toast', m); document.body.appendChild(e); setTimeout(function () { e.remove(); }, 2200); }
+    function toast(m, ok) { var e = mk('div', 'toast' + (ok ? ' ok' : ''), m); document.body.appendChild(e); setTimeout(function () { e.remove(); }, ok ? 5000 : 2200); }
     function closeInfo() { $('infoView').classList.add('hidden'); }
     function openInfo() {
       if (!openUser) return; pushOv(closeInfo); setAv($('inAv'), openUser);
@@ -1479,12 +1502,12 @@ ZW|Zimbabwe|263`;
         var tx = (openUser.name || '') + ' ' + openUser.phone;
         if (navigator.share) navigator.share({ text: tx }).catch(function () {});
         else if (navigator.clipboard) navigator.clipboard.writeText(tx).then(function () { toast('Contact copied'); });
-      } else toast('Coming soon');
+      } else if (r.id === 'sBlock') toast('Coming soon');
     });
     $('thInfo').addEventListener('click', openInfo); $('thInfoBtn').addEventListener('click', openInfo);
     $('infoBack').addEventListener('click', closeOv);
-    $('thAudio').addEventListener('click', function () { toast('Audio calls are coming soon'); });
-    $('thVideo').addEventListener('click', function () { toast('Video calls are coming soon'); });
+    $('thAudio').addEventListener('click', function () { startCall(false); });
+    $('thVideo').addEventListener('click', function () { startCall(true); });
     $('btnCam').addEventListener('click', function () { toast('Camera is coming soon'); });
     $('btnMic').addEventListener('click', function () { toast('Voice messages are coming soon'); });
     $('btnPlus').addEventListener('click', function () { $('emojiBox').classList.add('hidden'); $('plusMenu').classList.toggle('hidden'); });
@@ -1508,6 +1531,89 @@ ZW|Zimbabwe|263`;
       if (a === 'new') { closeOv(); setTimeout(function () { $('btnNew').click(); }, 60); } else toast('Groups, channels and communities are coming soon');
     });
     ['Chats', 'Updates', 'Communities', 'Calls'].forEach(function (n) { $('tab' + n).addEventListener('click', function () { showTab(n.toLowerCase()); }); });
+
+    function contacts() { try { return JSON.parse(localStorage.getItem('zaply_contacts') || '{}'); } catch (e) { return {}; } }
+    function savedName(ph) { var c = contacts()[ph]; return c ? (c.first + ' ' + c.last).trim() : ''; }
+    function flag(iso) { return String.fromCodePoint.apply(null, iso.toUpperCase().split('').map(function (ch) { return 127397 + ch.charCodeAt(0); })); }
+    function openPage(id) { pushOv(function () { $(id).classList.add('hidden'); }); $(id).classList.remove('hidden'); }
+    Array.prototype.forEach.call(document.querySelectorAll('.pgback'), function (b) { b.addEventListener('click', closeOv); });
+    $('netRetry').addEventListener('click', function () {
+      fetch(location.origin + '/', { mode: 'no-cors', cache: 'no-store' }).then(function () { $('netBanner').classList.add('hidden'); toast('Back online. Tap Next to continue.'); }).catch(function () { toast('Still no internet connection'); });
+    });
+    /* profile details of the other person */
+    var oi = openInfo;
+    openInfo = function () {
+      oi(); if (!openUser) return;
+      var f = [['Email', openUser.email], ['Birthday', openUser.birthday], ['Bio', openUser.bio], ['Location', openUser.location]];
+      $('pfFields').innerHTML = ''; f.forEach(function (x) { var r = mk('div', 'pfl'); r.appendChild(mk('span', '', x[0])); r.appendChild(mk('span', '', x[1] || 'Not added yet')); $('pfFields').appendChild(r); });
+    };
+    $('thInfo').removeEventListener('click', oi); $('thInfoBtn').removeEventListener('click', oi);
+    $('thInfo').addEventListener('click', function () { openInfo(); }); $('thInfoBtn').addEventListener('click', function () { openInfo(); });
+    $('infoView').addEventListener('click', function (e) {
+      if (!openUser) return; var id = (e.target.closest('[id]') || {}).id, rw = e.target.closest('.srow'); if (rw) id = rw.id;
+      if (id === 'sCall') { closeOv(); setTimeout(function () { startCall(false); }, 200); }
+      else if (id === 'sVideoBtn') { closeOv(); setTimeout(function () { startCall(true); }, 200); }
+      else if (id === 'sSaveBtn') openSave();
+      else if (id === 'sDisap') { var v = localStorage.getItem('zaply_dis_' + openUser.phone) || 'off'; Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.checked = r.value === v; }); openPage('disapView'); }
+      else if (id === 'sRead') { $('rrToggle').checked = localStorage.getItem('zaply_rr') !== 'off'; $('rrName').textContent = (openUser.name || openUser.phone || '').split(' ')[0]; openPage('readView'); }
+      else if (id === 'sReport') { $('rpText').value = ''; openPage('reportView'); }
+    });
+    Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.addEventListener('change', function () { try { localStorage.setItem('zaply_dis_' + openUser.phone, r.value); } catch (e) {} }); });
+    $('rrToggle').addEventListener('change', function () { try { localStorage.setItem('zaply_rr', this.checked ? 'on' : 'off'); } catch (e) {} });
+    $('rpSend').addEventListener('click', function () {
+      var tx = $('rpText').value.trim(); if (!tx) return toast('Please write what you want to report');
+      this.disabled = true; var b = this;
+      chatCall('report', { to: openUser.phone, text: tx }).then(function () {
+        b.disabled = false; closeOv(); toast('Report submitted successfully. Our team will review your report and reply to you within 24 hours.', true);
+      }).catch(function (e) { b.disabled = false; toast(e && e.offline ? 'No internet connection. Try again.' : 'Could not send your report. Please try again.'); });
+    });
+    var svSel = $('svCountry');
+    COUNTRIES.forEach(function (c) { var o = document.createElement('option'); o.value = c.iso; o.textContent = c.name + ' ' + flag(c.iso) + ' +' + c.code; svSel.appendChild(o); });
+    function openSave() {
+      var u = openUser, c = countryOf(u.phone), d = (u.phone || '').replace(/\D/g, ''), sv = contacts()[u.phone];
+      var nm = sv ? (sv.first + ' ' + sv.last).trim() : (u.name && u.name !== u.phone ? u.name : ''), sp = nm.indexOf(' ');
+      $('svFirst').value = sv ? sv.first : (sp > -1 ? nm.slice(0, sp) : nm); $('svLast').value = sv ? sv.last : (sp > -1 ? nm.slice(sp + 1) : '');
+      if (c) svSel.value = c.iso; $('svPhone').value = c ? d.slice(c.code.length) : d;
+      openPage('saveView');
+    }
+    $('svSave').addEventListener('click', function () {
+      var a = contacts(), c = byIso(svSel.value), first = $('svFirst').value.trim(), last = $('svLast').value.trim();
+      a[openUser.phone] = { first: first, last: last, iso: svSel.value, number: $('svPhone').value.trim(), cc: c ? c.code : '' };
+      try { localStorage.setItem('zaply_contacts', JSON.stringify(a)); } catch (e) {}
+      var full = (first + ' ' + last).trim() || openUser.phone; openUser.name = full; $('thName').textContent = full; setAv($('thAv'), openUser);
+      renderChats(); closeOv(); toast('Contact saved', true);
+    });
+
+    function isCallMsg(b) { return typeof b === 'string' && b.indexOf('__call__') === 0; }
+    var rang = {}, pendingCall = null;
+    function callApi(video) {
+      return apiFetch('/call', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: getToken(), video: !!video }) })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Could not start the call'); return j; }); });
+    }
+    function openCall(url) {
+      $('callFrame').src = url; $('callView').classList.remove('hidden'); pushOv(function () { $('callFrame').src = 'about:blank'; $('callView').classList.add('hidden'); });
+    }
+    function startCall(video) {
+      if (!openWith) return;
+      if (!navigator.onLine) return toast('No internet connection');
+      toast('Calling\u2026'); var to = openWith;
+      callApi(video).then(function (j) {
+        chatCall('send', { to: to, body: '__call__' + JSON.stringify({ u: j.url, v: video ? 1 : 0 }) });
+        openCall(j.url);
+      }).catch(function (e) { toast(e && e.offline ? 'No internet connection' : (e.message || 'Could not start the call')); });
+    }
+    function ringFor(body, at, who) {
+      if (rang[body] || Date.now() - new Date(at).getTime() > 45000) return;
+      var d; try { d = JSON.parse(body.slice(8)); } catch (e) { return; }
+      rang[body] = 1; pendingCall = d; who = who || {};
+      setAv($('icAv'), who); $('icName').textContent = who.name || who.phone || 'Someone';
+      $('icType').textContent = d.v ? 'Incoming video call' : 'Incoming audio call';
+      $('incoming').classList.remove('hidden'); try { navigator.vibrate && navigator.vibrate([300, 150, 300]); } catch (e) {}
+      setTimeout(function () { if (pendingCall === d) { $('incoming').classList.add('hidden'); pendingCall = null; } }, 40000);
+    }
+    $('icNo').addEventListener('click', function () { pendingCall = null; $('incoming').classList.add('hidden'); });
+    $('icYes').addEventListener('click', function () { var d = pendingCall; pendingCall = null; $('incoming').classList.add('hidden'); if (d) openCall(d.u); });
+    $('callEnd').addEventListener('click', closeOv);
 
     /* ---------- notifications ---------- */
     function b64ToU8(b) {
