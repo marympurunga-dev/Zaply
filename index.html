@@ -265,7 +265,27 @@
     .empty{color:var(--muted);text-align:center;padding:40px 16px}
       .acts{flex-direction:row;justify-content:space-around;align-items:flex-start}
     .act{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:13px}
-    #disapView,#readView,#reportView,#saveView{z-index:10}
+    #disapView,#readView,#reportView,#saveView,#groupView,#ginfoView{z-index:10}
+    .gfrom{display:block;font-size:12px;font-weight:600;color:#8b5cf6;margin-bottom:2px}
+    .blockbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#2a1a1a;color:#ffb4b4;font-size:14px}
+    .blockbar.hidden{display:none}
+    .blockbar button{background:none;border:1px solid #ffb4b4;color:#ffb4b4;border-radius:999px;padding:6px 14px;font:inherit;font-size:13px}
+    #threadView.isblocked .comp,#threadView.isblocked #plusMenu,#threadView.isblocked #emojiBox{display:none}
+    .bsh{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:60;display:flex;align-items:flex-end}
+    .bsh.hidden{display:none}
+    .bsh-box{width:100%;background:#262626;color:#fff;border-radius:20px 20px 0 0;padding:20px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+    .bsh-box h3{margin:0 0 16px;font-size:18px}
+    .bsh-i{display:flex;gap:14px;margin-bottom:18px}
+    .bsh-i svg{flex:none;width:30px;height:30px;color:#e4e6eb}
+    .bsh-i b{display:block;font-size:16px}
+    .bsh-i span{display:block;color:#aab0b6;font-size:14px;line-height:1.4;margin-top:2px}
+    .bsh-b{width:100%;border:none;border-radius:12px;padding:15px;font:inherit;font-size:16px;font-weight:600;color:#fff;background:#3a3b3c;margin-top:10px}
+    .bsh-b.blue{background:#0a66ff}
+    .pg .opt input[type=checkbox]:not(.sw){-webkit-appearance:none;appearance:none;display:block;width:24px;height:24px;margin:0;padding:0;flex:none;border:2px solid #9aa3ab;border-radius:6px;background:transparent;position:relative}
+    .pg .opt input[type=checkbox]:not(.sw):checked{background:#21c063;border-color:#21c063}
+    .pg .opt input[type=checkbox]:not(.sw):checked::after{content:'';position:absolute;left:6px;top:2px;width:6px;height:12px;border:solid #06140c;border-width:0 3px 3px 0;transform:rotate(45deg)}
+    .pg .opt small{display:block;color:var(--muted);font-size:12px}
+    .seccode{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 6px;margin:18px 0 8px;font-variant-numeric:tabular-nums;font-size:17px;font-weight:600;letter-spacing:1px}
     .pg{padding:12px 16px}.pg input,.pg select{display:block;width:100%;margin:0 0 12px;padding:14px;border-radius:12px;font:inherit}
     .opt{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
     .pfl{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border);font-size:14px}
@@ -319,6 +339,38 @@
     *{-webkit-tap-highlight-color:transparent}
     button:focus,.srow:focus,.row:focus,.act:focus,a:focus,[tabindex]:focus{outline:none}
     button,.srow,.row,.act,.cbtn,.cvb,.th-head,.opt,.thinfo,h4{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+    /* taps answer at once: no double-tap delay, and the pressed state shows immediately */
+    html,body,button,.row,.srow,.opt,.act,a,label{touch-action:manipulation}
+    .row:active,.srow:active,.opt:active{background:rgba(255,255,255,.07)}
+    button:active{filter:brightness(.85)}
+    /* chat header */
+    #threadView .th-head{gap:2px;padding-left:4px;padding-right:4px}
+    #threadView .th-head #thBack{padding:6px 2px}
+    #threadView .th-head .av{width:38px;height:38px;font-size:16px;border-radius:50%;margin:0 6px 0 2px}
+    #thName{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #thPhone:empty{display:none}
+    #threadView .th-head #thVideo,#threadView .th-head #thAudio,#threadView .th-head #thInfoBtn{padding:8px 7px}
+    /* incoming call */
+    #incoming{display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;background:#0b141a;color:#fff;overflow:hidden;padding:calc(56px + env(safe-area-inset-top,0px)) 20px calc(34px + env(safe-area-inset-bottom,0px))}
+    #incoming.hidden{display:none}
+    #icVid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:0}
+    #icVid.hidden{display:none}
+    #incoming .ic-shade{position:absolute;inset:0;z-index:0;display:none;background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.1) 40%,rgba(0,0,0,.65))}
+    #incoming.icvid .ic-shade{display:block}
+    .ic-top,.ic-mid,.ic-bar{position:relative;z-index:1}
+    #icNum{font-size:26px;font-weight:700}
+    #icWho{font-size:16px;color:#c3cbd1;margin-top:8px;min-height:20px}
+    #icMeta{font-size:13px;color:#aab3ba;margin-top:12px}
+    .ic-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+    #icAv{width:190px;height:190px;border-radius:50%;font-size:72px;display:flex;align-items:center;justify-content:center;color:#fff}
+    #incoming.icvid #icAv{width:118px;height:118px;font-size:46px}
+    #icVidOff{display:flex;align-items:center;gap:10px;background:rgba(20,26,30,.85);color:#fff;border:none;border-radius:999px;padding:12px 18px;font:inherit;font-size:15px;font-weight:600}
+    #icVidOff.hidden{display:none}
+    .ic-bar{display:flex;justify-content:space-around;width:100%;max-width:420px}
+    .ic-b{display:flex;flex-direction:column;align-items:center;gap:10px;font-size:12.5px;flex:1;text-align:center}
+    .ic-b:nth-child(2){flex:1.5}
+    .ic-b span{white-space:nowrap}
+    .ic-b .rnd{width:68px;height:68px;padding:0;display:flex;align-items:center;justify-content:center;color:#fff;touch-action:none}
   </style>
 </head>
 <body>
@@ -523,17 +575,26 @@
     <div id="sProfile" class="card pf hidden"><div class="av big" id="inAv"></div><b id="inName" style="font-size:20px"></b><span id="inPhone" class="sub" style="margin:0"></span><span id="inCountry" class="sub" style="margin:0"></span><div id="pfFields" style="width:100%"></div></div>
     <h4>Actions</h4><div class="srow" id="sUnread"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></i><span>Mark as unread</span></div><div class="srow" id="sShare"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span>Share contact</span></div><div class="srow" id="sGroup"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></i><span  id="sGroupT">Create group</span></div>
     <h4>Privacy &amp; support</h4><div class="srow" id="sEnc"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span>Verify end-to-end encryption</span></div><div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></i><span>Disappearing messages</span></div><div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></i><span>Read receipts</span></div><div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg></i><span  id="sBlockT">Block</span></div><div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></i><span>Report</span></div></div></div>
-    <div id="encView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="thinfo"><b>End-to-end encryption</b><small id="encWho"></small></div></div><div class="pg" style="text-align:center"><div class="encico"><svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div><b style="font-size:19px">End-to-End Encryption</b><div class="encnote">End-to-End Encryption secures your messages with a lock. Only you and the person you're communicating with have the keys to unlock and read or listen to what is sent, not even Zucket.</div></div></div>
+    <div id="blockSheet" class="bsh hidden"><div class="bsh-box">
+      <h3 id="bshTitle">Block</h3>
+      <div class="bsh-i"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h9.3A6.9 6.9 0 0 1 13 18c0-1.3.36-2.5.98-3.55C13.2 14.15 12.6 14 12 14z"/><path d="M18 14a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-2.5 4a2.5 2.5 0 0 1 4-2l-3.5 3.5a2.5 2.5 0 0 1-.5-1.5zm2.5 2.5c-.55 0-1.05-.18-1.5-.5l3.5-3.5c.32.45.5.95.5 1.5a2.5 2.5 0 0 1-2.5 2.5z"/></svg><div><b>Prevents unwanted contact</b><span>They won't be able to call or message you outside groups.</span></div></div>
+      <div class="bsh-i"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-8 10c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9A7.9 7.9 0 0 1 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1A7.9 7.9 0 0 1 20 12c0 4.42-3.58 8-8 8z"/></svg><div><b>They won't be notified</b><span>We won't tell them if you block or report them. You can unblock them anytime from Settings.</span></div></div>
+      <button class="bsh-b blue" id="bshBlock">Block</button><button class="bsh-b" id="bshReport">Block and report</button>
+    </div></div>
+    <div id="groupView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>New group</b></div><div class="pg"><input id="grName" type="text" maxlength="80" placeholder="Group name"><p class="sub" style="margin:4px 0 10px">Add members (people you already chat with)</p><div id="grList"></div><div class="msg" id="grMsg"></div><button class="primary" id="grCreate">Create group</button></div></div>
+    <div id="ginfoView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="thinfo"><b id="giName">Group</b><small id="giCount"></small></div></div><div class="pg"><h4 style="margin:0 0 8px">Members</h4><div id="giList"></div><button class="primary" id="giLeave" style="margin-top:18px;background:#dc2626">Leave group</button></div></div>
+    <div id="encView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="thinfo"><b>End-to-end encryption</b><small id="encWho"></small></div></div><div class="pg" style="text-align:center"><div class="encico"><svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div><b style="font-size:19px">End-to-End Encryption</b><div class="encnote">End-to-End Encryption secures your messages with a lock. Only you and the person you're communicating with have the keys to unlock and read or listen to what is sent, not even Zucket.</div><div id="encCodeBox" class="hidden"><h4 style="margin:26px 0 0;text-align:left">Security code</h4><div class="seccode" id="encCode"></div><p class="sub" id="encCodeNote" style="text-align:left"></p></div></div></div>
     <div id="disapView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Disappearing messages</b></div><div class="pg"><p class="sub">Messages will disappear after the selected duration. <a href="#" id="disLearn" style="color:#4aa3ff;font-weight:600;text-decoration:none">Learn more.</a></p><label class="opt">off<input type="radio" name="dis" value="off"></label><label class="opt">24 hours<input type="radio" name="dis" value="24h"></label></div></div>
     <div id="readView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Read receipts</b></div><div class="pg"><label class="opt">Show read receipts<input type="checkbox" id="rrToggle" class="sw"></label><p class="sub"><span id="rrName"></span> will be able to see when you've read their messages.</p></div></div>
     <div id="reportView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Report</b></div><div class="pg"><p class="sub">Tell us what you want to report.</p><textarea id="rpText" rows="6" placeholder="Write here…" style="width:100%;border-radius:12px;padding:14px;font:inherit;box-sizing:border-box"></textarea><button class="primary" id="rpSend" style="margin-top:16px;width:100%">Submit report</button></div></div>
     <div id="saveView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>New Contact</b></div><div class="pg"><input id="svFirst" placeholder="First name"><input id="svLast" placeholder="Last name"><select id="svCountry"></select><input id="svPhone" type="tel" placeholder="Phone number"><button class="primary" id="svSave" style="margin-top:16px;width:100%">Save</button></div></div>
     <div id="createView" class="th hidden"><div class="th-head"><button id="crBack" aria-label="Back">←</button><b>Create</b></div><div style="padding:12px"><div class="row" data-a="new"><div class="av" style="background:#21c063">💬</div><div class="mid"><b>New chat</b><span>Message someone by phone number</span></div></div><div class="row" data-a="group"><div class="av" style="background:#3b82f6">👥</div><div class="mid"><b>Create group</b><span>Chat with many people</span></div></div><div class="row" data-a="channel"><div class="av" style="background:#8b5cf6">📢</div><div class="mid"><b>Create channel</b><span>Broadcast to followers</span></div></div><div class="row" data-a="community"><div class="av" style="background:#f59e0b">🏘</div><div class="mid"><b>Create community</b><span>Bring groups together</span></div></div></div></div>
     <div id="threadView" class="th hidden">
-      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thInfoBtn" aria-label="More"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></div>
+      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thInfoBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></div>
       <div id="msgs"></div>
       <div id="plusMenu" class="plusmenu hidden"><button data-a="image">🖼 Image</button><button data-a="emoji">😀 Emoji</button><button data-a="camera">📷 Camera</button><button data-a="ai">✨ AI image</button><button data-a="files">📁 Files</button><button data-a="play">🎮 Playmates</button><button data-a="loc">📍 Location</button></div>
       <div id="emojiBox" class="emojibox hidden"></div>
+      <div id="blockBar" class="blockbar hidden"><span id="blockBarT"></span><button id="blockBarBtn">Unblock</button></div>
       <div class="comp"><button id="btnPlus" class="ic" aria-label="More">+</button><button id="btnMic" class="ic" aria-label="Voice message"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" ><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button><input id="msgInput" type="text" placeholder="Message" autocomplete="off"><button id="btnSendMsg" class="ic send" aria-label="Send"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" ><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
     </div>
 
@@ -554,7 +615,16 @@
     </div>
     <div id="cvSide"><button class="cvb" id="cvAdd"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><button class="cvb" id="cvFlip"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8A5.87 5.87 0 0 1 6 12c0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/></svg></button><button class="cvb" id="cvFx"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button></div>
     <div id="cvBar"><button class="cvb" id="cvMore"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button><button class="cvb" id="cvVid"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button class="cvb on" id="cvSpk"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></button><button class="cvb" id="cvMute"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button><button class="cvb" id="cvEnd"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" style="transform:rotate(135deg)"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button></div></div>
-  <div id="incoming" class="hidden"><div class="av big" id="icAv"></div><h2 id="icName"></h2><p id="icType" class="sub"></p><div style="display:flex;gap:40px;margin-top:24px"><button id="icNo" class="rnd" style="background:#e53935">Decline</button><button id="icYes" class="rnd" style="background:#25d366;color:#06140c">Accept</button></div></div>
+  <div id="incoming" class="hidden icaud">
+    <video id="icVid" class="hidden" autoplay muted playsinline></video><div class="ic-shade"></div>
+    <div class="ic-top"><div id="icNum"></div><div id="icWho"></div><div id="icMeta"></div></div>
+    <div class="ic-mid"><div class="av" id="icAv"></div>
+      <button id="icVidOff" class="hidden"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M21 6.5l-4 4V7c0-.55-.45-1-1-1H9.82L21 17.18V6.5zM3.27 2L2 3.27 4.73 6H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.21 0 .39-.08.54-.18L19.73 21 21 19.73 3.27 2z"/></svg><span id="icVidOffT">Turn off your video</span></button></div>
+    <div class="ic-bar">
+      <div class="ic-b"><button id="icNo" class="rnd" style="background:#e5173f" aria-label="Decline"></button><span>Decline</span></div>
+      <div class="ic-b"><button id="icYes" class="rnd" style="background:#1fa855" aria-label="Accept"></button><span>Swipe up to accept</span></div>
+      <div class="ic-b"><button id="icMsg" class="rnd" style="background:#22282d" aria-label="Message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg></button><span>Message</span></div>
+    </div></div>
   <div id="netBanner" class="netb hidden"><span>No internet connection</span><button id="netRetry">Try again</button></div>
 
   <script>
@@ -1057,7 +1127,12 @@ ZW|Zimbabwe|263`;
       $('confirmBox').classList.add('hidden');
       patchAuth({ confirm: false });
       $('btnSend').disabled = true;
-      sendCodeFlow({ phone: phoneValue, method: 'sms' })
+      /* "Connecting" on the number page, then the code page opens and shows "Sending code".
+         The SMS provider is only called 5 seconds after the tap, so the message does not go out instantly. */
+      var data = { phone: phoneValue, method: 'sms' };
+      var api = delay(5000).then(function () { return call('send', data); });
+      api.catch(function () {});
+      showLoader('Connecting\u2026', 3000)
         .then(function () {
           $('codeSub').textContent = 'We sent a 6-digit code to ' + phoneValue + '.';
           $('code').value = '';
@@ -1065,8 +1140,10 @@ ZW|Zimbabwe|263`;
           startVerifyTimers();
           showStep('stepCode');
           patchAuth({ phoneValue: phoneValue, code: '' });
+          return showLoaderWhile('Sending code\u2026', api, 2000);
         })
-        .catch(function (e) { hideLoader(); $('msgPhone').textContent = e.message; })
+        .then(function () { hideLoader(); phoneOtp.focus(); })
+        .catch(function (e) { hideLoader(); clearInterval(vsTimer); showStep('stepPhone'); $('msgPhone').textContent = e.message; })
         .then(function () { updateNext(); });
     });
 
@@ -1401,9 +1478,111 @@ ZW|Zimbabwe|263`;
         });
       });
     }
+
+    /*E2E-START*/
+    /* End-to-end encryption: ECDH P-256 key agreement + HKDF + AES-GCM. The private key never leaves this device. */
+    var E2E = (function () {
+      var subtle = window.crypto && window.crypto.subtle, enc = new TextEncoder(), dec = new TextDecoder();
+      var PREFIX = 'e2e1:', mine = null, initP = null, myPhone = '', theirs = {}, secrets = {}, plain = {};
+      var HIDDEN = '\ud83d\udd12 This message can\u2019t be read on this device';
+      function b64(buf) { var a = new Uint8Array(buf), s = ''; for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s); }
+      function unb64(t) { var b = atob(t), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+      function fail(msg) { var e = new Error(msg); e.e2e = true; return e; }
+      function idb() {
+        return new Promise(function (res, rej) {
+          var r = indexedDB.open('zucket_keys', 1);
+          r.onupgradeneeded = function () { r.result.createObjectStore('k'); };
+          r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); };
+        });
+      }
+      var store = {
+        get: function (k) { return idb().then(function (d) { return new Promise(function (res, rej) { var q = d.transaction('k').objectStore('k').get(k); q.onsuccess = function () { res(q.result); }; q.onerror = function () { rej(q.error); }; }); }); },
+        put: function (k, v) { return idb().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction('k', 'readwrite'); t.objectStore('k').put(v, k); t.oncomplete = function () { res(); }; t.onerror = function () { rej(t.error); }; }); }); }
+      };
+      function init(phone) {
+        if (!subtle) return Promise.reject(fail('Encryption is not available on this device.'));
+        myPhone = phone;
+        initP = store.get('pair_' + phone).then(function (pair) {
+          if (pair) return pair;
+          return subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']).then(function (kp) { return store.put('pair_' + phone, kp).then(function () { return kp; }); });
+        }).then(function (pair) {
+          return subtle.exportKey('raw', pair.publicKey).then(function (raw) {
+            mine = { pair: pair, pub: b64(raw) };
+            return chatCall('setkey', { key: mine.pub });
+          });
+        }).then(function () { return true; }, function (e) { initP = null; mine = null; throw e; });
+        return initP;
+      }
+      function ensure() { return mine ? Promise.resolve() : (initP || (myPhone ? init(myPhone) : Promise.reject(fail('Not signed in.')))); }
+      function theirKey(phone, fresh) {
+        var c = theirs[phone];
+        if (c && !fresh && Date.now() - c.at < 300000) return Promise.resolve(c.key);
+        return chatCall('getkey', { phone: phone }).then(function (r) { theirs[phone] = { key: r.key || null, at: Date.now() }; return theirs[phone].key; });
+      }
+      function derive(theirB64) {
+        if (secrets[theirB64]) return Promise.resolve(secrets[theirB64]);
+        return subtle.importKey('raw', unb64(theirB64), { name: 'ECDH', namedCurve: 'P-256' }, false, [])
+          .then(function (pub) { return subtle.deriveBits({ name: 'ECDH', public: pub }, mine.pair.privateKey, 256); })
+          .then(function (bits) { return subtle.importKey('raw', bits, 'HKDF', false, ['deriveKey']); })
+          .then(function (h) { return subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt: enc.encode('zucket-e2e-v1'), info: enc.encode('chat') }, h, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']); })
+          .then(function (k) { secrets[theirB64] = k; return k; });
+      }
+      function aad(phone) { return enc.encode([myPhone, phone].sort().join('|')); }
+      function encrypt(phone, text) {
+        return ensure().then(function () { return theirKey(phone, false); }).then(function (tk) {
+          if (!tk) throw fail('This person needs to open the latest Zucket before you can message them.');
+          return derive(tk);
+        }).then(function (key) {
+          var iv = crypto.getRandomValues(new Uint8Array(12));
+          return subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: aad(phone) }, key, enc.encode(text)).then(function (ct) {
+            var all = new Uint8Array(12 + ct.byteLength); all.set(iv, 0); all.set(new Uint8Array(ct), 12);
+            var wire = PREFIX + b64(all);
+            if (wire.length > 2000) throw fail('Message too long.');
+            return wire;
+          });
+        });
+      }
+      /* resolves to text, or null when the other person has no key; rejects on network trouble or a failed decrypt */
+      function attempt(phone, body, fresh) {
+        return theirKey(phone, fresh).then(function (tk) {
+          if (!tk) return null;
+          return derive(tk).then(function (key) {
+            var all = unb64(body.slice(PREFIX.length));
+            return subtle.decrypt({ name: 'AES-GCM', iv: all.slice(0, 12), additionalData: aad(phone) }, key, all.slice(12));
+          }).then(function (pt) { return dec.decode(pt); });
+        });
+      }
+      /* Resolves to the readable text. Network problems reject (the caller retries later); a message that can never be read gives a notice. */
+      function decrypt(phone, body) {
+        if (typeof body !== 'string' || body.indexOf(PREFIX) !== 0) return Promise.resolve(body);
+        if (plain[body] != null) return Promise.resolve(plain[body]);
+        return ensure().then(function () {
+          return attempt(phone, body, false).catch(function (e) { if (e && e.status !== undefined) throw e; return attempt(phone, body, true); });
+        }).then(function (t) { if (t == null) return HIDDEN; plain[body] = t; return t; }, function (e) {
+          if (e && (e.status !== undefined || e.e2e || e.name === 'TypeError')) throw e;
+          return HIDDEN;
+        });
+      }
+      /* 60-digit security code both people see; it changes if either key changes. */
+      function fingerprint(phone) {
+        return ensure().then(function () { return theirKey(phone, true); }).then(function (tk) {
+          if (!tk) return null;
+          var parts = [mine.pub, tk].sort(), a = unb64(parts[0]), b = unb64(parts[1]), all = new Uint8Array(a.length + b.length);
+          all.set(a, 0); all.set(b, a.length);
+          return subtle.digest('SHA-256', all).then(function (h) {
+            var d = new Uint8Array(h), out = [];
+            for (var i = 0; i < 12; i++) out.push(('0000' + ((d[2 * i] * 256 + d[2 * i + 1]) % 100000)).slice(-5));
+            return out;
+          });
+        });
+      }
+      return { init: init, encrypt: encrypt, decrypt: decrypt, fingerprint: fingerprint, _store: function (x) { store = x; }, PREFIX: PREFIX, HIDDEN: HIDDEN };
+    })();
+    /*E2E-END*/
     function mk(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
     function hhmm(t) { try { return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
-    var openWith = null, lastId = 0;
+    var openWith = null, lastId = 0, myPhone = '', curBlocked = false;
+    function isGroupId(x) { return typeof x === 'string' && /^g:\d+$/.test(x); }
 
     function showTab(t) {
       ['chats', 'contacts', 'settings', 'profile', 'chart', 'updates', 'communities', 'calls'].forEach(function (n) {
@@ -1430,7 +1609,7 @@ ZW|Zimbabwe|263`;
     $('menuChats').addEventListener('click', function () { showTab('chats'); });
     $('menuChart').addEventListener('click', function () { showTab('chart'); });
 
-    var loadErr = '', allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
+    var chatSig = null, loadErr = '', allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
     function avatar(c) {
       var n = c.name || c.phone || '#', a = mk('div', 'av', n.charAt(0).toUpperCase());
       a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; return a;
@@ -1452,10 +1631,10 @@ ZW|Zimbabwe|263`;
       var q = ($('chatSearch').value || '').toLowerCase().trim(), fv = favs();
       var base = allChats.filter(function (c) { return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
       var shown = base.filter(function (c) {
-        return filt === 'all' ? true : filt === 'unread' ? isUnread(c) : filt === 'fav' ? fv.indexOf(c.phone) > -1 : false;
+        return filt === 'all' ? true : filt === 'unread' ? isUnread(c) : filt === 'fav' ? fv.indexOf(c.phone) > -1 : filt === 'groups' ? !!c.group : false;
       });
       var box = $('chatList'), cb = $('contactList'); box.innerHTML = ''; cb.innerHTML = '';
-      var emptyMsg = q ? 'No results.' : filt === 'unread' ? 'No unread messages.' : filt === 'fav' ? 'No favourites yet. Tap \u2606 on a chat to add it.' : filt === 'groups' ? 'Groups are not available yet.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zucket.';
+      var emptyMsg = q ? 'No results.' : filt === 'unread' ? 'No unread messages.' : filt === 'fav' ? 'No favourites yet. Tap \u2606 on a chat to add it.' : filt === 'groups' ? 'No groups yet. Tap + then Create group.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zucket.';
       if (!allChats.length && filt === 'all' && !q) box.innerHTML = '<div class="start"><svg viewBox="0 0 120 100" width="170"><circle cx="60" cy="52" r="30" fill="#25d366"/><path d="M30 52h60M60 22v60M38 36q22 10 44 0M38 68q22-10 44 0" stroke="#0b141a" fill="none" stroke-width="2"/><path d="M12 70 40 28l-6 24z" fill="#fff"/><rect x="80" y="20" width="34" height="26" rx="10" fill="#e8e8e8"/></svg><h3>' + (loadErr ? 'Couldn\u2019t load chats' : 'Start chatting') + '</h3><p>' + (loadErr ? loadErr + '. Check your internet and try again.' : 'Zucket is better with friends. Use the button below to invite your contacts.') + '</p><button id="' + (loadErr ? 'btnRetry' : 'btnInvite') + '" class="inv">' + (loadErr ? 'Try again' : 'Invite a friend') + '</button></div>';
       else if (!shown.length) box.appendChild(mk('div', 'empty', emptyMsg));
       if (!base.length) cb.appendChild(mk('div', 'empty', q ? 'No results.' : 'No contacts yet.'));
@@ -1463,7 +1642,7 @@ ZW|Zimbabwe|263`;
         var r = mk('div', 'row'), un = withChat && isUnread(c), isFav = fv.indexOf(c.phone) > -1;
         r.appendChild(avatar(c));
         var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
-        mid.appendChild(mk('span', '', withChat ? (c.mine ? 'You: ' : '') + (isCallMsg(c.last) ? '\ud83d\udcde Call' : c.last) : c.phone));
+        mid.appendChild(mk('span', '', withChat ? (c.mine ? 'You: ' : (c.group && c.from ? c.from + ': ' : '')) + (isCallMsg(c.last) ? '\ud83d\udcde Call' : c.last) : c.phone));
         r.appendChild(mid);
         if (withChat) {
           var side = mk('div', 'side'); side.appendChild(mk('time', '', hhmm(c.at)));
@@ -1478,18 +1657,24 @@ ZW|Zimbabwe|263`;
           });
           side.appendChild(st); r.appendChild(side);
         }
-        r.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name }); });
+        r.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name, group: !!c.group }); });
         return r;
       }
       shown.forEach(function (c) { box.appendChild(row(c, true)); });
-      base.forEach(function (c) { cb.appendChild(row(c, false)); });
+      base.filter(function (c) { return !c.group; }).forEach(function (c) { cb.appendChild(row(c, false)); });
     }
     function loadChats() {
       chatCall('list').then(function (res) {
-        allChats = res.chats || []; loadErr = '';
+        return Promise.all((res.chats || []).map(function (c) {
+          if (c.group || typeof c.last !== 'string' || c.last.indexOf(E2E.PREFIX) !== 0) return c;
+          return E2E.decrypt(c.phone, c.last).then(function (t) { c.last = t; return c; }, function () { c.last = '\ud83d\udd12 Message'; return c; });
+        }));
+      }).then(function (chats) {
+        var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0]; }));
+        allChats = chats; loadErr = '';
         try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
         try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
-        renderChats();
+        if (sig !== chatSig || wasErr) { chatSig = sig; renderChats(); } else updateCounts();
       }).catch(function (e) { loadErr = e && e.status ? 'Server error (' + e.status + ')' : 'Can\u2019t reach the server'; renderChats(); });
     }
     $('chatSearch').addEventListener('input', renderChats);
@@ -1524,6 +1709,7 @@ ZW|Zimbabwe|263`;
       if (isCallMsg(m.body)) { if (!m.mine) ringFor(m.body, m.at, openUser); m = Object.assign({}, m, { body: '\ud83d\udcde Call' }); }
       var b = mk('div', 'bub' + (m.mine ? ' mine' : ''), m.body);
       b.appendChild(mk('small', '', hhmm(m.at)));
+      if (openUser && openUser.group && !m.mine && m.from) b.insertBefore(mk('span', 'gfrom', m.from), b.firstChild);
       $('msgs').appendChild(b);
       return true;
     }
@@ -1531,25 +1717,35 @@ ZW|Zimbabwe|263`;
       var who = openWith;
       if (!who) return;
       chatCall('history', { with: who, after: lastId }).then(function (res) {
+        return Promise.all(res.messages.map(function (m) {
+          if (isGroupId(who) || isCallMsg(m.body)) return m;
+          return E2E.decrypt(who, m.body).then(function (t) { return Object.assign({}, m, { body: t }); });
+        }));
+      }).then(function (msgs) {
         if (who !== openWith) return;
         var added = false;
-        res.messages.forEach(function (m) { if (addMsg(m)) added = true; });
+        msgs.forEach(function (m) { if (addMsg(m)) added = true; });
         if (added) { $('msgs').scrollTop = $('msgs').scrollHeight; saveThread(who); }
       }).catch(function () {});
     }
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
       markSeen(u.phone); openWith = u.phone; lastId = 0; $('msgs').innerHTML = ''; thCache = []; openUser = u;
-      $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.phone; setAv($('thAv'), u);
+      $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.group ? 'Group' : ''; setAv($('thAv'), u);
+      $('thVideo').style.display = u.group ? 'none' : ''; $('thAudio').style.display = u.group ? 'none' : '';
+      curBlocked = false; setBlockedUI();
+      if (u.group) chatCall('group_info', { group: u.phone }).then(function (r) { if (openWith === u.phone) $('thPhone').textContent = r.members.length + ' members'; }).catch(function () {});
+      else chatCall('blockstate', { with: u.phone }).then(function (r) { if (openWith === u.phone) { curBlocked = !!r.blocked; setBlockedUI(); } }).catch(function () {});
       loadCachedThread(u.phone);
       $('threadView').classList.remove('hidden');
-      fetchMsgs(); $('msgInput').focus();
+      fetchMsgs();
     }
     function closeThread() { if (openWith && openWith !== keepUnread) markSeen(openWith); keepUnread = null; openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
     $('thBack').addEventListener('click', closeOv);
     function sendMsg() {
       var body = $('msgInput').value.trim();
       if (!body || !openWith) return;
+      if (new TextEncoder().encode(body).length > 1300) return toast('Message too long. Please shorten it.');
       $('msgInput').value = ''; queueMsg(openWith, body);
     }
     $('btnSendMsg').addEventListener('click', sendMsg);
@@ -1582,14 +1778,20 @@ ZW|Zimbabwe|263`;
     }
     function flushOutbox() {
       if (flushing) return; var a = outbox(); if (!a.length) return;
-      flushing = true; var it = a[0];
-      chatCall('send', { to: it.to, body: it.body }).then(function (res) {
+      flushing = true; var it = a[0], plainBody = it.body;
+      var prep = (isGroupId(it.to) || isCallMsg(plainBody)) ? Promise.resolve(plainBody) : E2E.encrypt(it.to, plainBody);
+      prep.then(function (wire) { return chatCall('send', { to: it.to, body: wire }); }).then(function (res) {
         dropPending(it);
-        if (it.to === openWith) { addMsg(res.message); saveThread(openWith); $('msgs').scrollTop = $('msgs').scrollHeight; }
+        if (it.to === openWith) { addMsg(Object.assign({}, res.message, { body: plainBody })); saveThread(openWith); $('msgs').scrollTop = $('msgs').scrollHeight; }
         flushing = false; flushOutbox();
       }).catch(function (e) {
         flushing = false;
-        if (e && e.status >= 400 && e.status < 500 && e.status !== 401) { dropPending(it); flushOutbox(); }
+        if (e && e.e2e) { dropPending(it); toast(e.message); flushOutbox(); return; }
+        if (e && e.status >= 400 && e.status < 500 && e.status !== 401) {
+          dropPending(it);
+          if (e.status === 403 || e.status === 404) { toast(e.message); if (e.blocked) { curBlocked = true; setBlockedUI(); } }
+          flushOutbox();
+        }
       });
     }
     window.addEventListener('online', flushOutbox);
@@ -1605,13 +1807,87 @@ ZW|Zimbabwe|263`;
       return best;
     }
     function toast(m, ok) { var e = mk('div', 'toast' + (ok ? ' ok' : ''), m); document.body.appendChild(e); setTimeout(function () { e.remove(); }, ok ? 5000 : 2200); }
+    function setBlockedUI() {
+      $('threadView').classList.toggle('isblocked', curBlocked);
+      $('blockBar').classList.toggle('hidden', !curBlocked);
+      var fn = openUser ? (openUser.name || openUser.phone || '').split(' ')[0] : '';
+      $('blockBarT').textContent = 'You blocked ' + fn + '.';
+      if (openUser && !openUser.group) $('sBlockT').textContent = (curBlocked ? 'Unblock ' : 'Block ') + fn;
+    }
+    function doBlock() {
+      if (!openUser) return Promise.reject();
+      return chatCall('block', { phone: openUser.phone }).then(function () { curBlocked = true; setBlockedUI(); });
+    }
+    function doUnblock() {
+      if (!openUser) return;
+      chatCall('unblock', { phone: openUser.phone }).then(function () { curBlocked = false; setBlockedUI(); toast('Unblocked'); }).catch(function (e) { toast(e.message || 'Could not unblock'); });
+    }
+    function closeSheet() { $('blockSheet').classList.add('hidden'); }
+    function openBlockSheet() {
+      $('bshTitle').textContent = 'Block ' + (openUser.name || openUser.phone) + '?';
+      pushOv(closeSheet); $('blockSheet').classList.remove('hidden');
+    }
+    $('blockSheet').addEventListener('click', function (e) { if (e.target === this) closeOv(); });
+    $('bshBlock').addEventListener('click', function () {
+      doBlock().then(function () { closeOv(); toast('Blocked'); }).catch(function (e) { toast((e && e.message) || 'Could not block'); });
+    });
+    $('bshReport').addEventListener('click', function () {
+      doBlock().then(function () { closeOv(); setTimeout(function () { $('rpText').value = ''; openPage('reportView'); }, 80); }).catch(function (e) { toast((e && e.message) || 'Could not block'); });
+    });
+    $('blockBarBtn').addEventListener('click', doUnblock);
+
+    /* ---------- groups ---------- */
+    var grPre = '';
+    function openGroupCreate(pre) {
+      grPre = typeof pre === 'string' ? pre : '';
+      var people = allChats.filter(function (c) { return !c.group; });
+      if (!people.length) return toast('Start a chat with someone first, then add them to a group.');
+      $('grName').value = ''; $('grMsg').textContent = ''; $('grList').innerHTML = '';
+      people.forEach(function (c) {
+        var l = mk('label', 'opt'), t = mk('span', '', c.name || c.phone);
+        if (c.name) t.appendChild(mk('small', '', c.phone));
+        var cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = c.phone; cb.checked = c.phone === grPre;
+        l.appendChild(t); l.appendChild(cb); $('grList').appendChild(l);
+      });
+      openPage('groupView'); setTimeout(function () { $('grName').focus(); }, 100);
+    }
+    var grBusy = false;
+    $('grCreate').addEventListener('click', function () {
+      if (grBusy) return;
+      var name = $('grName').value.trim(), members = Array.prototype.map.call($('grList').querySelectorAll('input:checked'), function (i) { return i.value; });
+      if (!name) { $('grMsg').textContent = 'Give the group a name.'; return; }
+      if (!members.length) { $('grMsg').textContent = 'Pick at least one person.'; return; }
+      grBusy = true; $('grMsg').textContent = '';
+      chatCall('group_create', { name: name, members: members }).then(function (r) {
+        var fromThread = !!openWith, g = r.group;
+        closeOv(); setTimeout(closeOv, 80);
+        setTimeout(function () { loadChats(); openThread(g); }, 240);
+      }).catch(function (e) { $('grMsg').textContent = e.message || 'Could not create the group.'; }).then(function () { grBusy = false; });
+    });
+    function openGroupInfo() {
+      var g = openUser; if (!g) return;
+      $('giName').textContent = g.name || 'Group'; $('giCount').textContent = ''; $('giList').innerHTML = '';
+      openPage('ginfoView');
+      chatCall('group_info', { group: g.phone }).then(function (r) {
+        $('giCount').textContent = r.members.length + ' members';
+        r.members.forEach(function (m) {
+          var row = mk('div', 'row'); row.appendChild(avatar(m));
+          var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', m.phone === myPhone ? 'You' : (m.name || m.phone))); mid.appendChild(mk('span', '', m.phone));
+          row.appendChild(mid); $('giList').appendChild(row);
+        });
+      }).catch(function (e) { toast(e.message || 'Could not load the group'); });
+    }
+    $('giLeave').addEventListener('click', function () {
+      var g = openUser; if (!g) return;
+      chatCall('group_leave', { group: g.phone }).then(function () { closeOv(); setTimeout(closeOv, 80); toast('You left the group'); setTimeout(loadChats, 300); }).catch(function (e) { toast(e.message || 'Could not leave'); });
+    });
     function closeInfo() { $('infoView').classList.add('hidden'); }
     function openInfo() {
       if (!openUser) return; pushOv(closeInfo); setAv($('inAv'), openUser);
       $('inName').textContent = openUser.name || openUser.phone; $('inPhone').textContent = openUser.phone || '';
       var c = countryOf(openUser.phone); $('inCountry').textContent = c ? 'Country: ' + c.name : '';
       var fn = (openUser.name || openUser.phone || '').split(' ')[0];
-      $('sGroupT').textContent = 'Create group with ' + fn; $('sBlockT').textContent = 'Block ' + fn; $('sProfile').classList.add('hidden');
+      $('sGroupT').textContent = 'Create group with ' + fn; $('sBlockT').textContent = (curBlocked ? 'Unblock ' : 'Block ') + fn; $('sProfile').classList.add('hidden');
       $('infoView').classList.remove('hidden');
     }
     var keepUnread = null;
@@ -1625,7 +1901,7 @@ ZW|Zimbabwe|263`;
         var tx = (openUser.name || '') + ' ' + openUser.phone;
         if (navigator.share) navigator.share({ text: tx }).catch(function () {});
         else if (navigator.clipboard) navigator.clipboard.writeText(tx).then(function () { toast('Contact copied'); });
-      } else if (r.id === 'sBlock') toast('Coming soon');
+      }
     });
     $('thInfo').addEventListener('click', openInfo); $('thInfoBtn').addEventListener('click', openInfo);
     $('infoBack').addEventListener('click', closeOv);
@@ -1651,7 +1927,7 @@ ZW|Zimbabwe|263`;
     $('crBack').addEventListener('click', closeOv);
     $('createView').addEventListener('click', function (e) {
       var r = e.target.closest('.row'); if (!r) return; var a = r.getAttribute('data-a');
-      if (a === 'new') { closeOv(); setTimeout(function () { $('btnNew').click(); }, 60); } else toast('Groups, channels and communities are coming soon');
+      if (a === 'new') { closeOv(); setTimeout(function () { $('btnNew').click(); }, 60); } else if (a === 'group') openGroupCreate(); else toast('Channels and communities are coming soon');
     });
     ['Chats', 'Updates', 'Communities', 'Calls'].forEach(function (n) { $('tab' + n).addEventListener('click', function () { showTab(n.toLowerCase()); }); });
 
@@ -1666,7 +1942,9 @@ ZW|Zimbabwe|263`;
     /* profile details of the other person */
     var oi = openInfo;
     openInfo = function () {
+      if (openUser && openUser.group) return openGroupInfo();
       oi(); if (!openUser) return;
+      chatCall('blockstate', { with: openUser.phone }).then(function (r) { curBlocked = !!r.blocked; setBlockedUI(); }).catch(function () {});
       var f = [['Email', openUser.email], ['Birthday', openUser.birthday], ['Bio', openUser.bio], ['Location', openUser.location]];
       $('pfFields').innerHTML = ''; f.forEach(function (x) { var r = mk('div', 'pfl'); r.appendChild(mk('span', '', x[0])); r.appendChild(mk('span', '', x[1] || 'Not added yet')); $('pfFields').appendChild(r); });
     };
@@ -1679,7 +1957,20 @@ ZW|Zimbabwe|263`;
       else if (id === 'sSaveBtn') openSave();
       else if (id === 'sDisap') { var v = localStorage.getItem('zaply_dis_' + openUser.phone) || 'off'; Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.checked = r.value === v; }); openPage('disapView'); }
       else if (id === 'sRead') { $('rrToggle').checked = localStorage.getItem('zaply_rr') !== 'off'; $('rrName').textContent = (openUser.name || openUser.phone || '').split(' ')[0]; openPage('readView'); }
-      else if (id === 'sEnc') { $('encWho').textContent = 'You, ' + (openUser.name || openUser.phone || ''); openPage('encView'); }
+      else if (id === 'sEnc') {
+        var who = openUser;
+        $('encWho').textContent = 'You, ' + (who.name || who.phone || ''); openPage('encView');
+        $('encCodeBox').classList.add('hidden');
+        E2E.fingerprint(who.phone).then(function (g) {
+          var fn2 = (who.name || who.phone || '').split(' ')[0];
+          $('encCode').innerHTML = ''; $('encCodeBox').classList.remove('hidden');
+          if (!g) { $('encCode').style.display = 'none'; $('encCodeNote').textContent = fn2 + ' has not set up encryption yet. They need to open the latest Zucket.'; return; }
+          $('encCode').style.display = ''; g.forEach(function (n) { $('encCode').appendChild(mk('span', '', n)); });
+          $('encCodeNote').textContent = 'To verify, compare this code with the one on ' + fn2 + '\u2019s phone. If they match, your chat is end-to-end encrypted. If it ever changes, one of you signed in on a new device.';
+        }).catch(function () {});
+      }
+      else if (id === 'sBlock') { if (curBlocked) doUnblock(); else openBlockSheet(); }
+      else if (id === 'sGroup') openGroupCreate(openUser.phone);
       else if (id === 'sReport') { $('rpText').value = ''; openPage('reportView'); }
     });
     Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.addEventListener('change', function () { try { localStorage.setItem('zaply_dis_' + openUser.phone, r.value); } catch (e) {} }); });
@@ -1764,21 +2055,73 @@ ZW|Zimbabwe|263`;
       if (!navigator.onLine) return toast('No internet connection');
       toast('Calling\u2026'); var to = openWith;
       callApi(video).then(function (j) {
-        chatCall('send', { to: to, body: '__call__' + JSON.stringify({ u: j.url, v: video ? 1 : 0 }) });
-        openCall(j.url, video, openUser, true);
+        return chatCall('send', { to: to, body: '__call__' + JSON.stringify({ u: j.url, v: video ? 1 : 0 }) }).then(function () {
+          openCall(j.url, video, openUser, true);
+        });
       }).catch(function (e) { toast(e && e.offline ? 'No internet connection' : (e.message || 'Could not start the call')); });
     }
     function ringFor(body, at, who) {
       if (rang[body] || Date.now() - new Date(at).getTime() > 45000) return;
       var d; try { d = JSON.parse(body.slice(8)); } catch (e) { return; }
       rang[body] = 1; pendingCall = d; who = who || {}; pendingWho = who;
-      setAv($('icAv'), who); $('icName').textContent = who.name || who.phone || 'Someone';
-      $('icType').textContent = d.v ? 'Incoming video call' : 'Incoming audio call';
-      $('incoming').classList.remove('hidden'); try { navigator.vibrate && navigator.vibrate([300, 150, 300]); } catch (e) {}
-      setTimeout(function () { if (pendingCall === d) { $('incoming').classList.add('hidden'); pendingCall = null; } }, 40000);
+      showIncoming(d, who);
+      try { navigator.vibrate && navigator.vibrate([300, 150, 300]); } catch (e) {}
+      setTimeout(function () { if (pendingCall === d) { pendingCall = null; hideIncoming(); } }, 40000);
     }
-    $('icNo').addEventListener('click', function () { pendingCall = null; $('incoming').classList.add('hidden'); });
-    $('icYes').addEventListener('click', function () { var d = pendingCall; pendingCall = null; $('incoming').classList.add('hidden'); if (d) openCall(d.u, d.v, pendingWho, false); });
+    var icStream = null, PERSON = '<svg viewBox="0 0 24 24" width="62%" height="62%" fill="#ff7eb3"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+    function stopIcCam() {
+      if (icStream) { icStream.getTracks().forEach(function (t) { t.stop(); }); icStream = null; }
+      $('icVid').srcObject = null; $('icVid').classList.add('hidden');
+    }
+    function hideIncoming() { $('incoming').classList.add('hidden'); stopIcCam(); }
+    function fmtPhone(ph) {
+      var c = countryOf(ph), d = (ph || '').replace(/\D/g, '');
+      return c ? '+' + c.code + ' ' + d.slice(c.code.length).replace(/^(\d{3})(\d+)$/, '$1 $2') : (ph || '');
+    }
+    function showIncoming(d, who) {
+      var c = countryOf(who.phone), sn = savedName(who.phone), nm = sn || who.name || '';
+      $('icNum').textContent = fmtPhone(who.phone) || nm || 'Unknown number';
+      $('icWho').textContent = nm ? '~ ' + nm : '';
+      $('icMeta').textContent = [c ? c.name : '', sn ? 'In your contacts' : 'Not a contact'].filter(Boolean).join(' \u2022 ');
+      var av = $('icAv');
+      if (nm) setAv(av, { name: nm, phone: who.phone }); else { av.innerHTML = PERSON; av.style.background = '#3b1b2b'; }
+      $('icNo').innerHTML = $('cvEnd').innerHTML;
+      $('icYes').innerHTML = (d.v ? $('thVideo') : $('thAudio')).innerHTML;
+      $('incoming').className = d.v ? 'icvid' : 'icaud';
+      $('icVidOff').classList.toggle('hidden', !d.v); $('icVidOffT').textContent = 'Turn off your video';
+      stopIcCam();
+      if (d.v && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false }).then(function (st) {
+          if (pendingCall !== d) { st.getTracks().forEach(function (t) { t.stop(); }); return; }
+          icStream = st; $('icVid').srcObject = st; $('icVid').classList.remove('hidden');
+        }).catch(function () {});
+      }
+    }
+    $('icVidOff').addEventListener('click', function () {
+      if (!icStream) return;
+      var tr = icStream.getVideoTracks()[0]; if (!tr) return;
+      tr.enabled = !tr.enabled; $('icVid').classList.toggle('hidden', !tr.enabled);
+      $('icVidOffT').textContent = tr.enabled ? 'Turn off your video' : 'Turn on your video';
+    });
+    $('icNo').addEventListener('click', function () { pendingCall = null; hideIncoming(); });
+    function acceptIncoming() { var d = pendingCall; pendingCall = null; hideIncoming(); if (d) openCall(d.u, d.v, pendingWho, false); }
+    (function () {
+      var y0 = null, moved = false, btn = $('icYes');
+      btn.addEventListener('touchstart', function (e) { y0 = e.touches[0].clientY; moved = false; }, { passive: true });
+      btn.addEventListener('touchmove', function (e) {
+        if (y0 == null) return; var dy = e.touches[0].clientY - y0;
+        if (dy < -6) { moved = true; btn.style.transform = 'translateY(' + Math.max(dy, -160) + 'px)'; }
+      }, { passive: true });
+      btn.addEventListener('touchend', function (e) {
+        var dy = y0 == null ? 0 : e.changedTouches[0].clientY - y0; btn.style.transform = ''; y0 = null;
+        if (dy < -90) { e.preventDefault(); acceptIncoming(); }
+      });
+      btn.addEventListener('click', function () { if (moved) { moved = false; return; } acceptIncoming(); });
+    })();
+    $('icMsg').addEventListener('click', function () {
+      var w = pendingWho; pendingCall = null; hideIncoming();
+      if (w && w.phone) openThread({ phone: w.phone, name: w.name || '' });
+    });
     $('cvEnd').addEventListener('click', closeOv);
     $('cvMute').addEventListener('click', function () { if (!co) return; var on = co.localAudio(); co.setLocalAudio(!on); this.classList.toggle('on', on); });
     $('cvVid').addEventListener('click', function () { if (!co) return; var on = co.localVideo(); co.setLocalVideo(!on); this.classList.toggle('on', on); });
@@ -1837,6 +2180,7 @@ ZW|Zimbabwe|263`;
     });
     function openChatWith(phone) {
       if (!phone) return;
+      if (isGroupId(phone)) { var gc = allChats.filter(function (c) { return c.phone === phone; })[0] || {}; return openThread({ phone: phone, name: gc.name || 'Group', group: true }); }
       chatCall('start', { phone: phone }).then(function (r) { openThread(r.user); }).catch(function () {});
     }
     if ('serviceWorker' in navigator) {
@@ -1847,6 +2191,7 @@ ZW|Zimbabwe|263`;
 
     function startApp(user) {
       clearAuthStep();
+      myPhone = user.phone; E2E.init(user.phone).catch(function () {});
       try { allChats = JSON.parse(localStorage.getItem('zaply_chats') || '[]'); } catch (e) {}
       $('hello').textContent = 'Signed in as ' + user.name;
       $('pfName').textContent = user.name || ''; $('pfPhone').textContent = user.phone || ''; $('pfAv').textContent = (user.name || '#').charAt(0).toUpperCase();
