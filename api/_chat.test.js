@@ -4,7 +4,7 @@ const assert = require('node:assert');
 const crypto = require('crypto');
 const Module = require('module');
 
-const db = { users: [], blocks: [], messages: [], reports: [], groups: [], members: [], gmsgs: [] };
+const db = { users: [], blocks: [], messages: [], reports: [], groups: [], members: [], gmsgs: [], profiles: [] };
 const fakePool = {
   async query(sql, p = []) {
     sql = sql.replace(/\s+/g, ' ').trim();
@@ -21,6 +21,14 @@ const fakePool = {
     if (/^SELECT 1 FROM group_members/.test(sql)) return [db.members.filter((m) => m.group_id === p[0] && m.phone === p[1])];
     if (/^INSERT INTO group_messages/.test(sql)) { db.gmsgs.push({ group_id: p[0], sender: p[1], body: p[2] }); return [{ insertId: db.gmsgs.length }]; }
     if (/^SELECT name FROM chat_groups/.test(sql)) return [db.groups.filter((g) => g.id === p[0])];
+    if (/^SELECT username, email, address, bio, DATE_FORMAT/.test(sql)) return [db.profiles.filter((r) => r.phone === p[0])];
+    if (/^INSERT INTO profiles/.test(sql)) {
+      if (p[1] && db.profiles.some((r) => r.username === p[1] && r.phone !== p[0])) { const e = new Error('dup'); e.code = 'ER_DUP_ENTRY'; throw e; }
+      const row = { phone: p[0], username: p[1], email: p[2], address: p[3], bio: p[4], birthday: p[5], pet: p[6] };
+      const i = db.profiles.findIndex((r) => r.phone === p[0]);
+      if (i > -1) db.profiles[i] = row; else db.profiles.push(row);
+      return [{}];
+    }
     throw new Error('fake db: unhandled SQL: ' + sql.slice(0, 80));
   },
 };
@@ -101,4 +109,36 @@ test('groups: only members can post, and the creator is a member', async () => {
   assert.strictEqual((await call(C, { action: 'send', to: 'g:1', body: 'let me in' })).status, 403);
   assert.strictEqual((await call(A, { action: 'group_create', name: '', members: [B] })).status, 400);
   assert.strictEqual((await call(A, { action: 'group_create', name: 'Solo', members: [] })).status, 400);
+});
+
+test('profiles: save and read back username, email, address, bio, birthday and pet', async () => {
+  const s = await call(A, { action: 'profile_set', username: '@Ann_K', email: 'ann@example.com', address: 'Nairobi', bio: 'Hello', birthday: '2005-12-22', pet: 'Cat' });
+  assert.strictEqual(s.status, 200);
+  assert.strictEqual(s.json.profile.username, 'ann_k');
+  const g = await call(C, { action: 'profile_get', phone: A });
+  assert.strictEqual(g.status, 200);
+  assert.deepStrictEqual(g.json.profile, { username: 'ann_k', email: 'ann@example.com', address: 'Nairobi', bio: 'Hello', birthday: '2005-12-22', pet: 'Cat' });
+  assert.strictEqual((await call(A, { action: 'profile_get' })).json.profile.pet, 'Cat'); // own profile when no phone is given
+});
+
+test('profiles: bio is cut at 200 letters and emoji count as one letter', async () => {
+  const r = await call(B, { action: 'profile_set', bio: '😀'.repeat(250) });
+  assert.strictEqual(Array.from(r.json.profile.bio).length, 200);
+});
+
+test('profiles: a username can only belong to one person, and bad values are refused', async () => {
+  assert.strictEqual((await call(B, { action: 'profile_set', username: 'ANN_K' })).status, 409);
+  assert.strictEqual((await call(B, { action: 'profile_set', username: 'a b' })).status, 400);
+  assert.strictEqual((await call(B, { action: 'profile_set', email: 'not-an-email' })).status, 400);
+  assert.strictEqual((await call(B, { action: 'profile_set', birthday: '2999-01-01' })).status, 400);
+  assert.strictEqual((await call(B, { action: 'profile_set', birthday: '2005-02-31' })).status, 400);
+});
+
+test('profiles: a blocked person sees an empty profile, and unknown numbers are refused', async () => {
+  await call(A, { action: 'block', phone: C });
+  const g = await call(C, { action: 'profile_get', phone: A });
+  assert.strictEqual(g.status, 200);
+  assert.strictEqual(g.json.profile.email, '');
+  await call(A, { action: 'unblock', phone: C });
+  assert.strictEqual((await call(A, { action: 'profile_get', phone: '+254799999999' })).status, 404);
 });

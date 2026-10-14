@@ -1,5 +1,6 @@
 // POST /api/chat  — actions: list, start, history, send, block, unblock, blockstate, report, setkey, getkey,
-//                           group_create, group_info, group_leave (groups are chats with the id "g:<number>")
+//                           group_create, group_info, group_leave (groups are chats with the id "g:<number>"),
+//                           profile_get, profile_set (username, email, address, bio, birthday, pet)
 const crypto = require('crypto');
 const mysql = require('mysql2/promise');
 const webpush = require('web-push');
@@ -71,7 +72,17 @@ function ensureTable() {
         sender VARCHAR(20) NOT NULL,
         body VARCHAR(2000) NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_g (group_id, id))`)]);
+        INDEX idx_g (group_id, id))`),
+      db().query(`CREATE TABLE IF NOT EXISTS profiles (
+        phone VARCHAR(20) NOT NULL PRIMARY KEY,
+        username VARCHAR(30) NULL,
+        email VARCHAR(120) NOT NULL DEFAULT '',
+        address VARCHAR(120) NOT NULL DEFAULT '',
+        bio VARCHAR(800) NOT NULL DEFAULT '',
+        birthday DATE NULL,
+        pet VARCHAR(40) NOT NULL DEFAULT '',
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uq_username (username))`)]);
   }
   return ready;
 }
@@ -89,6 +100,23 @@ async function findUser(phone) {
   return r[0] || null;
 }
 
+const EMPTY_PROFILE = { username: '', email: '', address: '', bio: '', birthday: '', pet: '' };
+const cleanRow = (r) => ({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '' });
+// trims, and cuts to a number of characters (emoji count as one)
+const clip = (v, n) => Array.from(String(v == null ? '' : v).trim()).slice(0, n).join('');
+function cleanProfile(b) {
+  const username = clip(b.username, 31).replace(/^@/, '').toLowerCase();
+  if (username && !/^[a-z0-9_.]{3,30}$/.test(username)) return { error: 'Username must be 3 to 30 letters, numbers, dots or underscores.' };
+  const email = clip(b.email, 120);
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'That email address doesn’t look right.' };
+  const birthday = clip(b.birthday, 10);
+  if (birthday) {
+    const d = new Date(birthday + 'T00:00:00Z');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday) || isNaN(d) || d.toISOString().slice(0, 10) !== birthday || d > new Date() || d.getUTCFullYear() < 1900)
+      return { error: 'That birthday isn’t a valid date.' };
+  }
+  return { username, email, address: clip(b.address, 120), bio: clip(b.bio, 200), birthday, pet: clip(b.pet, 40) };
+}
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
 const MAX_GROUP = 50;
 const isGroup = (x) => typeof x === 'string' && /^g:\d{1,9}$/.test(x);
@@ -269,6 +297,35 @@ module.exports = async (req, res) => {
       if (!phoneOk(b.phone)) return res.status(400).json({ error: 'Bad request.' });
       const [k] = await db().query('SELECT public_key FROM user_keys WHERE phone = ?', [b.phone]);
       return res.json({ key: k[0] ? k[0].public_key : null });
+    }
+
+    if (b.action === 'profile_get') {
+      const who = b.phone === undefined ? me : b.phone;
+      if (!phoneOk(who)) return res.status(400).json({ error: 'Bad request.' });
+      if (who !== me) {
+        if (!(await findUser(who))) return res.status(404).json({ error: "That number isn't on Zucket yet." });
+        const bs = await blockState(me, who);
+        if (bs.iBlocked || bs.blockedMe) return res.json({ profile: EMPTY_PROFILE });
+      }
+      const [r] = await db().query(
+        "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet FROM profiles WHERE phone = ?", [who]);
+      return res.json({ profile: r[0] ? cleanRow(r[0]) : EMPTY_PROFILE });
+    }
+
+    if (b.action === 'profile_set') {
+      const p = cleanProfile(b);
+      if (p.error) return res.status(400).json({ error: p.error });
+      try {
+        await db().query(
+          `INSERT INTO profiles (phone, username, email, address, bio, birthday, pet) VALUES (?, ?, ?, ?, ?, ?, ?)
+           ON DUPLICATE KEY UPDATE username = VALUES(username), email = VALUES(email), address = VALUES(address),
+             bio = VALUES(bio), birthday = VALUES(birthday), pet = VALUES(pet)`,
+          [me, p.username || null, p.email, p.address, p.bio, p.birthday || null, p.pet]);
+      } catch (e) {
+        if (e && e.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'That username is already taken.' });
+        throw e;
+      }
+      return res.json({ profile: { username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet } });
     }
 
     if (b.action === 'group_create') {
