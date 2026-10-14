@@ -1,4 +1,4 @@
-// POST /api/chat  — actions: list, start, history, send, block, unblock, blockstate, report, setkey, getkey,
+// POST /api/chat  — actions: list, start, history, send, media_put, media_get, block, unblock, blockstate, report, setkey, getkey,
 //                           group_create, group_info, group_leave (groups are chats with the id "g:<number>"),
 //                           profile_get, profile_set (username, email, address, bio, birthday, pet)
 const crypto = require('crypto');
@@ -73,6 +73,14 @@ function ensureTable() {
         body VARCHAR(2000) NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_g (group_id, id))`),
+      db().query(`CREATE TABLE IF NOT EXISTS media (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        owner VARCHAR(20) NOT NULL,
+        peer VARCHAR(40) NOT NULL,
+        size INT NOT NULL,
+        data LONGBLOB NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_media_peer (peer))`),
       db().query(`CREATE TABLE IF NOT EXISTS profiles (
         phone VARCHAR(20) NOT NULL PRIMARY KEY,
         username VARCHAR(30) NULL,
@@ -119,12 +127,16 @@ function cleanProfile(b) {
 }
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
 const MAX_GROUP = 50;
+const MEDIA_MAX = 3 * 1024 * 1024;
 const isGroup = (x) => typeof x === 'string' && /^g:\d{1,9}$/.test(x);
 const gid = (x) => Number(x.slice(2));
 // The server cannot read end-to-end encrypted messages, so notifications must not show the scrambled text.
 function preview(text) {
   if (String(text).indexOf('e2e1:') === 0) return 'New message';
   if (String(text).indexOf('__call__') === 0) return 'Incoming call';
+  if (String(text).indexOf('__media__') === 0) return 'Sent an attachment';
+  if (String(text).indexOf('__loc__') === 0) return 'Shared a location';
+  if (String(text).indexOf('__game__') === 0) return 'Game move';
   return String(text).slice(0, 140);
 }
 async function blockState(a, b) {
@@ -359,6 +371,35 @@ module.exports = async (req, res) => {
         await db().query('DELETE FROM chat_groups WHERE id = ?', [gid(b.group)]);
       }
       return res.json({ ok: true });
+    }
+
+    // Photos, voice notes and files. The file is already scrambled on the phone for one-to-one chats,
+    // so the server only ever holds bytes it cannot read. Max 3 MB each (Vercel allows 4.5 MB per request).
+    if (b.action === 'media_put') {
+      const to = String(b.to || '');
+      const data = typeof b.data === 'string' ? Buffer.from(b.data, 'base64') : null;
+      if (!data || !data.length) return res.status(400).json({ error: 'Bad request.' });
+      if (data.length > MEDIA_MAX) return res.status(413).json({ error: 'That file is too big. The limit is 3 MB.' });
+      if (isGroup(to)) {
+        if (!(await isMember(gid(to), me))) return res.status(403).json({ error: 'You are not in this group.' });
+      } else {
+        if (!phoneOk(to) || !(await findUser(to))) return res.status(404).json({ error: "That number isn't on Zucket yet." });
+        const bs = await blockState(me, to);
+        if (bs.iBlocked) return res.status(403).json({ error: 'You blocked this contact. Unblock them to send messages.', blocked: true });
+        if (bs.blockedMe) return res.status(403).json({ error: "You can't message this person." });
+      }
+      const [r] = await db().query('INSERT INTO media (owner, peer, size, data) VALUES (?, ?, ?, ?)', [me, to, data.length, data]);
+      return res.json({ id: r.insertId });
+    }
+
+    if (b.action === 'media_get') {
+      const id = Number(b.id);
+      if (!id) return res.status(400).json({ error: 'Bad request.' });
+      const [m] = await db().query('SELECT owner, peer, data FROM media WHERE id = ?', [id]);
+      const row = m[0];
+      const allowed = row && (row.owner === me || row.peer === me || (isGroup(row.peer) && (await isMember(gid(row.peer), me))));
+      if (!allowed) return res.status(404).json({ error: 'File not found.' });
+      return res.json({ data: Buffer.from(row.data).toString('base64') });
     }
 
     if (b.action === 'testpush') {
