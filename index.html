@@ -361,6 +361,46 @@
     #icMeta{font-size:13px;color:#aab3ba;margin-top:12px}
     .ic-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
     #icAv{width:190px;height:190px;border-radius:50%;font-size:72px;display:flex;align-items:center;justify-content:center;color:#fff}
+    .bub.media{padding:4px}
+    .bub.media small{padding:0 8px 2px}
+    .mimg{width:min(240px,62vw);min-height:90px;border-radius:12px;background:rgba(0,0,0,.25);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;color:#9aa3ab;font-size:13px;text-align:center}
+    .mimg img{width:100%;height:100%;object-fit:cover;display:none}
+    .mimg.ok img{display:block}
+    .mimg:not(.ok):not(.err)::after{content:'';width:26px;height:26px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:ldspin .8s linear infinite}
+    .maud{display:flex;align-items:center;gap:10px;min-width:210px;padding:6px 8px}
+    .mplay{width:38px;height:38px;border-radius:50%;border:none;background:rgba(0,0,0,.25);color:inherit;font-size:15px;padding:0;flex:none}
+    .mbar{flex:1;height:5px;border-radius:3px;background:rgba(127,127,127,.4);overflow:hidden}
+    .mbar i{display:block;height:100%;width:0;background:currentColor}
+    .mdur{font-size:12px;opacity:.8;min-width:34px;text-align:right}
+    .mfile{display:flex;align-items:center;gap:10px;padding:6px 8px;min-width:200px;cursor:pointer}
+    .mfile .fic{width:40px;height:40px;border-radius:10px;background:rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;flex:none}
+    .mfile b{display:block;font-size:14px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .mfile .fs{font-size:12px;opacity:.7}
+    .bub.loc,.bub.game{padding:10px 12px}
+    .locb,.gagain{margin-top:8px;border:none;border-radius:10px;padding:9px 14px;font:inherit;font-size:14px;font-weight:600;background:rgba(0,0,0,.25);color:inherit}
+    .locs{font-size:12px;opacity:.75;margin-top:2px}
+    .gtitle{font-weight:700}.gstat{font-size:13px;opacity:.85;margin-top:2px}
+    .ggrid{display:grid;grid-template-columns:repeat(3,62px);gap:6px;margin:10px 0 2px}
+    .gcell{width:62px;height:62px;border-radius:10px;border:1px solid rgba(127,127,127,.45);background:rgba(0,0,0,.2);color:inherit;font-size:28px;font-weight:800;padding:0}
+    .gcell.x{color:#ff5a5a}.gcell.o{color:#4da3ff}
+    .recbar{display:flex;align-items:center;gap:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));background:var(--card);border-top:1px solid var(--border)}
+    .recbar.hidden{display:none}
+    .recbar button{border:none;background:transparent;color:var(--text);padding:8px}
+    #recSend{background:#21c063;color:#06140c;border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;padding:0}
+    .recdot{width:12px;height:12px;border-radius:50%;background:#ef4444;animation:recblink 1s infinite}
+    @keyframes recblink{50%{opacity:.25}}
+    #viewer{position:fixed;inset:0;background:#000;z-index:70;display:flex;align-items:center;justify-content:center}
+    #viewer.hidden{display:none}
+    #viewer img{max-width:100%;max-height:100%;object-fit:contain}
+    .vw-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;background:linear-gradient(rgba(0,0,0,.6),transparent)}
+    .vw-top button,.vw-top a{background:transparent;border:none;color:#fff;padding:8px;display:flex}
+    #aiImg{width:100%;border-radius:14px;margin-top:14px;display:block}
+    #aiPrev.hidden{display:none}
+    #aiView{z-index:10}
+    .emojibox{max-height:280px;overflow-y:auto;align-content:flex-start}
+    .emojibox .ect{display:flex;width:100%;gap:2px;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:4px;position:sticky;top:-8px;background:var(--card)}
+    .emojibox .ect button{font-size:22px;opacity:.55;flex:1}
+    .emojibox .ect button.on{opacity:1;border-bottom:2px solid #21c063}
     #incoming.icvid #icAv{width:118px;height:118px;font-size:46px}
     #icVidOff{display:flex;align-items:center;gap:10px;background:rgba(20,26,30,.85);color:#fff;border:none;border-radius:999px;padding:12px 18px;font:inherit;font-size:15px;font-weight:600}
     #icVidOff.hidden{display:none}
@@ -649,6 +689,9 @@
     </div></div>
     <div id="groupView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>New group</b></div><div class="pg"><input id="grName" type="text" maxlength="80" placeholder="Group name"><p class="sub" style="margin:4px 0 10px">Add members (people you already chat with)</p><div id="grList"></div><div class="msg" id="grMsg"></div><button class="primary" id="grCreate">Create group</button></div></div>
     <div id="ginfoView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="thinfo"><b id="giName">Group</b><small id="giCount"></small></div></div><div class="pg"><h4 style="margin:0 0 8px">Members</h4><div id="giList"></div><button class="primary" id="giLeave" style="margin-top:18px;background:#dc2626">Leave group</button></div></div>
+    <div id="viewer" class="hidden"><div class="vw-top"><button id="vwClose" aria-label="Close"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button><a id="vwDl" aria-label="Save"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></a></div><img id="vwImg" alt=""></div>
+    <div id="gameSheet" class="bsh hidden"><div class="bsh-box"><h3>Play games</h3><button class="bsh-b" id="gmTtt" style="text-align:left">&#10060;&#11093; Tic-Tac-Toe<br><small style="font-weight:400;opacity:.7">Play with the person in this chat</small></button><p class="sub" style="margin:12px 2px 0">More games are coming soon.</p></div></div>
+    <div id="aiView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>AI images</b></div><div class="pg"><textarea id="aiPrompt" rows="3" maxlength="300" placeholder="Describe the image you want, e.g. a lion wearing sunglasses on a beach"></textarea><button class="primary" id="aiGo">Create image</button><div id="aiPrev" class="hidden"><img id="aiImg" alt="AI image preview"><button class="primary" id="aiSend" style="margin-top:10px">Send</button></div><p class="sub" style="margin-top:14px">Your description is sent to the free Pollinations image service to make the picture. Don&rsquo;t put private details in it.</p></div></div>
     <div id="encView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="thinfo"><b>End-to-end encryption</b><small id="encWho"></small></div></div><div class="pg" style="text-align:center"><div class="encico"><svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div><b style="font-size:19px">End-to-End Encryption</b><div class="encnote">End-to-End Encryption secures your messages with a lock. Only you and the person you're communicating with have the keys to unlock and read or listen to what is sent, not even Zucket.</div><div id="encCodeBox" class="hidden"><h4 style="margin:26px 0 0;text-align:left">Security code</h4><div class="seccode" id="encCode"></div><p class="sub" id="encCodeNote" style="text-align:left"></p></div></div></div>
     <div id="disapView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Disappearing messages</b></div><div class="pg"><p class="sub">Messages will disappear after the selected duration. <a href="#" id="disLearn" style="color:#4aa3ff;font-weight:600;text-decoration:none">Learn more.</a></p><label class="opt">off<input type="radio" name="dis" value="off"></label><label class="opt">24 hours<input type="radio" name="dis" value="24h"></label></div></div>
     <div id="readView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Read receipts</b></div><div class="pg"><label class="opt">Show read receipts<input type="checkbox" id="rrToggle" class="sw"></label><p class="sub"><span id="rrName"></span> will be able to see when you've read their messages.</p></div></div>
@@ -666,6 +709,8 @@
         <button data-a="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg><span>Location</span></button>
       </div>
       <div id="emojiBox" class="emojibox hidden"></div>
+      <input id="fileImg" type="file" accept="image/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden>
+      <div id="recBar" class="recbar hidden"><button id="recCancel" aria-label="Cancel recording"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button><span class="recdot"></span><span id="recT">0:00</span><span style="flex:1;opacity:.7;font-size:13px">Recording&hellip;</span><button id="recSend" aria-label="Send voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
       <div id="blockBar" class="blockbar hidden"><span id="blockBarT"></span><button id="blockBarBtn">Unblock</button></div>
       <div class="comp" id="comp">
         <button id="btnExpand" class="ic ghost" aria-label="Show more options"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></button>
@@ -1676,7 +1721,26 @@ ZW|Zimbabwe|263`;
           });
         });
       }
-      return { init: init, encrypt: encrypt, decrypt: decrypt, fingerprint: fingerprint, _store: function (x) { store = x; }, PREFIX: PREFIX, HIDDEN: HIDDEN };
+      function encryptBytes(phone, u8) {
+        return ensure().then(function () { return theirKey(phone, false); }).then(function (tk) {
+          if (!tk) throw fail('This person needs to open the latest Zucket before you can message them.');
+          return derive(tk);
+        }).then(function (key) {
+          var iv = crypto.getRandomValues(new Uint8Array(12));
+          return subtle.encrypt({ name: 'AES-GCM', iv: iv, additionalData: aad(phone) }, key, u8).then(function (ct) {
+            var all = new Uint8Array(12 + ct.byteLength); all.set(iv, 0); all.set(new Uint8Array(ct), 12); return all;
+          });
+        });
+      }
+      function decryptBytes(phone, u8) {
+        function once(fresh) {
+          return theirKey(phone, fresh).then(function (tk) { if (!tk) throw fail('Cannot open this file.'); return derive(tk); }).then(function (key) {
+            return subtle.decrypt({ name: 'AES-GCM', iv: u8.slice(0, 12), additionalData: aad(phone) }, key, u8.slice(12));
+          }).then(function (pt) { return new Uint8Array(pt); });
+        }
+        return ensure().then(function () { return once(false).catch(function (e) { if (e && e.status !== undefined) throw e; return once(true); }); });
+      }
+      return { init: init, encrypt: encrypt, decrypt: decrypt, encryptBytes: encryptBytes, decryptBytes: decryptBytes, fingerprint: fingerprint, _store: function (x) { store = x; }, PREFIX: PREFIX, HIDDEN: HIDDEN };
     })();
     /*E2E-END*/
     function mk(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -1745,7 +1809,7 @@ ZW|Zimbabwe|263`;
         if (un) r.classList.add('unread');
         r.appendChild(avatar(c));
         var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
-        mid.appendChild(mk('span', '', withChat ? (c.mine ? 'You: ' : (c.group && c.from ? c.from + ': ' : '')) + (isCallMsg(c.last) ? '\ud83d\udcde Call' : c.last) : c.phone));
+        mid.appendChild(mk('span', '', withChat ? (c.mine ? 'You: ' : (c.group && c.from ? c.from + ': ' : '')) + previewOf(c.last) : c.phone));
         r.appendChild(mid);
         if (withChat) {
           var side = mk('div', 'side'); side.appendChild(mk('time', '', hhmm(c.at)));
@@ -1810,7 +1874,11 @@ ZW|Zimbabwe|263`;
       if (m.id <= lastId) return false;
       lastId = m.id; thCache.push(m);
       if (isCallMsg(m.body)) { if (!m.mine) ringFor(m.body, m.at, openUser); m = Object.assign({}, m, { body: '\ud83d\udcde Call' }); }
-      var b = mk('div', 'bub' + (m.mine ? ' mine' : ''), m.body);
+      var b, bd = typeof m.body === 'string' ? m.body : '';
+      if (bd.indexOf('__game__') === 0) { b = renderGame(m); if (!b) return true; }
+      else if (bd.indexOf('__media__') === 0) b = renderMedia(m);
+      else if (bd.indexOf('__loc__') === 0) b = renderLoc(m);
+      else b = mk('div', 'bub' + (m.mine ? ' mine' : ''), m.body);
       b.appendChild(mk('small', '', hhmm(m.at)));
       if (openUser && openUser.group && !m.mine && m.from) b.insertBefore(mk('span', 'gfrom', m.from), b.firstChild);
       $('msgs').appendChild(b);
@@ -1833,7 +1901,7 @@ ZW|Zimbabwe|263`;
     }
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
-      markSeen(u.phone); openWith = u.phone; lastId = 0; $('msgs').innerHTML = ''; thCache = []; openUser = u;
+      markSeen(u.phone); openWith = u.phone; lastId = 0; $('msgs').innerHTML = ''; thCache = []; gameEls = {}; openUser = u;
       $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.group ? 'Group' : ''; setAv($('thAv'), u);
       $('thVideo').style.display = u.group ? 'none' : ''; $('thAudio').style.display = u.group ? 'none' : '';
       curBlocked = false; setBlockedUI();
@@ -1844,7 +1912,7 @@ ZW|Zimbabwe|263`;
       $('threadView').classList.remove('hidden');
       requestAnimationFrame(function () { if (openWith !== u.phone) return; loadCachedThread(u.phone); fetchMsgs(); });
     }
-    function closeThread() { if (openWith && openWith !== keepUnread) markSeen(openWith); keepUnread = null; openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
+    function closeThread() { stopAudio(); cancelRec(); if (openWith && openWith !== keepUnread) markSeen(openWith); keepUnread = null; openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
     $('thBack').addEventListener('click', closeOv);
     function sendMsg() {
       var body = $('msgInput').value.trim();
@@ -1859,7 +1927,7 @@ ZW|Zimbabwe|263`;
       if (openWith) fetchMsgs(); else if (!$('paneChats').classList.contains('hidden')) loadChats();
     }, 3000);
 
-    var thCache = [], openUser = null, flushing = false;
+    var thCache = [], openUser = null, flushing = false, gameEls = {}, gameBusy = {};
     function saveThread(ph) { try { localStorage.setItem('zaply_th_' + ph, JSON.stringify(thCache.slice(-200))); } catch (e) {} }
     function loadCachedThread(ph) {
       var c = []; try { c = JSON.parse(localStorage.getItem('zaply_th_' + ph) || '[]'); } catch (e) {}
@@ -1869,7 +1937,7 @@ ZW|Zimbabwe|263`;
     function outbox() { try { return JSON.parse(localStorage.getItem('zaply_out') || '[]'); } catch (e) { return []; } }
     function setOutbox(a) { try { localStorage.setItem('zaply_out', JSON.stringify(a)); } catch (e) {} }
     function pendBubble(it) {
-      var b = mk('div', 'bub mine pending', it.body); b.setAttribute('data-t', it.t); b.appendChild(mk('small', '', '\u23f3'));
+      var b = mk('div', 'bub mine pending', previewOf(it.body, true)); b.setAttribute('data-t', it.t); b.appendChild(mk('small', '', '\u23f3'));
       $('msgs').appendChild(b); $('msgs').scrollTop = $('msgs').scrollHeight;
     }
     function dropPending(it) {
@@ -2011,11 +2079,274 @@ ZW|Zimbabwe|263`;
     $('infoBack').addEventListener('click', closeOv);
     $('thAudio').addEventListener('click', function () { startCall(false); });
     $('thVideo').addEventListener('click', function () { startCall(true); });
+
+    /* ---------- photos, camera, files, voice notes, location, games, AI images ---------- */
+    var MEDIA_MAX = 3 * 1024 * 1024 - 200;
+    function bytesToB64(u8) { var s = '', CH = 0x8000; for (var i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, i + CH)); return btoa(s); }
+    function b64ToBytes(t) { var b = atob(t), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
+    function fmtSize(n) { return n < 1024 ? n + ' B' : n < 1048576 ? Math.round(n / 1024) + ' KB' : (n / 1048576).toFixed(1) + ' MB'; }
+    function fmtDur(s) { s = Math.round(s || 0); return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2); }
+    function parseTail(body, n) { try { return JSON.parse(body.slice(n)); } catch (e) { return null; } }
+    function previewOf(b, pending) {
+      if (typeof b !== 'string') return '';
+      if (b.indexOf('__call__') === 0) return '\ud83d\udcde Call';
+      if (b.indexOf('__loc__') === 0) return '\ud83d\udccd Location';
+      if (b.indexOf('__game__') === 0) return '\ud83c\udfae Tic-Tac-Toe';
+      if (b.indexOf('__media__') === 0) {
+        var m = parseTail(b, 9) || {}, t = m.k === 'image' ? '\ud83d\udcf7 Photo' : m.k === 'audio' ? '\ud83c\udfa4 Voice message' : '\ud83d\udcce ' + (m.n || 'File');
+        return t;
+      }
+      return b;
+    }
+
+    /* sending a file: scramble it on this phone (one-to-one chats), upload it, then send a small message that points to it */
+    var mediaCache = {}, mediaUrl = {};
+    function sendMedia(chat, kind, blob, meta) {
+      if (!chat) return Promise.resolve();
+      if (blob.size > MEDIA_MAX) { toast('That file is too big. The limit is 3 MB.'); return Promise.resolve(); }
+      var group = isGroupId(chat);
+      toast('Sending\u2026');
+      return blob.arrayBuffer().then(function (ab) {
+        var u8 = new Uint8Array(ab);
+        return group ? u8 : E2E.encryptBytes(chat, u8);
+      }).then(function (out) {
+        return chatCall('media_put', { to: chat, data: bytesToB64(out) });
+      }).then(function (r) {
+        mediaCache[r.id] = Promise.resolve(new Blob([blob], { type: meta.m || blob.type }));
+        queueMsg(chat, '__media__' + JSON.stringify(Object.assign({ id: r.id, k: kind, e: group ? 0 : 1 }, meta)));
+      }).catch(function (e) {
+        if (e && e.blocked) { curBlocked = true; setBlockedUI(); }
+        toast((e && e.message) || 'Could not send. Check your connection.');
+      });
+    }
+    function mediaBlob(meta, chat) {
+      var p = mediaCache[meta.id]; if (p) return p;
+      p = chatCall('media_get', { id: meta.id }).then(function (r) { return b64ToBytes(r.data); })
+        .then(function (u8) { return meta.e ? E2E.decryptBytes(chat, u8) : u8; })
+        .then(function (u8) { return new Blob([u8], { type: meta.m || 'application/octet-stream' }); });
+      mediaCache[meta.id] = p; p.catch(function () { delete mediaCache[meta.id]; });
+      return p;
+    }
+    function mediaObjUrl(meta, chat) { return mediaBlob(meta, chat).then(function (b) { return mediaUrl[meta.id] || (mediaUrl[meta.id] = URL.createObjectURL(b)); }); }
+
+    /* photos */
+    function loadBitmap(file) {
+      function viaImg() {
+        return new Promise(function (res, rej) {
+          var u = URL.createObjectURL(file), im = new Image();
+          im.onload = function () { URL.revokeObjectURL(u); res(im); };
+          im.onerror = function () { URL.revokeObjectURL(u); rej(new Error('bad image')); };
+          im.src = u;
+        });
+      }
+      return window.createImageBitmap ? createImageBitmap(file).catch(viaImg) : viaImg();
+    }
+    function prepImage(file, maxSide, q) {
+      return loadBitmap(file).then(function (bm) {
+        var w = bm.width, h = bm.height, sc = Math.min(1, maxSide / Math.max(w, h));
+        var cw = Math.max(1, Math.round(w * sc)), ch = Math.max(1, Math.round(h * sc));
+        var cv = document.createElement('canvas'); cv.width = cw; cv.height = ch;
+        cv.getContext('2d').drawImage(bm, 0, 0, cw, ch);
+        return new Promise(function (res, rej) { cv.toBlob(function (b) { b ? res({ blob: b, w: cw, h: ch }) : rej(new Error('encode')); }, 'image/jpeg', q); });
+      });
+    }
+    function sendPhoto(chat, f) {
+      return prepImage(f, 1280, 0.82).then(function (r) {
+        return sendMedia(chat, 'image', r.blob, { m: 'image/jpeg', w: r.w, h: r.h, n: 'photo.jpg' });
+      }, function () {
+        if (f.size <= MEDIA_MAX) return sendMedia(chat, 'image', f, { m: f.type || 'image/jpeg', n: f.name || 'photo' });
+        toast('Could not read that photo');
+      });
+    }
+    function onPhotos() {
+      var fs = Array.prototype.slice.call(this.files || [], 0, 5), chat = openWith; this.value = '';
+      fs.reduce(function (p, f) { return p.then(function () { return sendPhoto(chat, f); }); }, Promise.resolve());
+    }
+    $('fileImg').addEventListener('change', onPhotos);
+    $('fileCam').addEventListener('change', onPhotos);
+    $('fileAny').addEventListener('change', function () {
+      var f = this.files && this.files[0], chat = openWith; this.value = '';
+      if (!f) return;
+      sendMedia(chat, 'file', f, { m: f.type || 'application/octet-stream', n: f.name || 'file', s: f.size });
+    });
+
+    /* showing them */
+    function openViewer(url, name) {
+      $('vwImg').src = url; $('vwDl').href = url; $('vwDl').setAttribute('download', name || 'photo.jpg');
+      pushOv(closeViewer); $('viewer').classList.remove('hidden');
+    }
+    function closeViewer() { $('viewer').classList.add('hidden'); $('vwImg').removeAttribute('src'); }
+    $('vwClose').addEventListener('click', closeOv);
+    var curAudio = null, curBtn = null;
+    function stopAudio() { if (curAudio) { try { curAudio.pause(); } catch (e) {} curAudio = null; } if (curBtn) { curBtn.textContent = '\u25b6'; curBtn = null; } }
+    function renderMedia(m) {
+      var meta = parseTail(m.body, 9), chat = openWith, b = mk('div', 'bub media' + (m.mine ? ' mine' : ''));
+      if (!meta) { b.textContent = '\ud83d\udcce Attachment'; return b; }
+      if (meta.k === 'image') {
+        var box = mk('div', 'mimg'), img = document.createElement('img');
+        box.style.aspectRatio = (meta.w || 4) + ' / ' + (meta.h || 3); img.alt = 'Photo'; box.appendChild(img); b.appendChild(box);
+        (function load() {
+          box.classList.remove('err'); box.textContent = ''; box.appendChild(img);
+          mediaObjUrl(meta, chat).then(function (url) {
+            img.src = url; box.classList.add('ok');
+            box.onclick = function () { openViewer(url, meta.n); };
+          }).catch(function () { box.classList.add('err'); box.textContent = 'Couldn\u2019t load the photo. Tap to try again.'; box.onclick = load; });
+        })();
+      } else if (meta.k === 'audio') {
+        var row = mk('div', 'maud'), btn = mk('button', 'mplay', '\u25b6'), bar = mk('div', 'mbar'), fill = mk('i'), dur = mk('span', 'mdur', fmtDur(meta.d));
+        bar.appendChild(fill); row.appendChild(btn); row.appendChild(bar); row.appendChild(dur); b.appendChild(row);
+        btn.addEventListener('click', function () {
+          if (curAudio && curAudio._id === meta.id) { if (curAudio.paused) curAudio.play(); else curAudio.pause(); return; }
+          stopAudio(); btn.textContent = '\u2026';
+          mediaObjUrl(meta, chat).then(function (url) {
+            var a = new Audio(url); a._id = meta.id; curAudio = a; curBtn = btn;
+            a.addEventListener('play', function () { btn.textContent = '\u23f8'; });
+            a.addEventListener('pause', function () { if (!a.ended) btn.textContent = '\u25b6'; });
+            a.addEventListener('timeupdate', function () { fill.style.width = Math.min(100, a.currentTime / (meta.d || a.duration || 1) * 100) + '%'; dur.textContent = fmtDur(a.currentTime); });
+            a.addEventListener('ended', function () { btn.textContent = '\u25b6'; fill.style.width = '0'; dur.textContent = fmtDur(meta.d); });
+            return a.play();
+          }).catch(function () { btn.textContent = '\u25b6'; toast('Could not play this voice message'); });
+        });
+      } else {
+        var f = mk('div', 'mfile'), ic = mk('div', 'fic'), tx = mk('div', '');
+        ic.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>';
+        tx.appendChild(mk('b', '', meta.n || 'File')); tx.appendChild(mk('span', 'fs', meta.s ? fmtSize(meta.s) : 'Tap to download'));
+        f.appendChild(ic); f.appendChild(tx); b.appendChild(f);
+        f.addEventListener('click', function () {
+          toast('Opening\u2026');
+          mediaObjUrl(meta, chat).then(function (url) {
+            var a = document.createElement('a'); a.href = url; a.download = meta.n || 'file'; document.body.appendChild(a); a.click(); a.remove();
+          }).catch(function () { toast('Could not open this file'); });
+        });
+      }
+      return b;
+    }
+
+    /* voice messages */
+    var rec = null;
+    function cancelRec() { if (rec) { rec.cancelled = true; try { rec.mr.stop(); } catch (e) { endRec(); } } }
+    function endRec() {
+      var r = rec; if (!r) return; rec = null;
+      clearInterval(r.timer); try { r.stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+      $('recBar').classList.add('hidden'); $('comp').style.display = '';
+      if (r.cancelled || !r.chunks.length) return;
+      var dur = Math.round((Date.now() - r.t0) / 1000);
+      if (dur < 1) return toast('Hold on a little longer to record');
+      sendMedia(r.chat, 'audio', new Blob(r.chunks, { type: r.mime }), { m: r.mime, d: dur, n: 'voice.' + (r.mime.indexOf('mp4') > -1 ? 'm4a' : 'webm') });
+    }
+    function startRec() {
+      if (rec || !openWith) return;
+      if (!navigator.mediaDevices || !window.MediaRecorder) return toast('Voice recording is not supported on this phone');
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        var mt = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'].filter(function (x) { return MediaRecorder.isTypeSupported(x); })[0] || '';
+        var mr = new MediaRecorder(stream, mt ? { mimeType: mt, audioBitsPerSecond: 32000 } : { audioBitsPerSecond: 32000 });
+        var r = rec = { mr: mr, stream: stream, chunks: [], t0: Date.now(), cancelled: false, chat: openWith, mime: (mr.mimeType || mt || 'audio/webm').split(';')[0] };
+        mr.ondataavailable = function (e) { if (e.data && e.data.size) r.chunks.push(e.data); };
+        mr.onstop = endRec;
+        mr.start(300);
+        $('comp').style.display = 'none'; $('recBar').classList.remove('hidden'); $('recT').textContent = '0:00'; $('plusMenu').classList.add('hidden'); $('emojiBox').classList.add('hidden');
+        r.timer = setInterval(function () {
+          var sec = (Date.now() - r.t0) / 1000; $('recT').textContent = fmtDur(sec);
+          if (sec >= 120) { try { mr.stop(); } catch (e) {} }
+        }, 250);
+      }).catch(function () { toast('Allow microphone access to record voice messages'); });
+    }
+    $('recCancel').addEventListener('click', cancelRec);
+    $('recSend').addEventListener('click', function () { if (rec) { try { rec.mr.stop(); } catch (e) { endRec(); } } });
+
+    /* location */
+    function renderLoc(m) {
+      var l = parseTail(m.body, 7), b = mk('div', 'bub loc' + (m.mine ? ' mine' : ''));
+      if (!l || isNaN(+l.lat) || isNaN(+l.lng)) { b.textContent = '\ud83d\udccd Location'; return b; }
+      b.appendChild(mk('div', 'gtitle', '\ud83d\udccd Location'));
+      b.appendChild(mk('div', 'locs', (+l.lat).toFixed(5) + ', ' + (+l.lng).toFixed(5)));
+      var o = mk('button', 'locb', 'Open in Maps');
+      o.addEventListener('click', function () { window.open('https://www.google.com/maps?q=' + (+l.lat) + ',' + (+l.lng), '_blank', 'noopener'); });
+      b.appendChild(o); return b;
+    }
+    function sendLocation() {
+      var chat = openWith; if (!chat) return;
+      if (!navigator.geolocation) return toast('Location is not available on this phone');
+      toast('Getting your location\u2026');
+      navigator.geolocation.getCurrentPosition(function (p) {
+        queueMsg(chat, '__loc__' + JSON.stringify({ lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6) }));
+      }, function (e) { toast(e && e.code === 1 ? 'Allow location access to share where you are' : 'Could not get your location'); }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
+    }
+
+    /* games: Tic-Tac-Toe, played through the chat itself. Each move is a message; only the newest board is shown. */
+    var GWIN = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+    function gWinner(b) {
+      for (var i = 0; i < GWIN.length; i++) { var l = GWIN[i]; if (b[l[0]] !== '-' && b[l[0]] === b[l[1]] && b[l[0]] === b[l[2]]) return b[l[0]]; }
+      return b.indexOf('-') < 0 ? 'D' : '';
+    }
+    function renderGame(m) {
+      var g = parseTail(m.body, 8);
+      if (!g || g.g !== 'ttt' || typeof g.b !== 'string' || g.b.length !== 9) return mk('div', 'bub' + (m.mine ? ' mine' : ''), '\ud83c\udfae Game');
+      var old = gameEls[g.id];
+      if (old && old._n > g.n) return null;
+      if (old && old.parentNode) old.remove();
+      delete gameBusy[g.id];
+      var mySym = g.x === myPhone ? 'X' : 'O', w = gWinner(g.b), myTurn = !w && g.t === mySym;
+      var nm = openUser ? (openUser.name || openUser.phone) : 'them';
+      var b = mk('div', 'bub game' + (m.mine ? ' mine' : ''));
+      b.appendChild(mk('div', 'gtitle', '\ud83c\udfae Tic-Tac-Toe'));
+      b.appendChild(mk('div', 'gstat', w ? (w === 'D' ? 'It\u2019s a draw' : w === mySym ? 'You won! \ud83c\udf89' : nm + ' won') : myTurn ? 'Your turn (' + mySym + ')' : 'Waiting for ' + nm));
+      var grid = mk('div', 'ggrid');
+      for (var i = 0; i < 9; i++) {
+        (function (i) {
+          var c = g.b[i], cell = mk('button', 'gcell' + (c === 'X' ? ' x' : c === 'O' ? ' o' : ''), c === '-' ? '' : c);
+          if (myTurn && c === '-') cell.addEventListener('click', function () { playMove(g, i, mySym); }); else cell.disabled = true;
+          grid.appendChild(cell);
+        })(i);
+      }
+      b.appendChild(grid);
+      if (w) { var again = mk('button', 'gagain', 'Play again'); again.addEventListener('click', startGame); b.appendChild(again); }
+      b._n = g.n; gameEls[g.id] = b; return b;
+    }
+    function playMove(g, i, sym) {
+      if (gameBusy[g.id] || !openWith) return;
+      gameBusy[g.id] = true; setTimeout(function () { delete gameBusy[g.id]; }, 8000);
+      queueMsg(openWith, '__game__' + JSON.stringify({ g: 'ttt', id: g.id, b: g.b.slice(0, i) + sym + g.b.slice(i + 1), x: g.x, t: sym === 'X' ? 'O' : 'X', n: g.n + 1 }));
+    }
+    function startGame() {
+      if (!openWith) return;
+      if (isGroupId(openWith)) return toast('Games work in one-to-one chats for now.');
+      queueMsg(openWith, '__game__' + JSON.stringify({ g: 'ttt', id: Math.random().toString(36).slice(2, 8), b: '---------', x: myPhone, t: 'X', n: 0 }));
+    }
+    function closeGames() { $('gameSheet').classList.add('hidden'); }
+    function openGames() {
+      if (isGroupId(openWith)) return toast('Games work in one-to-one chats for now.');
+      pushOv(closeGames); $('gameSheet').classList.remove('hidden');
+    }
+    $('gameSheet').addEventListener('click', function (e) { if (e.target === this) closeOv(); });
+    $('gmTtt').addEventListener('click', function () { closeOv(); startGame(); });
+
+    /* AI images (made by the free Pollinations service) */
+    var aiBlob = null;
+    function closeAi() { $('aiView').classList.add('hidden'); }
+    function openAi() { aiBlob = null; $('aiPrompt').value = ''; $('aiPrev').classList.add('hidden'); $('aiGo').textContent = 'Create image'; pushOv(closeAi); $('aiView').classList.remove('hidden'); setTimeout(function () { $('aiPrompt').focus(); }, 120); }
+    $('aiGo').addEventListener('click', function () {
+      var pr = $('aiPrompt').value.trim(); if (!pr) return toast('Describe the image first');
+      var ctl = window.AbortController ? new AbortController() : null, t = ctl ? setTimeout(function () { ctl.abort(); }, 60000) : 0, go = $('aiGo');
+      go.disabled = true; go.textContent = 'Creating\u2026'; $('aiPrev').classList.add('hidden');
+      fetch('https://image.pollinations.ai/prompt/' + encodeURIComponent(pr) + '?width=768&height=768&nologo=true&seed=' + Math.floor(Math.random() * 1e6), ctl ? { signal: ctl.signal } : {})
+        .then(function (r) { if (!r.ok) throw new Error('bad'); return r.blob(); })
+        .then(function (b) { if (!/^image\//.test(b.type)) throw new Error('bad'); aiBlob = b; $('aiImg').src = URL.createObjectURL(b); $('aiPrev').classList.remove('hidden'); })
+        .catch(function () { toast('Couldn\u2019t create the image. Try again in a moment.'); })
+        .then(function () { clearTimeout(t); go.disabled = false; go.textContent = aiBlob ? 'Try again' : 'Create image'; });
+    });
+    $('aiSend').addEventListener('click', function () {
+      var chat = openWith, blob = aiBlob; if (!blob || !chat) return;
+      closeOv();
+      prepImage(blob, 1024, 0.85).then(function (r) { return sendMedia(chat, 'image', r.blob, { m: 'image/jpeg', w: r.w, h: r.h, n: 'ai-image.jpg', ai: 1 }); })
+        .catch(function () { toast('Could not send the image'); });
+    });
+
     $('btnCam').addEventListener('click', function () { toast('Camera is coming soon'); });
-    $('btnMic').addEventListener('click', function () { toast('Voice messages are coming soon'); });
     $('btnPlus').addEventListener('click', function () { $('emojiBox').classList.add('hidden'); $('plusMenu').classList.toggle('hidden'); });
-    $('btnCamera').addEventListener('click', function () { toast('Camera is coming soon'); });
-    $('btnGallery').addEventListener('click', function () { toast('Photos are coming soon'); });
+    $('btnCamera').addEventListener('click', function () { if (openWith) $('fileCam').click(); });
+    $('btnGallery').addEventListener('click', function () { if (openWith) $('fileImg').click(); });
+    $('btnMic').addEventListener('click', function () { startRec(); });
     $('btnEmoji').addEventListener('click', function () { $('plusMenu').classList.add('hidden'); $('emojiBox').classList.toggle('hidden'); });
     $('btnLike').addEventListener('click', function () { if (openWith) queueMsg(openWith, '\ud83d\udc4d'); });
     /* Message box: when you start typing it takes the space of the side buttons (they fold into a ">" button), like a chat app should. */
@@ -2030,16 +2361,52 @@ ZW|Zimbabwe|263`;
     $('msgInput').addEventListener('blur', function () { setTimeout(syncComp, 150); });
     $('btnExpand').addEventListener('mousedown', function (e) { e.preventDefault(); });
     $('btnExpand').addEventListener('click', function () { compExpanded = true; syncComp(); });
-    '\ud83d\ude00 \ud83d\ude02 \ud83d\ude0d \ud83d\ude0a \ud83d\ude18 \ud83d\ude0e \ud83d\ude22 \ud83d\ude2d \ud83d\ude21 \ud83d\udc4d \ud83d\ude4f \ud83d\udc4f \ud83d\udd25 \u2764\ufe0f \ud83c\udf89 \ud83d\ude4c \ud83e\udd14 \ud83d\ude34'.split(' ').forEach(function (e) {
-      var b = mk('button', '', e); b.addEventListener('click', function () { $('msgInput').value += e; $('msgInput').focus(); syncComp(); }); $('emojiBox').appendChild(b);
-    });
+    var EMOJI = {
+      '😀': '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😗 😋 😛 😜 🤪 😎 🤩 🥳 😏 😒 😔 😟 😕 🙁 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 😶 😐 😑 😬 🙄 😯 😴 🤤 😪 😵 🤯 🤠 🥱 😷 🤒 🤕 🤢 🤮 🥵 🥶 😈 👿 💀 👻 🤡',
+      '👍': '👍 👎 👌 ✌️ 🤞 🤟 🤘 🤙 👈 👉 👆 👇 ☝️ ✋ 🤚 🖐 🖖 👋 🤝 🙏 👏 🙌 👐 🤲 💪 ✍️ 🤳 💅',
+      '❤️': '❤️ 🧡 💛 💚 💙 💜 🖤 🤍 🤎 💔 ❣️ 💕 💞 💓 💗 💖 💘 💝 💟 ♥️ 😻 💋 💯 🔥 ✨ ⭐ 🌟 💫 💥 💦 💨',
+      '🐶': '🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🙈 🙉 🙊 🐔 🐧 🐦 🦆 🦅 🦉 🐺 🐴 🦄 🐝 🦋 🐢 🐍 🐙 🐬 🐳 🦈 🌹 🌸 🌻 🌴 🌍',
+      '🍔': '🍎 🍌 🍉 🍇 🍓 🍒 🍑 🥭 🍍 🥥 🥑 🍅 🌽 🥕 🍞 🧀 🍗 🍖 🍔 🍟 🍕 🌭 🌮 🥙 🍝 🍜 🍣 🍤 🍦 🍩 🍪 🎂 🍫 🍿 ☕ 🍵 🥤 🍺 🍷 🥂',
+      '⚽': '⚽ 🏀 🏈 ⚾ 🎾 🏐 🏉 🎱 🏓 🥊 🏆 🥇 🎯 🎮 🎲 🎵 🎶 🎤 🎧 🎸 🎬 🚗 ✈️ 🚀 🏠 📱 💻 📷 💡 💰 🎁 🎉 🎈 🔔 📌 ✅ ❌ ⚠️ 🇰🇪'
+    };
+    (function () {
+      var box = $('emojiBox'), tabs = mk('div', 'ect'), grid = mk('div', ''), cur = null;
+      grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:2px;width:100%';
+      function recent() { try { return JSON.parse(localStorage.getItem('zaply_emoji') || '[]'); } catch (e) { return []; } }
+      function pick(e) {
+        var i = $('msgInput'), st = i.selectionStart == null ? i.value.length : i.selectionStart, en = i.selectionEnd == null ? st : i.selectionEnd;
+        i.value = i.value.slice(0, st) + e + i.value.slice(en);
+        try { var pos = st + e.length; i.setSelectionRange(pos, pos); } catch (x) {}
+        compExpanded = false; syncComp();
+        try { var r = recent().filter(function (x) { return x !== e; }); r.unshift(e); localStorage.setItem('zaply_emoji', JSON.stringify(r.slice(0, 24))); } catch (x) {}
+      }
+      function show(key) {
+        cur = key; grid.innerHTML = '';
+        Array.prototype.forEach.call(tabs.children, function (t) { t.classList.toggle('on', t.getAttribute('data-k') === key); });
+        var list = key === 'recent' ? recent() : EMOJI[key].split(' ');
+        if (!list.length) { grid.appendChild(mk('div', 'sub', 'Emoji you use will show here.')); return; }
+        list.forEach(function (e) {
+          var b = mk('button', '', e);
+          b.addEventListener('mousedown', function (ev) { ev.preventDefault(); });
+          b.addEventListener('click', function () { pick(e); if (cur === 'recent') show('recent'); });
+          grid.appendChild(b);
+        });
+      }
+      ['recent'].concat(Object.keys(EMOJI)).forEach(function (k) {
+        var t = mk('button', '', k === 'recent' ? '🕘' : k); t.setAttribute('data-k', k);
+        t.addEventListener('mousedown', function (ev) { ev.preventDefault(); });
+        t.addEventListener('click', function () { show(k); }); tabs.appendChild(t);
+      });
+      box.appendChild(tabs); box.appendChild(grid);
+      $('btnEmoji').addEventListener('click', function () { if (!box.classList.contains('hidden')) show(recent().length ? 'recent' : '😀'); });
+    })();
     $('plusMenu').addEventListener('click', function (e) {
-      var btn = e.target.closest('[data-a]'); if (!btn) return;
+      var btn = e.target.closest('[data-a]'); if (!btn || !openWith) return;
       var a = btn.getAttribute('data-a'); $('plusMenu').classList.add('hidden');
-      if (a === 'loc') {
-        if (!navigator.geolocation || !openWith) return toast('Location is not available');
-        navigator.geolocation.getCurrentPosition(function (p) { queueMsg(openWith, '\ud83d\udccd https://maps.google.com/?q=' + p.coords.latitude + ',' + p.coords.longitude); }, function () { toast('Could not get your location'); });
-      } else toast('Coming soon');
+      if (a === 'loc') sendLocation();
+      else if (a === 'files') $('fileAny').click();
+      else if (a === 'ai') openAi();
+      else if (a === 'play') openGames();
     });
     document.addEventListener('click', function (e) { if (!e.target.closest('#btnPlus,#plusMenu,#emojiBox,#btnEmoji')) { $('plusMenu').classList.add('hidden'); $('emojiBox').classList.add('hidden'); } });
     function closeCreate() { $('createView').classList.add('hidden'); }
