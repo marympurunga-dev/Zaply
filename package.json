@@ -2,6 +2,7 @@
   "name": "chart-app",
   "version": "1.0.0",
   "dependencies": {
+    "cloudinary": "^2.5.1",
     "mysql2": "^3.11.0",
     "web-push": "^3.6.7"
   },
