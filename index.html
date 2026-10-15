@@ -394,13 +394,39 @@
     #viewer img{max-width:100%;max-height:100%;object-fit:contain}
     .vw-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:calc(10px + env(safe-area-inset-top,0px)) 14px 10px;background:linear-gradient(rgba(0,0,0,.6),transparent)}
     .vw-top button,.vw-top a{background:transparent;border:none;color:#fff;padding:8px;display:flex}
-    #aiImg{width:100%;border-radius:14px;margin-top:14px;display:block}
+    #aiImg{width:100%;border-radius:12px;display:block}
     #aiPrev.hidden{display:none}
     #aiView{z-index:10}
-    .emojibox{max-height:280px;overflow-y:auto;align-content:flex-start}
-    .emojibox .ect{display:flex;width:100%;gap:2px;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:4px;position:sticky;top:-8px;background:var(--card)}
-    .emojibox .ect button{font-size:22px;opacity:.55;flex:1}
+    .emojibox{max-height:300px;overflow-y:auto;align-content:flex-start}
+    .emojibox .ect{display:flex;width:100%;gap:2px;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:4px;position:sticky;top:-8px;background:var(--card);z-index:2;overflow-x:auto;scrollbar-width:none}
+    .emojibox .ect::-webkit-scrollbar{display:none}
+    .emojibox .ect button{font-size:22px;opacity:.55;flex:0 0 auto;padding:4px 11px}
     .emojibox .ect button.on{opacity:1;border-bottom:2px solid #21c063}
+    .emojibox .etone{display:flex;width:100%;gap:10px;align-items:center;justify-content:center;padding:4px 0 8px}
+    .emojibox .etone.hidden{display:none}
+    .emojibox .etone button{width:24px;height:24px;min-width:24px;padding:0;border-radius:50%;border:2px solid transparent;flex:none}
+    .emojibox .etone button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--card) inset}
+    .emojibox .egrid{display:flex;flex-wrap:wrap;gap:2px;width:100%}
+    /* AI image page */
+    .ai{padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+    .ai-hero{display:flex;gap:14px;align-items:center}
+    .ai-ico{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+    .ai-hero h2{margin:0;font-size:19px}
+    .ai-hero p{margin:2px 0 0;color:var(--muted);font-size:13.5px;line-height:1.4}
+    .ai-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px 14px}
+    .ai-card label{display:block;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+    .ai-card textarea{width:100%;border:none;outline:none;background:transparent;color:var(--text);font:inherit;font-size:16px;line-height:1.45;resize:none;padding:8px 0 0;margin:0;box-sizing:border-box;border-radius:0}
+    .ai-count{text-align:right;font-size:12px;color:var(--muted)}
+    .ai-lbl{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:2px 0 -6px}
+    .ai-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+    .ai-chips::-webkit-scrollbar{display:none}
+    .ai-chips button{flex:none;width:auto;border-radius:999px;padding:8px 14px;font-size:13.5px}
+    .ai-skel{aspect-ratio:1;width:100%;border-radius:16px;border:1px solid var(--border);background:linear-gradient(110deg,var(--card) 30%,var(--border) 50%,var(--card) 70%);background-size:200% 100%;animation:aisk 1.2s linear infinite}
+    .ai-skel.hidden{display:none}
+    @keyframes aisk{to{background-position:-200% 0}}
+    .ai-res{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:10px}
+    .ai-note{display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:12.5px;line-height:1.5;padding:2px 2px 8px}
+    .ai-note svg{flex:none;margin-top:1px}
     #incoming.icvid #icAv{width:118px;height:118px;font-size:46px}
     #icVidOff{display:flex;align-items:center;gap:10px;background:rgba(20,26,30,.85);color:#fff;border:none;border-radius:999px;padding:12px 18px;font:inherit;font-size:15px;font-weight:600}
     #icVidOff.hidden{display:none}
@@ -691,7 +717,7 @@
     <div id="ginfoView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="thinfo"><b id="giName">Group</b><small id="giCount"></small></div></div><div class="pg"><h4 style="margin:0 0 8px">Members</h4><div id="giList"></div><button class="primary" id="giLeave" style="margin-top:18px;background:#dc2626">Leave group</button></div></div>
     <div id="viewer" class="hidden"><div class="vw-top"><button id="vwClose" aria-label="Close"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button><a id="vwDl" aria-label="Save"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></a></div><img id="vwImg" alt=""></div>
     <div id="gameSheet" class="bsh hidden"><div class="bsh-box"><h3>Play games</h3><button class="bsh-b" id="gmTtt" style="text-align:left">&#10060;&#11093; Tic-Tac-Toe<br><small style="font-weight:400;opacity:.7">Play with the person in this chat</small></button><p class="sub" style="margin:12px 2px 0">More games are coming soon.</p></div></div>
-    <div id="aiView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>AI images</b></div><div class="pg"><textarea id="aiPrompt" rows="3" maxlength="300" placeholder="Describe the image you want, e.g. a lion wearing sunglasses on a beach"></textarea><button class="primary" id="aiGo">Create image</button><div id="aiPrev" class="hidden"><img id="aiImg" alt="AI image preview"><button class="primary" id="aiSend" style="margin-top:10px">Send</button></div><p class="sub" style="margin-top:14px">Your description is sent to the free Pollinations image service to make the picture. Don&rsquo;t put private details in it.</p></div></div>
+    <div id="aiView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>AI images</b></div><div class="pg ai"><div class="ai-hero"><div class="ai-ico"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2zm7 11l.9 2.6 2.6.9-2.6.9L19 20l-.9-2.6-2.6-.9 2.6-.9L19 13zM5 14l.7 2 2 .7-2 .7L5 19.4l-.7-2-2-.7 2-.7L5 14z"/></svg></div><div><h2>Create an image</h2><p>Describe what you want to see and we&rsquo;ll make it for you.</p></div></div><div class="ai-card"><label for="aiPrompt">Your description</label><textarea id="aiPrompt" rows="4" maxlength="300" placeholder="A lion wearing sunglasses on a sunny beach"></textarea><div class="ai-count" id="aiCount">0 / 300</div></div><div class="ai-lbl">Style (optional)</div><div class="ai-chips" id="aiChips"><button type="button" data-s="realistic photo, high detail">Realistic</button><button type="button" data-s="cartoon style">Cartoon</button><button type="button" data-s="3D render">3D</button><button type="button" data-s="anime style">Anime</button><button type="button" data-s="watercolor painting">Watercolor</button><button type="button" data-s="pencil sketch">Sketch</button></div><button class="primary" id="aiGo">Create image</button><div id="aiLoad" class="ai-skel hidden"></div><div id="aiPrev" class="ai-res hidden"><img id="aiImg" alt="AI image preview"><button class="primary" id="aiSend" style="margin-top:10px">Send</button></div><div class="ai-note"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><span>Your description is sent to the Zanply Ai image service to make the picture. Don&rsquo;t put private details in it.</span></div></div></div>
     <div id="encView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="thinfo"><b>End-to-end encryption</b><small id="encWho"></small></div></div><div class="pg" style="text-align:center"><div class="encico"><svg viewBox="0 0 24 24" width="52" height="52" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div><b style="font-size:19px">End-to-End Encryption</b><div class="encnote">End-to-End Encryption secures your messages with a lock. Only you and the person you're communicating with have the keys to unlock and read or listen to what is sent, not even Zucket.</div><div id="encCodeBox" class="hidden"><h4 style="margin:26px 0 0;text-align:left">Security code</h4><div class="seccode" id="encCode"></div><p class="sub" id="encCodeNote" style="text-align:left"></p></div></div></div>
     <div id="disapView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Disappearing messages</b></div><div class="pg"><p class="sub">Messages will disappear after the selected duration. <a href="#" id="disLearn" style="color:#4aa3ff;font-weight:600;text-decoration:none">Learn more.</a></p><label class="opt">off<input type="radio" name="dis" value="off"></label><label class="opt">24 hours<input type="radio" name="dis" value="24h"></label></div></div>
     <div id="readView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><b>Read receipts</b></div><div class="pg"><label class="opt">Show read receipts<input type="checkbox" id="rrToggle" class="sw"></label><p class="sub"><span id="rrName"></span> will be able to see when you've read their messages.</p></div></div>
@@ -2081,7 +2107,7 @@ ZW|Zimbabwe|263`;
     $('thVideo').addEventListener('click', function () { startCall(true); });
 
     /* ---------- photos, camera, files, voice notes, location, games, AI images ---------- */
-    var MEDIA_MAX = 3 * 1024 * 1024 - 200;
+    var MEDIA_MAX = 10 * 1024 * 1024 - 200;
     function bytesToB64(u8) { var s = '', CH = 0x8000; for (var i = 0; i < u8.length; i += CH) s += String.fromCharCode.apply(null, u8.subarray(i, i + CH)); return btoa(s); }
     function b64ToBytes(t) { var b = atob(t), a = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i); return a; }
     function fmtSize(n) { return n < 1024 ? n + ' B' : n < 1048576 ? Math.round(n / 1024) + ' KB' : (n / 1048576).toFixed(1) + ' MB'; }
@@ -2103,17 +2129,26 @@ ZW|Zimbabwe|263`;
     var mediaCache = {}, mediaUrl = {};
     function sendMedia(chat, kind, blob, meta) {
       if (!chat) return Promise.resolve();
-      if (blob.size > MEDIA_MAX) { toast('That file is too big. The limit is 3 MB.'); return Promise.resolve(); }
+      if (blob.size > MEDIA_MAX) { toast('That file is too big. The limit is 10 MB.'); return Promise.resolve(); }
       var group = isGroupId(chat);
       toast('Sending\u2026');
       return blob.arrayBuffer().then(function (ab) {
         var u8 = new Uint8Array(ab);
         return group ? u8 : E2E.encryptBytes(chat, u8);
       }).then(function (out) {
-        return chatCall('media_put', { to: chat, data: bytesToB64(out) });
+        return chatCall('media_sign', { to: chat, size: out.length }).then(function (sg) {
+          var fd = new FormData();
+          fd.append('file', new Blob([out]));
+          fd.append('api_key', sg.api_key); fd.append('timestamp', sg.timestamp); fd.append('signature', sg.signature);
+          fd.append('public_id', sg.public_id); fd.append('type', sg.type);
+          return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/raw/upload', { method: 'POST', body: fd }).then(function (up) {
+            if (!up.ok) throw new Error('Upload failed. Try again.');
+            return { id: sg.id };
+          });
+        });
       }).then(function (r) {
         mediaCache[r.id] = Promise.resolve(new Blob([blob], { type: meta.m || blob.type }));
-        queueMsg(chat, '__media__' + JSON.stringify(Object.assign({ id: r.id, k: kind, e: group ? 0 : 1 }, meta)));
+        queueMsg(chat, '__media__' + JSON.stringify(Object.assign({ id: r.id, c: 1, k: kind, e: group ? 0 : 1 }, meta)));
       }).catch(function (e) {
         if (e && e.blocked) { curBlocked = true; setBlockedUI(); }
         toast((e && e.message) || 'Could not send. Check your connection.');
@@ -2121,7 +2156,10 @@ ZW|Zimbabwe|263`;
     }
     function mediaBlob(meta, chat) {
       var p = mediaCache[meta.id]; if (p) return p;
-      p = chatCall('media_get', { id: meta.id }).then(function (r) { return b64ToBytes(r.data); })
+      p = chatCall('media_get', { id: meta.id, c: meta.c ? 1 : 0 }).then(function (r) {
+        if (!r.url) return b64ToBytes(r.data);
+        return fetch(r.url).then(function (f) { if (!f.ok) throw new Error('Could not load this file.'); return f.arrayBuffer(); }).then(function (ab) { return new Uint8Array(ab); });
+      })
         .then(function (u8) { return meta.e ? E2E.decryptBytes(chat, u8) : u8; })
         .then(function (u8) { return new Blob([u8], { type: meta.m || 'application/octet-stream' }); });
       mediaCache[meta.id] = p; p.catch(function () { delete mediaCache[meta.id]; });
@@ -2321,19 +2359,33 @@ ZW|Zimbabwe|263`;
     $('gameSheet').addEventListener('click', function (e) { if (e.target === this) closeOv(); });
     $('gmTtt').addEventListener('click', function () { closeOv(); startGame(); });
 
-    /* AI images (made by the free Pollinations service) */
-    var aiBlob = null;
+    /* AI images */
+    var aiBlob = null, aiStyle = '';
     function closeAi() { $('aiView').classList.add('hidden'); }
-    function openAi() { aiBlob = null; $('aiPrompt').value = ''; $('aiPrev').classList.add('hidden'); $('aiGo').textContent = 'Create image'; pushOv(closeAi); $('aiView').classList.remove('hidden'); setTimeout(function () { $('aiPrompt').focus(); }, 120); }
+    function aiCount() { $('aiCount').textContent = $('aiPrompt').value.length + ' / 300'; }
+    function openAi() {
+      aiBlob = null; aiStyle = ''; $('aiPrompt').value = ''; aiCount();
+      Array.prototype.forEach.call($('aiChips').children, function (c) { c.classList.remove('active'); });
+      $('aiPrev').classList.add('hidden'); $('aiLoad').classList.add('hidden'); $('aiGo').textContent = 'Create image'; $('aiGo').disabled = false;
+      pushOv(closeAi); $('aiView').classList.remove('hidden'); setTimeout(function () { $('aiPrompt').focus(); }, 120);
+    }
+    $('aiPrompt').addEventListener('input', aiCount);
+    $('aiChips').addEventListener('click', function (e) {
+      var c = e.target.closest('button'); if (!c) return;
+      var on = !c.classList.contains('active');
+      Array.prototype.forEach.call($('aiChips').children, function (x) { x.classList.remove('active'); });
+      if (on) c.classList.add('active'); aiStyle = on ? c.getAttribute('data-s') : '';
+    });
     $('aiGo').addEventListener('click', function () {
       var pr = $('aiPrompt').value.trim(); if (!pr) return toast('Describe the image first');
+      var full = aiStyle ? pr + ', ' + aiStyle : pr;
       var ctl = window.AbortController ? new AbortController() : null, t = ctl ? setTimeout(function () { ctl.abort(); }, 60000) : 0, go = $('aiGo');
-      go.disabled = true; go.textContent = 'Creating\u2026'; $('aiPrev').classList.add('hidden');
-      fetch('https://image.pollinations.ai/prompt/' + encodeURIComponent(pr) + '?width=768&height=768&nologo=true&seed=' + Math.floor(Math.random() * 1e6), ctl ? { signal: ctl.signal } : {})
+      go.disabled = true; go.textContent = 'Creating\u2026'; $('aiPrev').classList.add('hidden'); $('aiLoad').classList.remove('hidden'); aiBlob = null;
+      fetch('https://image.pollinations.ai/prompt/' + encodeURIComponent(full) + '?width=768&height=768&nologo=true&seed=' + Math.floor(Math.random() * 1e6), ctl ? { signal: ctl.signal } : {})
         .then(function (r) { if (!r.ok) throw new Error('bad'); return r.blob(); })
         .then(function (b) { if (!/^image\//.test(b.type)) throw new Error('bad'); aiBlob = b; $('aiImg').src = URL.createObjectURL(b); $('aiPrev').classList.remove('hidden'); })
         .catch(function () { toast('Couldn\u2019t create the image. Try again in a moment.'); })
-        .then(function () { clearTimeout(t); go.disabled = false; go.textContent = aiBlob ? 'Try again' : 'Create image'; });
+        .then(function () { clearTimeout(t); $('aiLoad').classList.add('hidden'); go.disabled = false; go.textContent = aiBlob ? 'Try again' : 'Create image'; });
     });
     $('aiSend').addEventListener('click', function () {
       var chat = openWith, blob = aiBlob; if (!blob || !chat) return;
@@ -2361,44 +2413,56 @@ ZW|Zimbabwe|263`;
     $('msgInput').addEventListener('blur', function () { setTimeout(syncComp, 150); });
     $('btnExpand').addEventListener('mousedown', function (e) { e.preventDefault(); });
     $('btnExpand').addEventListener('click', function () { compExpanded = true; syncComp(); });
-    var EMOJI = {
-      '😀': '😀 😃 😄 😁 😆 😅 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😗 😋 😛 😜 🤪 😎 🤩 🥳 😏 😒 😔 😟 😕 🙁 😣 😖 😫 😩 🥺 😢 😭 😤 😠 😡 🤬 😱 😨 😰 😥 😓 🤗 🤔 🤭 🤫 😶 😐 😑 😬 🙄 😯 😴 🤤 😪 😵 🤯 🤠 🥱 😷 🤒 🤕 🤢 🤮 🥵 🥶 😈 👿 💀 👻 🤡',
-      '👍': '👍 👎 👌 ✌️ 🤞 🤟 🤘 🤙 👈 👉 👆 👇 ☝️ ✋ 🤚 🖐 🖖 👋 🤝 🙏 👏 🙌 👐 🤲 💪 ✍️ 🤳 💅',
-      '❤️': '❤️ 🧡 💛 💚 💙 💜 🖤 🤍 🤎 💔 ❣️ 💕 💞 💓 💗 💖 💘 💝 💟 ♥️ 😻 💋 💯 🔥 ✨ ⭐ 🌟 💫 💥 💦 💨',
-      '🐶': '🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🙈 🙉 🙊 🐔 🐧 🐦 🦆 🦅 🦉 🐺 🐴 🦄 🐝 🦋 🐢 🐍 🐙 🐬 🐳 🦈 🌹 🌸 🌻 🌴 🌍',
-      '🍔': '🍎 🍌 🍉 🍇 🍓 🍒 🍑 🥭 🍍 🥥 🥑 🍅 🌽 🥕 🍞 🧀 🍗 🍖 🍔 🍟 🍕 🌭 🌮 🥙 🍝 🍜 🍣 🍤 🍦 🍩 🍪 🎂 🍫 🍿 ☕ 🍵 🥤 🍺 🍷 🥂',
-      '⚽': '⚽ 🏀 🏈 ⚾ 🎾 🏐 🏉 🎱 🏓 🥊 🏆 🥇 🎯 🎮 🎲 🎵 🎶 🎤 🎧 🎸 🎬 🚗 ✈️ 🚀 🏠 📱 💻 📷 💡 💰 🎁 🎉 🎈 🔔 📌 ✅ ❌ ⚠️ 🇰🇪'
-    };
+    /* Full Unicode emoji set. A trailing + marks emoji that accept skin tones. */
+    var EMOJI = {"people": "☝️+ ☠️ ☹️ ☺️ ♥️ ✊+ ✋+ ✌️+ ✍️+ ✝️ ❣️ ❤️ ➡️ 🌽 🎀 🎁 🎂 🎙️ 🎚️ 🎛️ 🎞️ 🎦 🎩 🏂+ 🏃+ 🏄+ 🏇+ 🏊+ 🏋️+ 🏌️+ 🏷️ 👀 👁️ 👂+ 👃+ 👄 👅 👆+ 👇+ 👈+ 👉+ 👊+ 👋+ 👌+ 👍+ 👎+ 👏+ 👐+ 👑 👒 👓 👔 👕 👖 👗 👘 👙 👚 👛 👜 👝 👞 👟 👠 👡 👢 👣 👤 👥 👦+ 👧+ 👨+ 👩+ 👪 👫+ 👬+ 👭+ 👮+ 👯+ 👰+ 👱+ 👲+ 👳+ 👴+ 👵+ 👶+ 👷+ 👸+ 👹 👺 👻 👼+ 👽 👾 👿 💀 💁+ 💂+ 💃+ 💄 💅+ 💆+ 💇+ 💈 💉 💊 💋 💌 💍 💎 💏+ 💑+ 💒 💓 💔 💕 💖 💗 💘 💙 💚 💛 💜 💝 💞 💟 💩 💪+ 🕳️ 🕴️+ 🕵️+ 🕺+ 🖐️+ 🖕+ 🖖+ 🖤 🗣️ 😀 😁 😂 😃 😄 😅 😆 😇 😈 😉 😊 😋 😌 😍 😎 😏 😐 😑 😒 😓 😔 😕 😖 😗 😘 😙 😚 😛 😜 😝 😞 😟 😠 😡 😢 😣 😤 😥 😦 😧 😨 😩 😪 😫 😬 😭 😮 😯 😰 😱 😲 😳 😴 😵 😶 😷 😸 😹 😺 😻 😼 😽 😾 😿 🙀 🙁 🙂 🙃 🙄 🙅+ 🙆+ 🙇+ 🙈 🙉 🙊 🙋+ 🙌+ 🙍+ 🙎+ 🙏+ 🚴+ 🚵+ 🚶+ 🛘 🟰 🤌+ 🤍 🤎 🤏+ 🤐 🤑 🤒 🤓 🤔 🤕 🤖 🤗 🤘+ 🤙+ 🤚+ 🤛+ 🤜+ 🤝+ 🤞+ 🤟+ 🤠 🤡 🤢 🤣 🤤 🤥 🤦+ 🤧 🤨 🤩 🤪 🤫 🤬 🤭 🤮 🤯 🤰+ 🤱+ 🤲+ 🤳+ 🤴+ 🤵+ 🤶+ 🤷+ 🤸+ 🤹+ 🤺 🤼+ 🤽+ 🤾+ 🥀 🥂 🥃 🥄 🥰 🥱 🥲 🥳 🥴 🥵 🥶 🥷+ 🥸 🥹 🥺 🥻 🥼 🥽 🥾 🥿 🦰 🦱 🦲 🦳 🦴 🦵+ 🦶+ 🦷 🦸+ 🦹+ 🦺 🦻+ 🦾 🦿 🧌 🧍+ 🧎+ 🧏+ 🧐 🧑+ 🧒+ 🧓+ 🧔+ 🧕+ 🧖+ 🧗+ 🧘+ 🧙+ 🧚+ 🧛+ 🧜+ 🧝+ 🧞 🧟 🧠 🧡 🧢 🧣 🧤 🧥 🧦 🧧 🧨 🧪 🧫 🧬 🧮 🪐 🪑 🪒 🪓 🪔 🪖 🪙 🪚 🪛 🪜 🪝 🪞 🪟 🫀 🫁 🫂 🫃+ 🫄+ 🫅+ 🫆 🫈 🫍 🫎 🫏 🫠 🫡 🫢 🫣 🫤 🫥 🫦 🫧 🫨 🫩 🫪 🫯 🫰+ 🫱+ 🫲+ 🫳+ 🫴+ 🫵+ 🫶+ 🫷+ 🫸+ ❤️‍🔥 ❤️‍🩹 🏃‍♀️+ 🏃‍♂️+ 🏃‍➡️+ 🏄‍♀️+ 🏄‍♂️+ 🏊‍♀️+ 🏊‍♂️+ 🏋️‍♀️+ 🏋️‍♂️+ 🏌️‍♀️+ 🏌️‍♂️+ 👁️‍🗨️ 👨‍⚕️+ 👨‍⚖️+ 👨‍✈️+ 👨‍❤️‍👨 👨‍❤️‍💋‍👨 👨‍🌾+ 👨‍🍳+ 👨‍🍼+ 👨‍🎓+ 👨‍🎤+ 👨‍🎨+ 👨‍🏫+ 👨‍🏭+ 👨‍👦 👨‍👦‍👦 👨‍👧 👨‍👧‍👦 👨‍👧‍👧 👨‍👨‍👦 👨‍👨‍👦‍👦 👨‍👨‍👧 👨‍👨‍👧‍👦 👨‍👨‍👧‍👧 👨‍👩‍👦 👨‍👩‍👦‍👦 👨‍👩‍👧 👨‍👩‍👧‍👦 👨‍👩‍👧‍👧 👨‍💻+ 👨‍💼+ 👨‍🔧+ 👨‍🔬+ 👨‍🚀+ 👨‍🚒+ 👨‍🦯+ 👨‍🦰+ 👨‍🦱+ 👨‍🦲+ 👨‍🦳+ 👨‍🦼+ 👨‍🦽+ 👩‍⚕️+ 👩‍⚖️+ 👩‍✈️+ 👩‍❤️‍👨 👩‍❤️‍👩 👩‍❤️‍💋‍👨 👩‍❤️‍💋‍👩 👩‍🌾+ 👩‍🍳+ 👩‍🍼+ 👩‍🎓+ 👩‍🎤+ 👩‍🎨+ 👩‍🏫+ 👩‍🏭+ 👩‍👦 👩‍👦‍👦 👩‍👧 👩‍👧‍👦 👩‍👧‍👧 👩‍👩‍👦 👩‍👩‍👦‍👦 👩‍👩‍👧 👩‍👩‍👧‍👦 👩‍👩‍👧‍👧 👩‍💻+ 👩‍💼+ 👩‍🔧+ 👩‍🔬+ 👩‍🚀+ 👩‍🚒+ 👩‍🦯+ 👩‍🦰+ 👩‍🦱+ 👩‍🦲+ 👩‍🦳+ 👩‍🦼+ 👩‍🦽+ 👮‍♀️+ 👮‍♂️+ 👯‍♀️+ 👯‍♂️+ 👰‍♀️+ 👰‍♂️+ 👱‍♀️+ 👱‍♂️+ 👳‍♀️+ 👳‍♂️+ 👷‍♀️+ 👷‍♂️+ 💁‍♀️+ 💁‍♂️+ 💂‍♀️+ 💂‍♂️+ 💆‍♀️+ 💆‍♂️+ 💇‍♀️+ 💇‍♂️+ 🕵️‍♀️+ 🕵️‍♂️+ 😮‍💨 😵‍💫 😶‍🌫️ 🙂‍↔️ 🙂‍↕️ 🙅‍♀️+ 🙅‍♂️+ 🙆‍♀️+ 🙆‍♂️+ 🙇‍♀️+ 🙇‍♂️+ 🙋‍♀️+ 🙋‍♂️+ 🙍‍♀️+ 🙍‍♂️+ 🙎‍♀️+ 🙎‍♂️+ 🚴‍♀️+ 🚴‍♂️+ 🚵‍♀️+ 🚵‍♂️+ 🚶‍♀️+ 🚶‍♂️+ 🚶‍➡️+ 🤦‍♀️+ 🤦‍♂️+ 🤵‍♀️+ 🤵‍♂️+ 🤷‍♀️+ 🤷‍♂️+ 🤸‍♀️+ 🤸‍♂️+ 🤹‍♀️+ 🤹‍♂️+ 🤼‍♀️+ 🤼‍♂️+ 🤽‍♀️+ 🤽‍♂️+ 🤾‍♀️+ 🤾‍♂️+ 🦸‍♀️+ 🦸‍♂️+ 🦹‍♀️+ 🦹‍♂️+ 🧍‍♀️+ 🧍‍♂️+ 🧎‍♀️+ 🧎‍♂️+ 🧎‍➡️+ 🧏‍♀️+ 🧏‍♂️+ 🧑‍⚕️+ 🧑‍⚖️+ 🧑‍✈️+ 🧑‍🌾+ 🧑‍🍳+ 🧑‍🍼+ 🧑‍🎄+ 🧑‍🎓+ 🧑‍🎤+ 🧑‍🎨+ 🧑‍🏫+ 🧑‍🏭+ 🧑‍💻+ 🧑‍💼+ 🧑‍🔧+ 🧑‍🔬+ 🧑‍🚀+ 🧑‍🚒+ 🧑‍🤝‍🧑 🧑‍🦯+ 🧑‍🦰+ 🧑‍🦱+ 🧑‍🦲+ 🧑‍🦳+ 🧑‍🦼+ 🧑‍🦽+ 🧑‍🧑‍🧒 🧑‍🧑‍🧒‍🧒 🧑‍🧒 🧑‍🧒‍🧒 🧑‍🩰+ 🧔‍♀️+ 🧔‍♂️+ 🧖‍♀️+ 🧖‍♂️+ 🧗‍♀️+ 🧗‍♂️+ 🧘‍♀️+ 🧘‍♂️+ 🧙‍♀️+ 🧙‍♂️+ 🧚‍♀️+ 🧚‍♂️+ 🧛‍♀️+ 🧛‍♂️+ 🧜‍♀️+ 🧜‍♂️+ 🧝‍♀️+ 🧝‍♂️+ 🧞‍♀️ 🧞‍♂️ 🧟‍♀️ 🧟‍♂️", "animals": "☘️ 🌱 🌲 🌳 🌴 🌵 🌶️ 🌷 🌸 🌹 🌺 🌻 🌼 🌾 🌿 🍀 🍁 🍂 🍃 🍄 🏵️ 🐀 🐁 🐂 🐃 🐄 🐅 🐆 🐇 🐈 🐉 🐊 🐋 🐌 🐍 🐎 🐏 🐐 🐑 🐒 🐓 🐔 🐕 🐖 🐗 🐘 🐙 🐚 🐛 🐜 🐝 🐞 🐟 🐠 🐡 🐢 🐣 🐤 🐥 🐦 🐧 🐨 🐩 🐪 🐫 🐬 🐭 🐮 🐯 🐰 🐱 🐲 🐳 🐴 🐵 🐶 🐷 🐸 🐹 🐺 🐻 🐼 🐽 🐾 🐿️ 💐 💮 🕊️ 🕷️ 🕸️ 🦀 🦁 🦂 🦃 🦄 🦅 🦆 🦇 🦈 🦉 🦊 🦋 🦌 🦍 🦎 🦏 🦐 🦑 🦒 🦓 🦔 🦕 🦖 🦗 🦘 🦙 🦚 🦛 🦜 🦝 🦞 🦟 🦠 🦡 🦢 🦣 🦤 🦥 🦦 🦧 🦨 🦩 🦪 🦫 🦬 🦭 🦮 🪰 🪱 🪲 🪳 🪴 🪵 🪶 🪷 🪸 🪹 🪺 🪻 🪼 🪽 🪾 🪿 🍄‍🟫 🐈‍⬛ 🐕‍🦺 🐦‍⬛ 🐦‍🔥 🐻‍❄️", "food": "☕ 🌭 🌮 🌯 🌰 🍅 🍆 🍇 🍈 🍉 🍊 🍋 🍌 🍍 🍎 🍏 🍐 🍑 🍒 🍓 🍔 🍕 🍖 🍗 🍘 🍙 🍚 🍛 🍜 🍝 🍞 🍟 🍠 🍡 🍢 🍣 🍤 🍥 🍦 🍧 🍨 🍩 🍪 🍫 🍬 🍭 🍮 🍯 🍰 🍱 🍲 🍳 🍴 🍵 🍶 🍷 🍸 🍹 🍺 🍻 🍼 🍽️ 🍾 🍿 🏺 🔪 🥐 🥑 🥒 🥓 🥔 🥕 🥖 🥗 🥘 🥙 🥚 🥛 🥜 🥝 🥞 🥟 🥠 🥡 🥢 🥣 🥤 🥥 🥦 🥧 🥨 🥩 🥪 🥫 🥬 🥭 🥮 🥯 🧀 🧁 🧂 🧃 🧄 🧅 🧆 🧇 🧈 🧉 🧊 🧋 🫐 🫑 🫒 🫓 🫔 🫕 🫖 🫗 🫘 🫙 🫚 🫛 🫜 🫟 🍋‍🟩", "activities": "♟️ ♠️ ♣️ ♦️ ⚽ ⚾ ⛳ ⛸️ 🀄 🃏 🎃 🎄 🎅+ 🎆 🎇 🎈 🎉 🎊 🎋 🎍 🎎 🎏 🎐 🎑 🎒 🎓 🎖️ 🎗️ 🎟️ 🎣 🎤 🎨 🎫 🎬 🎭 🎮 🎯 🎰 🎱 🎲 🎳 🎴 🎽 🎾 🎿 🏀 🏅 🏆 🏈 🏉 🏏 🏐 🏑 🏒 🏓 🏸 🏹 🔮 🤿 🥅 🥇 🥈 🥉 🥊 🥋 🥌 🥍 🥎 🥏 🧩 🧵 🧶 🧸 🧿 🪀 🪁 🪂 🪃 🪄 🪅 🪆 🪩 🪬", "travel": "⌚ ⌛ ⏰ ⏱️ ⏲️ ⏳ ☀️ ☁️ ☂️ ☃️ ☄️ ☔ ⚓ ⚡ ⛄ ⛅ ⛈️ ⛎ ⛩️ ⛪ ⛰️ ⛱️ ⛲ ⛴️ ⛵ ⛷️ ⛹️+ ⛺ ⛽ ✈️ ✨ ✳️ ❄️ ⭐ 🌀 🌁 🌂 🌃 🌄 🌅 🌆 🌇 🌈 🌉 🌊 🌋 🌌 🌍 🌎 🌏 🌐 🌑 🌒 🌓 🌔 🌕 🌖 🌗 🌘 🌙 🌚 🌛 🌜 🌝 🌞 🌟 🌠 🌡️ 🌤️ 🌥️ 🌦️ 🌧️ 🌨️ 🌩️ 🌪️ 🌫️ 🌬️ 🎠 🎡 🎢 🎪 🏍️ 🏎️ 🏔️ 🏕️ 🏖️ 🏗️ 🏘️ 🏙️ 🏚️ 🏛️ 🏜️ 🏝️ 🏞️ 🏟️ 🏠 🏡 🏢 🏣 🏤 🏥 🏦 🏧 🏨 🏩 🏪 🏫 🏬 🏭 🏮 🏯 🏰 💥 💦 💧 💨 💫 🔥 🕐 🕑 🕒 🕓 🕔 🕕 🕖 🕗 🕘 🕙 🕚 🕛 🕜 🕝 🕞 🕟 🕠 🕡 🕢 🕣 🕤 🕥 🕦 🕧 🗺️ 🗻 🗼 🗽 🗾 🗿 🚀 🚁 🚂 🚃 🚄 🚅 🚆 🚇 🚈 🚉 🚊 🚋 🚌 🚍 🚎 🚏 🚐 🚑 🚒 🚓 🚔 🚕 🚖 🚗 🚘 🚙 🚚 🚛 🚜 🚝 🚞 🚟 🚠 🚡 🚢 🚣+ 🚤 🚥 🚦 🚧 🚨 🚪 🚬 🚲 🚳 🛒 🛕 🛖 🛗 🛜 🛝 🛞 🛟 🛣️ 🛤️ 🛥️ 🛩️ 🛫 🛬 🛰️ 🛳️ 🛴 🛵 🛶 🛷 🛸 🛹 🛺 🛻 🛼 🧭 🧳 ⛹️‍♀️+ ⛹️‍♂️+ 🚣‍♀️+ 🚣‍♂️+", "objects": "⌨️ ☎️ ⚒️ ⚔️ ⚕️ ⚖️ ⚙️ ⚰️ ⚱️ ⛏️ ⛑️ ⛓️ ✂️ ✉️ ✏️ ✒️ 🎥 🎧 🎵 🎶 🎷 🎸 🎹 🎺 🎻 🎼 💡 💣 💰 💱 💲 💳 💴 💵 💶 💷 💸 💹 💺 💻 💼 💽 💾 💿 📀 📁 📂 📃 📄 📅 📆 📇 📈 📉 📊 📋 📌 📍 📎 📏 📐 📑 📒 📓 📔 📕 📖 📗 📘 📙 📚 📛 📜 📝 📞 📟 📠 📡 📢 📣 📤 📥 📦 📧 📨 📩 📪 📫 📬 📭 📮 📯 📰 📱 📲 📷 📸 📹 📺 📻 📼 📽️ 📿 🔇 🔈 🔉 🔊 🔋 🔌 🔍 🔎 🔏 🔐 🔑 🔒 🔓 🔔 🔕 🔖 🔗 🔦 🔧 🔨 🔩 🔫 🔬 🔭 🕯️ 🕰️ 🕶️ 🕹️ 🖇️ 🖊️ 🖋️ 🖌️ 🖍️ 🖥️ 🖨️ 🖱️ 🖲️ 🖼️ 🗂️ 🗃️ 🗄️ 🗑️ 🗒️ 🗓️ 🗜️ 🗝️ 🗞️ 🗡️ 🗳️ 🚽 🚿 🛀+ 🛁 🛋️ 🛌+ 🛍️ 🛎️ 🛏️ 🛠️ 🛡️ 🛢️ 🥁 🦯 🦼 🦽 🧯 🧰 🧱 🧲 🧴 🧷 🧹 🧺 🧻 🧼 🧽 🧾 🩰 🩱 🩲 🩳 🩴 🩵 🩶 🩷 🩸 🩹 🩺 🩻 🩼 🪇 🪈 🪉 🪊 🪎 🪏 🪕 🪗 🪘 🪠 🪡 🪢 🪣 🪤 🪥 🪦 🪧 🪨 🪪 🪫 🪭 🪮 🪯 ⛓️‍💥", "symbols": "©️ ®️ ‼️ ⁉️ ™️ ℹ️ ↔️ ↕️ ↖️ ↗️ ↘️ ↙️ ↩️ ↪️ ⏏️ ⏩ ⏪ ⏫ ⏬ ⏭️ ⏮️ ⏯️ ⏸️ ⏹️ ⏺️ Ⓜ️ ▪️ ▫️ ▶️ ◀️ ◻️ ◼️ ◽ ◾ ☑️ ☢️ ☣️ ☦️ ☪️ ☮️ ☯️ ☸️ ♀️ ♂️ ♈ ♉ ♊ ♋ ♌ ♍ ♎ ♏ ♐ ♑ ♒ ♓ ♨️ ♻️ ♾️ ♿ ⚗️ ⚛️ ⚜️ ⚠️ ⚧️ ⚪ ⚫ ⛔ ✅ ✔️ ✖️ ✡️ ✴️ ❇️ ❌ ❎ ❓ ❔ ❕ ❗ ➕ ➖ ➗ ➰ ➿ ⤴️ ⤵️ ⬅️ ⬆️ ⬇️ ⬛ ⬜ ⭕ 〰️ 〽️ ㊗️ ㊙️ 🅰️ 🅱️ 🅾️ 🅿️ 🆎 🆑 🆒 🆓 🆔 🆕 🆖 🆗 🆘 🆙 🆚 🈁 🈂️ 🈚 🈯 🈲 🈳 🈴 🈵 🈶 🈷️ 🈸 🈹 🈺 🉐 🉑 💠 💢 💤 💬 💭 💯 📳 📴 📵 📶 🔀 🔁 🔂 🔃 🔄 🔅 🔆 🔘 🔙 🔚 🔛 🔜 🔝 🔞 🔟 🔠 🔡 🔢 🔣 🔤 🔯 🔰 🔱 🔲 🔳 🔴 🔵 🔶 🔷 🔸 🔹 🔺 🔻 🔼 🔽 🕉️ 🕋 🕌 🕍 🕎 🗨️ 🗯️ 🚫 🚭 🚮 🚯 🚰 🚱 🚷 🚸 🚹 🚺 🚻 🚼 🚾 🛂 🛃 🛄 🛅 🛐 🛑 🟠 🟡 🟢 🟣 🟤 🟥 🟦 🟧 🟨 🟩 🟪 🟫 #️⃣ *️⃣ 0️⃣ 1️⃣ 2️⃣ 3️⃣ 4️⃣ 5️⃣ 6️⃣ 7️⃣ 8️⃣ 9️⃣", "flags": "🎌 🏁 🏳️ 🏴 🚩 🏳️‍⚧️ 🏳️‍🌈 🏴‍☠️ 🇦🇨 🇦🇩 🇦🇪 🇦🇫 🇦🇬 🇦🇮 🇦🇱 🇦🇲 🇦🇴 🇦🇶 🇦🇷 🇦🇸 🇦🇹 🇦🇺 🇦🇼 🇦🇽 🇦🇿 🇧🇦 🇧🇧 🇧🇩 🇧🇪 🇧🇫 🇧🇬 🇧🇭 🇧🇮 🇧🇯 🇧🇱 🇧🇲 🇧🇳 🇧🇴 🇧🇶 🇧🇷 🇧🇸 🇧🇹 🇧🇻 🇧🇼 🇧🇾 🇧🇿 🇨🇦 🇨🇨 🇨🇩 🇨🇫 🇨🇬 🇨🇭 🇨🇮 🇨🇰 🇨🇱 🇨🇲 🇨🇳 🇨🇴 🇨🇵 🇨🇶 🇨🇷 🇨🇺 🇨🇻 🇨🇼 🇨🇽 🇨🇾 🇨🇿 🇩🇪 🇩🇬 🇩🇯 🇩🇰 🇩🇲 🇩🇴 🇩🇿 🇪🇦 🇪🇨 🇪🇪 🇪🇬 🇪🇭 🇪🇷 🇪🇸 🇪🇹 🇪🇺 🇫🇮 🇫🇯 🇫🇰 🇫🇲 🇫🇴 🇫🇷 🇬🇦 🇬🇧 🇬🇩 🇬🇪 🇬🇫 🇬🇬 🇬🇭 🇬🇮 🇬🇱 🇬🇲 🇬🇳 🇬🇵 🇬🇶 🇬🇷 🇬🇸 🇬🇹 🇬🇺 🇬🇼 🇬🇾 🇭🇰 🇭🇲 🇭🇳 🇭🇷 🇭🇹 🇭🇺 🇮🇨 🇮🇩 🇮🇪 🇮🇱 🇮🇲 🇮🇳 🇮🇴 🇮🇶 🇮🇷 🇮🇸 🇮🇹 🇯🇪 🇯🇲 🇯🇴 🇯🇵 🇰🇪 🇰🇬 🇰🇭 🇰🇮 🇰🇲 🇰🇳 🇰🇵 🇰🇷 🇰🇼 🇰🇾 🇰🇿 🇱🇦 🇱🇧 🇱🇨 🇱🇮 🇱🇰 🇱🇷 🇱🇸 🇱🇹 🇱🇺 🇱🇻 🇱🇾 🇲🇦 🇲🇨 🇲🇩 🇲🇪 🇲🇫 🇲🇬 🇲🇭 🇲🇰 🇲🇱 🇲🇲 🇲🇳 🇲🇴 🇲🇵 🇲🇶 🇲🇷 🇲🇸 🇲🇹 🇲🇺 🇲🇻 🇲🇼 🇲🇽 🇲🇾 🇲🇿 🇳🇦 🇳🇨 🇳🇪 🇳🇫 🇳🇬 🇳🇮 🇳🇱 🇳🇴 🇳🇵 🇳🇷 🇳🇺 🇳🇿 🇴🇲 🇵🇦 🇵🇪 🇵🇫 🇵🇬 🇵🇭 🇵🇰 🇵🇱 🇵🇲 🇵🇳 🇵🇷 🇵🇸 🇵🇹 🇵🇼 🇵🇾 🇶🇦 🇷🇪 🇷🇴 🇷🇸 🇷🇺 🇷🇼 🇸🇦 🇸🇧 🇸🇨 🇸🇩 🇸🇪 🇸🇬 🇸🇭 🇸🇮 🇸🇯 🇸🇰 🇸🇱 🇸🇲 🇸🇳 🇸🇴 🇸🇷 🇸🇸 🇸🇹 🇸🇻 🇸🇽 🇸🇾 🇸🇿 🇹🇦 🇹🇨 🇹🇩 🇹🇫 🇹🇬 🇹🇭 🇹🇯 🇹🇰 🇹🇱 🇹🇲 🇹🇳 🇹🇴 🇹🇷 🇹🇹 🇹🇻 🇹🇼 🇹🇿 🇺🇦 🇺🇬 🇺🇲 🇺🇳 🇺🇸 🇺🇾 🇺🇿 🇻🇦 🇻🇨 🇻🇪 🇻🇬 🇻🇮 🇻🇳 🇻🇺 🇼🇫 🇼🇸 🇽🇰 🇾🇪 🇾🇹 🇿🇦 🇿🇲 🇿🇼 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🏴󠁧󠁢󠁳󠁣󠁴󠁿 🏴󠁧󠁢󠁷󠁬󠁳󠁿"};
     (function () {
-      var box = $('emojiBox'), tabs = mk('div', 'ect'), grid = mk('div', ''), cur = null;
-      grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:2px;width:100%';
+      var TABS = [['recent', '\ud83d\udd58'], ['people', '\ud83d\ude00'], ['animals', '\ud83d\udc36'], ['food', '\ud83c\udf54'], ['activities', '\u26bd'], ['travel', '\ud83d\ude97'], ['objects', '\ud83d\udca1'], ['symbols', '\u2764\ufe0f'], ['flags', '\ud83c\udff3\ufe0f']];
+      var MODS = ['\ud83c\udffb', '\ud83c\udffc', '\ud83c\udffd', '\ud83c\udffe', '\ud83c\udfff'], TONE_COL = ['#ffc83d', '#f7d7c4', '#d7a98c', '#b07d5b', '#8a5a3c', '#5c3a26'];
+      var box = $('emojiBox'), tabs = mk('div', 'ect'), toneBar = mk('div', 'etone hidden'), grid = mk('div', 'egrid'), cur = null, tone = 0;
+      try { tone = Math.min(5, Math.max(0, parseInt(localStorage.getItem('zaply_tone') || '0', 10) || 0)); } catch (e) {}
       function recent() { try { return JSON.parse(localStorage.getItem('zaply_emoji') || '[]'); } catch (e) { return []; } }
+      function toned(e) {
+        var t = e.charAt(e.length - 1) === '+'; if (t) e = e.slice(0, -1);
+        if (!t || !tone) return e;
+        var ch = Array.from(e), rest = ch.slice(1); if (rest[0] === '\ufe0f') rest = rest.slice(1);
+        return ch[0] + MODS[tone - 1] + rest.join('');
+      }
       function pick(e) {
         var i = $('msgInput'), st = i.selectionStart == null ? i.value.length : i.selectionStart, en = i.selectionEnd == null ? st : i.selectionEnd;
         i.value = i.value.slice(0, st) + e + i.value.slice(en);
         try { var pos = st + e.length; i.setSelectionRange(pos, pos); } catch (x) {}
         compExpanded = false; syncComp();
-        try { var r = recent().filter(function (x) { return x !== e; }); r.unshift(e); localStorage.setItem('zaply_emoji', JSON.stringify(r.slice(0, 24))); } catch (x) {}
+        try { var r = recent().filter(function (x) { return x !== e; }); r.unshift(e); localStorage.setItem('zaply_emoji', JSON.stringify(r.slice(0, 32))); } catch (x) {}
       }
       function show(key) {
         cur = key; grid.innerHTML = '';
         Array.prototype.forEach.call(tabs.children, function (t) { t.classList.toggle('on', t.getAttribute('data-k') === key); });
+        toneBar.classList.toggle('hidden', key !== 'people');
+        Array.prototype.forEach.call(toneBar.children, function (t, i) { t.classList.toggle('on', i === tone); });
         var list = key === 'recent' ? recent() : EMOJI[key].split(' ');
-        if (!list.length) { grid.appendChild(mk('div', 'sub', 'Emoji you use will show here.')); return; }
-        list.forEach(function (e) {
-          var b = mk('button', '', e);
+        if (!list.length) { grid.appendChild(mk('div', 'sub', 'Emoji you use will show here.')); box.scrollTop = 0; return; }
+        var frag = document.createDocumentFragment();
+        list.forEach(function (raw) {
+          var e = toned(raw), b = mk('button', '', e);
           b.addEventListener('mousedown', function (ev) { ev.preventDefault(); });
           b.addEventListener('click', function () { pick(e); if (cur === 'recent') show('recent'); });
-          grid.appendChild(b);
+          frag.appendChild(b);
         });
+        grid.appendChild(frag); box.scrollTop = 0;
       }
-      ['recent'].concat(Object.keys(EMOJI)).forEach(function (k) {
-        var t = mk('button', '', k === 'recent' ? '🕘' : k); t.setAttribute('data-k', k);
+      TABS.forEach(function (tb) {
+        var t = mk('button', '', tb[1]); t.setAttribute('data-k', tb[0]); t.setAttribute('aria-label', tb[0]);
         t.addEventListener('mousedown', function (ev) { ev.preventDefault(); });
-        t.addEventListener('click', function () { show(k); }); tabs.appendChild(t);
+        t.addEventListener('click', function () { show(tb[0]); }); tabs.appendChild(t);
       });
-      box.appendChild(tabs); box.appendChild(grid);
-      $('btnEmoji').addEventListener('click', function () { if (!box.classList.contains('hidden')) show(recent().length ? 'recent' : '😀'); });
+      TONE_COL.forEach(function (c, i) {
+        var t = mk('button', ''); t.style.background = c; t.setAttribute('aria-label', i ? 'Skin tone ' + i : 'Default skin tone');
+        t.addEventListener('mousedown', function (ev) { ev.preventDefault(); });
+        t.addEventListener('click', function () { tone = i; try { localStorage.setItem('zaply_tone', String(i)); } catch (x) {} show('people'); });
+        toneBar.appendChild(t);
+      });
+      box.appendChild(tabs); box.appendChild(toneBar); box.appendChild(grid);
+      $('btnEmoji').addEventListener('click', function () { if (!box.classList.contains('hidden')) show(recent().length ? 'recent' : 'people'); });
     })();
     $('plusMenu').addEventListener('click', function (e) {
       var btn = e.target.closest('[data-a]'); if (!btn || !openWith) return;
