@@ -1,9 +1,20 @@
-// POST /api/chat  — actions: list, start, history, send, media_put, media_get, block, unblock, blockstate, report, setkey, getkey,
+// POST /api/chat  — actions: list, start, history, send, media_sign, media_get, block, unblock, blockstate, report, setkey, getkey,
 //                           group_create, group_info, group_leave (groups are chats with the id "g:<number>"),
 //                           profile_get, profile_set (username, email, address, bio, birthday, pet)
 const crypto = require('crypto');
 const mysql = require('mysql2/promise');
 const webpush = require('web-push');
+// Photos, videos, voice notes and files live in Cloudinary (set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET in Vercel).
+// Run: npm i cloudinary
+let cld;
+function cloud() {
+  if (!cld) {
+    cld = require('cloudinary').v2;
+    cld.config({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, api_secret: process.env.CLOUDINARY_API_SECRET, secure: true });
+  }
+  return cld;
+}
+const cloudOn = () => !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
 const pushOn = !!(process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY);
 if (pushOn) webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:admin@zaply.app', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
 
@@ -81,6 +92,14 @@ function ensureTable() {
         data LONGBLOB NOT NULL,
         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_media_peer (peer))`),
+      db().query(`CREATE TABLE IF NOT EXISTS cloud_media (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        owner VARCHAR(20) NOT NULL,
+        peer VARCHAR(40) NOT NULL,
+        size INT NOT NULL,
+        public_id VARCHAR(80) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_cmedia_peer (peer))`),
       db().query(`CREATE TABLE IF NOT EXISTS profiles (
         phone VARCHAR(20) NOT NULL PRIMARY KEY,
         username VARCHAR(30) NULL,
@@ -127,7 +146,7 @@ function cleanProfile(b) {
 }
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
 const MAX_GROUP = 50;
-const MEDIA_MAX = 3 * 1024 * 1024;
+const MEDIA_MAX = 10 * 1024 * 1024; // Cloudinary free plan allows 10 MB per raw file
 const isGroup = (x) => typeof x === 'string' && /^g:\d{1,9}$/.test(x);
 const gid = (x) => Number(x.slice(2));
 // The server cannot read end-to-end encrypted messages, so notifications must not show the scrambled text.
@@ -373,13 +392,14 @@ module.exports = async (req, res) => {
       return res.json({ ok: true });
     }
 
-    // Photos, voice notes and files. The file is already scrambled on the phone for one-to-one chats,
-    // so the server only ever holds bytes it cannot read. Max 3 MB each (Vercel allows 4.5 MB per request).
-    if (b.action === 'media_put') {
+    // Photos, videos, voice notes and files. The phone scrambles the file (one-to-one chats) and uploads it straight to
+    // Cloudinary. The database only keeps a small record (who, which chat, Cloudinary id) so we can check who may open it.
+    if (b.action === 'media_sign') {
+      if (!cloudOn()) return res.status(500).json({ error: 'File storage is not set up on the server yet.' });
       const to = String(b.to || '');
-      const data = typeof b.data === 'string' ? Buffer.from(b.data, 'base64') : null;
-      if (!data || !data.length) return res.status(400).json({ error: 'Bad request.' });
-      if (data.length > MEDIA_MAX) return res.status(413).json({ error: 'That file is too big. The limit is 3 MB.' });
+      const size = Number(b.size) || 0;
+      if (size < 1) return res.status(400).json({ error: 'Bad request.' });
+      if (size > MEDIA_MAX) return res.status(413).json({ error: 'That file is too big. The limit is 10 MB.' });
       if (isGroup(to)) {
         if (!(await isMember(gid(to), me))) return res.status(403).json({ error: 'You are not in this group.' });
       } else {
@@ -388,13 +408,27 @@ module.exports = async (req, res) => {
         if (bs.iBlocked) return res.status(403).json({ error: 'You blocked this contact. Unblock them to send messages.', blocked: true });
         if (bs.blockedMe) return res.status(403).json({ error: "You can't message this person." });
       }
-      const [r] = await db().query('INSERT INTO media (owner, peer, size, data) VALUES (?, ?, ?, ?)', [me, to, data.length, data]);
-      return res.json({ id: r.insertId });
+      const publicId = 'zucket/' + crypto.randomBytes(16).toString('hex');
+      const [r] = await db().query('INSERT INTO cloud_media (owner, peer, size, public_id) VALUES (?, ?, ?, ?)', [me, to, size, publicId]);
+      const timestamp = Math.floor(Date.now() / 1000);
+      const params = { public_id: publicId, timestamp, type: 'authenticated' };
+      const signature = cloud().utils.api_sign_request(params, process.env.CLOUDINARY_API_SECRET);
+      return res.json({ id: r.insertId, cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, timestamp, signature, public_id: publicId, type: 'authenticated' });
     }
 
     if (b.action === 'media_get') {
       const id = Number(b.id);
       if (!id) return res.status(400).json({ error: 'Bad request.' });
+      if (b.c) {
+        if (!cloudOn()) return res.status(500).json({ error: 'File storage is not set up on the server yet.' });
+        const [m] = await db().query('SELECT owner, peer, public_id FROM cloud_media WHERE id = ?', [id]);
+        const row = m[0];
+        const allowed = row && (row.owner === me || row.peer === me || (isGroup(row.peer) && (await isMember(gid(row.peer), me))));
+        if (!allowed) return res.status(404).json({ error: 'File not found.' });
+        const url = cloud().url(row.public_id, { resource_type: 'raw', type: 'authenticated', sign_url: true, secure: true });
+        return res.json({ url });
+      }
+      // Old files sent before the move to Cloudinary are still readable from the database.
       const [m] = await db().query('SELECT owner, peer, data FROM media WHERE id = ?', [id]);
       const row = m[0];
       const allowed = row && (row.owner === me || row.peer === me || (isGroup(row.peer) && (await isMember(gid(row.peer), me))));
