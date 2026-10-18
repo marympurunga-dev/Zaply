@@ -442,7 +442,7 @@
 
     /* settings pages */
     .zpg{position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--text);display:flex;flex-direction:column;animation:zpgin .8s ease both}
-    @keyframes zpgin{from{transform:translateX(100%);opacity:.4}to{transform:none;opacity:1}}
+    @keyframes zpgin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
     .zpg-h{display:flex;align-items:center;gap:14px;padding:calc(env(safe-area-inset-top,0px) + 14px) 14px 12px;font-size:20px;font-weight:700;border-bottom:1px solid var(--border)}
     .zpg-h button{border:none;background:transparent;color:inherit;padding:4px;display:flex}
     .zpg-b{flex:1;overflow-y:auto;padding:6px 0 30px}
@@ -461,6 +461,24 @@
     .zpop>div{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:340px;width:100%;line-height:1.5}
     .zpop .zline{margin-top:16px}.zpop .zline button{flex:1}
     .zmsg{color:#ff5a5f;font-size:14px;min-height:18px;margin-top:10px}
+
+    .zhead{display:flex;flex-direction:column;align-items:center;padding:22px 20px 18px}
+    .zavw{position:relative;width:124px;height:124px;cursor:pointer}
+    .zavw .zav{width:124px;height:124px;margin:0;font-size:52px;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+    .zavw.busy .zav{opacity:.5}
+    .zcam{position:absolute;right:0;bottom:2px;width:40px;height:40px;border-radius:50%;background:#21c063;color:#fff;border:3px solid var(--bg);display:flex;align-items:center;justify-content:center;padding:0}
+    .zhead h3{margin:14px 0 2px;font-size:20px}
+    .zhead .sub{margin:0}
+    .zcard{background:var(--card);border:1px solid var(--border);border-radius:16px;margin:0 16px 16px;overflow:hidden}
+    .zcard-t{margin:14px 20px 8px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+    .zir{display:flex;align-items:center;gap:16px;width:100%;border:none;border-radius:0;background:transparent;color:inherit;text-align:left;padding:14px 16px}
+    .zir+.zir{border-top:1px solid var(--border)}
+    .zir>svg{flex:none;color:var(--muted)}
+    .zir .zt{flex:1;min-width:0}
+    .zir .zl{font-size:12.5px;color:var(--muted);margin-bottom:2px}
+    .zir .zv{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:pre-wrap;word-break:break-word}
+    .zir .zv.empty{color:var(--accent);opacity:.9}
+    .zok{display:inline-block;margin-left:8px;font-size:11px;font-weight:700;color:#21c063;border:1px solid #21c063;border-radius:8px;padding:1px 6px;vertical-align:middle}
     /* AI image page */
     .ai{padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
     .ai-hero{display:flex;gap:14px;align-items:center}
@@ -1495,7 +1513,7 @@ ZW|Zimbabwe|263`;
     var curUser = null;
     function emailSkipped() { try { return localStorage.getItem('zaply_email_skip') === '1'; } catch (e) { return false; } }
     function afterAuth(user) {
-      curUser = user; try { regAcct(user); } catch (e) {}
+      curUser = user; try { regAcct(user); } catch (e) {} setTimeout(function () { try { resumeUi(); } catch (e) {} }, 900);
       try { localStorage.setItem('zaply_user', JSON.stringify(user)); } catch (e) {}
       var skipped = emailSkipped() && !user.email_verified;
       var pend = !user.email_verified && !skipped && (user.pending_email ? { email: user.pending_email, age: user.pending_age } : readPending());
@@ -1862,11 +1880,11 @@ ZW|Zimbabwe|263`;
       out: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z'
     };
     function zico(k) { return '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="' + ZI[k] + '"/></svg>'; }
-    function zOpenPage(title, build) {
+    function zOpenPage(title, build, onClose) {
       var el = mk('div', 'zpg'), h = mk('div', 'zpg-h'), bk = mk('button'), bd = mk('div', 'zpg-b');
       bk.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>';
       bk.addEventListener('click', closeOv); h.appendChild(bk); h.appendChild(mk('span', '', title)); el.appendChild(h); el.appendChild(bd);
-      document.body.appendChild(el); pushOv(function () { el.remove(); }); build(bd); return el;
+      document.body.appendChild(el); pushOv(function () { el.remove(); if (onClose) onClose(); }); build(bd); return el;
     }
     function zrows(box, rows) {
       rows.forEach(function (r) {
@@ -1908,7 +1926,7 @@ ZW|Zimbabwe|263`;
     $('addAcctBack').addEventListener('click', function () { var p = ''; try { p = sessionStorage.getItem('zaply_prev') || ''; } catch (e) {} if (p) setToken(p); location.reload(); });
 
     /* account details + profile picture (Cloudinary) + two-step verification */
-    function myProf() { return chatCall('profile_get', { phone: myPhone }).then(function (r) { return r.profile || {}; }); }
+    function myProf() { return chatCall('profile_get', {}).then(function (r) { return r.profile || {}; }); }
     function squarePic(file, side) {
       return loadBitmap(file).then(function (bm) {
         var m = Math.min(bm.width, bm.height), c = document.createElement('canvas'); c.width = c.height = side;
@@ -1926,55 +1944,105 @@ ZW|Zimbabwe|263`;
     }
     function zin(ph, type, max) { var i = mk('input', 'zin'); i.type = type || 'text'; i.placeholder = ph; if (max) i.maxLength = max; return i; }
     function zlbl(box, t) { var l = mk('div', 'sub', t); l.style.margin = '16px 0 6px'; box.appendChild(l); }
+    function setResume(o) { try { localStorage.setItem('zaply_resume', JSON.stringify(o)); } catch (e) {} }
+    function clearResume() { try { localStorage.removeItem('zaply_resume'); } catch (e) {} }
+    function fullBody(P, k, v) {
+      var o = { username: P.username || '', email: P.email || '', address: P.address || '', bio: P.bio || '', birthday: P.birthday || '', pet: P.pet || '' }; if (k) o[k] = v; return o;
+    }
+    var DFIELDS = [{ k: 'username', t: 'Username', ph: 'Add username', max: 30 }, { k: 'email', t: 'Email', ph: 'Add email' }, { k: 'address', t: 'Address', ph: 'Add address', max: 120 },
+      { k: 'bio', t: 'Bio', ph: 'Add bio', max: 130 }, { k: 'birthday', t: 'Birthday (optional)', ph: 'Add birthday', type: 'date' }, { k: 'pet', t: 'Pet', ph: 'Add pet', max: 40 }];
+    ZI.phone = 'M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z';
+    ZI.at = 'M12 2a10 10 0 100 20h5v-2h-5a8 8 0 118-8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12a5 5 0 10-1.46 3.54A3.5 3.5 0 0021.5 13.4V12A10 10 0 0012 2zm0 13a3 3 0 110-6 3 3 0 010 6z';
+    ZI.mail = 'M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z';
+    ZI.pin = 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z';
+    ZI.info = 'M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z';
+    ZI.cake = 'M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm4.6 9.99l-1.07-1.07-1.08 1.07c-1.3 1.3-3.58 1.31-4.89 0l-1.07-1.07-1.09 1.07C6.75 16.64 5.88 17 4.96 17c-.73 0-1.4-.23-1.96-.61V21c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4.61c-.56.38-1.23.61-1.96.61-.92 0-1.79-.36-2.44-1.01zM18 9h-5V7h-2v2H6c-1.66 0-3 1.34-3 3v1.54c0 1.08.88 1.96 1.96 1.96.52 0 1.02-.2 1.38-.57l2.14-2.13 2.13 2.13c.75.75 2.03.75 2.79 0l2.13-2.13 2.14 2.13c.37.37.86.57 1.38.57 1.08 0 1.96-.88 1.96-1.96V12C21 10.34 19.66 9 18 9z';
+    ZI.paw = 'M4.5 11a2 2 0 100-4 2 2 0 000 4zm15 0a2 2 0 100-4 2 2 0 000 4zM9 8a2 2 0 100-4 2 2 0 000 4zm6 0a2 2 0 100-4 2 2 0 000 4zm-3 2c-2.8 0-6 3.4-6 6.2 0 1.6 1.2 2.8 2.7 2.8 1.3 0 2-.6 3.3-.6s2 .6 3.3.6c1.5 0 2.7-1.2 2.7-2.8C18 13.4 14.8 10 12 10z';
+    ZI.cam = 'M12 9a3.2 3.2 0 100 6.4A3.2 3.2 0 0012 9zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z';
+    ZI.next = 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z';
+    var DICON = { username: 'at', email: 'mail', address: 'pin', bio: 'info', birthday: 'cake', pet: 'paw' };
+    function fmtBday(v) { if (!v) return ''; var d = new Date(v + 'T00:00:00'); return isNaN(d) ? v : d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }); }
     function openDetails() {
       zOpenPage('Account details', function (b) {
-        var w = mk('div'); w.style.padding = '8px 20px'; b.appendChild(w);
-        var av = mk('div', 'zav', (nameOf(myPhone) || myPhone || '?').charAt(0).toUpperCase()), file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
-        var chg = mk('button', '', 'Change photo'); chg.style.cssText = 'display:block;margin:0 auto 6px'; w.appendChild(av); w.appendChild(chg); w.appendChild(file);
-        chg.addEventListener('click', function () { file.click(); });
+        var P = {}, head = mk('div', 'zhead'), list = mk('div');
+        b.appendChild(head); b.appendChild(list);
+        var initial = ((curUser && curUser.name) || nameOf(myPhone) || myPhone || '?').charAt(0).toUpperCase();
+        var wrap = mk('div', 'zavw'), av = mk('div', 'zav', initial), cam = mk('button', 'zcam'), file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
+        cam.setAttribute('aria-label', 'Change profile photo'); cam.innerHTML = zico('cam'); wrap.appendChild(av); wrap.appendChild(cam); wrap.appendChild(file);
+        var nm = mk('h3', '', (curUser && curUser.name) || ''), ph = mk('div', 'sub', myPhone || ''); head.appendChild(wrap); head.appendChild(nm); head.appendChild(ph);
+        wrap.addEventListener('click', function () { file.click(); });
+        file.addEventListener('click', function (e) { e.stopPropagation(); });
         file.addEventListener('change', function () {
-          var f = file.files && file.files[0]; file.value = ''; if (!f) return; chg.disabled = true; chg.textContent = 'Uploading\u2026';
-          uploadAvatar(f).then(function (r) { av.style.backgroundImage = 'url("' + r.photo_url + '")'; av.textContent = ''; toast('Profile photo updated', true); })
-            .catch(function (e) { toast((e && e.message) || 'Could not upload the photo'); }).then(function () { chg.disabled = false; chg.textContent = 'Change photo'; });
+          var f = file.files && file.files[0]; file.value = ''; if (!f) return; wrap.classList.add('busy');
+          uploadAvatar(f).then(function (r) { av.style.backgroundImage = 'url("' + r.photo_url + '")'; av.style.backgroundSize = 'cover'; av.style.backgroundPosition = 'center'; av.textContent = ''; PH[myPhone] = r.photo_url; toast('Profile photo updated', true); })
+            .catch(function (e) { toast((e && e.message) || 'Could not upload the photo'); }).then(function () { wrap.classList.remove('busy'); });
         });
-        zlbl(w, 'Phone number'); var pl = mk('div', 'zline'), ph = zin('', 'text'); ph.value = myPhone || ''; ph.readOnly = true; var pc = mk('button', '', 'Change'); pc.addEventListener('click', soon('Change phone number')); pl.appendChild(ph); pl.appendChild(pc); w.appendChild(pl);
-        zlbl(w, 'Username'); var un = zin('Add username', 'text', 30); w.appendChild(un);
-        zlbl(w, 'Email'); var el = mk('div', 'zline'), em = zin('Add email', 'email', 120), ec = mk('button', '', 'Change'); ec.classList.add('hidden'); el.appendChild(em); el.appendChild(ec); w.appendChild(el);
-        zlbl(w, 'Address'); var ad = zin('Add address', 'text', 120); w.appendChild(ad);
-        zlbl(w, 'Bio'); var bio = mk('textarea', 'zin'); bio.maxLength = 130; bio.rows = 3; bio.placeholder = 'Add bio (130 letters max)'; w.appendChild(bio); var cnt = mk('div', 'sub', '0 / 130'); cnt.style.textAlign = 'right'; w.appendChild(cnt);
-        bio.addEventListener('input', function () { cnt.textContent = bio.value.length + ' / 130'; });
-        zlbl(w, 'Birthday (optional)'); var bd = zin('', 'date'); bd.max = new Date().toISOString().slice(0, 10); w.appendChild(bd);
-        zlbl(w, 'Pet'); var pet = zin('Add pet', 'text', 40); w.appendChild(pet);
-        var msg = mk('div', 'zmsg'), save = mk('button', 'primary', 'Save'); save.style.marginTop = '12px'; w.appendChild(msg); w.appendChild(save);
-        var orig = '';
+        function row(card, icon, label, val, empty, fn, extra) {
+          var r = mk('button', 'zir'), t = mk('div', 'zt'), l = mk('div', 'zl', label), v = mk('div', 'zv', val || empty);
+          if (!val) v.classList.add('empty'); if (extra) { var x = mk('span', 'zok', extra); v.appendChild(x); }
+          t.appendChild(l); t.appendChild(v); r.innerHTML = zico(icon); r.appendChild(t); var c = mk('span'); c.innerHTML = zico('next'); c.style.opacity = '.45'; r.appendChild(c);
+          r.addEventListener('click', fn); card.appendChild(r);
+        }
+        function render() {
+          list.innerHTML = '';
+          list.appendChild(mk('div', 'zcard-t', 'Phone'));
+          var c1 = mk('div', 'zcard'); row(c1, 'phone', 'Phone number', myPhone || '', '', soon('Change phone number'), 'Change'); list.appendChild(c1);
+          list.appendChild(mk('div', 'zcard-t', 'About you'));
+          var c2 = mk('div', 'zcard');
+          DFIELDS.forEach(function (f) {
+            var val = P[f.k] || '', shown = f.k === 'birthday' ? fmtBday(val) : val;
+            row(c2, DICON[f.k], f.t, shown, f.ph, function () { if (f.k === 'email') emailPage(P, render); else fieldPage(f, P, render); }, f.k === 'email' && val ? 'Verified' : '');
+          });
+          list.appendChild(c2);
+        }
+        render();
         myProf().then(function (p) {
-          un.value = p.username || ''; em.value = p.email || ''; ad.value = p.address || ''; bio.value = p.bio || ''; bd.value = p.birthday || ''; pet.value = p.pet || ''; cnt.textContent = bio.value.length + ' / 130';
-          if (p.photo_url) { av.style.backgroundImage = 'url("' + p.photo_url + '")'; av.textContent = ''; }
-          orig = p.email || ''; if (orig) { em.readOnly = true; ec.classList.remove('hidden'); }
-        }).catch(function () { msg.textContent = 'Could not load your details.'; });
-        ec.addEventListener('click', function () { em.readOnly = false; ec.classList.add('hidden'); em.focus(); });
-        save.addEventListener('click', function () {
-          msg.textContent = ''; save.disabled = true; var mail = em.value.trim();
-          chatCall('profile_set', { username: un.value.trim().replace(/^@/, ''), email: orig && mail !== orig ? orig : mail, address: ad.value.trim(), bio: bio.value.trim(), birthday: bd.value, pet: pet.value.trim() })
-            .then(function (r) {
-              try { localStorage.setItem('zaply_myprof', JSON.stringify(r.profile)); } catch (e) {}
-              toast('Saved', true);
-              if (mail && mail !== orig) return call('email_send', { email: mail }).then(function () { openEmailCode(mail, function () { orig = mail; em.readOnly = true; ec.classList.remove('hidden'); }); });
-            }).catch(function (e) { msg.textContent = (e && e.offline) ? 'No internet connection. Try again.' : ((e && e.message) || 'Could not save.'); })
-            .then(function () { save.disabled = false; });
+          P = p; if (p.photo_url) { av.style.backgroundImage = 'url("' + p.photo_url + '")'; av.style.backgroundSize = 'cover'; av.style.backgroundPosition = 'center'; av.textContent = ''; }
+          if (!nm.textContent) nm.textContent = p.username ? '@' + p.username : ''; render();
+        }).catch(function () { toast('Could not load your details.'); });
+      });
+    }
+    function fieldPage(f, P, done) {
+      zOpenPage(f.t, function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var inp = f.k === 'bio' ? mk('textarea', 'zin') : zin(f.ph, f.type || 'text', f.max); if (f.k === 'bio') { inp.rows = 4; inp.maxLength = 130; inp.placeholder = f.ph; }
+        if (f.type === 'date') inp.max = new Date().toISOString().slice(0, 10); inp.value = P[f.k] || ''; w.appendChild(inp);
+        if (f.k === 'bio') { var cnt = mk('div', 'sub', inp.value.length + ' / 130'); cnt.style.textAlign = 'right'; w.appendChild(cnt); inp.addEventListener('input', function () { cnt.textContent = inp.value.length + ' / 130'; }); }
+        var m = mk('div', 'zmsg'), sv = mk('button', 'primary', 'Save'); sv.style.marginTop = '12px'; w.appendChild(m); w.appendChild(sv); setTimeout(function () { inp.focus(); }, 80);
+        sv.addEventListener('click', function () {
+          m.textContent = ''; sv.disabled = true; var v = inp.value.trim(); if (f.k === 'username') v = v.replace(/^@/, '');
+          chatCall('profile_set', fullBody(P, f.k, v)).then(function (r) { for (var k in r.profile) P[k] = r.profile[k]; toast('Saved', true); done(); closeOv(); })
+            .catch(function (e) { m.textContent = (e && e.offline) ? 'No internet connection. Try again.' : ((e && e.message) || 'Could not save.'); }).then(function () { sv.disabled = false; });
         });
       });
     }
-    function openEmailCode(mail, ok) {
-      zOpenPage('Verify email', function (b) {
-        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w); w.appendChild(mk('div', 'sub', 'We sent a code to ' + mail + '. Enter it below.'));
-        var c = zin('Code', 'text', 8); c.inputMode = 'numeric'; c.style.marginTop = '12px'; var m = mk('div', 'zmsg'), v = mk('button', 'primary', 'Verify'); v.style.marginTop = '12px'; w.appendChild(c); w.appendChild(m); w.appendChild(v);
-        v.addEventListener('click', function () {
-          m.textContent = ''; v.disabled = true;
-          call('email_verify', { code: c.value.trim() }).then(function () { toast('Email verified', true); ok(); closeOv(); })
-            .catch(function (e) { m.textContent = (e && e.message) || 'Wrong code. Try again.'; }).then(function () { v.disabled = false; });
+    function emailPage(P, done, resumeMail) {
+      zOpenPage('Email', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w); var mail = '';
+        var note = mk('div', 'sub', 'We will send a code to this address to check that it is yours.'), inp = zin('Add email', 'email', 120), m = mk('div', 'zmsg'), go = mk('button', 'primary', 'Send code');
+        inp.value = resumeMail || P.email || ''; go.style.marginTop = '12px'; w.appendChild(note); w.appendChild(inp); w.appendChild(m); w.appendChild(go);
+        var cb = mk('div', 'hidden'), code = zin('Enter the code', 'text', 8), vf = mk('button', 'primary', 'Verify'), rs = mk('button', '', 'Send the code again'); code.inputMode = 'numeric'; vf.style.marginTop = '12px'; rs.style.cssText = 'margin-top:10px;width:100%';
+        cb.appendChild(code); cb.appendChild(vf); cb.appendChild(rs); w.appendChild(cb);
+        function toCode(mm) { mail = mm; inp.readOnly = true; go.classList.add('hidden'); cb.classList.remove('hidden'); note.textContent = 'We sent a code to ' + mm + '. Enter it below.'; setResume({ t: 'email', m: mm }); setTimeout(function () { code.focus(); }, 80); }
+        function send(after) {
+          var mm = inp.value.trim(); m.textContent = ''; if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mm)) { m.textContent = 'That email address doesn\u2019t look right.'; return; }
+          go.disabled = true; call('email_send', { email: mm }).then(function () { after(mm); }).catch(function (e) { m.textContent = (e && e.message) || 'Could not send the code.'; }).then(function () { go.disabled = false; });
+        }
+        go.addEventListener('click', function () { send(toCode); });
+        rs.addEventListener('click', function () { call('email_send', { email: mail }).then(function () { toast('Code sent', true); }).catch(function (e) { toast((e && e.message) || 'Could not send the code.'); }); });
+        vf.addEventListener('click', function () {
+          m.textContent = ''; vf.disabled = true;
+          call('email_verify', { code: code.value.trim() }).then(function () { return chatCall('profile_set', fullBody(P, 'email', mail)); })
+            .then(function (r) { for (var k in r.profile) P[k] = r.profile[k]; clearResume(); toast('Email verified', true); if (done) done(); closeOv(); })
+            .catch(function (e) { m.textContent = (e && e.message) || 'Wrong code. Try again.'; }).then(function () { vf.disabled = false; });
         });
-      });
+        if (resumeMail) toCode(resumeMail);
+      }, function () { clearResume(); });
+    }
+    function resumeUi() {
+      var r = null; try { r = JSON.parse(localStorage.getItem('zaply_resume') || 'null'); } catch (e) {}
+      if (!r || !r.m || document.querySelector('.zpg')) return;
+      openDetails(); myProf().then(function (p) { emailPage(p, null, r.m); }).catch(function () {});
     }
     function needEmailPopup() {
       var p = mk('div', 'zpop'), d = mk('div'); d.appendChild(mk('div', '', 'Please add your email address to be able to add Two-Step-Verification.')); var l = mk('div', 'zline'), a = mk('button', 'primary', 'Add email'), bk = mk('button', '', 'Back');
@@ -2041,8 +2109,29 @@ ZW|Zimbabwe|263`;
     var chatSig = null, loadErr = '', allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
     function avatar(c) {
       var n = c.name || c.phone || '#', a = mk('div', 'av', n.charAt(0).toUpperCase());
-      a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; return a;
+      a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; usePhoto(a, c.phone); return a;
     }
+    /* profile pictures: shown wherever a person's avatar appears */
+    var PH = {}, PHT = {}; try { PH = JSON.parse(localStorage.getItem('zaply_photos') || '{}'); } catch (e) {}
+    function usePhoto(el, phone) {
+      el.removeAttribute('data-ph'); el.style.backgroundImage = '';
+      if (!phone || !/^\+?\d{6,}$/.test(String(phone))) return;
+      el.setAttribute('data-ph', phone); var u = PH[phone];
+      if (u) { el.style.backgroundImage = 'url("' + u + '")'; el.style.backgroundSize = 'cover'; el.style.backgroundPosition = 'center'; el.textContent = ''; }
+    }
+    var phTimer = 0;
+    function paintPhotos() {
+      var els = document.querySelectorAll('[data-ph]'), need = [], now = Date.now();
+      Array.prototype.forEach.call(els, function (e) { var p = e.getAttribute('data-ph'); if (need.indexOf(p) < 0 && (!PHT[p] || now - PHT[p] > 300000)) need.push(p); });
+      if (!need.length || !getToken()) return;
+      need.forEach(function (p) { PHT[p] = now; });
+      chatCall('photos', { phones: need.slice(0, 80) }).then(function (r) {
+        var ph = r.photos || {}; need.forEach(function (p) { if (ph[p]) PH[p] = ph[p]; else delete PH[p]; });
+        try { localStorage.setItem('zaply_photos', JSON.stringify(PH)); } catch (e) {}
+        Array.prototype.forEach.call(document.querySelectorAll('[data-ph]'), function (e) { usePhoto(e, e.getAttribute('data-ph')); });
+      }).catch(function () { need.forEach(function (p) { delete PHT[p]; }); });
+    }
+    try { new MutationObserver(function () { clearTimeout(phTimer); phTimer = setTimeout(paintPhotos, 400); }).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
     function favs() { try { return JSON.parse(localStorage.getItem('zaply_favs') || '[]'); } catch (e) { return []; } }
     function markSeen(ph) { try { localStorage.setItem('zaply_seen_' + ph, String(Date.now())); localStorage.removeItem('zaply_unread_' + ph); } catch (e) {} }
     function seenAt(ph) { try { return +localStorage.getItem('zaply_seen_' + ph) || 0; } catch (e) { return 0; } }
@@ -2232,7 +2321,7 @@ ZW|Zimbabwe|263`;
     window.addEventListener('online', flushOutbox);
     setInterval(flushOutbox, 5000);
 
-    function setAv(el, u) { var n = u.name || u.phone || '#'; el.textContent = n.charAt(0).toUpperCase(); el.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; }
+    function setAv(el, u) { var n = u.name || u.phone || '#'; el.textContent = n.charAt(0).toUpperCase(); el.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; usePhoto(el, u.phone); }
     function countryOf(ph) {
       var d = (ph || '').replace(/\D/g, ''), best = null;
       COUNTRIES.forEach(function (c) {
