@@ -109,7 +109,14 @@ function ensureTable() {
         birthday DATE NULL,
         pet VARCHAR(40) NOT NULL DEFAULT '',
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        UNIQUE KEY uq_username (username))`)]);
+        UNIQUE KEY uq_username (username))`)]).then(async () => {
+      await db().query("ALTER TABLE profiles ADD COLUMN photo_url VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS two_step (
+        phone VARCHAR(20) NOT NULL PRIMARY KEY,
+        salt VARCHAR(32) NOT NULL,
+        hash VARCHAR(128) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+    });
   }
   return ready;
 }
@@ -127,8 +134,8 @@ async function findUser(phone) {
   return r[0] || null;
 }
 
-const EMPTY_PROFILE = { username: '', email: '', address: '', bio: '', birthday: '', pet: '' };
-const cleanRow = (r) => ({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '' });
+const EMPTY_PROFILE = { username: '', email: '', address: '', bio: '', birthday: '', pet: '', photo_url: '' };
+const cleanRow = (r) => ({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '', photo_url: r.photo_url || '' });
 // trims, and cuts to a number of characters (emoji count as one)
 const clip = (v, n) => Array.from(String(v == null ? '' : v).trim()).slice(0, n).join('');
 function cleanProfile(b) {
@@ -142,7 +149,7 @@ function cleanProfile(b) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday) || isNaN(d) || d.toISOString().slice(0, 10) !== birthday || d > new Date() || d.getUTCFullYear() < 1900)
       return { error: 'That birthday isn’t a valid date.' };
   }
-  return { username, email, address: clip(b.address, 120), bio: clip(b.bio, 200), birthday, pet: clip(b.pet, 40) };
+  return { username, email, address: clip(b.address, 120), bio: clip(b.bio, 130), birthday, pet: clip(b.pet, 40) };
 }
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
 const MAX_GROUP = 50;
@@ -339,7 +346,7 @@ module.exports = async (req, res) => {
         if (bs.iBlocked || bs.blockedMe) return res.json({ profile: EMPTY_PROFILE });
       }
       const [r] = await db().query(
-        "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet FROM profiles WHERE phone = ?", [who]);
+        "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet, photo_url FROM profiles WHERE phone = ?", [who]);
       return res.json({ profile: r[0] ? cleanRow(r[0]) : EMPTY_PROFILE });
     }
 
@@ -357,6 +364,46 @@ module.exports = async (req, res) => {
         throw e;
       }
       return res.json({ profile: { username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet } });
+    }
+
+    // Profile picture: the phone uploads it straight to Cloudinary (public image), the database keeps only the link.
+    if (b.action === 'avatar_sign') {
+      if (!cloudOn()) return res.status(500).json({ error: 'File storage is not set up on the server yet.' });
+      const publicId = 'zucket/avatars/' + crypto.randomBytes(12).toString('hex');
+      const timestamp = Math.floor(Date.now() / 1000);
+      const signature = cloud().utils.api_sign_request({ public_id: publicId, timestamp }, process.env.CLOUDINARY_API_SECRET);
+      return res.json({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, timestamp, signature, public_id: publicId });
+    }
+    if (b.action === 'profile_photo_set') {
+      const url = String(b.url || '');
+      const okUrl = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/image/upload/') === 0;
+      if (!okUrl) return res.status(400).json({ error: 'Bad request.' });
+      await db().query('INSERT INTO profiles (phone, photo_url) VALUES (?, ?) ON DUPLICATE KEY UPDATE photo_url = VALUES(photo_url)', [me, url]);
+      return res.json({ photo_url: url });
+    }
+
+    // Two-step verification PIN (needs an email on the profile, because email + PIN are used to recover chats).
+    if (b.action === 'ts_status') {
+      const [t] = await db().query('SELECT phone FROM two_step WHERE phone = ?', [me]);
+      return res.json({ enabled: !!t[0] });
+    }
+    if (b.action === 'ts_set') {
+      const pin = String(b.pin || '');
+      if (!/^\d{6}$/.test(pin)) return res.status(400).json({ error: 'The PIN must be 6 digits.' });
+      const [p] = await db().query('SELECT email FROM profiles WHERE phone = ?', [me]);
+      if (!p[0] || !p[0].email) return res.status(400).json({ error: 'Please add your email address to be able to add Two-Step-Verification.', needEmail: true });
+      const salt = crypto.randomBytes(16).toString('hex');
+      const hash = crypto.scryptSync(pin, salt, 32).toString('hex');
+      await db().query('INSERT INTO two_step (phone, salt, hash) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE salt = VALUES(salt), hash = VALUES(hash)', [me, salt, hash]);
+      return res.json({ enabled: true });
+    }
+    if (b.action === 'ts_off') {
+      const [t] = await db().query('SELECT salt, hash FROM two_step WHERE phone = ?', [me]);
+      if (!t[0]) return res.json({ enabled: false });
+      const test = crypto.scryptSync(String(b.pin || ''), t[0].salt, 32);
+      if (!crypto.timingSafeEqual(test, Buffer.from(t[0].hash, 'hex'))) return res.status(403).json({ error: 'Wrong PIN.' });
+      await db().query('DELETE FROM two_step WHERE phone = ?', [me]);
+      return res.json({ enabled: false });
     }
 
     if (b.action === 'group_create') {
