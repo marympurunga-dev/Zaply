@@ -366,6 +366,19 @@ module.exports = async (req, res) => {
       return res.json({ profile: { username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet } });
     }
 
+    // Profile pictures of other people (hidden when either side blocked the other).
+    if (b.action === 'photos') {
+      const list = Array.from(new Set((Array.isArray(b.phones) ? b.phones : []).filter(phoneOk))).slice(0, 80);
+      if (!list.length) return res.json({ photos: {} });
+      const [rows] = await db().query("SELECT phone, photo_url FROM profiles WHERE phone IN (?) AND photo_url <> ''", [list]);
+      const out = {};
+      await Promise.all(rows.map(async (r) => {
+        if (r.phone !== me) { const bs = await blockState(me, r.phone); if (bs.iBlocked || bs.blockedMe) return; }
+        out[r.phone] = r.photo_url;
+      }));
+      return res.json({ photos: out });
+    }
+
     // Profile picture: the phone uploads it straight to Cloudinary (public image), the database keeps only the link.
     if (b.action === 'avatar_sign') {
       if (!cloudOn()) return res.status(500).json({ error: 'File storage is not set up on the server yet.' });
