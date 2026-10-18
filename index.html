@@ -853,6 +853,8 @@
     }
     var TOKEN_KEY = 'zaply_token';
 
+    var overlays = [];
+    window.addEventListener('error', function (e) { try { toast('Error: ' + (e && e.message ? e.message : 'something went wrong')); } catch (x) {} });
     function $(id) { return document.getElementById(id); }
 
     function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
@@ -2020,7 +2022,7 @@ ZW|Zimbabwe|263`;
       });
     }
     function openLinked() { openPage('Linked devices', function (b) { zempty(b, 'Use one account on 2 devices. Link a device to see your chats there.', 'Link a device', soon('Link a device')); }); }
-    $('menuSettings').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openSettings(); });
+    $('menuSettings').addEventListener('click', function () { $('menuBox').classList.add('hidden'); try { openSettings(); } catch (e) { toast('Settings error: ' + e.message); } });
     $('menuLinked').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openLinked(); });
     $('menuBroadcast').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openPage('Broadcast lists', function (b) { zempty(b, 'Send a message to many people at once. Each person gets it as a private message.', 'New broadcast list', soon('New broadcast list')); }); });
     $('menuReadAll').addEventListener('click', function () { $('menuBox').classList.add('hidden'); toast('Read all is not connected yet'); });
@@ -3265,8 +3267,8 @@ ZW|Zimbabwe|263`;
     }
 
     /* ---------- overlays: Back button closes screens instead of exiting the app ---------- */
-    var overlays = [];
-    function pushOv(close) { overlays.push(close); try { history.pushState({ ov: 1 }, ''); } catch (e) {} }
+    overlays = overlays || [];
+    function pushOv(close) { (overlays = overlays || []).push(close); try { history.pushState({ ov: 1 }, ''); } catch (e) {} }
     /* In-app Back closes the screen right away and then quietly steps the browser history back (popSkip makes the
        browser's own "popstate" for that step do nothing). Waiting for the browser first made every Back feel slow. */
     var popSkip = 0;
