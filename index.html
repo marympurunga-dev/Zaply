@@ -452,6 +452,15 @@
     .zsep{height:1px;background:var(--border);margin:6px 0}
     .zempty{padding:40px 24px;text-align:center;color:var(--muted);line-height:1.6}
     .zempty button{margin-top:16px}
+
+    .zin{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--card);color:var(--text);font:inherit;font-size:16px}
+    .zin[readonly]{opacity:.75}
+    .zav{width:104px;height:104px;border-radius:50%;margin:6px auto 8px;background:#1fb5a8 center/cover no-repeat;display:flex;align-items:center;justify-content:center;font-size:42px;color:#fff;font-weight:700}
+    .zline{display:flex;gap:8px;align-items:center}.zline .zin{flex:1;min-width:0}.zline button{flex:none}
+    .zpop{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:24px}
+    .zpop>div{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:340px;width:100%;line-height:1.5}
+    .zpop .zline{margin-top:16px}.zpop .zline button{flex:1}
+    .zmsg{color:#ff5a5f;font-size:14px;min-height:18px;margin-top:10px}
     /* AI image page */
     .ai{padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
     .ai-hero{display:flex;gap:14px;align-items:center}
@@ -1895,9 +1904,110 @@ ZW|Zimbabwe|263`;
       });
     }
     $('addAcctBack').addEventListener('click', function () { var p = ''; try { p = sessionStorage.getItem('zaply_prev') || ''; } catch (e) {} if (p) setToken(p); location.reload(); });
+
+    /* account details + profile picture (Cloudinary) + two-step verification */
+    function myProf() { return chatCall('profile_get', { phone: myPhone }).then(function (r) { return r.profile || {}; }); }
+    function squarePic(file, side) {
+      return loadBitmap(file).then(function (bm) {
+        var m = Math.min(bm.width, bm.height), c = document.createElement('canvas'); c.width = c.height = side;
+        c.getContext('2d').drawImage(bm, (bm.width - m) / 2, (bm.height - m) / 2, m, m, 0, 0, side, side);
+        return new Promise(function (res, rej) { c.toBlob(function (b) { b ? res(b) : rej(new Error('encode')); }, 'image/jpeg', 0.85); });
+      });
+    }
+    function uploadAvatar(file) {
+      return squarePic(file, 512).then(function (blob) {
+        return chatCall('avatar_sign', {}).then(function (sg) {
+          var fd = new FormData(); fd.append('file', blob); fd.append('api_key', sg.api_key); fd.append('timestamp', sg.timestamp); fd.append('signature', sg.signature); fd.append('public_id', sg.public_id);
+          return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/image/upload', { method: 'POST', body: fd }).then(function (r) { return r.json(); });
+        });
+      }).then(function (j) { if (!j.secure_url) throw new Error('Upload failed. Try again.'); return chatCall('profile_photo_set', { url: j.secure_url }); });
+    }
+    function zin(ph, type, max) { var i = mk('input', 'zin'); i.type = type || 'text'; i.placeholder = ph; if (max) i.maxLength = max; return i; }
+    function zlbl(box, t) { var l = mk('div', 'sub', t); l.style.margin = '16px 0 6px'; box.appendChild(l); }
+    function openDetails() {
+      openPage('Account details', function (b) {
+        var w = mk('div'); w.style.padding = '8px 20px'; b.appendChild(w);
+        var av = mk('div', 'zav', (nameOf(myPhone) || myPhone || '?').charAt(0).toUpperCase()), file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
+        var chg = mk('button', '', 'Change photo'); chg.style.cssText = 'display:block;margin:0 auto 6px'; w.appendChild(av); w.appendChild(chg); w.appendChild(file);
+        chg.addEventListener('click', function () { file.click(); });
+        file.addEventListener('change', function () {
+          var f = file.files && file.files[0]; file.value = ''; if (!f) return; chg.disabled = true; chg.textContent = 'Uploading\u2026';
+          uploadAvatar(f).then(function (r) { av.style.backgroundImage = 'url("' + r.photo_url + '")'; av.textContent = ''; toast('Profile photo updated', true); })
+            .catch(function (e) { toast((e && e.message) || 'Could not upload the photo'); }).then(function () { chg.disabled = false; chg.textContent = 'Change photo'; });
+        });
+        zlbl(w, 'Phone number'); var pl = mk('div', 'zline'), ph = zin('', 'text'); ph.value = myPhone || ''; ph.readOnly = true; var pc = mk('button', '', 'Change'); pc.addEventListener('click', soon('Change phone number')); pl.appendChild(ph); pl.appendChild(pc); w.appendChild(pl);
+        zlbl(w, 'Username'); var un = zin('Add username', 'text', 30); w.appendChild(un);
+        zlbl(w, 'Email'); var el = mk('div', 'zline'), em = zin('Add email', 'email', 120), ec = mk('button', '', 'Change'); ec.classList.add('hidden'); el.appendChild(em); el.appendChild(ec); w.appendChild(el);
+        zlbl(w, 'Address'); var ad = zin('Add address', 'text', 120); w.appendChild(ad);
+        zlbl(w, 'Bio'); var bio = mk('textarea', 'zin'); bio.maxLength = 130; bio.rows = 3; bio.placeholder = 'Add bio (130 letters max)'; w.appendChild(bio); var cnt = mk('div', 'sub', '0 / 130'); cnt.style.textAlign = 'right'; w.appendChild(cnt);
+        bio.addEventListener('input', function () { cnt.textContent = bio.value.length + ' / 130'; });
+        zlbl(w, 'Birthday (optional)'); var bd = zin('', 'date'); bd.max = new Date().toISOString().slice(0, 10); w.appendChild(bd);
+        zlbl(w, 'Pet'); var pet = zin('Add pet', 'text', 40); w.appendChild(pet);
+        var msg = mk('div', 'zmsg'), save = mk('button', 'primary', 'Save'); save.style.marginTop = '12px'; w.appendChild(msg); w.appendChild(save);
+        var orig = '';
+        myProf().then(function (p) {
+          un.value = p.username || ''; em.value = p.email || ''; ad.value = p.address || ''; bio.value = p.bio || ''; bd.value = p.birthday || ''; pet.value = p.pet || ''; cnt.textContent = bio.value.length + ' / 130';
+          if (p.photo_url) { av.style.backgroundImage = 'url("' + p.photo_url + '")'; av.textContent = ''; }
+          orig = p.email || ''; if (orig) { em.readOnly = true; ec.classList.remove('hidden'); }
+        }).catch(function () { msg.textContent = 'Could not load your details.'; });
+        ec.addEventListener('click', function () { em.readOnly = false; ec.classList.add('hidden'); em.focus(); });
+        save.addEventListener('click', function () {
+          msg.textContent = ''; save.disabled = true; var mail = em.value.trim();
+          chatCall('profile_set', { username: un.value.trim().replace(/^@/, ''), email: orig && mail !== orig ? orig : mail, address: ad.value.trim(), bio: bio.value.trim(), birthday: bd.value, pet: pet.value.trim() })
+            .then(function (r) {
+              try { localStorage.setItem('zaply_myprof', JSON.stringify(r.profile)); } catch (e) {}
+              toast('Saved', true);
+              if (mail && mail !== orig) return call('email_send', { email: mail }).then(function () { openEmailCode(mail, function () { orig = mail; em.readOnly = true; ec.classList.remove('hidden'); }); });
+            }).catch(function (e) { msg.textContent = (e && e.offline) ? 'No internet connection. Try again.' : ((e && e.message) || 'Could not save.'); })
+            .then(function () { save.disabled = false; });
+        });
+      });
+    }
+    function openEmailCode(mail, ok) {
+      openPage('Verify email', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w); w.appendChild(mk('div', 'sub', 'We sent a code to ' + mail + '. Enter it below.'));
+        var c = zin('Code', 'text', 8); c.inputMode = 'numeric'; c.style.marginTop = '12px'; var m = mk('div', 'zmsg'), v = mk('button', 'primary', 'Verify'); v.style.marginTop = '12px'; w.appendChild(c); w.appendChild(m); w.appendChild(v);
+        v.addEventListener('click', function () {
+          m.textContent = ''; v.disabled = true;
+          call('email_verify', { code: c.value.trim() }).then(function () { toast('Email verified', true); ok(); closeOv(); })
+            .catch(function (e) { m.textContent = (e && e.message) || 'Wrong code. Try again.'; }).then(function () { v.disabled = false; });
+        });
+      });
+    }
+    function needEmailPopup() {
+      var p = mk('div', 'zpop'), d = mk('div'); d.appendChild(mk('div', '', 'Please add your email address to be able to add Two-Step-Verification.')); var l = mk('div', 'zline'), a = mk('button', 'primary', 'Add email'), bk = mk('button', '', 'Back');
+      l.appendChild(bk); l.appendChild(a); d.appendChild(l); p.appendChild(d); document.body.appendChild(p);
+      bk.addEventListener('click', function () { p.remove(); });
+      a.addEventListener('click', function () { p.remove(); closeOv(); setTimeout(openDetails, 60); });
+    }
+    function openTwoStep() {
+      openPage('Two-step verification', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var note = mk('div', 'ai-res'); note.style.lineHeight = '1.5'; note.textContent = 'Your email and your two-step verification PIN are what will be used to recover your chats.'; w.appendChild(note);
+        var body = mk('div'); body.style.marginTop = '16px'; w.appendChild(body);
+        function pinBox(label, go) {
+          body.innerHTML = ''; var a = zin('6-digit PIN', 'password', 6), c = zin(label, 'password', 6), m = mk('div', 'zmsg'), s2 = mk('button', 'primary', 'Save');
+          [a, c].forEach(function (i) { i.inputMode = 'numeric'; i.style.marginBottom = '10px'; }); if (!go.confirm) c.classList.add('hidden');
+          s2.style.marginTop = '6px'; body.appendChild(a); body.appendChild(c); body.appendChild(m); body.appendChild(s2); a.focus();
+          s2.addEventListener('click', function () {
+            m.textContent = ''; if (!/^\d{6}$/.test(a.value)) return m.textContent = 'Enter 6 digits.'; if (go.confirm && a.value !== c.value) return m.textContent = 'The two PINs do not match.';
+            s2.disabled = true; go.run(a.value).catch(function (e) { if (e && /email address/i.test(e.message || '')) { needEmailPopup(); return; } m.textContent = (e && e.message) || 'Something went wrong.'; }).then(function () { s2.disabled = false; });
+          });
+        }
+        function show(on) {
+          body.innerHTML = '';
+          var bt = mk('button', 'primary', on ? 'Turn off two-step verification' : 'Set up PIN'); body.appendChild(bt); if (on) body.insertBefore(mk('div', 'sub', 'Two-step verification is on.'), bt);
+          bt.addEventListener('click', function () {
+            if (on) return pinBox('', { confirm: false, run: function (pin) { return chatCall('ts_off', { pin: pin }).then(function () { toast('Turned off', true); show(false); }); } });
+            myProf().then(function (p) { if (!p.email) return needEmailPopup(); pinBox('Confirm PIN', { confirm: true, run: function (pin) { return chatCall('ts_set', { pin: pin }).then(function () { toast('Two-step verification is on', true); show(true); }); } }); }).catch(function () { toast('Could not check your email.'); });
+          });
+        }
+        chatCall('ts_status', {}).then(function (r) { show(!!r.enabled); }).catch(function () { show(false); });
+      });
+    }
     function openAccount() {
       openPage('Account', function (b) {
-        zrows(b, [['invite', 'Add account', addAccount], '-', ['account', 'View account details', soon('Account details')], ['shield', 'Two-step verification', soon('Two-step verification')], '-',
+        zrows(b, [['invite', 'Add account', addAccount], '-', ['account', 'View account details', openDetails], ['shield', 'Two-step verification', openTwoStep], '-',
           ['out', 'Log out', function () { $('btnLogout').click(); document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); }, 1]]);
       });
     }
