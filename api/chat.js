@@ -111,6 +111,18 @@ function ensureTable() {
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         UNIQUE KEY uq_username (username))`)]).then(async () => {
       await db().query("ALTER TABLE profiles ADD COLUMN photo_url VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query("ALTER TABLE profiles ADD COLUMN links VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query("ALTER TABLE profiles ADD COLUMN privacy VARCHAR(1500) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS phone_otps (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        owner VARCHAR(20) NOT NULL,
+        new_phone VARCHAR(20) NOT NULL,
+        code_hash CHAR(64) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        tries INT NOT NULL DEFAULT 0,
+        used TINYINT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_po (owner, created_at))`);
       await db().query(`CREATE TABLE IF NOT EXISTS two_step (
         phone VARCHAR(20) NOT NULL PRIMARY KEY,
         salt VARCHAR(32) NOT NULL,
@@ -128,19 +140,34 @@ function readToken(t) {
   try { const d = JSON.parse(Buffer.from(body, 'base64url').toString()); return d.e > Date.now() ? d.p : null; }
   catch (e) { return null; }
 }
+function mintToken(p) {
+  const body = Buffer.from(JSON.stringify({ p, e: Date.now() + 1000 * 60 * 60 * 24 * 365 })).toString('base64url');
+  return body + '.' + crypto.createHmac('sha256', SECRET).update(body).digest('base64url');
+}
+// Africa's Talking SMS (set AT_USERNAME and AT_API_KEY in Vercel; AT_SENDER is optional)
+async function sendSms(to, message) {
+  if (!process.env.AT_API_KEY || !process.env.AT_USERNAME) throw new Error('SMS is not set up on the server yet.');
+  const form = new URLSearchParams({ username: process.env.AT_USERNAME, to, message });
+  if (process.env.AT_SENDER) form.set('from', process.env.AT_SENDER);
+  const base = process.env.AT_USERNAME === 'sandbox' ? 'https://api.sandbox.africastalking.com' : 'https://api.africastalking.com';
+  const r = await fetch(base + '/version1/messaging', { method: 'POST', headers: { apiKey: process.env.AT_API_KEY, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' }, body: form });
+  if (!r.ok) throw new Error('Could not send the SMS. Try again.');
+}
+// Email codes use the same sender as sign-up (api/_mail.js), so it needs no new Vercel settings
+const { sendCodeEmail } = require('./_mail');
 const phoneOk = (p) => typeof p === 'string' && /^\+\d{7,15}$/.test(p);
 async function findUser(phone) {
   const [r] = await db().query('SELECT phone, name FROM users WHERE phone = ?', [phone]);
   return r[0] || null;
 }
 
-const EMPTY_PROFILE = { username: '', email: '', address: '', bio: '', birthday: '', pet: '', photo_url: '' };
-const cleanRow = (r) => ({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '', photo_url: r.photo_url || '' });
+const EMPTY_PROFILE = { name: '', username: '', email: '', address: '', bio: '', birthday: '', pet: '', links: '', photo_url: '' };
+const cleanRow = (r) => ({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '', links: r.links || '', photo_url: r.photo_url || '' });
 // trims, and cuts to a number of characters (emoji count as one)
 const clip = (v, n) => Array.from(String(v == null ? '' : v).trim()).slice(0, n).join('');
 function cleanProfile(b) {
   const username = clip(b.username, 31).replace(/^@/, '').toLowerCase();
-  if (username && !/^[a-z0-9_.]{3,30}$/.test(username)) return { error: 'Username must be 3 to 30 letters, numbers, dots or underscores.' };
+  if (username && !/^[a-z0-9.]{3,30}$/.test(username)) return { error: 'Username must be 3 to 30 letters, numbers or dots.' };
   const email = clip(b.email, 120);
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { error: 'That email address doesn’t look right.' };
   const birthday = clip(b.birthday, 10);
@@ -149,7 +176,9 @@ function cleanProfile(b) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday) || isNaN(d) || d.toISOString().slice(0, 10) !== birthday || d > new Date() || d.getUTCFullYear() < 1900)
       return { error: 'That birthday isn’t a valid date.' };
   }
-  return { username, email, address: clip(b.address, 120), bio: clip(b.bio, 130), birthday, pet: clip(b.pet, 40) };
+  const name = b.name === undefined ? undefined : clip(b.name, 40);
+  if (name !== undefined && !name) return { error: 'Enter your name.' };
+  return { name, username, email, address: clip(b.address, 120), bio: clip(b.bio, 130), birthday, pet: clip(b.pet, 40), links: clip(b.links, 300) };
 }
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
 const MAX_GROUP = 50;
@@ -337,6 +366,75 @@ module.exports = async (req, res) => {
       return res.json({ key: k[0] ? k[0].public_key : null });
     }
 
+
+    // Privacy settings (kept on the server so they follow the account)
+    if (b.action === 'privacy_get') {
+      const [r] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
+      let pv = {}; try { pv = JSON.parse((r[0] && r[0].privacy) || '{}'); } catch (e) {}
+      return res.json({ privacy: pv });
+    }
+    if (b.action === 'privacy_set') {
+      let pv; try { pv = JSON.parse(String(b.privacy || '{}')); } catch (e) { return res.status(400).json({ error: 'Bad request.' }); }
+      const ok = ['everyone', 'contacts', 'except', 'nobody'], clean = {
+        lastseen: ok.includes(pv.lastseen) ? pv.lastseen : 'contacts', online: pv.online === 'same' ? 'same' : 'everyone',
+        photo: ok.includes(pv.photo) ? pv.photo : 'everyone', hidePhone: !!pv.hidePhone,
+        ex: { lastseen: (pv.ex && Array.isArray(pv.ex.lastseen) ? pv.ex.lastseen : []).filter(phoneOk).slice(0, 60), photo: (pv.ex && Array.isArray(pv.ex.photo) ? pv.ex.photo : []).filter(phoneOk).slice(0, 60) }
+      };
+      await db().query('INSERT INTO profiles (phone, privacy) VALUES (?, ?) ON DUPLICATE KEY UPDATE privacy = VALUES(privacy)', [me, JSON.stringify(clean)]);
+      return res.json({ ok: true });
+    }
+    if (b.action === 'blocklist') {
+      const [r] = await db().query('SELECT b.blocked AS phone, u.name AS name FROM blocks b LEFT JOIN users u ON u.phone = b.blocked WHERE b.blocker = ? ORDER BY b.created_at DESC', [me]);
+      return res.json({ blocked: r.map((x) => ({ phone: x.phone, name: x.name || '' })) });
+    }
+
+    // Change phone number: code goes to the NEW number (or email), then the account moves over
+    if (b.action === 'phone_change_send') {
+      const np = String(b.phone || '');
+      if (!phoneOk(np) || np === me) return res.status(400).json({ error: 'Enter a valid new number with the country code, for example +254…' });
+      const channel = ['sms', 'email', 'call', 'missedcall'].includes(b.channel) ? b.channel : 'sms';
+      if (channel === 'call' || channel === 'missedcall') return res.status(400).json({ error: 'This option is not available yet. Please use the text message.' });
+      if (await findUser(np)) return res.status(409).json({ error: 'That number is already registered on Zucket.' });
+      const [cnt] = await db().query('SELECT COUNT(*) AS n FROM phone_otps WHERE owner = ? AND created_at > (NOW() - INTERVAL 1 DAY)', [me]);
+      if (cnt[0].n >= 3) return res.status(429).json({ error: 'You have reached today’s limit for code requests. Try again tomorrow.' });
+      const [last] = await db().query('SELECT TIMESTAMPDIFF(SECOND, created_at, NOW()) AS age FROM phone_otps WHERE owner = ? ORDER BY id DESC LIMIT 1', [me]);
+      if (last[0] && last[0].age < 170) return res.status(429).json({ error: 'Please wait for the countdown before asking for another code.' });
+      let mailTo = '';
+      if (channel === 'email') {
+        const [pe] = await db().query('SELECT email FROM profiles WHERE phone = ?', [me]);
+        mailTo = pe[0] && pe[0].email; if (!mailTo) return res.status(400).json({ error: 'Add an email to your profile first.' });
+      }
+      const code = String(crypto.randomInt(100000, 1000000));
+      const msg = 'Your Zucket code is ' + code + '. It expires in 10 minutes. Do not share it.';
+      try { if (channel === 'email') await sendCodeEmail(mailTo, code); else await sendSms(np, msg); }
+      catch (e) { return res.status(502).json({ error: e.message || 'Could not send the code.' }); }
+      await db().query('INSERT INTO phone_otps (owner, new_phone, code_hash, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL 10 MINUTE)', [me, np, sha(code + SECRET)]);
+      return res.json({ ok: true });
+    }
+    if (b.action === 'phone_change_verify') {
+      const np = String(b.phone || ''), code = String(b.code || '').trim();
+      if (!phoneOk(np) || !/^\d{6}$/.test(code)) return res.status(400).json({ error: 'Enter the 6-digit code.' });
+      const [rows] = await db().query('SELECT id, code_hash, tries, TIMESTAMPDIFF(SECOND, NOW(), expires_at) AS secs FROM phone_otps WHERE owner = ? AND new_phone = ? AND used = 0 ORDER BY id DESC LIMIT 1', [me, np]);
+      const o = rows[0];
+      if (!o) return res.status(400).json({ error: 'Ask for a new code first.' });
+      if (o.secs <= 0) return res.status(400).json({ error: 'That code has expired. Ask for a new one.' });
+      if (o.tries >= 5) return res.status(429).json({ error: 'Too many wrong tries. Ask for a new code.' });
+      if (sha(code + SECRET) !== o.code_hash) { await db().query('UPDATE phone_otps SET tries = tries + 1 WHERE id = ?', [o.id]); return res.status(400).json({ error: 'Wrong code. Try again.' }); }
+      if (await findUser(np)) return res.status(409).json({ error: 'That number is already registered on Zucket.' });
+      const conn = await db().getConnection();
+      try {
+        await conn.beginTransaction();
+        const moves = [['users', 'phone'], ['profiles', 'phone'], ['messages', 'sender'], ['messages', 'receiver'], ['blocks', 'blocker'], ['blocks', 'blocked'], ['push_subs', 'phone'],
+          ['user_keys', 'phone'], ['two_step', 'phone'], ['group_members', 'phone'], ['chat_groups', 'creator'], ['group_messages', 'sender'],
+          ['media', 'owner'], ['media', 'peer'], ['cloud_media', 'owner'], ['cloud_media', 'peer']];
+        for (const [t, col] of moves) await conn.query('UPDATE IGNORE `' + t + '` SET `' + col + '` = ? WHERE `' + col + '` = ?', [np, me]);
+        await conn.query('UPDATE phone_otps SET used = 1 WHERE owner = ?', [me]);
+        await conn.commit();
+      } catch (e) { await conn.rollback().catch(() => {}); throw e; } finally { conn.release(); }
+      const [u] = await db().query('SELECT name FROM users WHERE phone = ?', [np]);
+      return res.json({ ok: true, token: mintToken(np), phone: np, name: u[0] ? u[0].name : '' });
+    }
+
     if (b.action === 'profile_get') {
       const who = b.phone === undefined ? me : b.phone;
       if (!phoneOk(who)) return res.status(400).json({ error: 'Bad request.' });
@@ -346,8 +444,9 @@ module.exports = async (req, res) => {
         if (bs.iBlocked || bs.blockedMe) return res.json({ profile: EMPTY_PROFILE });
       }
       const [r] = await db().query(
-        "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet, photo_url FROM profiles WHERE phone = ?", [who]);
-      return res.json({ profile: r[0] ? cleanRow(r[0]) : EMPTY_PROFILE });
+        "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet, links, photo_url FROM profiles WHERE phone = ?", [who]);
+      const [nm] = await db().query('SELECT name FROM users WHERE phone = ?', [who]);
+      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '' }) });
     }
 
     if (b.action === 'profile_set') {
@@ -355,25 +454,31 @@ module.exports = async (req, res) => {
       if (p.error) return res.status(400).json({ error: p.error });
       try {
         await db().query(
-          `INSERT INTO profiles (phone, username, email, address, bio, birthday, pet) VALUES (?, ?, ?, ?, ?, ?, ?)
+          `INSERT INTO profiles (phone, username, email, address, bio, birthday, pet, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
            ON DUPLICATE KEY UPDATE username = VALUES(username), email = VALUES(email), address = VALUES(address),
-             bio = VALUES(bio), birthday = VALUES(birthday), pet = VALUES(pet)`,
-          [me, p.username || null, p.email, p.address, p.bio, p.birthday || null, p.pet]);
+             bio = VALUES(bio), birthday = VALUES(birthday), pet = VALUES(pet), links = VALUES(links)`,
+          [me, p.username || null, p.email, p.address, p.bio, p.birthday || null, p.pet, p.links]);
+        if (p.name) await db().query('UPDATE users SET name = ? WHERE phone = ?', [p.name, me]);
       } catch (e) {
         if (e && e.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'That username is already taken.' });
         throw e;
       }
-      return res.json({ profile: { username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet } });
+      const [nm2] = await db().query('SELECT name FROM users WHERE phone = ?', [me]);
+      return res.json({ profile: { name: nm2[0] ? nm2[0].name || '' : '', username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet, links: p.links } });
     }
 
     // Profile pictures of other people (hidden when either side blocked the other).
     if (b.action === 'photos') {
       const list = Array.from(new Set((Array.isArray(b.phones) ? b.phones : []).filter(phoneOk))).slice(0, 80);
       if (!list.length) return res.json({ photos: {} });
-      const [rows] = await db().query("SELECT phone, photo_url FROM profiles WHERE phone IN (?) AND photo_url <> ''", [list]);
+      const [rows] = await db().query("SELECT phone, photo_url, privacy FROM profiles WHERE phone IN (?) AND photo_url <> ''", [list]);
       const out = {};
       await Promise.all(rows.map(async (r) => {
-        if (r.phone !== me) { const bs = await blockState(me, r.phone); if (bs.iBlocked || bs.blockedMe) return; }
+        if (r.phone !== me) {
+          let pv = {}; try { pv = JSON.parse(r.privacy || '{}'); } catch (e) {}
+          if (pv.photo === 'nobody') return;
+          const bs = await blockState(me, r.phone); if (bs.iBlocked || bs.blockedMe) return;
+        }
         out[r.phone] = r.photo_url;
       }));
       return res.json({ photos: out });
