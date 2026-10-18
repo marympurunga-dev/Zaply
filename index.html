@@ -889,7 +889,15 @@
     var TOKEN_KEY = 'zaply_token';
 
     var overlays = [];
-    window.addEventListener('error', function (e) { try { toast('Error: ' + (e && e.message ? e.message : 'something went wrong')); } catch (x) {} });
+    window.addEventListener('error', function (e) {
+      try {
+        var msg = e && e.message ? e.message : '';
+        /* "Script error." means a script from another website (calls, chart, push library) failed and the browser hides the details: not a problem in the app's own code */
+        if (!msg || (msg === 'Script error.' && !e.filename)) { console.warn('Hidden cross-origin script error'); return; }
+        console.error(msg, e.filename, e.lineno, e.colno);
+        toast('Error: ' + msg + (e.lineno ? ' (line ' + e.lineno + ')' : ''));
+      } catch (x) {}
+    });
     function $(id) { return document.getElementById(id); }
 
     function getToken() { try { return localStorage.getItem(TOKEN_KEY); } catch (e) { return null; } }
