@@ -1862,7 +1862,7 @@ ZW|Zimbabwe|263`;
       out: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z'
     };
     function zico(k) { return '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="' + ZI[k] + '"/></svg>'; }
-    function openPage(title, build) {
+    function zOpenPage(title, build) {
       var el = mk('div', 'zpg'), h = mk('div', 'zpg-h'), bk = mk('button'), bd = mk('div', 'zpg-b');
       bk.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>';
       bk.addEventListener('click', closeOv); h.appendChild(bk); h.appendChild(mk('span', '', title)); el.appendChild(h); el.appendChild(bd);
@@ -1878,7 +1878,7 @@ ZW|Zimbabwe|263`;
     function zempty(box, text, btn, fn) {
       var d = mk('div', 'zempty', text); if (btn) { var b = mk('button', 'primary', btn); b.addEventListener('click', fn); d.appendChild(b); } box.appendChild(d);
     }
-    function soon(name) { return function () { openPage(name, function (b) { zempty(b, name + ' is being set up and will be available soon.'); }); }; }
+    function soon(name) { return function () { zOpenPage(name, function (b) { zempty(b, name + ' is being set up and will be available soon.'); }); }; }
     /* accounts saved on this phone (verified once, switch without a code) */
     function getAccts() { try { return JSON.parse(localStorage.getItem('zaply_accts') || '[]'); } catch (e) { return []; } }
     function putAccts(a) { try { localStorage.setItem('zaply_accts', JSON.stringify(a)); } catch (e) {} }
@@ -1889,7 +1889,7 @@ ZW|Zimbabwe|263`;
     function refreshSwitch() { $('menuSwitch').classList.toggle('hidden', getAccts().length < 2); }
     $('menuSwitch').addEventListener('click', function () {
       $('menuBox').classList.add('hidden'); var cur = getToken();
-      openPage('Switch account', function (b) {
+      zOpenPage('Switch account', function (b) {
         getAccts().forEach(function (x) {
           var r = mk('button', 'zrow'); r.innerHTML = zico('account') + '<span></span>'; r.lastChild.textContent = x.n + (x.t === cur ? '  (current)' : '');
           r.addEventListener('click', function () { if (x.t === cur) return closeOv(); setToken(x.t); try { ['zaply_user', 'zaply_chats'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} location.reload(); });
@@ -1927,7 +1927,7 @@ ZW|Zimbabwe|263`;
     function zin(ph, type, max) { var i = mk('input', 'zin'); i.type = type || 'text'; i.placeholder = ph; if (max) i.maxLength = max; return i; }
     function zlbl(box, t) { var l = mk('div', 'sub', t); l.style.margin = '16px 0 6px'; box.appendChild(l); }
     function openDetails() {
-      openPage('Account details', function (b) {
+      zOpenPage('Account details', function (b) {
         var w = mk('div'); w.style.padding = '8px 20px'; b.appendChild(w);
         var av = mk('div', 'zav', (nameOf(myPhone) || myPhone || '?').charAt(0).toUpperCase()), file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
         var chg = mk('button', '', 'Change photo'); chg.style.cssText = 'display:block;margin:0 auto 6px'; w.appendChild(av); w.appendChild(chg); w.appendChild(file);
@@ -1966,7 +1966,7 @@ ZW|Zimbabwe|263`;
       });
     }
     function openEmailCode(mail, ok) {
-      openPage('Verify email', function (b) {
+      zOpenPage('Verify email', function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w); w.appendChild(mk('div', 'sub', 'We sent a code to ' + mail + '. Enter it below.'));
         var c = zin('Code', 'text', 8); c.inputMode = 'numeric'; c.style.marginTop = '12px'; var m = mk('div', 'zmsg'), v = mk('button', 'primary', 'Verify'); v.style.marginTop = '12px'; w.appendChild(c); w.appendChild(m); w.appendChild(v);
         v.addEventListener('click', function () {
@@ -1983,7 +1983,7 @@ ZW|Zimbabwe|263`;
       a.addEventListener('click', function () { p.remove(); closeOv(); setTimeout(openDetails, 60); });
     }
     function openTwoStep() {
-      openPage('Two-step verification', function (b) {
+      zOpenPage('Two-step verification', function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
         var note = mk('div', 'ai-res'); note.style.lineHeight = '1.5'; note.textContent = 'Your email and your two-step verification PIN are what will be used to recover your chats.'; w.appendChild(note);
         var body = mk('div'); body.style.marginTop = '16px'; w.appendChild(body);
@@ -2008,23 +2008,23 @@ ZW|Zimbabwe|263`;
       });
     }
     function openAccount() {
-      openPage('Account', function (b) {
+      zOpenPage('Account', function (b) {
         zrows(b, [['invite', 'Add account', addAccount], '-', ['account', 'View account details', openDetails], ['shield', 'Two-step verification', openTwoStep], '-',
           ['out', 'Log out', function () { $('btnLogout').click(); document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); }, 1]]);
       });
     }
     function openSettings() {
-      openPage('Settings', function (b) {
+      zOpenPage('Settings', function (b) {
         zrows(b, [['device', 'Linked devices', openLinked], ['account', 'Account', openAccount], ['lock', 'Privacy', soon('Privacy')], ['chat', 'Chats', soon('Chats')], ['palette', 'Appearance', soon('Appearance')], ['bell', 'Notifications', soon('Notifications')],
           ['globe', 'App language', function () { document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); showTab('settings'); }], ['access', 'Accessibility', soon('Accessibility')], ['invite', 'Invite a friend', function () {
             var t = 'Join me on Zucket: ' + location.origin; if (navigator.share) navigator.share({ text: t }).catch(function () {}); else toast('Link: ' + location.origin);
           }], ['storage', 'Storage', soon('Storage')]]);
       });
     }
-    function openLinked() { openPage('Linked devices', function (b) { zempty(b, 'Use one account on 2 devices. Link a device to see your chats there.', 'Link a device', soon('Link a device')); }); }
+    function openLinked() { zOpenPage('Linked devices', function (b) { zempty(b, 'Use one account on 2 devices. Link a device to see your chats there.', 'Link a device', soon('Link a device')); }); }
     $('menuSettings').addEventListener('click', function () { $('menuBox').classList.add('hidden'); try { openSettings(); } catch (e) { toast('Settings error: ' + e.message); } });
     $('menuLinked').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openLinked(); });
-    $('menuBroadcast').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openPage('Broadcast lists', function (b) { zempty(b, 'Send a message to many people at once. Each person gets it as a private message.', 'New broadcast list', soon('New broadcast list')); }); });
+    $('menuBroadcast').addEventListener('click', function () { $('menuBox').classList.add('hidden'); zOpenPage('Broadcast lists', function (b) { zempty(b, 'Send a message to many people at once. Each person gets it as a private message.', 'New broadcast list', soon('New broadcast list')); }); });
     $('menuReadAll').addEventListener('click', function () { $('menuBox').classList.add('hidden'); toast('Read all is not connected yet'); });
     refreshSwitch();
     var filt = 'all', FILTERS = [['fAll', 'all'], ['fUnread', 'unread'], ['fFav', 'fav'], ['fGroups', 'groups']];
