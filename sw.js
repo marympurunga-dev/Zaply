@@ -1,4 +1,4 @@
-const CACHE = 'zucket-v7';
+const CACHE = 'zucket-v8';
 const SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
@@ -8,16 +8,32 @@ self.addEventListener('activate', (e) => {
 });
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
-  e.respondWith(
-    fetch(req).then((res) => {
-      if (res.ok && res.type === 'basic' && !req.url.includes('/api/')) {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(req, copy));
-      }
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  const same = url.origin === location.origin;
+  // live data (messages, profiles, codes) always goes to the network; the app handles being offline itself
+  if (same && url.pathname.startsWith('/api/')) return;
+  // profile pictures: keep a copy so they still show with no internet
+  if (!same) {
+    if (url.hostname === 'res.cloudinary.com' && req.destination === 'image') {
+      e.respondWith(caches.open(CACHE).then((c) => c.match(req).then((hit) => {
+        const net = fetch(req).then((res) => { if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone()); return res; }).catch(() => hit);
+        return hit || net;
+      })));
+    }
+    return;
+  }
+  // the app itself: open straight from the saved copy (even with mobile data on but no bundle), refresh it in the background
+  const isPage = req.mode === 'navigate';
+  const key = isPage ? '/' : req;
+  e.respondWith(caches.open(CACHE).then((c) => c.match(key, { ignoreSearch: isPage }).then((hit) => {
+    const net = fetch(req).then((res) => {
+      if (res.ok && res.type === 'basic') c.put(key, res.clone());
       return res;
-    }).catch(() => caches.match(req).then((r) => r || caches.match('/')))
-  );
+    });
+    if (hit) { net.catch(() => {}); return hit; }
+    return net.catch(() => caches.match('/'));
+  })));
 });
 
 self.addEventListener('push', (e) => {

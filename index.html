@@ -459,6 +459,23 @@
     .zline{display:flex;gap:8px;align-items:center}.zline .zin{flex:1;min-width:0}.zline button{flex:none}
     .zpop{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:24px}
     .zpop>div{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:340px;width:100%;line-height:1.5}
+
+    .ld{z-index:200!important}.zpop{z-index:210!important}
+    .zsw{flex:none;width:50px;height:28px;border-radius:999px;padding:0;border:2px solid var(--border);background:rgba(128,128,128,.35);position:relative}
+    .zsw::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#9aa3ad;transition:.15s}
+    .zsw.on{background:#21c063;border-color:#21c063}.zsw.on::after{left:24px;background:#fff}
+    .zsec{padding:16px 20px 6px;font-size:13px;color:var(--muted);font-weight:600}
+    .zfoot{padding:12px 20px;font-size:13px;color:var(--muted);line-height:1.5}
+    .zrad .zdot{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--muted)}
+    .zrad.on .zdot{border-color:#21c063;box-shadow:inset 0 0 0 4px var(--bg),inset 0 0 0 20px #21c063}
+    .zth{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 16px}
+    .zth>button{height:130px;border-radius:12px;border:2px solid transparent;padding:8px;display:flex;flex-direction:column;gap:6px;justify-content:center;position:relative}
+    .zth>button.on{border-color:#fff;outline:2px solid #21c063}
+    .zth i{display:block;height:18px;border-radius:8px;background:rgba(40,40,40,.85);width:70%}.zth i.m{align-self:flex-end;background:var(--mc)}
+    .zlock{position:fixed;inset:0;z-index:300;background:var(--bg);color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+    .zbtn2{margin:12px 20px 0;width:calc(100% - 40px)}
+    .bub.mine{background:var(--thmine,#21c063);border-color:var(--thmine,#21c063);color:var(--thtxt,#06140c)}
+    .bub{font-size:var(--msgfs,16px)}
     .zpop .zline{margin-top:16px}.zpop .zline button{flex:1}
     .zmsg{color:#ff5a5f;font-size:14px;min-height:18px;margin-top:10px}
 
@@ -1612,7 +1629,7 @@ ZW|Zimbabwe|263`;
       unsubPush();
       call('logout').catch(function () {}).then(function () {
         clearToken();
-        try { ['zaply_email_skip', 'zaply_user', 'zaply_chats', 'zaply_out'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+        try { ['zaply_email_skip', 'zaply_user', 'zaply_chats', 'zaply_out', 'zaply_screen', 'zaply_myprof'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
         showWelcome();
       });
     });
@@ -1851,6 +1868,7 @@ ZW|Zimbabwe|263`;
     function isGroupId(x) { return typeof x === 'string' && /^g:\d+$/.test(x); }
 
     function showTab(t) {
+      curTab = t; saveScreen();
       ['chats', 'contacts', 'settings', 'profile', 'chart', 'status', 'notifications', 'calls'].forEach(function (n) {
         var N = n.charAt(0).toUpperCase() + n.slice(1), P = $('pane' + N), B = $('tab' + N);
         if (P) P.classList.toggle('hidden', n !== t);
@@ -1880,11 +1898,15 @@ ZW|Zimbabwe|263`;
       out: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z'
     };
     function zico(k) { return '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="' + ZI[k] + '"/></svg>'; }
+    var ZSTACK = [], curTab = 'chats';
+    function saveScreen() {
+      try { var n = document.querySelectorAll('.zpg').length; localStorage.setItem('zaply_screen', JSON.stringify({ tab: curTab, chat: openWith || '', pages: ZSTACK.slice(0, n) })); } catch (e) {}
+    }
     function zOpenPage(title, build, onClose) {
       var el = mk('div', 'zpg'), h = mk('div', 'zpg-h'), bk = mk('button'), bd = mk('div', 'zpg-b');
       bk.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>';
       bk.addEventListener('click', closeOv); h.appendChild(bk); h.appendChild(mk('span', '', title)); el.appendChild(h); el.appendChild(bd);
-      document.body.appendChild(el); pushOv(function () { el.remove(); if (onClose) onClose(); }); build(bd); return el;
+      document.body.appendChild(el); ZSTACK.push(title); saveScreen(); pushOv(function () { el.remove(); var zi = ZSTACK.lastIndexOf(title); if (zi >= 0) ZSTACK.splice(zi, 1); saveScreen(); if (onClose) onClose(); }); build(bd); return el;
     }
     function zrows(box, rows) {
       rows.forEach(function (r) {
@@ -1947,10 +1969,14 @@ ZW|Zimbabwe|263`;
     function setResume(o) { try { localStorage.setItem('zaply_resume', JSON.stringify(o)); } catch (e) {} }
     function clearResume() { try { localStorage.removeItem('zaply_resume'); } catch (e) {} }
     function fullBody(P, k, v) {
-      var o = { username: P.username || '', email: P.email || '', address: P.address || '', bio: P.bio || '', birthday: P.birthday || '', pet: P.pet || '' }; if (k) o[k] = v; return o;
+      var o = { username: P.username || '', email: P.email || '', address: P.address || '', bio: P.bio || '', birthday: P.birthday || '', pet: P.pet || '', links: P.links || '' }; if (k) o[k] = v; return o;
     }
-    var DFIELDS = [{ k: 'username', t: 'Username', ph: 'Add username', max: 30 }, { k: 'email', t: 'Email', ph: 'Add email' }, { k: 'address', t: 'Address', ph: 'Add address', max: 120 },
-      { k: 'bio', t: 'Bio', ph: 'Add bio', max: 130 }, { k: 'birthday', t: 'Birthday (optional)', ph: 'Add birthday', type: 'date' }, { k: 'pet', t: 'Pet', ph: 'Add pet', max: 40 }];
+    var DFIELDS = {
+      name: { k: 'name', t: 'Name', ph: 'Your name', max: 40 }, username: { k: 'username', t: 'Username', ph: 'Reserve username', max: 30 },
+      bio: { k: 'bio', t: 'About', ph: 'Set About', max: 130 }, email: { k: 'email', t: 'Email', ph: 'Add email' },
+      birthday: { k: 'birthday', t: 'Birthday', ph: 'Add birthday', type: 'date' }, pet: { k: 'pet', t: 'Pet', ph: 'Add pet', max: 40 },
+      links: { k: 'links', t: 'Links', ph: 'Add links', max: 300, type: 'url' }
+    };
     ZI.phone = 'M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z';
     ZI.at = 'M12 2a10 10 0 100 20h5v-2h-5a8 8 0 118-8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12a5 5 0 10-1.46 3.54A3.5 3.5 0 0021.5 13.4V12A10 10 0 0012 2zm0 13a3 3 0 110-6 3 3 0 010 6z';
     ZI.mail = 'M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z';
@@ -1959,23 +1985,46 @@ ZW|Zimbabwe|263`;
     ZI.cake = 'M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm4.6 9.99l-1.07-1.07-1.08 1.07c-1.3 1.3-3.58 1.31-4.89 0l-1.07-1.07-1.09 1.07C6.75 16.64 5.88 17 4.96 17c-.73 0-1.4-.23-1.96-.61V21c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4.61c-.56.38-1.23.61-1.96.61-.92 0-1.79-.36-2.44-1.01zM18 9h-5V7h-2v2H6c-1.66 0-3 1.34-3 3v1.54c0 1.08.88 1.96 1.96 1.96.52 0 1.02-.2 1.38-.57l2.14-2.13 2.13 2.13c.75.75 2.03.75 2.79 0l2.13-2.13 2.14 2.13c.37.37.86.57 1.38.57 1.08 0 1.96-.88 1.96-1.96V12C21 10.34 19.66 9 18 9z';
     ZI.paw = 'M4.5 11a2 2 0 100-4 2 2 0 000 4zm15 0a2 2 0 100-4 2 2 0 000 4zM9 8a2 2 0 100-4 2 2 0 000 4zm6 0a2 2 0 100-4 2 2 0 000 4zm-3 2c-2.8 0-6 3.4-6 6.2 0 1.6 1.2 2.8 2.7 2.8 1.3 0 2-.6 3.3-.6s2 .6 3.3.6c1.5 0 2.7-1.2 2.7-2.8C18 13.4 14.8 10 12 10z';
     ZI.cam = 'M12 9a3.2 3.2 0 100 6.4A3.2 3.2 0 0012 9zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z';
+    ZI.person = 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z';
+    ZI.link = 'M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z';
+    ZI.brief = 'M20 7h-4V5l-2-2h-4L8 5v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2zM10 5h4v2h-4V5z';
     ZI.next = 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z';
-    var DICON = { username: 'at', email: 'mail', address: 'pin', bio: 'info', birthday: 'cake', pet: 'paw' };
+    var DICON = { name: 'person', username: 'at', email: 'mail', bio: 'info', birthday: 'cake', pet: 'paw', links: 'link' };
     function fmtBday(v) { if (!v) return ''; var d = new Date(v + 'T00:00:00'); return isNaN(d) ? v : d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' }); }
+    function cachedMyProf() { try { return JSON.parse(localStorage.getItem('zaply_myprof') || 'null') || {}; } catch (e) { return {}; } }
+    function cacheMyProf(P) { try { localStorage.setItem('zaply_myprof', JSON.stringify(P)); } catch (e) {} }
+    function offlineToast() { toast('You are offline. Connect to the internet to make changes.'); }
+    function acctType() { try { return localStorage.getItem('zaply_acct_type') || 'personal'; } catch (e) { return 'personal'; } }
+    function openAcctType() {
+      zOpenPage('Account Type', function (b) {
+        var w = mk('div'); w.style.padding = '8px 0'; b.appendChild(w);
+        [['personal', 'Personal account', ''], ['business', 'Business account', 'Coming soon']].forEach(function (o) {
+          var r = mk('button', 'zir'), t = mk('div', 'zt'); t.appendChild(mk('div', '', o[1])); if (o[2]) t.appendChild(mk('div', 'zl', o[2]));
+          var dot = mk('span', '', acctType() === o[0] ? '\u25CF' : '\u25CB'); dot.style.color = acctType() === o[0] ? '#21c063' : 'var(--muted)';
+          r.appendChild(t); r.appendChild(dot);
+          if (o[0] === 'business') r.style.opacity = '.55'; else r.addEventListener('click', function () { try { localStorage.setItem('zaply_acct_type', o[0]); } catch (e) {} closeOv(); });
+          w.appendChild(r);
+        });
+      });
+    }
     function openDetails() {
-      zOpenPage('Account details', function (b) {
-        var P = {}, head = mk('div', 'zhead'), list = mk('div');
+      zOpenPage('Profile', function (b) {
+        var P = cachedMyProf(), head = mk('div', 'zhead'), list = mk('div');
         b.appendChild(head); b.appendChild(list);
-        var initial = ((curUser && curUser.name) || nameOf(myPhone) || myPhone || '?').charAt(0).toUpperCase();
-        var wrap = mk('div', 'zavw'), av = mk('div', 'zav', initial), cam = mk('button', 'zcam'), file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
-        cam.setAttribute('aria-label', 'Change profile photo'); cam.innerHTML = zico('cam'); wrap.appendChild(av); wrap.appendChild(cam); wrap.appendChild(file);
-        var nm = mk('h3', '', (curUser && curUser.name) || ''), ph = mk('div', 'sub', myPhone || ''); head.appendChild(wrap); head.appendChild(nm); head.appendChild(ph);
-        wrap.addEventListener('click', function () { file.click(); });
+        var wrap = mk('div', 'zavw'), av = mk('div', 'zav'), cam = mk('button', 'zcam'), file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.hidden = true;
+        cam.setAttribute('aria-label', 'Change profile photo'); cam.innerHTML = zico('cam'); wrap.appendChild(av); wrap.appendChild(cam); wrap.appendChild(file); head.appendChild(wrap);
+        function myName() { return P.name || (curUser && curUser.name) || nameOf(myPhone) || ''; }
+        function paintAv() {
+          var u = P.photo_url || PH[myPhone];
+          if (u) { av.style.backgroundImage = 'url("' + u + '")'; av.style.backgroundSize = 'cover'; av.style.backgroundPosition = 'center'; av.textContent = ''; }
+          else { av.style.backgroundImage = ''; av.textContent = (myName() || myPhone || '?').charAt(0).toUpperCase(); }
+        }
+        wrap.addEventListener('click', function () { if (!navigator.onLine) return offlineToast(); file.click(); });
         file.addEventListener('click', function (e) { e.stopPropagation(); });
         file.addEventListener('change', function () {
           var f = file.files && file.files[0]; file.value = ''; if (!f) return; wrap.classList.add('busy');
-          uploadAvatar(f).then(function (r) { av.style.backgroundImage = 'url("' + r.photo_url + '")'; av.style.backgroundSize = 'cover'; av.style.backgroundPosition = 'center'; av.textContent = ''; PH[myPhone] = r.photo_url; toast('Profile photo updated', true); })
-            .catch(function (e) { toast((e && e.message) || 'Could not upload the photo'); }).then(function () { wrap.classList.remove('busy'); });
+          uploadAvatar(f).then(function (r) { P.photo_url = r.photo_url; PH[myPhone] = r.photo_url; try { localStorage.setItem('zaply_photos', JSON.stringify(PH)); } catch (e) {} cacheMyProf(P); paintAv(); toast('Profile photo updated', true); })
+            .catch(function (e) { toast((e && e.offline) ? 'You are offline. Connect to the internet to make changes.' : ((e && e.message) || 'Could not upload the photo')); }).then(function () { wrap.classList.remove('busy'); });
         });
         function row(card, icon, label, val, empty, fn, extra) {
           var r = mk('button', 'zir'), t = mk('div', 'zt'), l = mk('div', 'zl', label), v = mk('div', 'zv', val || empty);
@@ -1983,61 +2032,146 @@ ZW|Zimbabwe|263`;
           t.appendChild(l); t.appendChild(v); r.innerHTML = zico(icon); r.appendChild(t); var c = mk('span'); c.innerHTML = zico('next'); c.style.opacity = '.45'; r.appendChild(c);
           r.addEventListener('click', fn); card.appendChild(r);
         }
+        function after() { cacheMyProf(P); render(); paintAv(); }
+        function edit(f) { return function () { if (!navigator.onLine && f.k !== 'x') { /* pages still open offline; saving is blocked there */ } fieldPage(f, P, after); }; }
         function render() {
           list.innerHTML = '';
-          list.appendChild(mk('div', 'zcard-t', 'Phone'));
-          var c1 = mk('div', 'zcard'); row(c1, 'phone', 'Phone number', myPhone || '', '', soon('Change phone number'), 'Change'); list.appendChild(c1);
-          list.appendChild(mk('div', 'zcard-t', 'About you'));
-          var c2 = mk('div', 'zcard');
-          DFIELDS.forEach(function (f) {
-            var val = P[f.k] || '', shown = f.k === 'birthday' ? fmtBday(val) : val;
-            row(c2, DICON[f.k], f.t, shown, f.ph, function () { if (f.k === 'email') emailPage(P, render); else fieldPage(f, P, render); }, f.k === 'email' && val ? 'Verified' : '');
-          });
-          list.appendChild(c2);
+          var c0 = mk('div', 'zcard'); row(c0, 'brief', 'Account Type', acctType() === 'business' ? 'Business account' : 'Personal account', '', openAcctType); list.appendChild(c0);
+          var c = mk('div', 'zcard'), D = DFIELDS;
+          row(c, 'person', 'Name', myName(), 'Add name', edit(D.name));
+          row(c, 'at', 'Username', P.username ? '@' + P.username : '', 'Reserve username', edit(D.username));
+          row(c, 'info', 'About', P.bio, 'Set About', edit(D.bio));
+          row(c, 'phone', 'Phone', myPhone || '', '', function () { phonePage(P); });
+          row(c, 'mail', 'Email', P.email, 'Add email', function () { emailPage(P, after); }, P.email ? 'Verified' : '');
+          row(c, 'cake', 'Birthday', fmtBday(P.birthday), 'Add birthday', edit(D.birthday));
+          row(c, 'paw', 'Pet', P.pet, 'Add pet', edit(D.pet));
+          row(c, 'link', 'Links', P.links, 'Add links', edit(D.links));
+          list.appendChild(c);
         }
-        render();
-        myProf().then(function (p) {
-          P = p; if (p.photo_url) { av.style.backgroundImage = 'url("' + p.photo_url + '")'; av.style.backgroundSize = 'cover'; av.style.backgroundPosition = 'center'; av.textContent = ''; }
-          if (!nm.textContent) nm.textContent = p.username ? '@' + p.username : ''; render();
-        }).catch(function () { toast('Could not load your details.'); });
+        paintAv(); render(); /* shows instantly from the saved copy, online or offline */
+        myProf().then(function (p) { P = p; cacheMyProf(P); paintAv(); render(); }).catch(function () { /* offline: keep showing the saved details, no error */ });
       });
     }
     function fieldPage(f, P, done) {
       zOpenPage(f.t, function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var cur = f.k === 'name' ? (P.name || (curUser && curUser.name) || '') : (P[f.k] || '');
         var inp = f.k === 'bio' ? mk('textarea', 'zin') : zin(f.ph, f.type || 'text', f.max); if (f.k === 'bio') { inp.rows = 4; inp.maxLength = 130; inp.placeholder = f.ph; }
-        if (f.type === 'date') inp.max = new Date().toISOString().slice(0, 10); inp.value = P[f.k] || ''; w.appendChild(inp);
+        if (f.type === 'date') inp.max = new Date().toISOString().slice(0, 10); inp.value = cur;
+        if (f.k === 'username') {
+          var row = mk('div'); row.style.cssText = 'display:flex;align-items:center;gap:6px'; var at = mk('span', '', '@'); at.style.cssText = 'font-size:18px;color:var(--muted);margin-bottom:12px';
+          inp.addEventListener('input', function () { inp.value = inp.value.replace(/[^a-zA-Z0-9.]/g, '').toLowerCase(); }); inp.setAttribute('autocapitalize', 'none'); inp.setAttribute('autocomplete', 'off'); inp.inputMode = 'url';
+          row.appendChild(at); row.appendChild(inp); w.appendChild(row); w.appendChild(mk('div', 'sub', 'Letters, numbers and dots only (3 to 30). People can find you at @' + (cur || 'username') + '.'));
+        } else w.appendChild(inp);
         if (f.k === 'bio') { var cnt = mk('div', 'sub', inp.value.length + ' / 130'); cnt.style.textAlign = 'right'; w.appendChild(cnt); inp.addEventListener('input', function () { cnt.textContent = inp.value.length + ' / 130'; }); }
         var m = mk('div', 'zmsg'), sv = mk('button', 'primary', 'Save'); sv.style.marginTop = '12px'; w.appendChild(m); w.appendChild(sv); setTimeout(function () { inp.focus(); }, 80);
         sv.addEventListener('click', function () {
-          m.textContent = ''; sv.disabled = true; var v = inp.value.trim(); if (f.k === 'username') v = v.replace(/^@/, '');
-          chatCall('profile_set', fullBody(P, f.k, v)).then(function (r) { for (var k in r.profile) P[k] = r.profile[k]; toast('Saved', true); done(); closeOv(); })
-            .catch(function (e) { m.textContent = (e && e.offline) ? 'No internet connection. Try again.' : ((e && e.message) || 'Could not save.'); }).then(function () { sv.disabled = false; });
+          m.textContent = ''; var v = inp.value.trim(); if (f.k === 'username') v = v.replace(/^@/, '');
+          if (!navigator.onLine) { m.textContent = 'You are offline. Connect to the internet to make changes.'; return; }
+          if (f.k === 'name' && !v) { m.textContent = 'Enter your name.'; return; }
+          sv.disabled = true;
+          chatCall('profile_set', fullBody(P, f.k, v)).then(function (r) {
+            for (var k in r.profile) P[k] = r.profile[k];
+            if (f.k === 'name' && r.profile && r.profile.name) { try { if (curUser) curUser.name = r.profile.name; var cu = JSON.parse(localStorage.getItem('zaply_user') || '{}'); cu.name = r.profile.name; localStorage.setItem('zaply_user', JSON.stringify(cu)); localStorage.setItem('zaply_name_' + myPhone, r.profile.name); } catch (e) {} }
+            toast('Saved', true); done(); closeOv();
+          }).catch(function (e) { m.textContent = (e && e.offline) ? 'You are offline. Connect to the internet to make changes.' : ((e && e.message) || 'Could not save.'); }).then(function () { sv.disabled = false; });
         });
       });
     }
+    function dayKey(k) { var d = new Date().toISOString().slice(0, 10); try { var o = JSON.parse(localStorage.getItem(k) || '{}'); return o.d === d ? o.n : 0; } catch (e) { return 0; } }
+    function dayBump(k) { var d = new Date().toISOString().slice(0, 10), n = dayKey(k) + 1; try { localStorage.setItem(k, JSON.stringify({ d: d, n: n })); } catch (e) {} return n; }
+    function countdown(btn, label, secs, key, limit) {
+      var left = secs; btn.disabled = true;
+      var t = setInterval(function () {
+        if (!document.body.contains(btn)) return clearInterval(t); left--;
+        if (left <= 0) { clearInterval(t); if (dayKey(key) >= limit) { btn.textContent = label + ' (limit reached today)'; return; } btn.disabled = false; btn.textContent = label; return; }
+        btn.textContent = label + ' (' + Math.floor(left / 60) + ':' + ('0' + (left % 60)).slice(-2) + ')';
+      }, 1000); btn.textContent = label + ' (3:00)';
+    }
     function emailPage(P, done, resumeMail) {
+      var had = !!P.email;
       zOpenPage('Email', function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w); var mail = '';
-        var note = mk('div', 'sub', 'We will send a code to this address to check that it is yours.'), inp = zin('Add email', 'email', 120), m = mk('div', 'zmsg'), go = mk('button', 'primary', 'Send code');
-        inp.value = resumeMail || P.email || ''; go.style.marginTop = '12px'; w.appendChild(note); w.appendChild(inp); w.appendChild(m); w.appendChild(go);
-        var cb = mk('div', 'hidden'), code = zin('Enter the code', 'text', 8), vf = mk('button', 'primary', 'Verify'), rs = mk('button', '', 'Send the code again'); code.inputMode = 'numeric'; vf.style.marginTop = '12px'; rs.style.cssText = 'margin-top:10px;width:100%';
-        cb.appendChild(code); cb.appendChild(vf); cb.appendChild(rs); w.appendChild(cb);
-        function toCode(mm) { mail = mm; inp.readOnly = true; go.classList.add('hidden'); cb.classList.remove('hidden'); note.textContent = 'We sent a code to ' + mm + '. Enter it below.'; setResume({ t: 'email', m: mm }); setTimeout(function () { code.focus(); }, 80); }
-        function send(after) {
-          var mm = inp.value.trim(); m.textContent = ''; if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mm)) { m.textContent = 'That email address doesn\u2019t look right.'; return; }
-          go.disabled = true; call('email_send', { email: mm }).then(function () { after(mm); }).catch(function (e) { m.textContent = (e && e.message) || 'Could not send the code.'; }).then(function () { go.disabled = false; });
-        }
-        go.addEventListener('click', function () { send(toCode); });
-        rs.addEventListener('click', function () { call('email_send', { email: mail }).then(function () { toast('Code sent', true); }).catch(function (e) { toast((e && e.message) || 'Could not send the code.'); }); });
+        var cur = mk('div', 'sub', P.email ? 'Your email: ' + P.email : ''), upd = mk('button', 'primary', 'Update email'), note = mk('div', 'sub', 'We will send a code to this address to check that it is yours.'), inp = zin('Add email', 'email', 120), m = mk('div', 'zmsg'), go = mk('button', 'primary', 'Next');
+        inp.value = resumeMail || ''; go.style.marginTop = '12px';
+        var form = mk('div'); form.appendChild(note); form.appendChild(inp); form.appendChild(m); form.appendChild(go);
+        if (P.email && !resumeMail) { w.appendChild(cur); w.appendChild(upd); form.classList.add('hidden'); upd.addEventListener('click', function () { upd.classList.add('hidden'); form.classList.remove('hidden'); inp.focus(); }); }
+        w.appendChild(form);
+        var cb = mk('div', 'hidden'), code = zin('Enter the 8-digit code', 'text', 8), vf = mk('button', 'primary', 'Verify'), rs = mk('button', '', 'Resend code'), cm = mk('div', 'zmsg'); code.inputMode = 'numeric'; code.className += ' code'; vf.style.marginTop = '12px'; rs.style.cssText = 'margin-top:10px;width:100%';
+        cb.appendChild(code); cb.appendChild(cm); cb.appendChild(vf); cb.appendChild(rs); w.appendChild(cb);
+        function toCode(mm) { mail = mm; form.classList.add('hidden'); cur.classList.add('hidden'); upd.classList.add('hidden'); cb.classList.remove('hidden'); setResume({ t: 'email', m: mm }); setTimeout(function () { code.focus(); }, 80); countdown(rs, 'Resend code', 180, 'zaply_emrs', 2); }
+        go.addEventListener('click', function () {
+          var mm = inp.value.trim(); m.textContent = '';
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mm)) { m.textContent = 'That email address doesn\u2019t look right.'; return; }
+          if (!navigator.onLine) { m.textContent = 'You are offline. Connect to the internet to make changes.'; return; }
+          showLoaderWhile('Sending code\u2026', call('email_send', { email: mm }), 4000).then(function () { hideLoader(); note.textContent = ''; toCode(mm); cm.textContent = 'We sent a code to ' + mm + '.'; cm.style.color = 'var(--muted)'; })
+            .catch(function (e) { hideLoader(); m.textContent = (e && e.message) || 'Could not send the code.'; });
+        });
+        rs.addEventListener('click', function () {
+          if (dayKey('zaply_emrs') >= 2) return toast('You can resend the code only twice a day.');
+          dayBump('zaply_emrs'); call('email_send', { email: mail }).then(function () { toast('Code sent', true); countdown(rs, 'Resend code', 180, 'zaply_emrs', 2); }).catch(function (e) { toast((e && e.message) || 'Could not send the code.'); });
+        });
         vf.addEventListener('click', function () {
-          m.textContent = ''; vf.disabled = true;
-          call('email_verify', { code: code.value.trim() }).then(function () { return chatCall('profile_set', fullBody(P, 'email', mail)); })
-            .then(function (r) { for (var k in r.profile) P[k] = r.profile[k]; clearResume(); toast('Email verified', true); if (done) done(); closeOv(); })
-            .catch(function (e) { m.textContent = (e && e.message) || 'Wrong code. Try again.'; }).then(function () { vf.disabled = false; });
+          cm.textContent = ''; cm.style.color = '';
+          var job = call('email_verify', { code: code.value.trim() }).then(function () { return chatCall('profile_set', fullBody(P, 'email', mail)); });
+          showLoaderWhile('Verifying\u2026', job, 3000).then(function (r) { for (var k in r.profile) P[k] = r.profile[k]; clearResume(); return loaderDone('Verified', 1500); })
+            .then(function () { if (done) done(); zalert('Your email ' + mail + ' has been ' + (had ? 'updated' : 'added') + ' successfully.', function () { closeOv(); }); })
+            .catch(function (e) { hideLoader(); cm.textContent = (e && e.message) || 'Wrong code. Try again.'; });
         });
         if (resumeMail) toCode(resumeMail);
       }, function () { clearResume(); });
+    }
+    /* ---------- change phone number ---------- */
+    function phonePage(P) {
+      zOpenPage('Phone number', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var n = mk('h3', '', myPhone || ''); n.style.margin = '0 0 12px'; w.appendChild(n);
+        var go = mk('button', 'primary', 'Change number'); w.appendChild(go);
+        go.addEventListener('click', function () { phoneChangePage(P); });
+      });
+    }
+    function phoneChangePage(P) {
+      zOpenPage('Changing your phone number will migrate account info', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        w.appendChild(mk('div', 'sub', 'Enter the new phone number you want to change to, starting with the country code.'));
+        var inp = zin('+254\u2026', 'tel', 16), m = mk('div', 'zmsg'), go = mk('button', 'primary', 'Next'); inp.inputMode = 'tel'; go.style.marginTop = '12px'; w.appendChild(inp); w.appendChild(m); w.appendChild(go); setTimeout(function () { inp.focus(); }, 80);
+        go.addEventListener('click', function () {
+          var np = inp.value.replace(/[\s\-]/g, ''); m.textContent = '';
+          if (!/^\+\d{7,15}$/.test(np)) { m.textContent = 'Enter the number with the country code, for example +254712345678.'; return; }
+          if (np === myPhone) { m.textContent = 'That is already your number.'; return; }
+          if (!navigator.onLine) { m.textContent = 'You are offline. Connect to the internet to make changes.'; return; }
+          var p = chatCall('phone_change_send', { phone: np, channel: 'sms' }); p.catch(function () {});
+          showLoaderWhile('Connecting\u2026', Promise.resolve(), 3000).then(function () { return showLoaderWhile('Sending code\u2026', p, 1500); })
+            .then(function () { hideLoader(); phoneCodePage(np, P); }).catch(function (e) { hideLoader(); m.textContent = (e && e.message) || 'Could not send the code.'; });
+        });
+      });
+    }
+    function phoneCodePage(np, P) {
+      zOpenPage('Enter code', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        w.appendChild(mk('div', 'sub', 'Enter the 6-digit code we sent to ' + np + '.'));
+        var code = zin('6-digit code', 'text', 6), m = mk('div', 'zmsg'), vf = mk('button', 'primary', 'Verify'); code.inputMode = 'numeric'; code.className += ' code'; vf.style.marginTop = '12px'; w.appendChild(code); w.appendChild(m); w.appendChild(vf);
+        var KEY = 'zaply_phrs', LIM = 2, opts = mk('div'); opts.style.marginTop = '14px'; w.appendChild(opts);
+        function opt(label, channel) {
+          var bt = mk('button', '', label); bt.style.cssText = 'width:100%;margin-top:8px'; opts.appendChild(bt); countdown(bt, label, 180, KEY, LIM);
+          bt.addEventListener('click', function () {
+            if (dayKey(KEY) >= LIM) return toast('You can ask for a code only twice a day.');
+            if (!navigator.onLine) return offlineToast(); bt.disabled = true;
+            chatCall('phone_change_send', { phone: np, channel: channel }).then(function () { dayBump(KEY); toast('Code sent', true); Array.prototype.forEach.call(opts.children, function (x) { countdown(x, x.getAttribute('data-l'), 180, KEY, LIM); }); })
+              .catch(function (e) { bt.disabled = false; bt.textContent = label; toast((e && e.message) || 'Could not send the code.'); });
+          }); bt.setAttribute('data-l', label);
+        }
+        opt('I didn\u2019t get the code, resend SMS', 'sms'); opt('Missed call', 'missedcall'); opt('Call me', 'call'); if (P.email) opt('Send code to my email', 'email');
+        vf.addEventListener('click', function () {
+          m.textContent = ''; var c = code.value.trim(); if (!/^\d{6}$/.test(c)) { m.textContent = 'Enter the 6-digit code.'; return; }
+          if (!navigator.onLine) { m.textContent = 'You are offline. Connect to the internet to make changes.'; return; }
+          showLoaderWhile('Connecting\u2026', chatCall('phone_change_verify', { phone: np, code: c }), 3000).then(function (r) { setToken(r.token); return loaderDone('Verified', 1500).then(function () { return r; }); })
+            .then(function (r) {
+              try { var cu = JSON.parse(localStorage.getItem('zaply_user') || '{}'); cu.phone = r.phone; localStorage.setItem('zaply_user', JSON.stringify(cu)); ['zaply_chats', 'zaply_screen'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+              zalert('Your phone number has been changed to ' + r.phone + ' successfully.', function () { location.reload(); });
+            }).catch(function (e) { hideLoader(); m.textContent = (e && e.message) || 'Wrong code. Try again.'; });
+        });
+      });
     }
     function resumeUi() {
       var r = null; try { r = JSON.parse(localStorage.getItem('zaply_resume') || 'null'); } catch (e) {}
@@ -2077,17 +2211,203 @@ ZW|Zimbabwe|263`;
     }
     function openAccount() {
       zOpenPage('Account', function (b) {
-        zrows(b, [['invite', 'Add account', addAccount], '-', ['account', 'View account details', openDetails], ['shield', 'Two-step verification', openTwoStep], '-',
+        zrows(b, [['invite', 'Add account', addAccount], '-', ['account', 'Profile', openDetails], ['shield', 'Two-step verification', openTwoStep], '-',
           ['out', 'Log out', function () { $('btnLogout').click(); document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); }, 1]]);
       });
     }
     function openSettings() {
       zOpenPage('Settings', function (b) {
-        zrows(b, [['device', 'Linked devices', openLinked], ['account', 'Account', openAccount], ['lock', 'Privacy', soon('Privacy')], ['chat', 'Chats', soon('Chats')], ['palette', 'Appearance', soon('Appearance')], ['bell', 'Notifications', soon('Notifications')],
+        zrows(b, [['device', 'Linked devices', openLinked], ['account', 'Account', openAccount], ['lock', 'Privacy', openPrivacy], ['chat', 'Chats', openChats], ['palette', 'Appearance', openAppearance], ['bell', 'Notifications', soon('Notifications')],
           ['globe', 'App language', function () { document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); showTab('settings'); }], ['access', 'Accessibility', soon('Accessibility')], ['invite', 'Invite a friend', function () {
             var t = 'Join me on Zucket: ' + location.origin; if (navigator.share) navigator.share({ text: t }).catch(function () {}); else toast('Link: ' + location.origin);
           }], ['storage', 'Storage', soon('Storage')]]);
       });
+    }
+
+    /* ---------- small building blocks ---------- */
+    function zalert(text, ok) {
+      var p = mk('div', 'zpop'), d = mk('div'); d.appendChild(mk('div', '', text)); var l = mk('div', 'zline'), a = mk('button', 'primary', 'OK'); l.appendChild(a); d.appendChild(l); p.appendChild(d); document.body.appendChild(p);
+      a.addEventListener('click', function () { p.remove(); if (ok) ok(); });
+    }
+    function zswitchRow(box, title, desc, on, fn) {
+      var r = mk('div', 'zir'), t = mk('div', 'zt'), sw = mk('button', 'zsw' + (on ? ' on' : '')); t.appendChild(mk('div', '', title)); if (desc) t.appendChild(mk('div', 'zl', desc));
+      sw.setAttribute('role', 'switch'); sw.addEventListener('click', function () { var v = !sw.classList.contains('on'); sw.classList.toggle('on', v); fn(v); });
+      r.appendChild(t); r.appendChild(sw); box.appendChild(r); return sw;
+    }
+    function zradios(box, heading, opts, cur, fn) {
+      if (heading) box.appendChild(mk('div', 'zsec', heading)); var rows = [];
+      opts.forEach(function (o) {
+        var r = mk('button', 'zir zrad' + (cur === o[0] ? ' on' : '')); r.appendChild(mk('span', 'zdot')); r.appendChild(mk('div', 'zt', o[1])); rows.push(r);
+        r.addEventListener('click', function () { rows.forEach(function (x) { x.classList.remove('on'); }); r.classList.add('on'); fn(o[0]); }); box.appendChild(r);
+      });
+    }
+    function priv() {
+      var d = { lastseen: 'contacts', online: 'everyone', photo: 'everyone', hidePhone: false, applock: false, ex: { lastseen: [], photo: [] } };
+      try { var s = JSON.parse(localStorage.getItem('zaply_priv') || '{}'); for (var k in s) d[k] = s[k]; } catch (e) {}
+      d.ex = d.ex || { lastseen: [], photo: [] }; return d;
+    }
+    function setPriv(p) {
+      try { localStorage.setItem('zaply_priv', JSON.stringify(p)); } catch (e) {}
+      chatCall('privacy_set', { privacy: JSON.stringify(p) }).catch(function () {});
+    }
+    function pickExcept(key, title) {
+      zOpenPage(title, function (b) {
+        var p = priv(), list = (allChats || []).filter(function (c) { return c && !c.group && /^\+\d{7,15}$/.test(c.phone || ''); });
+        if (!list.length) return zempty(b, 'No contacts yet. Start a chat first.');
+        list.forEach(function (c) {
+          var on = p.ex[key].indexOf(c.phone) > -1, r = mk('div', 'zir'), t = mk('div', 'zt', savedName(c.phone) || c.name || c.phone), sw = mk('button', 'zsw' + (on ? ' on' : ''));
+          sw.addEventListener('click', function () { var q = priv(), i = q.ex[key].indexOf(c.phone); if (i > -1) q.ex[key].splice(i, 1); else q.ex[key].push(c.phone); sw.classList.toggle('on', i < 0); setPriv(q); });
+          r.appendChild(t); r.appendChild(sw); b.appendChild(r);
+        });
+      });
+    }
+    /* ---------- Privacy ---------- */
+    function openPrivacy() {
+      zOpenPage('Privacy', function (b) {
+        b.appendChild(mk('div', 'zsec', 'Who can see my personal info'));
+        zrows(b, [['lock', 'Last seen & online', openLastSeen], ['account', 'Profile picture', openPhotoPriv], ['shield', 'App lock', openAppLock], ['invite', 'Sync contacts', openSync], ['out', 'Blocked users', openBlocked], ['phone', 'Hide phone number', openHidePhone]]);
+      });
+    }
+    function openLastSeen() {
+      zOpenPage('Last seen and online', function (b) {
+        var p = priv(), O = [['everyone', 'Everyone'], ['contacts', 'My contacts'], ['except', 'My contacts except\u2026'], ['nobody', 'Nobody']];
+        zradios(b, 'Who can see my last seen', O, p.lastseen, function (v) { var q = priv(); q.lastseen = v; setPriv(q); if (v === 'except') pickExcept('lastseen', 'My contacts except\u2026'); });
+        b.appendChild(mk('div', 'zsep'));
+        zradios(b, 'Who can see when I\u2019m online', [['everyone', 'Everyone'], ['same', 'Same as last seen']], p.online, function (v) { var q = priv(); q.online = v; setPriv(q); });
+        b.appendChild(mk('div', 'zfoot', 'If you don\u2019t share when you were last seen or online, you won\u2019t be able to see when other people were last seen or online.'));
+      });
+    }
+    function openPhotoPriv() {
+      zOpenPage('Profile picture', function (b) {
+        zradios(b, 'Who can see my profile picture', [['everyone', 'Everyone'], ['contacts', 'My contacts'], ['except', 'My contacts except\u2026'], ['nobody', 'Nobody']], priv().photo, function (v) { var q = priv(); q.photo = v; setPriv(q); if (v === 'except') pickExcept('photo', 'My contacts except\u2026'); });
+      });
+    }
+    function openHidePhone() {
+      zOpenPage('Hide phone number', function (b) {
+        zswitchRow(b, 'Hide my phone number', 'When this is on, other people won\u2019t see your phone number on your profile. People who already have your number saved can still message you.', priv().hidePhone, function (v) { var q = priv(); q.hidePhone = v; setPriv(q); });
+      });
+    }
+    function openBlocked() {
+      zOpenPage('Blocked users', function (b) {
+        var box = mk('div'); b.appendChild(box); var cached = []; try { cached = JSON.parse(localStorage.getItem('zaply_blocked') || '[]'); } catch (e) {}
+        function draw(a) {
+          box.innerHTML = ''; if (!a.length) return box.appendChild(mk('div', 'zempty', 'No blocked users.'));
+          a.forEach(function (u) {
+            var r = mk('div', 'zir'), t = mk('div', 'zt'), ub = mk('button', '', 'Unblock'); t.appendChild(mk('div', '', savedName(u.phone) || u.name || u.phone)); t.appendChild(mk('div', 'zl', u.phone));
+            ub.addEventListener('click', function () {
+              if (!navigator.onLine) return offlineToast(); ub.disabled = true;
+              chatCall('unblock', { phone: u.phone }).then(function () { a = a.filter(function (x) { return x.phone !== u.phone; }); try { localStorage.setItem('zaply_blocked', JSON.stringify(a)); } catch (e) {} draw(a); toast('Unblocked', true); })
+                .catch(function (e) { ub.disabled = false; toast((e && e.offline) ? 'You are offline. Connect to the internet to make changes.' : 'Could not unblock.'); });
+            }); r.appendChild(t); r.appendChild(ub); box.appendChild(r);
+          });
+        }
+        draw(cached);
+        chatCall('blocklist', {}).then(function (r) { try { localStorage.setItem('zaply_blocked', JSON.stringify(r.blocked || [])); } catch (e) {} draw(r.blocked || []); }).catch(function () {});
+      });
+    }
+    function normPhone(n) {
+      n = String(n || '').replace(/[\s\-().]/g, ''); if (n.indexOf('00') === 0) n = '+' + n.slice(2);
+      if (n.charAt(0) !== '+') { if (n.charAt(0) === '0') n = '+254' + n.slice(1); else if (/^\d{9}$/.test(n)) n = '+254' + n; else n = '+' + n; }
+      return /^\+\d{7,15}$/.test(n) ? n : '';
+    }
+    function openSync() {
+      zOpenPage('Sync contacts', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        w.appendChild(mk('div', 'sub', 'Choose contacts from your phone so their names show in your chats.'));
+        var last = 0; try { last = +localStorage.getItem('zaply_sync') || 0; } catch (e) {} if (last) w.appendChild(mk('div', 'sub', 'Last synced: ' + new Date(last).toLocaleString()));
+        var go = mk('button', 'primary', 'Sync contacts'); go.style.marginTop = '12px'; w.appendChild(go);
+        go.addEventListener('click', function () {
+          if (!(navigator.contacts && navigator.contacts.select)) return toast('This browser cannot share contacts. Open Zucket in Chrome on Android.');
+          navigator.contacts.select(['name', 'tel'], { multiple: true }).then(function (list) {
+            var a = contacts(), n = 0;
+            list.forEach(function (c) { var nm = String((c.name && c.name[0]) || '').trim(); (c.tel || []).slice(0, 1).forEach(function (t) { var p = normPhone(t); if (p && nm) { var sp = nm.indexOf(' '); a[p] = { first: sp > -1 ? nm.slice(0, sp) : nm, last: sp > -1 ? nm.slice(sp + 1) : '', iso: '', number: p, cc: '' }; n++; } }); });
+            try { localStorage.setItem('zaply_contacts', JSON.stringify(a)); localStorage.setItem('zaply_sync', String(Date.now())); } catch (e) {}
+            toast(n + ' contacts synced', true); try { renderChats(); } catch (e) {}
+          }).catch(function () {});
+        });
+      });
+    }
+    /* app lock (fingerprint / face through the phone's own biometric) */
+    function lockOn() { return !!priv().applock && !!localStorage.getItem('zaply_lockid'); }
+    function b64u(buf) { var a = new Uint8Array(buf), s = ''; for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+    function unb64u(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var r = atob(s), u = new Uint8Array(r.length); for (var i = 0; i < r.length; i++) u[i] = r.charCodeAt(i); return u; }
+    function enableLock() {
+      if (!(window.PublicKeyCredential && navigator.credentials)) return Promise.reject(new Error('Biometric lock is not supported on this phone.'));
+      return navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Zucket' }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: myPhone || 'user', displayName: 'Zucket' },
+        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' }, timeout: 60000 } })
+        .then(function (c) { localStorage.setItem('zaply_lockid', b64u(c.rawId)); });
+    }
+    var lockEl = null, hiddenAt = 0;
+    function showLock() {
+      if (lockEl || !lockOn()) return;
+      lockEl = mk('div', 'zlock'); var t = mk('h2', '', 'Zucket is locked'), bt = mk('button', 'primary', 'Unlock with biometric'); bt.style.maxWidth = '260px'; lockEl.appendChild(t); lockEl.appendChild(bt); document.body.appendChild(lockEl);
+      function tryIt() {
+        navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: unb64u(localStorage.getItem('zaply_lockid')) }], userVerification: 'required', timeout: 60000 } })
+          .then(function () { lockEl.remove(); lockEl = null; }).catch(function () {});
+      }
+      bt.addEventListener('click', tryIt); setTimeout(tryIt, 300);
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) hiddenAt = Date.now(); else if (hiddenAt && Date.now() - hiddenAt > 10000) { try { showLock(); } catch (e) {} }
+    });
+    function openAppLock() {
+      zOpenPage('App lock', function (b) {
+        zswitchRow(b, 'Unlock with biometric', 'When enabled, you\u2019ll need to use fingerprint, face or other unique identifiers to open Zucket.', lockOn(), function (v) {
+          var sw = b.querySelector('.zsw');
+          if (v) enableLock().then(function () { var q = priv(); q.applock = true; setPriv(q); toast('App lock is on', true); }).catch(function (e) { sw.classList.remove('on'); toast((e && e.message) || 'Could not turn on app lock.'); });
+          else { var q = priv(); q.applock = false; setPriv(q); try { localStorage.removeItem('zaply_lockid'); } catch (e) {} }
+        });
+      });
+    }
+    /* ---------- Chats ---------- */
+    function chatSet() { var d = { enterSend: false, media: true, font: 'small', stickers: true, keepArch: true }; try { var s = JSON.parse(localStorage.getItem('zaply_chatset') || '{}'); for (var k in s) d[k] = s[k]; } catch (e) {} return d; }
+    function setChatSet(k, v) { var s = chatSet(); s[k] = v; try { localStorage.setItem('zaply_chatset', JSON.stringify(s)); } catch (e) {} applyChatSet(); }
+    function applyChatSet() { var f = { small: '14px', medium: '16px', large: '19px' }[chatSet().font] || '14px'; document.documentElement.style.setProperty('--msgfs', f); }
+    function openChats() {
+      zOpenPage('Chats', function (b) {
+        var s = chatSet();
+        b.appendChild(mk('div', 'zsec', 'Chat settings'));
+        zswitchRow(b, 'Enter is send', 'Enter key will send your message', s.enterSend, function (v) { setChatSet('enterSend', v); });
+        zswitchRow(b, 'Media visibility', 'Show newly downloaded media in your device\u2019s gallery', s.media, function (v) { setChatSet('media', v); });
+        var fr = mk('button', 'zir'), ft = mk('div', 'zt'); ft.appendChild(mk('div', '', 'Font size')); var fv = mk('div', 'zl', { small: 'Small', medium: 'Medium', large: 'Large' }[s.font]); ft.appendChild(fv); fr.appendChild(ft); b.appendChild(fr);
+        fr.addEventListener('click', function () { zOpenPage('Font size', function (c) { zradios(c, '', [['small', 'Small'], ['medium', 'Medium'], ['large', 'Large']], chatSet().font, function (v) { setChatSet('font', v); fv.textContent = { small: 'Small', medium: 'Medium', large: 'Large' }[v]; }); }); });
+        zswitchRow(b, 'Sticker suggestions', 'See suggested stickers as you type a message', s.stickers, function (v) { setChatSet('stickers', v); });
+        b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Archived chats'));
+        zswitchRow(b, 'Keep chats archived', 'Archived chats will remain archived when you receive a new message', s.keepArch, function (v) { setChatSet('keepArch', v); });
+        b.appendChild(mk('div', 'zsep'));
+        zrows(b, [['storage', 'Chat backup', soon('Chat backup')], ['device', 'Transfer chats', soon('Transfer chats')], ['chat', 'Chat history', soon('Chat history')]]);
+      });
+    }
+    /* ---------- Appearance + chat theme ---------- */
+    var THEMES = [{ id: 'default', n: 'Default', bg: '', mine: '#21c063', txt: '#06140c' }, { id: 'midnight', n: 'Midnight', bg: 'linear-gradient(160deg,#0b1020,#1b2a4a)', mine: '#3b82f6', txt: '#fff' },
+      { id: 'forest', n: 'Forest', bg: 'linear-gradient(160deg,#0f2a1d,#1d4d34)', mine: '#21c063', txt: '#06140c' }, { id: 'charcoal', n: 'Charcoal', bg: '#111418', mine: '#21c063', txt: '#06140c' },
+      { id: 'orchid', n: 'Orchid', bg: 'linear-gradient(160deg,#cdb4f6,#f3b8e6)', mine: '#7c3aed', txt: '#fff' }, { id: 'rose', n: 'Rose', bg: 'linear-gradient(160deg,#f8c9d4,#e8a0bf)', mine: '#db2777', txt: '#fff' },
+      { id: 'sunset', n: 'Sunset', bg: 'linear-gradient(160deg,#f6d365,#fda085)', mine: '#e4572e', txt: '#fff' }, { id: 'ocean', n: 'Ocean', bg: 'linear-gradient(160deg,#7fd6e8,#f6d6b0)', mine: '#0d9488', txt: '#fff' }];
+    function curTheme() { var id = ''; try { id = localStorage.getItem('zaply_theme') || ''; } catch (e) {} return THEMES.filter(function (t) { return t.id === id; })[0] || THEMES[0]; }
+    function applyTheme() { var t = curTheme(), r = document.documentElement.style; r.setProperty('--thmine', t.mine); r.setProperty('--thtxt', t.txt); var m = $('msgs'); if (m) m.style.background = t.bg || ''; }
+    function openAppearance() {
+      zOpenPage('Appearance', function (b) { zrows(b, [['palette', 'Default chat theme', openThemes]]); });
+    }
+    function openThemes() {
+      zOpenPage('Chat theme', function (b) {
+        b.appendChild(mk('div', 'zsec', 'Themes')); var g = mk('div', 'zth'); b.appendChild(g);
+        THEMES.forEach(function (t) {
+          var x = mk('button', t.id === curTheme().id ? 'on' : ''); x.style.background = t.bg || 'var(--card)'; x.style.setProperty('--mc', t.mine); x.setAttribute('aria-label', t.n); x.appendChild(mk('i')); x.appendChild(mk('i', 'm'));
+          x.addEventListener('click', function () { try { localStorage.setItem('zaply_theme', t.id); } catch (e) {} applyTheme(); Array.prototype.forEach.call(g.children, function (y) { y.classList.remove('on'); }); x.classList.add('on'); });
+          g.appendChild(x);
+        });
+        b.appendChild(mk('div', 'zfoot', 'The chat bubble and wallpaper will both change.'));
+        b.appendChild(mk('div', 'zsec', 'Customise')); zrows(b, [['chat', 'Chat bubble', soon('Chat bubble')], ['palette', 'Wallpaper', soon('Wallpaper')]]);
+      });
+    }
+    /* open each saved screen again after the app was closed */
+    var ZRESTORE = { 'Settings': openSettings, 'Account': openAccount, 'Profile': openDetails, 'Account Type': openAcctType, 'Privacy': openPrivacy, 'Last seen and online': openLastSeen, 'Profile picture': openPhotoPriv,
+      'App lock': openAppLock, 'Blocked users': openBlocked, 'Hide phone number': openHidePhone, 'Sync contacts': openSync, 'Chats': openChats, 'Appearance': openAppearance, 'Chat theme': openThemes, 'Two-step verification': openTwoStep };
+    function restoreScreen() {
+      var s = null; try { s = JSON.parse(localStorage.getItem('zaply_screen') || 'null'); } catch (e) {} if (!s) return;
+      if (s.tab && s.tab !== 'chats') { try { showTab(s.tab); } catch (e) {} }
+      if (s.chat) { var c = (allChats || []).filter(function (x) { return x.phone === s.chat; })[0]; try { openThread(c ? { phone: c.phone, name: c.name, group: !!c.group } : { phone: s.chat, name: s.chat, group: /^g:/.test(s.chat) }); } catch (e) {} }
+      (s.pages || []).forEach(function (t) { var f = ZRESTORE[t]; if (f) { try { f(); } catch (e) {} } });
     }
     function openLinked() { zOpenPage('Linked devices', function (b) { zempty(b, 'Use one account on 2 devices. Link a device to see your chats there.', 'Link a device', soon('Link a device')); }); }
     $('menuSettings').addEventListener('click', function () { $('menuBox').classList.add('hidden'); try { openSettings(); } catch (e) { toast('Settings error: ' + e.message); } });
@@ -2192,6 +2512,7 @@ ZW|Zimbabwe|263`;
         var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0]; }));
         allChats = chats; loadErr = '';
         try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
+        try { warmProfiles(); } catch (e) {}
         try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
         if (sig !== chatSig || wasErr) { chatSig = sig; renderChats(); } else updateCounts();
       }).catch(function (e) { loadErr = e && e.status ? 'Server error (' + e.status + ')' : 'Can\u2019t reach the server'; renderChats(); });
@@ -2253,7 +2574,7 @@ ZW|Zimbabwe|263`;
     }
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
-      markSeen(u.phone); openWith = u.phone; lastId = 0; $('msgs').innerHTML = ''; thCache = []; gameEls = {}; openUser = u;
+      markSeen(u.phone); openWith = u.phone; saveScreen(); lastId = 0; $('msgs').innerHTML = ''; thCache = []; gameEls = {}; openUser = u;
       $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.group ? 'Group' : ''; setAv($('thAv'), u);
       $('thVideo').style.display = u.group ? 'none' : ''; $('thAudio').style.display = u.group ? 'none' : '';
       curBlocked = false; setBlockedUI();
@@ -2264,7 +2585,7 @@ ZW|Zimbabwe|263`;
       $('threadView').classList.remove('hidden');
       requestAnimationFrame(function () { if (openWith !== u.phone) return; loadCachedThread(u.phone); fetchMsgs(); });
     }
-    function closeThread() { stopAudio(); cancelRec(); if (openWith && openWith !== keepUnread) markSeen(openWith); keepUnread = null; openWith = null; $('threadView').classList.add('hidden'); loadChats(); }
+    function closeThread() { stopAudio(); cancelRec(); if (openWith && openWith !== keepUnread) markSeen(openWith); keepUnread = null; openWith = null; saveScreen(); $('threadView').classList.add('hidden'); loadChats(); }
     $('thBack').addEventListener('click', closeOv);
     function sendMsg() {
       var body = $('msgInput').value.trim();
@@ -3019,6 +3340,7 @@ ZW|Zimbabwe|263`;
       cake: 'M12 6c1.11 0 2-.9 2-2 0-.38-.1-.73-.29-1.03L12 0l-1.71 2.97c-.19.3-.29.65-.29 1.03 0 1.1.9 2 2 2zm4.6 9.99-1.07-1.07-1.08 1.07c-1.3 1.3-3.58 1.31-4.89 0l-1.07-1.07-1.09 1.07C6.75 16.64 5.88 17 4.96 17c-.73 0-1.4-.23-1.96-.61V21c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-4.61c-.56.38-1.23.61-1.96.61-.92 0-1.79-.36-2.44-1.01zM18 9h-5V7h-2v2H6c-1.66 0-3 1.34-3 3v1.54c0 1.08.88 1.96 1.96 1.96.52 0 1.02-.2 1.38-.57l2.14-2.13 2.13 2.13c.74.74 2.03.74 2.77 0l2.14-2.13 2.13 2.13c.37.37.86.57 1.38.57 1.08 0 1.96-.88 1.96-1.96V12C21 10.34 19.66 9 18 9z',
       paw: 'M4.5 9.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm4-4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm4 4.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM12 11c-2.5 0-5.5 3.2-5.5 5.7 0 1.4 1 2.3 2.4 2.3 1 0 2-.5 3.1-.5s2.1.5 3.1.5c1.4 0 2.4-.9 2.4-2.3C17.5 14.2 14.5 11 12 11z'
     };
+    PIC.link = 'M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z';
     var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     function fmtBirthday(s) {
       var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); if (!m) return '';
@@ -3035,19 +3357,33 @@ ZW|Zimbabwe|263`;
       var card = $('pvCard'); card.innerHTML = '';
       card.appendChild(profRow('at', p.username ? '@' + p.username : '', 'Username'));
       card.appendChild(profRow('mail', p.email, 'Email'));
-      card.appendChild(profRow('home', p.address, 'Address'));
       card.appendChild(profRow('phone', phone, 'Phone number'));
-      card.appendChild(profRow('info', p.bio, 'Bio'));
+      card.appendChild(profRow('info', p.bio, 'About'));
       card.appendChild(profRow('cake', fmtBirthday(p.birthday), 'Birthday'));
       card.appendChild(profRow('paw', p.pet, 'Pet'));
+      card.appendChild(profRow('link', p.links, 'Links'));
     }
     function openProfile() {
       var u = openUser; if (!u || u.group) return;
       setAv($('pvAv'), u); $('pvName').textContent = u.name || u.phone;
-      renderProfileRows(u.phone, {}); openPage('profileView');
+      var cp = {}; try { cp = JSON.parse(localStorage.getItem('zaply_prof_' + u.phone) || '{}') || {}; } catch (e) {}
+      renderProfileRows(u.phone, cp); openPage('profileView');
       chatCall('profile_get', { phone: u.phone }).then(function (r) {
+        try { localStorage.setItem('zaply_prof_' + u.phone, JSON.stringify(r.profile || {})); } catch (e) {}
         if (openUser && openUser.phone === u.phone) renderProfileRows(u.phone, r.profile || {});
       }).catch(function () {});
+    }
+    /* save everyone's profile on the phone ahead of time so it opens with no loading, even offline */
+    var warmAt = 0;
+    function warmProfiles() {
+      if (!getToken() || Date.now() - warmAt < 600000) return; warmAt = Date.now();
+      chatCall('profile_get', {}).then(function (r) { cacheMyProf(r.profile || {}); }).catch(function () {});
+      var list = (allChats || []).filter(function (c) { return c && !c.group && /^\+\d{7,15}$/.test(c.phone || ''); }).slice(0, 40), i = 0;
+      (function next() {
+        if (i >= list.length) return; var c = list[i++];
+        chatCall('profile_get', { phone: c.phone }).then(function (r) { try { localStorage.setItem('zaply_prof_' + c.phone, JSON.stringify(r.profile || {})); } catch (e) {} setTimeout(next, 150); },
+          function (e) { if (!(e && e.offline)) setTimeout(next, 150); });
+      })();
     }
     /* my own profile (Menu > Profile) */
     var pfDirty = false;
@@ -3352,7 +3688,8 @@ ZW|Zimbabwe|263`;
       showTab('chats'); renderChats();
       initPush();
       var qc = new URLSearchParams(location.search).get('chat');
-      if (qc) { openChatWith(qc); history.replaceState(null, '', '/'); }
+      if (qc) { openChatWith(qc); history.replaceState(null, '', '/'); } else { try { restoreScreen(); } catch (e) {} }
+      try { applyChatSet(); applyTheme(); showLock(); } catch (e) {}
     }
 
     /* ---------- overlays: Back button closes screens instead of exiting the app ---------- */
