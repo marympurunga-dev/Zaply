@@ -407,6 +407,51 @@
     .emojibox .etone button{width:24px;height:24px;min-width:24px;padding:0;border-radius:50%;border:2px solid transparent;flex:none}
     .emojibox .etone button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--card) inset}
     .emojibox .egrid{display:flex;flex-wrap:wrap;gap:2px;width:100%}
+
+    /* photo editor (after taking a picture) */
+    #camEd{position:fixed;inset:0;z-index:70;background:#000;color:#fff;display:flex;flex-direction:column}
+    #camEd.hidden{display:none}
+    .ced-top{display:flex;justify-content:space-between;gap:6px;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px 8px;position:relative;z-index:3}
+    .ced-top button,.ced-cap button{width:44px;height:44px;min-width:44px;padding:0;border-radius:50%;border:none;background:rgba(40,40,40,.85);color:#fff;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center}
+    .ced-top button.on{background:#fff;color:#000}
+    .ced-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+    .ced-wrap{position:relative;line-height:0;touch-action:none}
+    .ced-wrap canvas{display:block;max-width:100vw;max-height:100%}
+    #cedInk{position:absolute;left:0;top:0;width:100%;height:100%}
+    #cedItems{position:absolute;inset:0;overflow:hidden}
+    .ced-i{position:absolute;transform:translate(-50%,-50%);white-space:pre;line-height:1.1;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);touch-action:none;user-select:none}
+    #cedTools{padding:6px 10px;min-height:46px;display:flex;align-items:center;position:relative;z-index:3}
+    #cedTools>div{display:none;gap:10px;align-items:center;width:100%;overflow-x:auto;scrollbar-width:none}
+    #cedTools>div.on{display:flex}
+    .ced-sw{width:28px;height:28px;min-width:28px;border-radius:50%;border:3px solid rgba(255,255,255,.35);padding:0}
+    .ced-sw.on{border-color:#fff}
+    #cedTools .ced-e{font-size:28px;background:none;border:none;padding:0 4px;flex:none}
+    #cedTools input{flex:1;min-width:0;border-radius:20px;border:none;padding:10px 14px;font-size:16px;background:rgba(40,40,40,.9);color:#fff}
+    #cedTools .ced-b{background:#21c063;color:#fff;border:none;border-radius:20px;padding:10px 16px;font-weight:700;flex:none}
+    .ced-cap{display:flex;align-items:center;gap:8px;margin:4px 10px;background:rgba(30,30,30,.92);border-radius:28px;padding:6px 8px 6px 14px}
+    .ced-cap input{flex:1;min-width:0;border:none;background:transparent;color:#fff;font-size:16px;outline:none;padding:8px 0}
+    .ced-cap button{background:transparent;border:2px dashed #aaa;width:36px;height:36px;min-width:36px;font-size:15px}
+    .ced-cap button.on{background:#21c063;border:2px solid #21c063}
+    .ced-bot{display:flex;align-items:center;justify-content:space-between;padding:6px 12px calc(env(safe-area-inset-bottom,0px) + 12px)}
+    .ced-chip{background:rgba(40,40,40,.9);border-radius:20px;padding:10px 16px;font-size:14px;font-weight:700;max-width:65%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase}
+    #cedSend{width:54px;height:54px;border-radius:50%;border:none;background:#21c063;color:#fff;display:flex;align-items:center;justify-content:center;padding:0}
+    #cedSend:disabled{opacity:.6}
+    .mcap{padding:6px 4px 2px;font-size:15px;line-height:1.35;white-space:pre-wrap;word-break:break-word}
+    .mvo{border:none;background:transparent;color:inherit;font:inherit;font-weight:600;padding:12px 14px;display:flex;gap:8px;align-items:center}
+    .mvo:disabled{opacity:.65}
+
+    /* settings pages */
+    .zpg{position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--text);display:flex;flex-direction:column;animation:zpgin .8s ease both}
+    @keyframes zpgin{from{transform:translateX(100%);opacity:.4}to{transform:none;opacity:1}}
+    .zpg-h{display:flex;align-items:center;gap:14px;padding:calc(env(safe-area-inset-top,0px) + 14px) 14px 12px;font-size:20px;font-weight:700;border-bottom:1px solid var(--border)}
+    .zpg-h button{border:none;background:transparent;color:inherit;padding:4px;display:flex}
+    .zpg-b{flex:1;overflow-y:auto;padding:6px 0 30px}
+    .zrow{display:flex;align-items:center;gap:18px;width:100%;border:none;background:transparent;color:inherit;text-align:left;padding:15px 20px;font-size:16px;border-radius:0}
+    .zrow svg{flex:none;opacity:.8}
+    .zrow.red{color:#ff5a5f}
+    .zsep{height:1px;background:var(--border);margin:6px 0}
+    .zempty{padding:40px 24px;text-align:center;color:var(--muted);line-height:1.6}
+    .zempty button{margin-top:16px}
     /* AI image page */
     .ai{padding:16px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
     .ai-hero{display:flex;gap:14px;align-items:center}
@@ -577,6 +622,7 @@
       <div class="card">
 
         <div id="stepPhone">
+          <div id="addAcctNote" class="hidden" style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:14px;line-height:1.5"><b>Enter your number to add another account.</b><br>An OTP is needed, because you are creating another account.<br><button id="addAcctBack" style="margin-top:8px">Back to my account</button></div>
           <h2>Enter your phone number</h2>
           <div class="sub">Zucket will need to verify your phone number. Carrier charges may apply.</div>
           <button class="country-btn" id="btnCountry"><span id="cName">Choose a country</span></button>
@@ -637,7 +683,7 @@
       <header>
         <h1>Zucket</h1>
         <div class="hr"><button id="btnCam" aria-label="Camera"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" ><rect x="3" y="6.5" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 6.5 9.5 4h5L16 6.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
-          <div id="menuBox" class="menubox hidden"><button id="menuChats">Chats</button><button id="menuContacts">Contacts</button><button id="menuSettings">Settings</button><button id="menuProfile">Profile</button><button id="menuChart">Chart</button><button id="btnLogout">Log out</button></div></div></div>
+          <div id="menuBox" class="menubox hidden"><button id="menuBroadcast">Broadcast lists</button><button id="menuLinked">Linked devices</button><button id="menuReadAll">Read all</button><button id="menuSettings">Settings</button><button id="menuSwitch" class="hidden">Switch account &#8963;</button><button id="btnLogout" class="hidden">Log out</button></div></div></div>
       </header>
       <div class="searchbox" id="searchBox"><input id="chatSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
       <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button><button id="btnPlusList" class="plusb" aria-label="Create">+</button></nav>
@@ -735,6 +781,7 @@
         <button data-a="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg><span>Location</span></button>
       </div>
       <div id="emojiBox" class="emojibox hidden"></div>
+      <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="cedEmo" aria-label="Emoji">&#128578;</button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div></div>
       <input id="fileImg" type="file" accept="image/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden>
       <div id="recBar" class="recbar hidden"><button id="recCancel" aria-label="Cancel recording"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button><span class="recdot"></span><span id="recT">0:00</span><span style="flex:1;opacity:.7;font-size:13px">Recording&hellip;</span><button id="recSend" aria-label="Send voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
       <div id="blockBar" class="blockbar hidden"><span id="blockBarT"></span><button id="blockBarBtn">Unblock</button></div>
@@ -1437,7 +1484,7 @@ ZW|Zimbabwe|263`;
     var curUser = null;
     function emailSkipped() { try { return localStorage.getItem('zaply_email_skip') === '1'; } catch (e) { return false; } }
     function afterAuth(user) {
-      curUser = user;
+      curUser = user; try { regAcct(user); } catch (e) {}
       try { localStorage.setItem('zaply_user', JSON.stringify(user)); } catch (e) {}
       var skipped = emailSkipped() && !user.email_verified;
       var pend = !user.email_verified && !skipped && (user.pending_email ? { email: user.pending_email, age: user.pending_age } : readPending());
@@ -1787,7 +1834,87 @@ ZW|Zimbabwe|263`;
       else if (t === 'calls') renderCalls();
       else if (t === 'profile') loadMyProfile();
     }
-    ['Contacts', 'Settings', 'Profile'].forEach(function (n) { $('menu' + n).addEventListener('click', function () { showTab(n.toLowerCase()); }); });
+
+    /* settings, account and switching accounts */
+    var ZI = {
+      device: 'M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z',
+      account: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
+      lock: 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zM9 8V6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9z',
+      chat: 'M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z',
+      palette: 'M12 3a9 9 0 000 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c2.8 0 5-2.2 5-5 0-4.4-4-7.4-10.4-7.4z',
+      bell: 'M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z',
+      globe: 'M12 2a10 10 0 100 20 10 10 0 000-20zm-1 17.9A8 8 0 014 12c0-.6.1-1.2.2-1.8L9 15v1c0 1.1.9 2 2 2v1.9zm6.9-2.5A2 2 0 0016 16h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.4a8 8 0 012.9 12.8z',
+      access: 'M12 2a2 2 0 110 4 2 2 0 010-4zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z',
+      invite: 'M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
+      storage: 'M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z',
+      shield: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z',
+      out: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z'
+    };
+    function zico(k) { return '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="' + ZI[k] + '"/></svg>'; }
+    function openPage(title, build) {
+      var el = mk('div', 'zpg'), h = mk('div', 'zpg-h'), bk = mk('button'), bd = mk('div', 'zpg-b');
+      bk.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>';
+      bk.addEventListener('click', closeOv); h.appendChild(bk); h.appendChild(mk('span', '', title)); el.appendChild(h); el.appendChild(bd);
+      document.body.appendChild(el); pushOv(function () { el.remove(); }); build(bd); return el;
+    }
+    function zrows(box, rows) {
+      rows.forEach(function (r) {
+        if (r === '-') return box.appendChild(mk('div', 'zsep'));
+        var b = mk('button', 'zrow' + (r[3] ? ' red' : '')); b.innerHTML = zico(r[0]) + '<span></span>'; b.lastChild.textContent = r[1];
+        b.addEventListener('click', r[2]); box.appendChild(b);
+      });
+    }
+    function zempty(box, text, btn, fn) {
+      var d = mk('div', 'zempty', text); if (btn) { var b = mk('button', 'primary', btn); b.addEventListener('click', fn); d.appendChild(b); } box.appendChild(d);
+    }
+    function soon(name) { return function () { openPage(name, function (b) { zempty(b, name + ' is being set up and will be available soon.'); }); }; }
+    /* accounts saved on this phone (verified once, switch without a code) */
+    function getAccts() { try { return JSON.parse(localStorage.getItem('zaply_accts') || '[]'); } catch (e) { return []; } }
+    function putAccts(a) { try { localStorage.setItem('zaply_accts', JSON.stringify(a)); } catch (e) {} }
+    function regAcct(u) {
+      var t = getToken(); if (!t || !u) return; var k = String(u.phone || u.id || u.username || ''); if (!k) return;
+      var a = getAccts().filter(function (x) { return x.k !== k && x.t !== t; }); a.push({ k: k, n: u.name || u.username || k, t: t }); putAccts(a); refreshSwitch();
+    }
+    function refreshSwitch() { $('menuSwitch').classList.toggle('hidden', getAccts().length < 2); }
+    $('menuSwitch').addEventListener('click', function () {
+      $('menuBox').classList.add('hidden'); var cur = getToken();
+      openPage('Switch account', function (b) {
+        getAccts().forEach(function (x) {
+          var r = mk('button', 'zrow'); r.innerHTML = zico('account') + '<span></span>'; r.lastChild.textContent = x.n + (x.t === cur ? '  (current)' : '');
+          r.addEventListener('click', function () { if (x.t === cur) return closeOv(); setToken(x.t); try { ['zaply_user', 'zaply_chats'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} location.reload(); });
+          b.appendChild(r);
+        });
+      });
+    });
+    $('btnLogout').addEventListener('click', function () { var t = getToken(); putAccts(getAccts().filter(function (x) { return x.t !== t; })); refreshSwitch(); });
+    function addAccount() {
+      showLoader('Wait a moment\u2026', 5000).then(function () {
+        try { sessionStorage.setItem('zaply_prev', getToken() || ''); } catch (e) {}
+        clearToken(); $('appView').classList.add('hidden'); $('welcomeView').classList.add('hidden'); $('authView').classList.remove('hidden');
+        document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); showStep('stepPhone'); $('addAcctNote').classList.remove('hidden');
+      });
+    }
+    $('addAcctBack').addEventListener('click', function () { var p = ''; try { p = sessionStorage.getItem('zaply_prev') || ''; } catch (e) {} if (p) setToken(p); location.reload(); });
+    function openAccount() {
+      openPage('Account', function (b) {
+        zrows(b, [['invite', 'Add account', addAccount], '-', ['account', 'View account details', soon('Account details')], ['shield', 'Two-step verification', soon('Two-step verification')], '-',
+          ['out', 'Log out', function () { $('btnLogout').click(); document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); }, 1]]);
+      });
+    }
+    function openSettings() {
+      openPage('Settings', function (b) {
+        zrows(b, [['device', 'Linked devices', openLinked], ['account', 'Account', openAccount], ['lock', 'Privacy', soon('Privacy')], ['chat', 'Chats', soon('Chats')], ['palette', 'Appearance', soon('Appearance')], ['bell', 'Notifications', soon('Notifications')],
+          ['globe', 'App language', function () { document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); showTab('settings'); }], ['access', 'Accessibility', soon('Accessibility')], ['invite', 'Invite a friend', function () {
+            var t = 'Join me on Zucket: ' + location.origin; if (navigator.share) navigator.share({ text: t }).catch(function () {}); else toast('Link: ' + location.origin);
+          }], ['storage', 'Storage', soon('Storage')]]);
+      });
+    }
+    function openLinked() { openPage('Linked devices', function (b) { zempty(b, 'Use one account on 2 devices. Link a device to see your chats there.', 'Link a device', soon('Link a device')); }); }
+    $('menuSettings').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openSettings(); });
+    $('menuLinked').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openLinked(); });
+    $('menuBroadcast').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openPage('Broadcast lists', function (b) { zempty(b, 'Send a message to many people at once. Each person gets it as a private message.', 'New broadcast list', soon('New broadcast list')); }); });
+    $('menuReadAll').addEventListener('click', function () { $('menuBox').classList.add('hidden'); toast('Read all is not connected yet'); });
+    refreshSwitch();
     var filt = 'all', FILTERS = [['fAll', 'all'], ['fUnread', 'unread'], ['fFav', 'fav'], ['fGroups', 'groups']];
     FILTERS.forEach(function (f) {
       $(f[0]).addEventListener('click', function () {
@@ -1798,8 +1925,6 @@ ZW|Zimbabwe|263`;
     });
     $('menuBtn').addEventListener('click', function (e) { e.stopPropagation(); $('menuBox').classList.toggle('hidden'); });
     document.addEventListener('click', function () { $('menuBox').classList.add('hidden'); });
-    $('menuChats').addEventListener('click', function () { showTab('chats'); });
-    $('menuChart').addEventListener('click', function () { showTab('chart'); });
 
     var chatSig = null, loadErr = '', allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
     function avatar(c) {
@@ -2201,11 +2326,113 @@ ZW|Zimbabwe|263`;
       fs.reduce(function (p, f) { return p.then(function () { return sendPhoto(chat, f); }); }, Promise.resolve());
     }
     $('fileImg').addEventListener('change', onPhotos);
-    $('fileCam').addEventListener('change', onPhotos);
+    $('fileCam').addEventListener('change', function () { var f = this.files && this.files[0], chat = openWith; this.value = ''; if (f && chat) openEditor(f, chat); });
     $('fileAny').addEventListener('change', function () {
       var f = this.files && this.files[0], chat = openWith; this.value = '';
       if (!f) return;
       sendMedia(chat, 'file', f, { m: f.type || 'application/octet-stream', n: f.name || 'file', s: f.size });
+    });
+
+
+    /* photo editor: shown after the camera takes a picture */
+    var ced = { chat: null, src: null, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
+    function cedClose() { $('camEd').classList.add('hidden'); ced.src = null; $('cedItems').innerHTML = ''; }
+    function cedTool(m) {
+      ced.mode = ced.mode === m ? '' : m;
+      ['draw', 'txt', 'emo'].forEach(function (k) { $('cedT_' + k).classList.toggle('on', ced.mode === k); });
+      $('cedDraw').classList.toggle('on', ced.mode === 'draw'); $('cedTxt').classList.toggle('on', ced.mode === 'txt'); $('cedEmo').classList.toggle('on', ced.mode === 'emo');
+      $('cedInk').style.pointerEvents = ced.mode === 'draw' ? 'auto' : 'none';
+      if (ced.mode === 'txt') setTimeout(function () { $('cedTxtIn').focus(); }, 50);
+    }
+    function cedLayout() {
+      var sc = Math.min(1, 1600 / Math.max(ced.src.width, ced.src.height)), w = Math.round(ced.src.width * sc), h = Math.round(ced.src.height * sc);
+      [$('cedBase'), $('cedInk')].forEach(function (c) { c.width = w; c.height = h; });
+      $('cedBase').getContext('2d').drawImage(ced.src, 0, 0, w, h); cedInk();
+    }
+    function cedInk() {
+      var c = $('cedInk'), x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); x.lineCap = x.lineJoin = 'round';
+      ced.strokes.forEach(function (st) {
+        x.strokeStyle = st.c; x.lineWidth = c.width * 0.012; x.beginPath();
+        st.p.forEach(function (p, i) { i ? x.lineTo(p[0] * c.width, p[1] * c.height) : x.moveTo(p[0] * c.width, p[1] * c.height); });
+        if (st.p.length === 1) x.lineTo(st.p[0][0] * c.width + 0.1, st.p[0][1] * c.height); x.stroke();
+      });
+    }
+    function cedAdd(txt, isEmoji) {
+      var el = mk('div', 'ced-i', txt), it = { el: el, t: txt, x: 0.5, y: 0.5, f: isEmoji ? 0.2 : 0.07, c: ced.color }, W = $('cedWrap').clientWidth;
+      el.style.left = '50%'; el.style.top = '50%'; el.style.fontSize = Math.round(it.f * W) + 'px'; if (!isEmoji) el.style.color = it.c;
+      var sx, sy, ox, oy, last = 0;
+      el.addEventListener('pointerdown', function (e) {
+        e.preventDefault(); el.setPointerCapture(e.pointerId); sx = e.clientX; sy = e.clientY; ox = it.x; oy = it.y;
+        var n = Date.now(); if (n - last < 300) { el.remove(); ced.items = ced.items.filter(function (z) { return z !== it; }); } last = n;
+      });
+      el.addEventListener('pointermove', function (e) {
+        if (!el.hasPointerCapture(e.pointerId)) return; var r = $('cedWrap').getBoundingClientRect();
+        it.x = Math.min(1, Math.max(0, ox + (e.clientX - sx) / r.width)); it.y = Math.min(1, Math.max(0, oy + (e.clientY - sy) / r.height));
+        el.style.left = it.x * 100 + '%'; el.style.top = it.y * 100 + '%';
+      });
+      $('cedItems').appendChild(el); ced.items.push(it); toast('Drag to move \u00b7 double-tap to remove');
+    }
+    function cedExport(maxSide, q) {
+      var sc = Math.min(1, maxSide / Math.max(ced.src.width, ced.src.height)), w = Math.round(ced.src.width * sc), h = Math.round(ced.src.height * sc);
+      var cv = document.createElement('canvas'); cv.width = w; cv.height = h; var x = cv.getContext('2d');
+      x.drawImage(ced.src, 0, 0, w, h); x.drawImage($('cedInk'), 0, 0, w, h); x.textAlign = 'center'; x.textBaseline = 'middle';
+      ced.items.forEach(function (it) {
+        x.font = '700 ' + Math.round(it.f * w) + 'px sans-serif'; x.fillStyle = it.c;
+        if (it.t.length < 4 && /[^\x00-\x7f]/.test(it.t)) { x.shadowBlur = 0; } else { x.shadowColor = 'rgba(0,0,0,.6)'; x.shadowBlur = 4; }
+        it.t.split('\n').forEach(function (ln, i, a) { x.fillText(ln, it.x * w, it.y * h + (i - (a.length - 1) / 2) * it.f * w * 1.1); });
+        x.shadowBlur = 0;
+      });
+      return new Promise(function (res, rej) { cv.toBlob(function (b) { b ? res({ blob: b, w: w, h: h }) : rej(new Error('encode')); }, 'image/jpeg', q); });
+    }
+    function cedBuild() {
+      var side = ced.hd ? 2560 : 1280, q = ced.hd ? 0.92 : 0.82;
+      return cedExport(side, q).then(function (r) { return r.blob.size > MEDIA_MAX ? cedExport(side, 0.7) : r; });
+    }
+    function openEditor(file, chat) {
+      loadBitmap(file).then(function (bm) {
+        var sc = Math.min(1, 4096 / Math.max(bm.width, bm.height)), c = document.createElement('canvas');
+        c.width = Math.round(bm.width * sc); c.height = Math.round(bm.height * sc); c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+        ced = { chat: chat, src: c, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
+        $('cedHD').classList.remove('on'); $('cedVO').classList.remove('on'); $('cedCap').value = ''; $('cedItems').innerHTML = ''; $('cedSend').disabled = false;
+        $('cedTo').textContent = nameOf(chat) || chat; cedTool(''); pushOv(cedClose); $('camEd').classList.remove('hidden'); cedLayout();
+      }, function () { toast('Could not read that photo'); });
+    }
+    $('cedX').addEventListener('click', closeOv);
+    $('cedHD').addEventListener('click', function () { ced.hd = !ced.hd; this.classList.toggle('on', ced.hd); toast(ced.hd ? 'HD quality on' : 'Standard quality'); });
+    $('cedVO').addEventListener('click', function () { ced.vo = !ced.vo; this.classList.toggle('on', ced.vo); toast(ced.vo ? 'View once: on' : 'View once: off'); });
+    $('cedRot').addEventListener('click', function () {
+      var s = ced.src, c = document.createElement('canvas'); c.width = s.height; c.height = s.width; var x = c.getContext('2d');
+      x.translate(c.width, 0); x.rotate(Math.PI / 2); x.drawImage(s, 0, 0); ced.src = c;
+      ced.strokes = []; ced.items = []; $('cedItems').innerHTML = ''; cedLayout();
+    });
+    $('cedDraw').addEventListener('click', function () { cedTool('draw'); });
+    $('cedTxt').addEventListener('click', function () { cedTool('txt'); });
+    $('cedEmo').addEventListener('click', function () { cedTool('emo'); });
+    $('cedT_draw').addEventListener('click', function (e) {
+      var b = e.target.closest('.ced-sw'); if (!b) return; ced.color = b.getAttribute('data-c');
+      Array.prototype.forEach.call(document.querySelectorAll('.ced-sw'), function (z) { z.classList.toggle('on', z === b); });
+    });
+    $('cedUndo').addEventListener('click', function () { ced.strokes.pop(); cedInk(); });
+    $('cedTxtAdd').addEventListener('click', function () {
+      var v = $('cedTxtIn').value.trim(); if (!v) return; cedAdd(v, false); $('cedTxtIn').value = ''; cedTool('');
+    });
+    $('cedT_emo').addEventListener('click', function (e) { var b = e.target.closest('.ced-e'); if (b) { cedAdd(b.textContent, true); cedTool(''); } });
+    (function () {
+      var ink = $('cedInk'), down = false;
+      function pt(e) { var r = ink.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; }
+      ink.addEventListener('pointerdown', function (e) { if (ced.mode !== 'draw') return; down = true; ink.setPointerCapture(e.pointerId); ced.strokes.push({ c: ced.color, p: [pt(e)] }); cedInk(); });
+      ink.addEventListener('pointermove', function (e) { if (!down) return; ced.strokes[ced.strokes.length - 1].p.push(pt(e)); cedInk(); });
+      ['pointerup', 'pointercancel'].forEach(function (n) { ink.addEventListener(n, function () { down = false; }); });
+    })();
+    $('cedSave').addEventListener('click', function () {
+      cedBuild().then(function (r) { var a = document.createElement('a'); a.href = URL.createObjectURL(r.blob); a.download = 'photo.jpg'; document.body.appendChild(a); a.click(); a.remove(); toast('Saved'); }, function () { toast('Could not save'); });
+    });
+    $('cedSend').addEventListener('click', function () {
+      var btn = this, chat = ced.chat, cap = $('cedCap').value.trim(), vo = ced.vo; btn.disabled = true;
+      cedBuild().then(function (r) {
+        var meta = { m: 'image/jpeg', w: r.w, h: r.h, n: 'photo.jpg' }; if (cap) meta.t = cap; if (vo) meta.vo = 1;
+        closeOv(); return sendMedia(chat, 'image', r.blob, meta);
+      }).catch(function () { btn.disabled = false; toast('Could not send the photo'); });
     });
 
     /* showing them */
@@ -2220,9 +2447,23 @@ ZW|Zimbabwe|263`;
     function renderMedia(m) {
       var meta = parseTail(m.body, 9), chat = openWith, b = mk('div', 'bub media' + (m.mine ? ' mine' : ''));
       if (!meta) { b.textContent = '\ud83d\udcce Attachment'; return b; }
+      if (meta.k === 'image' && meta.vo) {
+        var vk = 'zaply_vo_' + meta.id, vdone = false; try { vdone = !!localStorage.getItem(vk); } catch (e) {}
+        var vb = mk('button', 'mvo', vdone ? '\u2713 Opened' : (m.mine ? '\ud83d\udcf7 Photo \u00b7 View once' : '\ud83d\udcf7 Tap to view once'));
+        vb.disabled = !!(m.mine || vdone); b.appendChild(vb);
+        vb.addEventListener('click', function () {
+          vb.disabled = true; vb.textContent = 'Opening\u2026';
+          mediaObjUrl(meta, chat).then(function (url) {
+            try { localStorage.setItem(vk, '1'); } catch (e) {}
+            vb.textContent = '\u2713 Opened'; openViewer(url, meta.n);
+            delete mediaCache[meta.id]; delete mediaUrl[meta.id];
+          }).catch(function () { vb.disabled = false; vb.textContent = '\ud83d\udcf7 Tap to retry'; });
+        });
+        return b;
+      }
       if (meta.k === 'image') {
         var box = mk('div', 'mimg'), img = document.createElement('img');
-        box.style.aspectRatio = (meta.w || 4) + ' / ' + (meta.h || 3); img.alt = 'Photo'; box.appendChild(img); b.appendChild(box);
+        box.style.aspectRatio = (meta.w || 4) + ' / ' + (meta.h || 3); img.alt = 'Photo'; box.appendChild(img); b.appendChild(box); if (meta.t) b.appendChild(mk('div', 'mcap', meta.t));
         (function load() {
           box.classList.remove('err'); box.textContent = ''; box.appendChild(img);
           mediaObjUrl(meta, chat).then(function (url) {
