@@ -435,6 +435,32 @@ module.exports = async (req, res) => {
       return res.json({ ok: true, token: mintToken(np), phone: np, name: u[0] ? u[0].name : '' });
     }
 
+    // Change / add email: a 6-digit code goes to the NEW address (Resend, through ./_mail), then the profile email is saved
+    if (b.action === 'email_change_send') {
+      const em = String(b.email || '').trim().toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) || em.length > 120) return res.status(400).json({ error: 'That email address doesn\u2019t look right.' });
+      await db().query(`CREATE TABLE IF NOT EXISTS email_otps (id BIGINT AUTO_INCREMENT PRIMARY KEY, owner VARCHAR(20) NOT NULL, email VARCHAR(120) NOT NULL, code_hash CHAR(64) NOT NULL, tries INT NOT NULL DEFAULT 0, used TINYINT NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, expires_at TIMESTAMP NOT NULL, INDEX idx_o (owner))`);
+      const [cnt] = await db().query('SELECT COUNT(*) AS n FROM email_otps WHERE owner = ? AND created_at > (NOW() - INTERVAL 1 DAY)', [me]);
+      if (cnt[0].n >= 5) return res.status(429).json({ error: 'You have reached today\u2019s limit for code requests. Try again tomorrow.' });
+      const code = String(crypto.randomInt(100000, 1000000));
+      try { await sendCodeEmail(em, code); } catch (e) { return res.status(502).json({ error: e.message || 'Could not send the code. Check the email address.' }); }
+      await db().query('INSERT INTO email_otps (owner, email, code_hash, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL 10 MINUTE)', [me, em, sha(code + SECRET)]);
+      return res.json({ ok: true });
+    }
+    if (b.action === 'email_change_verify') {
+      const em = String(b.email || '').trim().toLowerCase(), code = String(b.code || '').trim();
+      if (!/^\d{6}$/.test(code)) return res.status(400).json({ error: 'Enter the 6-digit code.' });
+      const [rows] = await db().query('SELECT id, code_hash, tries, TIMESTAMPDIFF(SECOND, NOW(), expires_at) AS secs FROM email_otps WHERE owner = ? AND email = ? AND used = 0 ORDER BY id DESC LIMIT 1', [me, em]);
+      const o = rows[0];
+      if (!o) return res.status(400).json({ error: 'Ask for a new code first.' });
+      if (o.secs <= 0) return res.status(400).json({ error: 'That code has expired. Ask for a new one.' });
+      if (o.tries >= 5) return res.status(429).json({ error: 'Too many wrong tries. Ask for a new code.' });
+      if (sha(code + SECRET) !== o.code_hash) { await db().query('UPDATE email_otps SET tries = tries + 1 WHERE id = ?', [o.id]); return res.status(400).json({ error: 'Wrong code. Try again.' }); }
+      await db().query('UPDATE email_otps SET used = 1 WHERE owner = ?', [me]);
+      await db().query('INSERT INTO profiles (phone, email) VALUES (?, ?) ON DUPLICATE KEY UPDATE email = VALUES(email)', [me, em]);
+      return res.json({ ok: true, email: em });
+    }
+
     if (b.action === 'profile_get') {
       const who = b.phone === undefined ? me : b.phone;
       if (!phoneOk(who)) return res.status(400).json({ error: 'Bad request.' });
@@ -446,7 +472,9 @@ module.exports = async (req, res) => {
       const [r] = await db().query(
         "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet, links, photo_url FROM profiles WHERE phone = ?", [who]);
       const [nm] = await db().query('SELECT name FROM users WHERE phone = ?', [who]);
-      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '' }) });
+      let hide = false;
+      if (who !== me) { const [pr] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [who]); try { hide = !!JSON.parse((pr[0] && pr[0].privacy) || '{}').hidePhone; } catch (e) {} }
+      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '', phone_hidden: hide }) });
     }
 
     if (b.action === 'profile_set') {
