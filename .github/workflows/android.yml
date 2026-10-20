@@ -1,0 +1,956 @@
+name: Build Android app
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Create the Android project
+        env:
+          GSJ: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          set -e
+          if [ -z "$GSJ" ]; then echo "::error::The secret GOOGLE_SERVICES_JSON is missing. Add it in Settings > Secrets and variables > Actions."; exit 1; fi
+          SITE_URL="${SITE_URL:-https://zaply-gamma.vercel.app}"
+          rm -rf android-app
+          mkdir -p android-app
+          cd android-app
+          mkdir -p app
+          cat > app/build.gradle <<'ZEOF'
+          plugins {
+              id 'com.android.application'
+              id 'com.google.gms.google-services'
+          }
+
+          android {
+              namespace 'com.zanply.app'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId 'com.zanply.app'
+                  minSdk 26
+                  targetSdk 34
+                  versionCode 1
+                  versionName '1.0'
+              }
+
+              signingConfigs {
+                  zanply {
+                      storeFile file('zanply.keystore')
+                      storePassword 'zanply123'
+                      keyAlias 'zanply'
+                      keyPassword 'zanply123'
+                  }
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                      signingConfig signingConfigs.zanply
+                  }
+              }
+
+              lint {
+                  checkReleaseBuilds false
+                  abortOnError false
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+
+          dependencies {
+              implementation 'com.google.firebase:firebase-messaging:24.0.1'
+          }
+          ZEOF
+          mkdir -p app/src/main
+          cat > app/src/main/AndroidManifest.xml <<'ZEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+              <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+              <uses-permission android:name="android.permission.VIBRATE" />
+              <uses-permission android:name="android.permission.WAKE_LOCK" />
+              <uses-permission android:name="android.permission.CAMERA" />
+              <uses-permission android:name="android.permission.RECORD_AUDIO" />
+              <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+              <uses-feature android:name="android.hardware.camera" android:required="false" />
+              <uses-feature android:name="android.hardware.microphone" android:required="false" />
+
+              <application
+                  android:allowBackup="false"
+                  android:icon="@mipmap/ic_launcher"
+                  android:roundIcon="@mipmap/ic_launcher"
+                  android:label="@string/app_name"
+                  android:theme="@style/AppTheme"
+                  android:usesCleartextTraffic="false">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTask"
+                      android:windowSoftInputMode="adjustResize"
+                      android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|density|uiMode|keyboard|navigation">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+
+                  <activity
+                      android:name=".CallActivity"
+                      android:exported="false"
+                      android:launchMode="singleInstance"
+                      android:excludeFromRecents="true"
+                      android:showWhenLocked="true"
+                      android:turnScreenOn="true"
+                      android:taskAffinity="" />
+
+                  <service
+                      android:name=".FcmService"
+                      android:exported="false">
+                      <intent-filter>
+                          <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                      </intent-filter>
+                  </service>
+
+                  <receiver
+                      android:name=".CallReceiver"
+                      android:exported="false" />
+              </application>
+          </manifest>
+          ZEOF
+          mkdir -p app/src/main/java/com/zanply/app
+          cat > app/src/main/java/com/zanply/app/CallActivity.java <<'ZEOF'
+          package com.zanply.app;
+
+          import android.app.Activity;
+          import android.app.KeyguardManager;
+          import android.content.Intent;
+          import android.graphics.Color;
+          import android.graphics.Typeface;
+          import android.graphics.drawable.GradientDrawable;
+          import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
+          import android.view.Gravity;
+          import android.view.View;
+          import android.view.WindowManager;
+          import android.widget.LinearLayout;
+          import android.widget.TextView;
+
+          import java.lang.ref.WeakReference;
+
+          /** Full-screen incoming call screen, shown over the lock screen. The ringing itself comes from the notification. */
+          public class CallActivity extends Activity {
+              private static WeakReference<CallActivity> current;
+              private final Handler h = new Handler(Looper.getMainLooper());
+              private String from, name, call;
+
+              static void finishIfOpen() {
+                  CallActivity a = current == null ? null : current.get();
+                  if (a != null) a.finish();
+              }
+
+              @Override
+              protected void onCreate(Bundle b) {
+                  super.onCreate(b);
+                  current = new WeakReference<>(this);
+                  setShowWhenLocked(true);
+                  setTurnScreenOn(true);
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+                  from = getIntent().getStringExtra("from");
+                  name = getIntent().getStringExtra("name");
+                  call = getIntent().getStringExtra("call");
+                  boolean video = getIntent().getBooleanExtra("video", false);
+
+                  LinearLayout root = new LinearLayout(this);
+                  root.setOrientation(LinearLayout.VERTICAL);
+                  root.setGravity(Gravity.CENTER_HORIZONTAL);
+                  root.setBackgroundColor(Color.parseColor("#0b141a"));
+                  root.setPadding(dp(24), dp(96), dp(24), dp(72));
+
+                  TextView app = text("Zanply " + (video ? "video call" : "voice call"), 15, Color.parseColor("#8696a0"), false);
+                  TextView who = text(name == null ? "" : name, 34, Color.WHITE, true);
+                  who.setPadding(0, dp(18), 0, dp(6));
+                  TextView sub = text("Incoming call…", 16, Color.parseColor("#8696a0"), false);
+                  root.addView(app);
+                  root.addView(who);
+                  root.addView(sub);
+
+                  View space = new View(this);
+                  root.addView(space, new LinearLayout.LayoutParams(1, 0, 1f));
+
+                  LinearLayout row = new LinearLayout(this);
+                  row.setOrientation(LinearLayout.HORIZONTAL);
+                  row.setGravity(Gravity.CENTER);
+                  row.addView(button("Decline", "#e5173f", new View.OnClickListener() {
+                      @Override public void onClick(View v) { decline(); }
+                  }));
+                  View gap = new View(this);
+                  row.addView(gap, new LinearLayout.LayoutParams(dp(56), 1));
+                  row.addView(button("Answer", "#1fa855", new View.OnClickListener() {
+                      @Override public void onClick(View v) { answer(); }
+                  }));
+                  root.addView(row);
+                  setContentView(root);
+
+                  h.postDelayed(new Runnable() { @Override public void run() { finish(); } }, 40000);
+              }
+
+              private void answer() {
+                  Notifs.cancelCall(this);
+                  KeyguardManager km = getSystemService(KeyguardManager.class);
+                  Intent i = new Intent(this, MainActivity.class)
+                          .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                          .putExtra("answer_from", from).putExtra("answer_name", name).putExtra("answer_body", call);
+                  startActivity(i);
+                  if (km != null && km.isKeyguardLocked()) km.requestDismissKeyguard(this, null);
+                  finish();
+              }
+
+              private void decline() {
+                  Store.markHandled(this, call);
+                  Notifs.cancelCall(this);
+                  finish();
+              }
+
+              @Override
+              protected void onDestroy() {
+                  h.removeCallbacksAndMessages(null);
+                  if (current != null && current.get() == this) current = null;
+                  super.onDestroy();
+              }
+
+              @Override
+              public void onBackPressed() { decline(); }
+
+              private int dp(int v) { return (int) (v * getResources().getDisplayMetrics().density + 0.5f); }
+
+              private TextView text(String s, int sp, int color, boolean bold) {
+                  TextView t = new TextView(this);
+                  t.setText(s);
+                  t.setTextSize(sp);
+                  t.setTextColor(color);
+                  t.setGravity(Gravity.CENTER);
+                  if (bold) t.setTypeface(Typeface.DEFAULT_BOLD);
+                  return t;
+              }
+
+              private TextView button(String label, String color, View.OnClickListener l) {
+                  TextView t = text(label, 16, Color.WHITE, true);
+                  GradientDrawable g = new GradientDrawable();
+                  g.setColor(Color.parseColor(color));
+                  g.setCornerRadius(dp(40));
+                  t.setBackground(g);
+                  t.setPadding(dp(34), dp(18), dp(34), dp(18));
+                  t.setOnClickListener(l);
+                  return t;
+              }
+          }
+          ZEOF
+          mkdir -p app/src/main/java/com/zanply/app
+          cat > app/src/main/java/com/zanply/app/CallReceiver.java <<'ZEOF'
+          package com.zanply.app;
+
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+
+          public class CallReceiver extends BroadcastReceiver {
+              static final String ACTION_DECLINE = "com.zanply.app.DECLINE";
+
+              @Override
+              public void onReceive(Context c, Intent i) {
+                  if (ACTION_DECLINE.equals(i.getAction())) {
+                      Store.markHandled(c, i.getStringExtra("call"));
+                      Notifs.cancelCall(c);
+                      CallActivity.finishIfOpen();
+                  }
+              }
+          }
+          ZEOF
+          mkdir -p app/src/main/java/com/zanply/app
+          cat > app/src/main/java/com/zanply/app/FcmService.java <<'ZEOF'
+          package com.zanply.app;
+
+          import com.google.firebase.messaging.FirebaseMessagingService;
+          import com.google.firebase.messaging.RemoteMessage;
+
+          import java.util.Map;
+
+          public class FcmService extends FirebaseMessagingService {
+
+              @Override
+              public void onNewToken(String token) {
+                  Store.saveToken(this, token);
+                  MainActivity.sendTokenToPage(token);
+              }
+
+              @Override
+              public void onMessageReceived(RemoteMessage m) {
+                  Map<String, String> d = m.getData();
+                  if (d == null || d.isEmpty()) return;
+                  // While the app is open the web page already plays its own sound and shows the call screen.
+                  if (MainActivity.visible) return;
+
+                  String type = d.get("type");
+                  if ("call".equals(type)) {
+                      String body = d.get("call");
+                      if (body == null || body.length() == 0) return;
+                      Notifs.showCall(this, nz(d.get("from")), nz(d.get("name")).length() > 0 ? d.get("name") : nz(d.get("from")),
+                              body, "1".equals(d.get("video")));
+                  } else if ("cancel".equals(type)) {
+                      Notifs.cancelCall(this);
+                  } else {
+                      Notifs.showMessage(this, nz(d.get("from")), nz(d.get("title")).length() > 0 ? d.get("title") : "Zanply", nz(d.get("body")));
+                  }
+              }
+
+              private static String nz(String s) { return s == null ? "" : s; }
+          }
+          ZEOF
+          mkdir -p app/src/main/java/com/zanply/app
+          cat > app/src/main/java/com/zanply/app/MainActivity.java <<'ZEOF'
+          package com.zanply.app;
+
+          import android.Manifest;
+          import android.app.Activity;
+          import android.app.KeyguardManager;
+          import android.app.NotificationManager;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.pm.PackageManager;
+          import android.media.AudioAttributes;
+          import android.media.Ringtone;
+          import android.media.RingtoneManager;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.os.Message;
+          import android.provider.Settings;
+          import android.view.View;
+          import android.view.ViewGroup;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.PermissionRequest;
+          import android.webkit.ValueCallback;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebResourceRequest;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+
+          import com.google.firebase.messaging.FirebaseMessaging;
+
+          import org.json.JSONObject;
+
+          import java.lang.ref.WeakReference;
+          import java.util.ArrayList;
+          import java.util.List;
+
+          /** The Zanply web app inside a WebView, plus the bridge that gives it the phone's own sounds. */
+          public class MainActivity extends Activity {
+              static volatile boolean visible = false;
+              private static WeakReference<MainActivity> self;
+
+              private static final int REQ_FILE = 1, REQ_PERM = 2, REQ_NOTIF = 3;
+
+              private WebView web;
+              private ValueCallback<Uri[]> filePath;
+              private PermissionRequest pendingPerm;
+              private String siteHost = "";
+
+              // handed to the page when it asks (takeAnswer / takeOpenChat)
+              private volatile String answerJson = "";
+              private volatile String openChat = "";
+
+              private Ringtone ring;
+
+              /* ---------------- life cycle ---------------- */
+
+              @Override
+              protected void onCreate(Bundle b) {
+                  super.onCreate(b);
+                  self = new WeakReference<>(this);
+                  Notifs.ensureChannels(this);
+
+                  String site = getString(R.string.site_url);
+                  try { siteHost = Uri.parse(site).getHost(); } catch (Exception ignored) { }
+
+                  web = new WebView(this);
+                  web.setBackgroundColor(0xFF000000);
+                  setContentView(web, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                  setupWebView();
+                  web.addJavascriptInterface(new Bridge(), "ZanplyNative");
+
+                  handleIntent(getIntent());
+                  web.loadUrl(site);
+
+                  askPermissionsOnce();
+                  FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::onToken);
+              }
+
+              private void onToken(String t) {
+                  if (t == null || t.length() == 0) return;
+                  Store.saveToken(this, t);
+                  sendTokenToPage(t);
+              }
+
+              @Override
+              protected void onNewIntent(Intent i) {
+                  super.onNewIntent(i);
+                  setIntent(i);
+                  handleIntent(i);
+                  pokePage();
+              }
+
+              @Override
+              protected void onResume() {
+                  super.onResume();
+                  visible = true;
+                  stopRing();
+                  Notifs.cancelAll(this);
+                  pokePage();
+              }
+
+              @Override
+              protected void onPause() {
+                  visible = false;
+                  super.onPause();
+              }
+
+              @Override
+              protected void onDestroy() {
+                  stopRing();
+                  if (web != null) { web.destroy(); web = null; }
+                  super.onDestroy();
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (web != null && web.canGoBack()) web.goBack();
+                  else moveTaskToBack(true);
+              }
+
+              private void handleIntent(Intent i) {
+                  if (i == null) return;
+                  String body = i.getStringExtra("answer_body");
+                  if (body != null && body.length() > 0) {
+                      try {
+                          JSONObject o = new JSONObject();
+                          o.put("body", body);
+                          o.put("phone", i.getStringExtra("answer_from"));
+                          o.put("name", i.getStringExtra("answer_name"));
+                          answerJson = o.toString();
+                          Store.markHandled(this, body);
+                      } catch (Exception ignored) { }
+                      Notifs.cancelCall(this);
+                      setShowWhenLocked(true);
+                      setTurnScreenOn(true);
+                      i.removeExtra("answer_body");
+                  }
+                  String chat = i.getStringExtra("chat");
+                  if (chat != null && chat.length() > 0) {
+                      openChat = chat;
+                      i.removeExtra("chat");
+                  }
+              }
+
+              private void pokePage() {
+                  if (web == null) return;
+                  web.evaluateJavascript("window.zNativeCheck&&window.zNativeCheck()", null);
+              }
+
+              static void sendTokenToPage(final String t) {
+                  final MainActivity a = self == null ? null : self.get();
+                  if (a == null || a.web == null) return;
+                  a.runOnUiThread(new Runnable() {
+                      @Override public void run() {
+                          if (a.web != null) a.web.evaluateJavascript("window.onFcmToken&&window.onFcmToken(" + JSONObject.quote(t) + ")", null);
+                      }
+                  });
+              }
+
+              /* ---------------- permissions ---------------- */
+
+              private void askPermissionsOnce() {
+                  if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                      requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, REQ_NOTIF);
+                  } else {
+                      askFullScreen();
+                  }
+              }
+
+              // Android 14+ lets the user switch "full screen notifications" off; the call screen over the lock screen needs it.
+              private void askFullScreen() {
+                  if (Build.VERSION.SDK_INT >= 34 && !Store.flag(this, "askedFsi")) {
+                      NotificationManager nm = getSystemService(NotificationManager.class);
+                      if (nm != null && !nm.canUseFullScreenIntent()) {
+                          Store.setFlag(this, "askedFsi");
+                          try {
+                              startActivity(new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:" + getPackageName())));
+                          } catch (Exception ignored) { }
+                      }
+                  }
+              }
+
+              @Override
+              public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
+                  super.onRequestPermissionsResult(code, perms, res);
+                  if (code == REQ_NOTIF) { askFullScreen(); return; }
+                  if (code == REQ_PERM && pendingPerm != null) {
+                      PermissionRequest r = pendingPerm;
+                      pendingPerm = null;
+                      List<String> ok = new ArrayList<>();
+                      for (String res1 : r.getResources()) {
+                          if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res1) && granted(Manifest.permission.CAMERA)) ok.add(res1);
+                          else if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res1) && granted(Manifest.permission.RECORD_AUDIO)) ok.add(res1);
+                      }
+                      if (ok.isEmpty()) r.deny(); else r.grant(ok.toArray(new String[0]));
+                  }
+              }
+
+              private boolean granted(String p) { return checkSelfPermission(p) == PackageManager.PERMISSION_GRANTED; }
+
+              /* ---------------- WebView ---------------- */
+
+              private void setupWebView() {
+                  WebSettings s = web.getSettings();
+                  s.setJavaScriptEnabled(true);
+                  s.setDomStorageEnabled(true);
+                  s.setMediaPlaybackRequiresUserGesture(false);
+                  s.setAllowFileAccess(false);
+                  s.setAllowContentAccess(false);
+                  s.setSupportMultipleWindows(true);
+                  s.setJavaScriptCanOpenWindowsAutomatically(true);
+                  s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+                  s.setUserAgentString(s.getUserAgentString() + " ZanplyApp/1");
+
+                  web.setDownloadListener((url, ua, cd, mime, len) -> openExternal(Uri.parse(url)));
+
+                  web.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
+                          Uri u = r.getUrl();
+                          String sch = u.getScheme() == null ? "" : u.getScheme();
+                          if (("https".equals(sch) || "http".equals(sch)) && u.getHost() != null && u.getHost().equals(siteHost)) return false;
+                          openExternal(u);
+                          return true;
+                      }
+                  });
+
+                  web.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {
+                          if (filePath != null) filePath.onReceiveValue(null);
+                          filePath = cb;
+                          try {
+                              startActivityForResult(p.createIntent(), REQ_FILE);
+                          } catch (Exception e) {
+                              filePath = null;
+                              return false;
+                          }
+                          return true;
+                      }
+
+                      @Override
+                      public void onPermissionRequest(final PermissionRequest r) {
+                          runOnUiThread(new Runnable() {
+                              @Override public void run() {
+                                  List<String> need = new ArrayList<>();
+                                  for (String res : r.getResources()) {
+                                      if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res) && !granted(Manifest.permission.CAMERA)) need.add(Manifest.permission.CAMERA);
+                                      if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res) && !granted(Manifest.permission.RECORD_AUDIO)) need.add(Manifest.permission.RECORD_AUDIO);
+                                  }
+                                  if (need.isEmpty()) { r.grant(r.getResources()); return; }
+                                  if (pendingPerm != null) pendingPerm.deny();
+                                  pendingPerm = r;
+                                  requestPermissions(need.toArray(new String[0]), REQ_PERM);
+                              }
+                          });
+                      }
+
+                      @Override
+                      public boolean onCreateWindow(WebView v, boolean dialog, boolean userGesture, Message msg) {
+                          WebView t = new WebView(MainActivity.this);
+                          t.setWebViewClient(new WebViewClient() {
+                              @Override
+                              public boolean shouldOverrideUrlLoading(WebView v2, WebResourceRequest r) {
+                                  openExternal(r.getUrl());
+                                  return true;
+                              }
+                          });
+                          ((WebView.WebViewTransport) msg.obj).setWebView(t);
+                          msg.sendToTarget();
+                          return true;
+                      }
+                  });
+              }
+
+              private void openExternal(Uri u) {
+                  try { startActivity(new Intent(Intent.ACTION_VIEW, u).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); } catch (Exception ignored) { }
+              }
+
+              @Override
+              protected void onActivityResult(int code, int res, Intent data) {
+                  super.onActivityResult(code, res, data);
+                  if (code == REQ_FILE && filePath != null) {
+                      filePath.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(res, data));
+                      filePath = null;
+                  }
+              }
+
+              /* ---------------- phone sounds ---------------- */
+
+              private void startRing() {
+                  stopRing();
+                  try {
+                      Ringtone r = RingtoneManager.getRingtone(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE));
+                      if (r == null) return;
+                      if (Build.VERSION.SDK_INT >= 28) {
+                          r.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                                  .setContentType(AudioAttributes.CONTENT_TYPE_SONIC).build());
+                          r.setLooping(true);
+                      }
+                      r.play();
+                      ring = r;
+                  } catch (Exception ignored) { }
+              }
+
+              private void stopRing() {
+                  try { if (ring != null) ring.stop(); } catch (Exception ignored) { }
+                  ring = null;
+              }
+
+              private void playNotif() {
+                  try {
+                      Ringtone r = RingtoneManager.getRingtone(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                      if (r == null) return;
+                      if (Build.VERSION.SDK_INT >= 28) {
+                          r.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                                  .setContentType(AudioAttributes.CONTENT_TYPE_SONIC).build());
+                      }
+                      r.play();
+                  } catch (Exception ignored) { }
+              }
+
+              /** What the web page can call: window.ZanplyNative.xxx() */
+              private final class Bridge {
+                  @JavascriptInterface public String fcmToken() { return Store.token(MainActivity.this); }
+
+                  @JavascriptInterface public String handled() { return Store.handledJson(MainActivity.this); }
+
+                  @JavascriptInterface public String takeAnswer() { String a = answerJson; answerJson = ""; return a; }
+
+                  @JavascriptInterface public String takeOpenChat() { String c = openChat; openChat = ""; return c; }
+
+                  @JavascriptInterface public void ringStart() {
+                      runOnUiThread(new Runnable() { @Override public void run() { startRing(); } });
+                  }
+
+                  @JavascriptInterface public void ringStop() {
+                      runOnUiThread(new Runnable() { @Override public void run() { stopRing(); } });
+                  }
+
+                  @JavascriptInterface public void notifSound() {
+                      runOnUiThread(new Runnable() { @Override public void run() { playNotif(); } });
+                  }
+              }
+          }
+          ZEOF
+          mkdir -p app/src/main/java/com/zanply/app
+          cat > app/src/main/java/com/zanply/app/Notifs.java <<'ZEOF'
+          package com.zanply.app;
+
+          import android.app.Notification;
+          import android.app.NotificationChannel;
+          import android.app.NotificationManager;
+          import android.app.PendingIntent;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.graphics.drawable.Icon;
+          import android.media.AudioAttributes;
+          import android.provider.Settings;
+
+          /** Builds the message and incoming-call notifications. The sounds are the phone's own default sounds. */
+          final class Notifs {
+              static final String CH_CALLS = "calls_v1";
+              static final String CH_MSG = "messages_v1";
+              static final int CALL_ID = 4242;
+
+              static void ensureChannels(Context c) {
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm == null) return;
+
+                  NotificationChannel calls = new NotificationChannel(CH_CALLS, "Incoming calls", NotificationManager.IMPORTANCE_HIGH);
+                  calls.setDescription("Rings with your phone's ringtone");
+                  calls.setSound(Settings.System.DEFAULT_RINGTONE_URI, new AudioAttributes.Builder()
+                          .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIC).build());
+                  calls.enableVibration(true);
+                  calls.setVibrationPattern(new long[]{0, 700, 500, 700, 500, 700, 500, 700});
+                  calls.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+                  nm.createNotificationChannel(calls);
+
+                  NotificationChannel msg = new NotificationChannel(CH_MSG, "Messages", NotificationManager.IMPORTANCE_HIGH);
+                  msg.setDescription("Uses your phone's notification sound");
+                  msg.setSound(Settings.System.DEFAULT_NOTIFICATION_URI, new AudioAttributes.Builder()
+                          .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIC).build());
+                  msg.enableVibration(true);
+                  msg.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+                  nm.createNotificationChannel(msg);
+              }
+
+              static void showMessage(Context c, String from, String title, String body) {
+                  ensureChannels(c);
+                  Intent open = new Intent(c, MainActivity.class)
+                          .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                          .putExtra("chat", from == null ? "" : from);
+                  int id = from == null ? 1 : from.hashCode();
+                  PendingIntent pi = PendingIntent.getActivity(c, id, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                  Notification n = new Notification.Builder(c, CH_MSG)
+                          .setSmallIcon(R.drawable.ic_stat)
+                          .setContentTitle(title)
+                          .setContentText(body)
+                          .setStyle(new Notification.BigTextStyle().bigText(body))
+                          .setCategory(Notification.CATEGORY_MESSAGE)
+                          .setAutoCancel(true)
+                          .setContentIntent(pi)
+                          .build();
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm != null) nm.notify(id, n);
+              }
+
+              static void showCall(Context c, String from, String name, String callBody, boolean video) {
+                  ensureChannels(c);
+                  String text = video ? "Incoming video call" : "Incoming voice call";
+
+                  Intent screen = new Intent(c, CallActivity.class)
+                          .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                          .putExtra("from", from).putExtra("name", name).putExtra("call", callBody).putExtra("video", video);
+                  PendingIntent screenPi = PendingIntent.getActivity(c, 11, screen, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                  Intent answer = new Intent(c, MainActivity.class)
+                          .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                          .putExtra("answer_from", from).putExtra("answer_name", name).putExtra("answer_body", callBody);
+                  PendingIntent answerPi = PendingIntent.getActivity(c, 12, answer, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                  Intent decline = new Intent(c, CallReceiver.class).setAction(CallReceiver.ACTION_DECLINE).putExtra("call", callBody);
+                  PendingIntent declinePi = PendingIntent.getBroadcast(c, 13, decline, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                  Icon icon = Icon.createWithResource(c, R.drawable.ic_stat);
+                  Notification n = new Notification.Builder(c, CH_CALLS)
+                          .setSmallIcon(R.drawable.ic_stat)
+                          .setContentTitle(name)
+                          .setContentText(text)
+                          .setCategory(Notification.CATEGORY_CALL)
+                          .setOngoing(true)
+                          .setAutoCancel(false)
+                          .setTimeoutAfter(40000)
+                          .setContentIntent(screenPi)
+                          .setFullScreenIntent(screenPi, true)
+                          .addAction(new Notification.Action.Builder(icon, "Decline", declinePi).build())
+                          .addAction(new Notification.Action.Builder(icon, "Answer", answerPi).build())
+                          .build();
+                  n.flags |= Notification.FLAG_INSISTENT; // keep ringing until answered, declined or timed out
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm != null) nm.notify(CALL_ID, n);
+              }
+
+              static void cancelCall(Context c) {
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm != null) nm.cancel(CALL_ID);
+              }
+
+              static void cancelAll(Context c) {
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm != null) nm.cancelAll();
+              }
+          }
+          ZEOF
+          mkdir -p app/src/main/java/com/zanply/app
+          cat > app/src/main/java/com/zanply/app/Store.java <<'ZEOF'
+          package com.zanply.app;
+
+          import android.content.Context;
+          import android.content.SharedPreferences;
+
+          import org.json.JSONArray;
+
+          import java.util.ArrayList;
+          import java.util.List;
+
+          /** Small helper around SharedPreferences. */
+          final class Store {
+              private static SharedPreferences p(Context c) {
+                  return c.getApplicationContext().getSharedPreferences("zanply", Context.MODE_PRIVATE);
+              }
+
+              static String token(Context c) { return p(c).getString("fcm", ""); }
+
+              static void saveToken(Context c, String t) { p(c).edit().putString("fcm", t == null ? "" : t).apply(); }
+
+              /** Calls that were already answered, declined or timed out here (so the web app does not ring for them again). */
+              static synchronized void markHandled(Context c, String body) {
+                  if (body == null || body.length() == 0) return;
+                  List<String> l = handledList(c);
+                  if (!l.contains(body)) l.add(body);
+                  while (l.size() > 20) l.remove(0);
+                  p(c).edit().putString("handled", new JSONArray(l).toString()).apply();
+              }
+
+              static synchronized String handledJson(Context c) { return new JSONArray(handledList(c)).toString(); }
+
+              private static List<String> handledList(Context c) {
+                  List<String> l = new ArrayList<>();
+                  try {
+                      JSONArray a = new JSONArray(p(c).getString("handled", "[]"));
+                      for (int i = 0; i < a.length(); i++) l.add(a.getString(i));
+                  } catch (Exception ignored) { }
+                  return l;
+              }
+
+              static boolean flag(Context c, String k) { return p(c).getBoolean(k, false); }
+
+              static void setFlag(Context c, String k) { p(c).edit().putBoolean(k, true).apply(); }
+          }
+          ZEOF
+          mkdir -p app/src/main/res/drawable
+          cat > app/src/main/res/drawable/ic_fg.xml <<'ZEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <inset xmlns:android="http://schemas.android.com/apk/res/android"
+              android:drawable="@drawable/ic_stat"
+              android:insetLeft="30dp"
+              android:insetTop="30dp"
+              android:insetRight="30dp"
+              android:insetBottom="30dp" />
+          ZEOF
+          mkdir -p app/src/main/res/drawable
+          cat > app/src/main/res/drawable/ic_stat.xml <<'ZEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="24dp"
+              android:height="24dp"
+              android:viewportWidth="24"
+              android:viewportHeight="24">
+              <path
+                  android:fillColor="#FFFFFFFF"
+                  android:pathData="M20,2H4C2.9,2 2,2.9 2,4v18l4,-4h14c1.1,0 2,-0.9 2,-2V4C22,2.9 21.1,2 20,2z" />
+          </vector>
+          ZEOF
+          mkdir -p app/src/main/res/mipmap-anydpi-v26
+          cat > app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml <<'ZEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+              <background android:drawable="@color/zgreen" />
+              <foreground android:drawable="@drawable/ic_fg" />
+          </adaptive-icon>
+          ZEOF
+          mkdir -p app/src/main/res/values
+          cat > app/src/main/res/values/colors.xml <<'ZEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="zgreen">#21C063</color>
+          </resources>
+          ZEOF
+          mkdir -p app/src/main/res/values
+          cat > app/src/main/res/values/styles.xml <<'ZEOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+                  <item name="android:windowBackground">@android:color/black</item>
+                  <item name="android:statusBarColor">@android:color/black</item>
+                  <item name="android:navigationBarColor">@android:color/black</item>
+              </style>
+          </resources>
+          ZEOF
+          cat > build.gradle <<'ZEOF'
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+              id 'com.google.gms.google-services' version '4.4.2' apply false
+          }
+          ZEOF
+          cat > gradle.properties <<'ZEOF'
+          org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8
+          android.useAndroidX=true
+          android.nonTransitiveRClass=true
+          ZEOF
+          cat > settings.gradle <<'ZEOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "Zanply"
+          include ':app'
+          ZEOF
+          mkdir -p app/src/main/res/values
+          cat > app/src/main/res/values/strings.xml <<ZEOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <string name="app_name">Zanply</string>
+              <string name="site_url">$SITE_URL</string>
+          </resources>
+          ZEOF
+          printf '%s' "$GSJ" > app/google-services.json
+          python3 - <<'PYEOF'
+          import json
+          j = json.load(open("app/google-services.json"))
+          names = [c["client_info"]["android_client_info"]["package_name"] for c in j["client"]]
+          assert "com.zanply.app" in names, "google-services.json is for " + str(names) + " but the Android package name must be com.zanply.app"
+          print("google-services.json OK for", names)
+          PYEOF
+          echo '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' | base64 -d > app/zanply.keystore
+
+      - name: Build the APK
+        working-directory: android-app
+        run: gradle :app:assembleRelease --no-daemon --stacktrace
+
+      - name: Name the APK
+        run: cp android-app/app/build/outputs/apk/release/app-release.apk zanply.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: zanply-apk
+          path: zanply.apk
+
+      - name: Publish the APK so it can be downloaded on the phone
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-${{ github.run_number }}
+          name: Zanply Android app (build ${{ github.run_number }})
+          files: zanply.apk
