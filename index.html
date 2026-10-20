@@ -3017,7 +3017,7 @@ ZW|Zimbabwe|263`;
     function nsave(k, v) { var s = nset(); s[k] = v; lsSet('zaply_notif', s); syncSWPrefs(); if (k === 'badge') { try { updateCounts(); } catch (e) {} } }
     function syncSWPrefs() {
       try {
-        var n = nset(), o = { vib: VIB_PAT[n.m_vib] || VIB_PAT['default'], silent: !n.m_high || n.m_tone === 'none', popup: n.m_pop || 'always' };
+        var n = nset(), o = { vib: VIB_PAT[n.m_vib] || VIB_PAT['default'], silent: false, popup: n.m_pop || 'always' };
         if (window.caches) caches.open('zanply-prefs').then(function (c) { return c.put('/__prefs', new Response(JSON.stringify(o), { headers: { 'Content-Type': 'application/json' } })); }).catch(function () {});
       } catch (e) {}
     }
@@ -3045,11 +3045,10 @@ ZW|Zimbabwe|263`;
     function buzz(kind) { try { if (navigator.vibrate) navigator.vibrate(VIB_PAT[kind] || VIB_PAT['default']); } catch (e) {} }
     function incomingFx(group) {
       var n = nset(); if (document.hidden) return;
-      if (n.tones) playTone(group ? n.g_tone : n.m_tone);
       buzz(group ? n.g_vib : n.m_vib);
     }
-    function outgoingFx() { if (nset().tones) playTone('pop'); }
-    function callFx() { var n = nset(); playTone(n.c_ring, 5); buzz(n.c_vib); }
+    function outgoingFx() {}
+    function callFx() { buzz(nset().c_vib); }
     var lastAtMap = null;
     function chatListFx(chats) {
       var first = !lastAtMap; lastAtMap = lastAtMap || {};
@@ -3071,20 +3070,20 @@ ZW|Zimbabwe|263`;
         function vib(key) { zoptRow(b, 'Vibrate', function () { return labOf(VIB_OPTS, nset()[key]); }, function (ref) { zpick('Vibrate', VIB_OPTS, nset()[key], function (v) { nsave(key, v); buzz(v); ref(); }); }); }
         function opt2(title, key, opts) { zoptRow(b, title, function () { return labOf(opts, nset()[key] || opts[0][0]); }, function (ref) { zpick(title, opts, nset()[key] || opts[0][0], function (v) { nsave(key, v); ref(); }); }); }
         function na(title) { zoptRow(b, title, function () { return 'Not available'; }, null, true); }
-        sw('Conversation tones', 'Play sounds for incoming and outgoing messages.', 'tones');
+        b.appendChild(mk('div', 'zfoot', 'Zanply uses your phone\u2019s own sounds. To change the message sound or ringtone, open your phone Settings \u203a Apps \u203a Zanply \u203a Notifications.'));
         sw('Reminders', 'Get occasional reminders about messages, calls or status updates you haven\u2019t seen', 'reminders');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Messages'));
-        tone('Notification tone', 'm_tone'); vib('m_vib'); opt2('Popup notification', 'm_pop', POP_OPTS); opt2('Light', 'm_light', LIGHT_OPTS);
+        vib('m_vib'); opt2('Popup notification', 'm_pop', POP_OPTS); opt2('Light', 'm_light', LIGHT_OPTS);
         sw('Use high priority notifications', 'Show previews of notifications at the top of the screen', 'm_high');
         sw('Reaction notifications', 'Show notifications for reactions to messages you send', 'm_react');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Groups'));
-        tone('Notification tone', 'g_tone'); vib('g_vib'); opt2('Popup notification', 'g_pop', POP_OPTS); opt2('Light', 'g_light', LIGHT_OPTS);
+        vib('g_vib'); opt2('Popup notification', 'g_pop', POP_OPTS); opt2('Light', 'g_light', LIGHT_OPTS);
         sw('Use high priority notifications', 'Show previews of notifications at the top of the screen', 'g_high');
         sw('Reaction notifications', 'Show notifications for reactions to messages you send', 'g_react');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Calls'));
-        tone('Ringtone', 'c_ring', RING_OPTS); vib('c_vib');
+        vib('c_vib');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Status'));
-        tone('Notification tone', 's_tone'); vib('s_vib');
+        vib('s_vib');
         sw('Use high priority notifications', 'Show previews of notifications at the top of the screen', 's_high');
         sw('Reactions', 'Show notifications when you get likes on a status', 's_react');
         sw('App icon badge', 'Clears when you view all messages and calls', 'badge');
