@@ -155,6 +155,7 @@ async function sendSms(to, message) {
 }
 // Email codes use the same sender as sign-up (api/_mail.js), so it needs no new Vercel settings
 const { sendCodeEmail } = require('./_mail');
+const { fcmOn, sendFcm } = require('./_fcm');
 const phoneOk = (p) => typeof p === 'string' && /^\+\d{7,15}$/.test(p);
 async function findUser(phone) {
   const [r] = await db().query('SELECT phone, name FROM users WHERE phone = ?', [phone]);
@@ -209,23 +210,48 @@ async function pushTo(subs, payload) {
     catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db().query('DELETE FROM push_subs WHERE id = ?', [r.id]); }
   }));
 }
+let fcmReady = null;
+function fcmTable() {
+  if (!fcmReady) fcmReady = db().query('CREATE TABLE IF NOT EXISTS fcm_tokens (id BIGINT AUTO_INCREMENT PRIMARY KEY, phone VARCHAR(20) NOT NULL, hash CHAR(64) NOT NULL, token VARCHAR(512) NOT NULL, updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY uq_h (hash), INDEX idx_p (phone))').catch((e) => { fcmReady = null; throw e; });
+  return fcmReady;
+}
+async function fcmPush(rows, data, opts) {
+  if (!rows.length) return;
+  const dead = await sendFcm(rows, data, opts);
+  if (dead.length) await db().query('DELETE FROM fcm_tokens WHERE id IN (' + dead.map(() => '?').join(',') + ')', dead);
+}
 async function notifyGroup(from, g, groupName, text) {
-  if (!pushOn) return;
   try {
     const u = await findUser(from);
-    const [subs] = await db().query(
-      'SELECT s.id, s.sub FROM push_subs s JOIN group_members m ON m.phone = s.phone WHERE m.group_id = ? AND s.phone <> ?', [g, from]);
-    const payload = JSON.stringify({ title: groupName, body: ((u && u.name) || from) + ': ' + preview(text), tag: 'g:' + g, from: 'g:' + g });
-    await pushTo(subs, payload);
+    const who = (u && u.name) || from, body = who + ': ' + preview(text);
+    if (pushOn) {
+      const [subs] = await db().query(
+        'SELECT s.id, s.sub FROM push_subs s JOIN group_members m ON m.phone = s.phone WHERE m.group_id = ? AND s.phone <> ?', [g, from]);
+      await pushTo(subs, JSON.stringify({ title: groupName, body, tag: 'g:' + g, from: 'g:' + g }));
+    }
+    if (fcmOn()) {
+      await fcmTable();
+      const [rows] = await db().query('SELECT t.id, t.token FROM fcm_tokens t JOIN group_members m ON m.phone = t.phone WHERE m.group_id = ? AND t.phone <> ?', [g, from]);
+      await fcmPush(rows, { type: 'msg', title: groupName, body, from: 'g:' + g });
+    }
   } catch (e) { console.error(e); }
 }
 async function notify(from, to, text) {
-  if (!pushOn) return;
   try {
     const u = await findUser(from);
-    const [subs] = await db().query('SELECT id, sub FROM push_subs WHERE phone = ?', [to]);
-    const payload = JSON.stringify({ title: (u && u.name) || from, body: preview(text), tag: from, from });
-    await pushTo(subs, payload);
+    const name = (u && u.name) || from, isCall = String(text).indexOf('__call__') === 0;
+    if (pushOn) {
+      const [subs] = await db().query('SELECT id, sub FROM push_subs WHERE phone = ?', [to]);
+      await pushTo(subs, JSON.stringify({ title: name, body: preview(text), tag: from, from }));
+    }
+    if (fcmOn()) {
+      await fcmTable();
+      const [rows] = await db().query('SELECT id, token FROM fcm_tokens WHERE phone = ?', [to]);
+      if (isCall) {
+        let video = '0'; try { video = JSON.parse(String(text).slice(8)).v ? '1' : '0'; } catch (e) {}
+        await fcmPush(rows, { type: 'call', title: name, body: 'Incoming call', from, name, video, call: String(text) }, { ttl: '45s' });
+      } else await fcmPush(rows, { type: 'msg', title: name, body: preview(text), from });
+    }
   } catch (e) { console.error(e); }
 }
 
@@ -644,6 +670,19 @@ module.exports = async (req, res) => {
         }
       }
       return res.json({ results });
+    }
+
+    if (b.action === 'fcmreg') {
+      const ft = typeof b.ftoken === 'string' ? b.ftoken.trim() : '';
+      if (ft.length < 20 || ft.length > 500) return res.status(400).json({ error: 'Bad request.' });
+      await fcmTable();
+      await db().query('INSERT INTO fcm_tokens (phone, hash, token) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE phone = VALUES(phone), token = VALUES(token)', [me, sha(ft), ft]);
+      return res.json({ ok: true, server: fcmOn() });
+    }
+
+    if (b.action === 'fcmunreg') {
+      if (typeof b.ftoken === 'string') { await fcmTable(); await db().query('DELETE FROM fcm_tokens WHERE hash = ? AND phone = ?', [sha(b.ftoken.trim()), me]); }
+      return res.json({ ok: true });
     }
 
     if (b.action === 'pushkey') return res.json({ key: pushOn ? process.env.VAPID_PUBLIC_KEY : '' });
