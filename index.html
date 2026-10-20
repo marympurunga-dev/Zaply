@@ -2075,11 +2075,11 @@ ZW|Zimbabwe|263`;
     function openAcctType() {
       zOpenPage('Account Type', function (b) {
         var w = mk('div'); w.style.padding = '8px 0'; b.appendChild(w);
-        [['personal', 'Personal account', ''], ['business', 'Business account', 'Coming soon']].forEach(function (o) {
+        [['personal', 'Personal account', ''], ['business', 'Business account', 'Profile, greeting and away messages']].forEach(function (o) {
           var r = mk('button', 'zir'), t = mk('div', 'zt'); t.appendChild(mk('div', '', o[1])); if (o[2]) t.appendChild(mk('div', 'zl', o[2]));
           var dot = mk('span', '', acctType() === o[0] ? '\u25CF' : '\u25CB'); dot.style.color = acctType() === o[0] ? 'var(--acc,#21c063)' : 'var(--muted)';
           r.appendChild(t); r.appendChild(dot);
-          if (o[0] === 'business') r.style.opacity = '.55'; else r.addEventListener('click', function () { try { localStorage.setItem('zaply_acct_type', o[0]); } catch (e) {} closeOv(); });
+          r.addEventListener('click', function () { try { localStorage.setItem('zaply_acct_type', o[0]); } catch (e) {} closeOv(); });
           w.appendChild(r);
         });
       });
@@ -2769,6 +2769,7 @@ ZW|Zimbabwe|263`;
       list.forEach(function (e, i) { var p = pos[i % pos.length], x = Math.round(p[0] * size), y = Math.round(p[1] * size); s += '<text x="' + x + '" y="' + y + '" font-size="' + Math.round(size * .22) + '" text-anchor="middle" transform="rotate(' + p[2] + ' ' + x + ' ' + y + ')">' + e + '</text>'; });
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(s + '</svg>');
     }
+    function wallUrl(w, wd, ht) { return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(w.p) + '?width=' + wd + '&height=' + ht + '&nologo=true&seed=' + w.s; }
     var WALLS = (function () {
       var W = [], CATS = [
         ['Luxury cars', 'cars', ['Supercar', 'Grand tourer', 'Roadster', 'Hypercar', 'Black coupe', 'Silver sedan', 'Gold edition', 'Night drive', 'Showroom', 'Convertible', 'Classic luxury', 'Sport SUV', 'Track day', 'Red racer', 'White limo'], '#1f2937', '#9ca3af'],
@@ -2779,8 +2780,8 @@ ZW|Zimbabwe|263`;
       ];
       CATS.forEach(function (c) {
         c[2].forEach(function (name, k) {
-          var f = '/themes/' + c[1] + '-' + (k < 9 ? '0' : '') + (k + 1) + '.jpg';
-          W.push({ c: c[0], n: name, css: 'linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.28)),url("' + f + '") center/cover no-repeat,linear-gradient(160deg,' + c[3] + ',' + c[4] + ')' });
+          var f = '/themes/' + c[1] + '-' + (k < 9 ? '0' : '') + (k + 1) + '.jpg', P0 = { cars: name + ' luxury car', houses: name + ' luxury house exterior', girls: 'cute smiling young woman portrait, ' + name, mountains: name + ' mountain landscape', animals: 'cute ' + name + ' animal' };
+          W.push({ c: c[0], n: name, p: P0[c[1]] + ', high quality photo, vertical phone wallpaper, no text', s: 1000 + W.length * 7, css: 'linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.28)),url("' + f + '") center/cover no-repeat,linear-gradient(160deg,' + c[3] + ',' + c[4] + ')' });
         });
       });
       return W;
@@ -2823,10 +2824,19 @@ ZW|Zimbabwe|263`;
         });
         zrows(b, [['image', 'Choose from gallery', function () { file.click(); }], ['colorize', 'Set a colour', openWallColors], ['sparkle', 'Create with AI', openWallAI]]);
         var grid = mk('div', 'zwg'), cur = lsGet('zaply_wall', null);
+        var io = window.IntersectionObserver ? new IntersectionObserver(function (es) {
+          es.forEach(function (e) { if (!e.isIntersecting) return; io.unobserve(e.target); var w = e.target._w; if (w && w.p) { var im = new Image(); im.onload = function () { e.target.style.background = 'url("' + im.src + '") center/cover no-repeat'; }; im.src = wallUrl(w, 270, 480); } });
+        }, { rootMargin: '300px' }) : null;
         WALLS.forEach(function (w, i) {
-          var x = mk('button', 'zwi' + (cur && cur.css === w.css ? ' on' : '')); x.style.background = w.css; x.setAttribute('aria-label', w.c + ' ' + w.n); x.innerHTML = '<span class="zwk">' + zico('check') + '</span>';
-          x.addEventListener('click', function () { if (setWall({ css: w.css, k: 'preset', i: i })) { grid.querySelectorAll('.on').forEach(function (y) { y.classList.remove('on'); }); x.classList.add('on'); toast('Wallpaper set', true); } });
-          grid.appendChild(x);
+          var x = mk('button', 'zwi' + ((cur && ((cur.k === 'preset' && cur.css === w.css) || (cur.k === 'photo' && cur.i === i))) ? ' on' : '')); x.style.background = w.css; x._w = w; x.setAttribute('aria-label', w.c + ' ' + w.n); x.innerHTML = '<span class="zwk">' + zico('check') + '</span>';
+          x.addEventListener('click', function () {
+            toast('Setting wallpaper\u2026');
+            fetch(wallUrl(w, 720, 1280)).then(function (r) { if (!r.ok) throw new Error('bad'); return r.blob(); }).then(function (bl) { if (!/^image\//.test(bl.type)) throw new Error('bad'); return prepImage(bl, 1280, 0.72); })
+              .then(function (r) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(r.blob); }); })
+              .then(function (u) { if (setWall({ css: 'url("' + u + '") center/cover no-repeat', k: 'photo', i: i })) { grid.querySelectorAll('.on').forEach(function (y) { y.classList.remove('on'); }); x.classList.add('on'); toast('Wallpaper set', true); } })
+              .catch(function () { toast('Couldn\u2019t load that picture. Check your internet and try again.'); });
+          });
+          grid.appendChild(x); if (io) io.observe(x); else x._w = w;
         });
         b.appendChild(grid);
       });
@@ -2940,15 +2950,27 @@ ZW|Zimbabwe|263`;
     var TONE_TYPE = {};
     (function () {
       var NM = ['Aurora', 'Bamboo', 'Bell tower', 'Bloom', 'Breeze', 'Bubble', 'Cascade', 'Coral', 'Crystal', 'Dawn', 'Echo', 'Ember', 'Fable', 'Firefly', 'Flute', 'Glow', 'Harp', 'Honey', 'Ivory', 'Jade', 'Kite', 'Lagoon', 'Lark', 'Lotus', 'Marimba', 'Meadow', 'Melody', 'Mist', 'Moon', 'Nimbus', 'Opal', 'Orbit', 'Pearl', 'Pebble', 'Piano', 'Pixel', 'Rain', 'Ripple', 'Sparkle', 'Spring', 'Starlight', 'Sunrise', 'Tulip', 'Twinkle', 'Zephyr'],
-        SC = [523, 587, 659, 784, 880, 988, 1047, 1175, 1319, 1568], ST = [1, 2, -1, 3, 1, -2, 2, 1], WV = ['sine', 'triangle', 'sine', 'triangle'];
+        SC = [523, 587, 659, 784, 880, 988, 1047, 1175, 1319, 1568], ST = [1, 2, -1, 3, 1, -2, 2, 1], WV = ['glass', 'marimba', 'triangle', 'sine'], WR = ['bell', 'marimba', 'glass', 'bell'];
       function mk2(i, long) {
         var n = (long ? 6 : 2) + (i % 4), at = (i * 3) % 6, d = .07 + (i % 3) * .035, seq = [];
         for (var k = 0; k < n; k++) { seq.push([SC[((at % SC.length) + SC.length) % SC.length], k === n - 1 ? d * 2.4 : d]); at += ST[(i + k) % ST.length]; }
         return seq;
       }
       NM.forEach(function (nm, i) { var id = 't' + (i + 6); TONES[id] = mk2(i, false); TONE_TYPE[id] = WV[i % 4]; TONE_OPTS.push([id, nm]); });
-      NM.concat(['Alpine', 'Velvet']).forEach(function (nm, i) { var id = 'r' + (i + 4); TONES[id] = mk2(i + 2, true); TONE_TYPE[id] = WV[(i + 1) % 4]; RING_OPTS.push([id, nm]); });
+      NM.concat(['Alpine', 'Velvet']).forEach(function (nm, i) { var id = 'r' + (i + 4); TONES[id] = mk2(i + 2, true); TONE_TYPE[id] = WR[i % 4]; RING_OPTS.push([id, nm]); });
     })();
+    TONE_TYPE.classic = 'bell'; TONE_TYPE.chime = 'bell'; TONE_TYPE.ding = 'bell'; TONE_TYPE.brightline = 'glass'; TONE_TYPE.drop = 'marimba';
+    /* recorded tones: put audio files in /tones and /ringtones, then list them in list.json inside each folder */
+    function loadTonePacks() {
+      [['/tones/', TONE_OPTS], ['/ringtones/', RING_OPTS]].forEach(function (p) {
+        fetch(p[0] + 'list.json', { cache: 'no-cache' }).then(function (r) { return r.ok ? r.json() : []; }).then(function (arr) {
+          if (!Array.isArray(arr)) return; var add = [];
+          arr.forEach(function (o) { if (!o || !o.file || !o.name) return; var id = 'f:' + p[0] + String(o.file).replace(/^\/+/, ''); if (!p[1].some(function (x) { return x[0] === id; })) add.push([id, String(o.name)]); });
+          Array.prototype.splice.apply(p[1], [0, 0].concat(add));
+        }).catch(function () {});
+      });
+    }
+    loadTonePacks();
     function tfKey(id) { return id && id.indexOf('file:') === 0 ? 'zaply_tf_' + id.slice(5) : ''; }
     function pickAudioFile(key, done) {
       var f = document.createElement('input'); f.type = 'file'; f.accept = 'audio/*'; f.style.display = 'none'; document.body.appendChild(f);
@@ -2960,6 +2982,34 @@ ZW|Zimbabwe|263`;
       }); f.click();
     }
     function withCustom(opts, key) { var o = opts.concat([['file:' + key, 'Custom audio' + ((lsGet('zaply_tf_' + key, null) || {}).n ? ' (' + lsGet('zaply_tf_' + key, null).n + ')' : '')], ['__file', 'Choose audio from files\u2026'], ['none', 'Silent']]); return o; }
+    function openTonePicker(title, key, base, done, ring) {
+      zOpenPage(title, function (b) {
+        var rows = [];
+        function mark() { rows.forEach(function (r) { r._ck.textContent = r._id === nset()[key] ? '\u2713' : ''; }); }
+        function row(host, id, label, canPlay, custom) {
+          var r = mk('div', 'zir'); r.style.cssText = 'display:flex;align-items:center;gap:14px;cursor:pointer';
+          var pl = mk('button', '', '\u25b6'); pl.style.cssText = 'width:44px;height:44px;border-radius:22px;border:1px solid rgba(128,128,128,.5);background:none;color:var(--acc,#21c063);font-size:16px;flex:none;padding:0;opacity:' + (canPlay ? 1 : .35);
+          var t = mk('div', 'zt', label); t.style.flex = '1'; var ck = mk('span'); ck.style.cssText = 'color:var(--acc,#21c063);font-size:22px;font-weight:700';
+          pl.addEventListener('click', function (e) { e.stopPropagation(); if (canPlay) playTone(id, 1); });
+          r.addEventListener('click', function () {
+            if (id === 'file:' + key && !lsGet('zaply_tf_' + key, null)) return pickAudioFile(key, function () { mark(); done && done(); });
+            nsave(key, id); mark(); done && done(); if (canPlay) playTone(id, 1);
+          });
+          r.appendChild(pl); r.appendChild(t); r.appendChild(ck); r._id = id; r._ck = ck; rows.push(r); host.appendChild(r); return r;
+        }
+        b.appendChild(mk('div', 'zsec', ring ? 'Standard ringtones' : 'Standard tones'));
+        var host = mk('div'), more = [], cur = nset()[key]; b.appendChild(host);
+        row(host, 'none', 'None', false);
+        base.forEach(function (o, i) { var r = row(host, o[0], o[1], true); if (i >= 5) { r.style.display = 'none'; more.push(r); } });
+        if (more.some(function (r) { return r._id === cur; })) more.forEach(function (r) { r.style.display = 'flex'; });
+        else { var sa = mk('button', '', 'See all'); sa.style.cssText = 'margin:12px 20px;width:auto;padding:12px 26px;border-radius:26px;color:var(--acc,#21c063)'; sa.addEventListener('click', function () { more.forEach(function (r) { r.style.display = 'flex'; }); sa.remove(); }); b.appendChild(sa); }
+        b.appendChild(mk('div', 'zsec', 'Your audio'));
+        var mine = mk('div'); b.appendChild(mine); var f0 = lsGet('zaply_tf_' + key, null);
+        if (f0) row(mine, 'file:' + key, 'Custom audio (' + (f0.n || 'file') + ')', true);
+        var ch = mk('button', 'zir'); ch.appendChild(mk('div', 'zt', 'Choose audio from files\u2026')); ch.addEventListener('click', function () { pickAudioFile(key, function () { done && done(); closeOv(); setTimeout(function () { openTonePicker(title, key, base, done, ring); }, 80); }); }); b.appendChild(ch);
+        mark();
+      });
+    }
     function nset() {
       var d = { tones: true, reminders: true, m_tone: 'brightline', m_vib: 'default', m_high: true, m_react: true, g_tone: 'brightline', g_vib: 'default', g_high: true, g_react: true, c_ring: 'brightline', c_vib: 'default', s_tone: 'brightline', s_vib: 'default', s_high: true, s_react: true, badge: true };
       var s = lsGet('zaply_notif', {}); for (var k in s) d[k] = s[k]; return d;
@@ -2973,14 +3023,21 @@ ZW|Zimbabwe|263`;
     }
     var AC = null;
     function actx() { if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (C) { try { AC = new C(); } catch (e) {} } } if (AC && AC.state === 'suspended') { try { AC.resume(); } catch (e) {} } return AC; }
+    var PARTS = { bell: [[1, 1], [2.76, .45], [5.4, .2], [8.9, .08]], marimba: [[1, 1], [3.9, .3], [9.9, .1]], glass: [[1, 1], [2, .35], [3, .15]] };
     function playTone(id, loops) {
       if (!id || id === 'none') return;
+      if (id.indexOf('f:') === 0) { try { var ra = new Audio(id.slice(2)); ra.play().catch(function () {}); } catch (e) {} return; }
       if (tfKey(id)) { var fo = lsGet(tfKey(id), null); if (fo && fo.d) { try { var au = new Audio(fo.d); au.play().catch(function () {}); } catch (e) {} } return; }
-      var c = actx(); if (!c) return; var t = c.currentTime + .02, seq = TONES[id] || TONES.brightline;
+      var c = actx(); if (!c) return; var t = c.currentTime + .02, seq = TONES[id] || TONES.brightline, ty = TONE_TYPE[id] || 'sine', pa = PARTS[ty] || [[1, 1]];
       for (var l = 0; l < (loops || 1); l++) {
         seq.forEach(function (n) {
-          var o = c.createOscillator(), g = c.createGain(); o.type = TONE_TYPE[id] || 'sine'; o.frequency.value = n[0]; g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + n[1]);
-          o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + n[1] + .03); t += n[1] * .9;
+          var len = ty === 'bell' || ty === 'glass' ? Math.max(n[1] * 3.2, .5) : (ty === 'marimba' ? Math.max(n[1] * 2, .3) : n[1]);
+          pa.forEach(function (p) {
+            var o = c.createOscillator(), g = c.createGain(); o.type = PARTS[ty] ? 'sine' : ty; o.frequency.value = n[0] * p[0];
+            g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.2 * p[1], t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + len);
+            o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + len + .03);
+          });
+          t += n[1] * .9;
         });
         t += .6;
       }
@@ -2992,7 +3049,7 @@ ZW|Zimbabwe|263`;
       buzz(group ? n.g_vib : n.m_vib);
     }
     function outgoingFx() { if (nset().tones) playTone('pop'); }
-    function callFx() { var n = nset(); playTone(n.c_ring, 3); buzz(n.c_vib); }
+    function callFx() { var n = nset(); playTone(n.c_ring, 5); buzz(n.c_vib); }
     var lastAtMap = null;
     function chatListFx(chats) {
       var first = !lastAtMap; lastAtMap = lastAtMap || {};
@@ -3008,10 +3065,7 @@ ZW|Zimbabwe|263`;
         function tone(title, key, opts) {
           var base = opts || TONE_OPTS;
           zoptRow(b, title, function () { return labOf(withCustom(base, key), nset()[key]); }, function (ref) {
-            zpick(title, withCustom(base, key), nset()[key], function (v) {
-              if (v === '__file' || (v === 'file:' + key && !lsGet('zaply_tf_' + key, null))) return pickAudioFile(key, function () { playTone('file:' + key); ref(); });
-              nsave(key, v); playTone(v, 1); ref();
-            });
+            openTonePicker(title, key, base, ref, base === RING_OPTS);
           });
         }
         function vib(key) { zoptRow(b, 'Vibrate', function () { return labOf(VIB_OPTS, nset()[key]); }, function (ref) { zpick('Vibrate', VIB_OPTS, nset()[key], function (v) { nsave(key, v); buzz(v); ref(); }); }); }
@@ -3269,6 +3323,81 @@ ZW|Zimbabwe|263`;
     function invite() { var t = 'Join me on Zanply: ' + location.origin; if (navigator.share) navigator.share({ text: t }).catch(function () {}); else if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast('Invite link copied', true); }); else toast('Link: ' + location.origin); }
 
     /* ---------- Settings home ---------- */
+    /* ---------- Zanply Premium / Stars / Business / Send a gift ---------- */
+    function pBtn(label, fn, ghost) { var x = mk('button', ghost ? '' : 'primary', label); x.style.cssText = 'width:100%;margin-top:10px'; x.addEventListener('click', fn); return x; }
+    function openPremium() {
+      zOpenPage('Zanply Premium', function (b) {
+        var w = mk('div'); w.style.padding = '20px'; b.appendChild(w);
+        var hd = mk('div'); hd.style.cssText = 'text-align:center;margin-bottom:18px'; hd.innerHTML = '<div style="font-size:46px;color:var(--acc,#21c063)">\u25c6</div><h2 style="margin:6px 0">Zanply Premium</h2><div class="sub">Do more with Zanply: more statuses, bigger files, more chats and more storage.</div>'; w.appendChild(hd);
+        var perks = [['Post many statuses', 'Share more status updates every day.'], ['Send big files', 'Videos, music and documents far larger than the free limit.'], ['More chats and storage', 'Keep more chats, media and backups.'], ['Double limits', '1000 channels \u2022 30 chat folders \u2022 10 pinned chats \u2022 20 public links \u2022 4 accounts']];
+        perks.forEach(function (p) { var r = mk('div'); r.style.cssText = 'padding:12px 0;border-bottom:1px solid rgba(128,128,128,.2)'; r.innerHTML = '<b></b><div class="sub" style="margin-top:2px"></div>'; r.querySelector('b').textContent = '\u2713 ' + p[0]; r.querySelector('.sub').textContent = p[1]; w.appendChild(r); });
+        w.appendChild(pBtn('Subscribe to Premium', function () { toast('Payments are being connected. Premium will open soon.'); }));
+        var sec = mk('div', 'zsec', 'Add-ons'); sec.style.marginTop = '18px'; w.appendChild(sec);
+        [['Paid messages', 'Let people pay to message you.'], ['Ads', 'Promote your channel or business inside Zanply.'], ['AI tools', 'Zanply AI for writing, images and quizzes.']].forEach(function (a) {
+          var r = mk('div'); r.style.cssText = 'padding:12px 0;border-bottom:1px solid rgba(128,128,128,.2)'; r.innerHTML = '<b></b><div class="sub" style="margin:2px 0 8px"></div>'; r.querySelector('b').textContent = a[0]; r.querySelector('.sub').textContent = a[1];
+          var s = pBtn('Subscribe', function () { toast(a[0] + ' will open soon.'); }); s.style.marginTop = '0'; r.appendChild(s); w.appendChild(r);
+        });
+      });
+    }
+    function starsBal() { return lsGet('zaply_stars', 0); }
+    function openStars() {
+      zOpenPage('Zanply Stars', function (b) {
+        var w = mk('div'); w.style.padding = '10px 18px 24px'; b.appendChild(w);
+        var hd = mk('div'); hd.style.cssText = 'text-align:center;margin:8px 0 18px'; hd.innerHTML = '<div style="font-size:64px;line-height:1">\u2b50</div><h2 style="margin:10px 0 6px">Zanply Stars</h2><div class="sub">Buy Stars to unlock content and services in Zanply, and to send gifts to people you love.</div>'; w.appendChild(hd);
+        var card = mk('div'); card.style.cssText = 'border-radius:16px;padding:22px 16px;text-align:center;background:rgba(128,128,128,.12)'; card.innerHTML = '<div style="font-size:34px;font-weight:700">\u2b50 ' + starsBal() + '</div><div class="sub">your balance</div>'; w.appendChild(card);
+        var buy = pBtn('Buy Stars', function () { toast('Buying Stars opens soon.'); }); buy.style.borderRadius = '26px'; buy.style.height = '50px'; card.appendChild(buy);
+        var g = mk('button', '', '\u{1F381} Gift Stars to Friends'); g.style.cssText = 'margin-top:14px;background:none;border:0;color:var(--acc,#21c063);font-weight:600'; g.addEventListener('click', openGift); card.appendChild(g);
+        var e = mk('button', 'zir'); e.style.cssText = 'margin-top:14px;border-radius:14px;background:rgba(128,128,128,.12);width:100%;text-align:left'; e.innerHTML = '<div class="zt"><div><b>Earn Stars</b> <span style="font-size:11px;padding:2px 6px;border-radius:6px;background:#3b82f6;color:#fff">NEW</span></div><div class="zl">Share Zanply and earn Stars when your friends join.</div></div>'; e.addEventListener('click', function () { try { invite(); } catch (x) { toast('Invite opens soon.'); } }); w.appendChild(e);
+      });
+    }
+    var QUIZ_FALLBACK = ['What is my favourite food?', 'Where did we first meet?', 'What is the one thing I always say?'];
+    function aiQuiz(topic) {
+      var pr = 'Write exactly 3 short, sweet quiz questions a person can ask their partner about: ' + topic + '. One question per line, no numbering, no extra text.';
+      var ctl = window.AbortController ? new AbortController() : null, t = ctl ? setTimeout(function () { ctl.abort(); }, 25000) : 0;
+      return fetch('https://text.pollinations.ai/' + encodeURIComponent(pr), ctl ? { signal: ctl.signal } : {}).then(function (r) { if (!r.ok) throw new Error('bad'); return r.text(); })
+        .then(function (tx) { clearTimeout(t); var q = tx.split(/\n+/).map(function (s) { return s.replace(/^[\s\d.\-*)]+/, '').trim(); }).filter(function (s) { return s.length > 8 && s.length < 160; }).slice(0, 3); if (q.length < 3) throw new Error('bad'); return q; })
+        .catch(function () { clearTimeout(t); return QUIZ_FALLBACK; });
+    }
+    function openGift() {
+      zOpenPage('Send a Gift', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        w.appendChild(mk('div', 'sub', 'Send your partner a star gift as a quiz. Zanply AI writes the questions and they answer to unlock the gift.'));
+        var list = (allChats || []).filter(function (c) { return c && !c.group && /^\+\d{7,15}$/.test(c.phone || ''); }), to = '';
+        zlbl(w, 'Send to'); var sel = document.createElement('select'); sel.className = 'zin'; var o0 = document.createElement('option'); o0.value = ''; o0.textContent = list.length ? 'Choose a person' : 'Start a chat first'; sel.appendChild(o0);
+        list.forEach(function (c) { var o = document.createElement('option'); o.value = c.phone; o.textContent = savedName(c.phone) || c.name || c.phone; sel.appendChild(o); }); w.appendChild(sel);
+        zlbl(w, 'Quiz topic'); var tp = zin('For example: our love story', 'text', 80); w.appendChild(tp);
+        zlbl(w, 'Stars in the gift'); var st = mk('div', 'sub', starsBal() > 0 ? 'You have ' + starsBal() + ' Stars.' : 'You have 0 Stars. The quiz is sent without Stars until you buy some.'); w.appendChild(st);
+        var out = mk('div'); out.style.cssText = 'margin-top:14px;white-space:pre-wrap'; w.appendChild(out); var qs = null;
+        var go = pBtn('Create quiz with Zanply AI', function () {
+          if (!sel.value) return toast('Choose who to send it to'); if (!tp.value.trim()) return toast('Write a topic first');
+          go.disabled = true; go.textContent = 'Creating\u2026';
+          aiQuiz(tp.value.trim()).then(function (q) { qs = q; out.textContent = q.map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n'); go.disabled = false; go.textContent = 'Create again'; send.classList.remove('hidden'); });
+        });
+        w.appendChild(go);
+        var send = pBtn('Send gift quiz', function () {
+          if (!qs || !sel.value) return;
+          queueMsg(sel.value, '\u{1F381}\u2b50 Zanply Star Gift Quiz\nAnswer these to unlock your gift:\n' + qs.map(function (x, i) { return (i + 1) + '. ' + x; }).join('\n')); toast('Gift quiz sent', true); closeOv();
+        }); send.classList.add('hidden'); w.appendChild(send);
+      });
+    }
+    function bizSet() { return lsGet('zaply_biz', { name: '', cat: '', addr: '', hours: '', greet: false, away: false, awayText: '' }); }
+    function openBusiness() {
+      zOpenPage('Zanply Business', function (b) {
+        var w = mk('div'); w.style.padding = '18px 20px'; b.appendChild(w);
+        w.appendChild(mk('div', 'sub', 'Run your shop or service on Zanply with a business profile, greeting and away messages.'));
+        var on = acctType() === 'business';
+        var sw = pBtn(on ? 'Switch back to Personal account' : 'Switch to Business account', function () { try { localStorage.setItem('zaply_acct_type', on ? 'personal' : 'business'); } catch (e) {} closeOv(); setTimeout(openBusiness, 80); }, on); w.appendChild(sw);
+        if (!on) return;
+        var s = bizSet(); function sv() { lsSet('zaply_biz', s); }
+        [['name', 'Business name', 'Your business name', 60], ['cat', 'Category', 'For example: Fashion, Food, Electronics', 40], ['addr', 'Address', 'Where customers find you', 120], ['hours', 'Opening hours', 'For example: Mon\u2013Sat 8am\u20136pm', 60]].forEach(function (f) {
+          zlbl(w, f[1]); var i = zin(f[2], 'text', f[3]); i.value = s[f[0]] || ''; i.addEventListener('input', function () { s[f[0]] = i.value; sv(); }); w.appendChild(i);
+        });
+        zswitchRow(w, 'Greeting message', 'Send a welcome message to new customers.', s.greet, function (v) { s.greet = v; sv(); });
+        zswitchRow(w, 'Away message', 'Reply automatically when you are away.', s.away, function (v) { s.away = v; sv(); });
+        zlbl(w, 'Away message text'); var at = zin('Thanks! We will reply soon.', 'text', 200); at.value = s.awayText || ''; at.addEventListener('input', function () { s.awayText = at.value; sv(); }); w.appendChild(at);
+        w.appendChild(mk('div', 'zfoot', 'Your business details are saved on this phone for now. Automatic replies will be switched on with the server update.'));
+      });
+    }
     function openSettings() {
       zOpenPage('Settings', function (b) {
         var pg = b.parentNode, hd = pg.querySelector('.zpg-h'), ttl = hd.querySelector('span'), u = lsGet('zaply_user', {}) || {}, P = cachedMyProf(), nm = P.name || u.name || u.phone || 'You';
@@ -3292,10 +3421,10 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'globe', 'App language', langName(), openLanguage);
         zrow2(list, 'invite', 'Invite a friend', 'Share Zanply with your contacts', invite);
         list.appendChild(mk('div', 'zsep'));
-        zrow2(list, 'diamond', 'Zanply Premium', '', soon('Zanply Premium'));
-        zrow2(list, 'star', 'Zanply Stars', '', soon('Zanply Stars'));
-        zrow2(list, 'store', 'Zanply Business', '', soon('Zanply Business'));
-        zrow2(list, 'gift', 'Send a Gift', '', soon('Send a Gift'));
+        zrow2(list, 'diamond', 'Zanply Premium', 'More statuses, big files, double limits', openPremium);
+        zrow2(list, 'star', 'Zanply Stars', 'Buy, gift and earn Stars', openStars);
+        zrow2(list, 'store', 'Zanply Business', 'Business profile and auto replies', openBusiness);
+        zrow2(list, 'gift', 'Send a Gift', 'Quiz gift for your partner', openGift);
         var hh = mk('div', 'zsec', 'Help'); hh.style.color = '#3b9cf5'; hh.setAttribute('data-hdr', '1'); list.appendChild(hh);
         zrow2(list, 'ask', 'Ask a Question', '', askQuestion);
         zrow2(list, 'faq', 'Zanply FAQ', '', openFaq);
