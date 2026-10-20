@@ -279,7 +279,7 @@ module.exports = async (req, res) => {
       if (!phoneOk(b.phone)) return res.status(400).json({ error: 'Enter a valid phone number.' });
       if (b.phone === me) return res.status(400).json({ error: "That's your own number." });
       const u = await findUser(b.phone);
-      if (!u) return res.status(404).json({ error: "That number isn't on Zucket yet." });
+      if (!u) return res.status(404).json({ error: "That number isn't on Zanply yet." });
       return res.json({ user: u });
     }
 
@@ -318,7 +318,7 @@ module.exports = async (req, res) => {
         return res.json({ message: { id: gr.insertId, mine: true, body, at: new Date().toISOString(), from: '' } });
       }
       if (!phoneOk(b.to) || !body) return res.status(400).json({ error: 'Bad request.' });
-      if (!(await findUser(b.to))) return res.status(404).json({ error: "That number isn't on Zucket yet." });
+      if (!(await findUser(b.to))) return res.status(404).json({ error: "That number isn't on Zanply yet." });
       const bs = await blockState(me, b.to);
       if (bs.iBlocked) return res.status(403).json({ error: 'You blocked this contact. Unblock them to send messages.', blocked: true });
       if (bs.blockedMe) return res.status(403).json({ error: "You can't message this person." });
@@ -394,7 +394,7 @@ module.exports = async (req, res) => {
       if (!phoneOk(np) || np === me) return res.status(400).json({ error: 'Enter a valid new number with the country code, for example +254…' });
       const channel = ['sms', 'email', 'call', 'missedcall'].includes(b.channel) ? b.channel : 'sms';
       if (channel === 'call' || channel === 'missedcall') return res.status(400).json({ error: 'This option is not available yet. Please use the text message.' });
-      if (await findUser(np)) return res.status(409).json({ error: 'That number is already registered on Zucket.' });
+      if (await findUser(np)) return res.status(409).json({ error: 'That number is already registered on Zanply.' });
       const [cnt] = await db().query('SELECT COUNT(*) AS n FROM phone_otps WHERE owner = ? AND created_at > (NOW() - INTERVAL 1 DAY)', [me]);
       if (cnt[0].n >= 3) return res.status(429).json({ error: 'You have reached today’s limit for code requests. Try again tomorrow.' });
       const [last] = await db().query('SELECT TIMESTAMPDIFF(SECOND, created_at, NOW()) AS age FROM phone_otps WHERE owner = ? ORDER BY id DESC LIMIT 1', [me]);
@@ -405,7 +405,7 @@ module.exports = async (req, res) => {
         mailTo = pe[0] && pe[0].email; if (!mailTo) return res.status(400).json({ error: 'Add an email to your profile first.' });
       }
       const code = String(crypto.randomInt(100000, 1000000));
-      const msg = 'Your Zucket code is ' + code + '. It expires in 10 minutes. Do not share it.';
+      const msg = 'Your Zanply code is ' + code + '. It expires in 10 minutes. Do not share it.';
       try { if (channel === 'email') await sendCodeEmail(mailTo, code); else await sendSms(np, msg); }
       catch (e) { return res.status(502).json({ error: e.message || 'Could not send the code.' }); }
       await db().query('INSERT INTO phone_otps (owner, new_phone, code_hash, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL 10 MINUTE)', [me, np, sha(code + SECRET)]);
@@ -420,7 +420,7 @@ module.exports = async (req, res) => {
       if (o.secs <= 0) return res.status(400).json({ error: 'That code has expired. Ask for a new one.' });
       if (o.tries >= 5) return res.status(429).json({ error: 'Too many wrong tries. Ask for a new code.' });
       if (sha(code + SECRET) !== o.code_hash) { await db().query('UPDATE phone_otps SET tries = tries + 1 WHERE id = ?', [o.id]); return res.status(400).json({ error: 'Wrong code. Try again.' }); }
-      if (await findUser(np)) return res.status(409).json({ error: 'That number is already registered on Zucket.' });
+      if (await findUser(np)) return res.status(409).json({ error: 'That number is already registered on Zanply.' });
       const conn = await db().getConnection();
       try {
         await conn.beginTransaction();
@@ -439,7 +439,7 @@ module.exports = async (req, res) => {
       const who = b.phone === undefined ? me : b.phone;
       if (!phoneOk(who)) return res.status(400).json({ error: 'Bad request.' });
       if (who !== me) {
-        if (!(await findUser(who))) return res.status(404).json({ error: "That number isn't on Zucket yet." });
+        if (!(await findUser(who))) return res.status(404).json({ error: "That number isn't on Zanply yet." });
         const bs = await blockState(me, who);
         if (bs.iBlocked || bs.blockedMe) return res.json({ profile: EMPTY_PROFILE });
       }
@@ -531,7 +531,7 @@ module.exports = async (req, res) => {
       if (!wanted.length) return res.status(400).json({ error: 'Add at least one member.' });
       const [found] = await db().query('SELECT phone FROM users WHERE phone IN (?)', [wanted]);
       const members = found.map((x) => x.phone);
-      if (!members.length) return res.status(400).json({ error: 'None of those people are on Zucket.' });
+      if (!members.length) return res.status(400).json({ error: 'None of those people are on Zanply.' });
       const [g] = await db().query('INSERT INTO chat_groups (name, creator) VALUES (?, ?)', [name, me]);
       const rows = [me].concat(members).map((p) => [g.insertId, p]);
       await db().query('INSERT INTO group_members (group_id, phone) VALUES ?', [rows]);
@@ -568,7 +568,7 @@ module.exports = async (req, res) => {
       if (isGroup(to)) {
         if (!(await isMember(gid(to), me))) return res.status(403).json({ error: 'You are not in this group.' });
       } else {
-        if (!phoneOk(to) || !(await findUser(to))) return res.status(404).json({ error: "That number isn't on Zucket yet." });
+        if (!phoneOk(to) || !(await findUser(to))) return res.status(404).json({ error: "That number isn't on Zanply yet." });
         const bs = await blockState(me, to);
         if (bs.iBlocked) return res.status(403).json({ error: 'You blocked this contact. Unblock them to send messages.', blocked: true });
         if (bs.blockedMe) return res.status(403).json({ error: "You can't message this person." });
