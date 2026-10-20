@@ -895,7 +895,7 @@
       </div>
       <div id="emojiBox" class="emojibox hidden"></div>
       <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="cedEmo" aria-label="Emoji">&#128578;</button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div></div>
-      <input id="fileImg" type="file" accept="image/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden><input id="fileAudio" type="file" accept="audio/*" hidden>
+      <input id="fileImg" type="file" accept="image/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden><input id="fileAudio" type="file" hidden>
       <div id="recBar" class="recbar hidden"><button id="recCancel" aria-label="Cancel recording"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button><span class="recdot"></span><span id="recT">0:00</span><span style="flex:1;opacity:.7;font-size:13px">Recording&hellip;</span><button id="recSend" aria-label="Send voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
       <div id="blockBar" class="blockbar hidden"><span id="blockBarT"></span><button id="blockBarBtn">Unblock</button></div>
       <div class="comp" id="comp">
@@ -2997,14 +2997,16 @@ ZW|Zimbabwe|263`;
       var f = $('fileAudio'); f.value = '';
       try { localStorage.setItem('zaply_pickwait', String(Date.now())); } catch (e) {}
       f.onchange = function () {
+        toast('File chosen: ' + ((f.files && f.files[0] && f.files[0].name) || 'none'), false, 3000);
         try { localStorage.removeItem('zaply_pickwait'); } catch (e) {}
         var fl = f.files && f.files[0]; if (!fl) return;
-        if (fl.size > 30000000) return toast('That file is too big (max 30 MB).');
+        if (!/^audio\//.test(fl.type || '') && !/\.(mp3|m4a|aac|ogg|oga|opus|wav|amr|flac|mp4|3gp|webm|mid|midi)$/i.test(fl.name || '')) return toast('That is not a sound file. Pick an .mp3, .m4a, .ogg or .wav file.', false, 6000);
+        if (fl.size > 80000000) return toast('That file is too big (max 80 MB).', false, 6000);
         toast('Saving ' + (fl.name || 'audio') + '\u2026');
         zdbPut('zaply_tf_' + key, fl).then(function () {
           delete AUDURL['zaply_tf_' + key];
           lsSet('zaply_tf_' + key, { n: fl.name || 'Audio' }); nsave(key, 'file:' + key); toast('Audio set', true); done && done();
-        }).catch(function () { toast('Could not save that audio on this phone'); });
+        }).catch(function (e) { toast('Could not save that audio: ' + ((e && (e.name || e.message)) || 'storage error'), false, 8000); });
       };
       f.click();
     }
@@ -3737,7 +3739,7 @@ ZW|Zimbabwe|263`;
       });
       return best;
     }
-    function toast(m, ok) { var e = mk('div', 'toast' + (ok ? ' ok' : ''), m); document.body.appendChild(e); setTimeout(function () { e.remove(); }, ok ? 5000 : 2200); }
+    function toast(m, ok, ms) { var e = mk('div', 'toast' + (ok ? ' ok' : ''), m); document.body.appendChild(e); setTimeout(function () { e.remove(); }, ms || (ok ? 5000 : 2200)); }
     function setBlockedUI() {
       $('threadView').classList.toggle('isblocked', curBlocked);
       $('blockBar').classList.toggle('hidden', !curBlocked);
