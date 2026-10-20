@@ -1,4 +1,4 @@
-const CACHE = 'zanply-v9';
+const CACHE = 'zanply-v11';
 const PREFS = 'zanply-prefs';
 const SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', (e) => {
@@ -56,6 +56,7 @@ self.addEventListener('push', (e) => {
   e.waitUntil(
     Promise.all([self.clients.matchAll({ type: 'window', includeUncontrolled: true }), readPrefs()]).then(([cs, P]) => {
       if (cs.some((c) => c.visibilityState === 'visible')) return; // app is open: no popup needed
+      if (P.popup === 'off') return;
       return self.registration.showNotification(d.title || 'Zanply', {
         body: d.body || 'New message',
         icon: '/icon-192.png', badge: '/icon-badge.png',
