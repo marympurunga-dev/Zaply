@@ -2781,7 +2781,7 @@ ZW|Zimbabwe|263`;
       CATS.forEach(function (c) {
         c[2].forEach(function (name, k) {
           var f = '/themes/' + c[1] + '-' + (k < 9 ? '0' : '') + (k + 1) + '.jpg', P0 = { cars: name + ' luxury car', houses: name + ' luxury house exterior', girls: 'cute smiling young woman portrait, ' + name, mountains: name + ' mountain landscape', animals: 'cute ' + name + ' animal' };
-          W.push({ c: c[0], n: name, p: P0[c[1]] + ', high quality photo, vertical phone wallpaper, no text', s: 1000 + W.length * 7, css: 'linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.28)),url("' + f + '") center/cover no-repeat,linear-gradient(160deg,' + c[3] + ',' + c[4] + ')' });
+          W.push({ f: f, c: c[0], n: name, p: P0[c[1]] + ', high quality photo, vertical phone wallpaper, no text', s: 1000 + W.length * 7, css: 'linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.28)),url("' + f + '") center/cover no-repeat,linear-gradient(160deg,' + c[3] + ',' + c[4] + ')' });
         });
       });
       return W;
@@ -2825,13 +2825,13 @@ ZW|Zimbabwe|263`;
         zrows(b, [['image', 'Choose from gallery', function () { file.click(); }], ['colorize', 'Set a colour', openWallColors], ['sparkle', 'Create with AI', openWallAI]]);
         var grid = mk('div', 'zwg'), cur = lsGet('zaply_wall', null);
         var io = window.IntersectionObserver ? new IntersectionObserver(function (es) {
-          es.forEach(function (e) { if (!e.isIntersecting) return; io.unobserve(e.target); var w = e.target._w; if (w && w.p) { var im = new Image(); im.onload = function () { e.target.style.background = 'url("' + im.src + '") center/cover no-repeat'; }; im.src = wallUrl(w, 270, 480); } });
+          es.forEach(function (e) { if (!e.isIntersecting) return; io.unobserve(e.target); var w = e.target._w; if (w && w.f) { var im = new Image(); im.onload = function () { e.target.style.background = 'url("' + im.src + '") center/cover no-repeat'; }; im.src = w.f; } });
         }, { rootMargin: '300px' }) : null;
         WALLS.forEach(function (w, i) {
           var x = mk('button', 'zwi' + ((cur && ((cur.k === 'preset' && cur.css === w.css) || (cur.k === 'photo' && cur.i === i))) ? ' on' : '')); x.style.background = w.css; x._w = w; x.setAttribute('aria-label', w.c + ' ' + w.n); x.innerHTML = '<span class="zwk">' + zico('check') + '</span>';
           x.addEventListener('click', function () {
             toast('Setting wallpaper\u2026');
-            fetch(wallUrl(w, 720, 1280)).then(function (r) { if (!r.ok) throw new Error('bad'); return r.blob(); }).then(function (bl) { if (!/^image\//.test(bl.type)) throw new Error('bad'); return prepImage(bl, 1280, 0.72); })
+            fetch(w.f).then(function (r) { if (!r.ok) throw new Error('bad'); return r.blob(); }).then(function (bl) { if (!/^image\//.test(bl.type)) throw new Error('bad'); return prepImage(bl, 1280, 0.72); })
               .then(function (r) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(r.blob); }); })
               .then(function (u) { if (setWall({ css: 'url("' + u + '") center/cover no-repeat', k: 'photo', i: i })) { grid.querySelectorAll('.on').forEach(function (y) { y.classList.remove('on'); }); x.classList.add('on'); toast('Wallpaper set', true); } })
               .catch(function () { toast('Couldn\u2019t load that picture. Check your internet and try again.'); });
@@ -2972,14 +2972,39 @@ ZW|Zimbabwe|263`;
     }
     loadTonePacks();
     function tfKey(id) { return id && id.indexOf('file:') === 0 ? 'zaply_tf_' + id.slice(5) : ''; }
+    /* custom audio from the phone: stored in IndexedDB (no tiny localStorage limit), name kept in localStorage */
+    var ZDB = null;
+    function zdb() {
+      return new Promise(function (res, rej) {
+        if (ZDB) return res(ZDB);
+        try { var q = indexedDB.open('zanply-audio', 1); q.onupgradeneeded = function () { q.result.createObjectStore('a'); }; q.onsuccess = function () { ZDB = q.result; res(ZDB); }; q.onerror = function () { rej(q.error); }; } catch (e) { rej(e); }
+      });
+    }
+    function zdbPut(k, blob) { return zdb().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction('a', 'readwrite'); t.objectStore('a').put(blob, k); t.oncomplete = function () { res(); }; t.onerror = function () { rej(t.error); }; }); }); }
+    function zdbGet(k) { return zdb().then(function (d) { return new Promise(function (res, rej) { var r = d.transaction('a').objectStore('a').get(k); r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; }); }); }
+    var AUDURL = {}, CURAUD = null;
+    function stopAudio() { if (CURAUD) { try { CURAUD.pause(); } catch (e) {} CURAUD = null; } }
+    function playCustom(key, loop, maxSec) {
+      stopAudio();
+      var go = function (url) {
+        var a = new Audio(url); a.loop = !!loop; CURAUD = a; a.play().catch(function () {});
+        setTimeout(function () { if (CURAUD === a) stopAudio(); }, (maxSec || 6) * 1000);
+      };
+      if (AUDURL[key]) return go(AUDURL[key]);
+      zdbGet(key).then(function (b) { if (b) { AUDURL[key] = URL.createObjectURL(b); go(AUDURL[key]); } }).catch(function () {});
+    }
     function pickAudioFile(key, done) {
-      var f = document.createElement('input'); f.type = 'file'; f.accept = 'audio/*'; f.style.display = 'none'; document.body.appendChild(f);
+      var f = document.createElement('input'); f.type = 'file'; f.accept = 'audio/*,.mp3,.m4a,.aac,.ogg,.oga,.opus,.wav,.amr,.flac,.mp4'; f.style.cssText = 'position:fixed;left:-9999px;opacity:0'; document.body.appendChild(f);
       f.addEventListener('change', function () {
-        var fl = f.files && f.files[0]; f.remove(); if (!fl) return;
-        if (fl.size > 1500000) return toast('Choose a shorter audio file (under 1.5 MB).');
-        var fr = new FileReader(); fr.onload = function () { if (lsSet('zaply_tf_' + key, { n: fl.name, d: fr.result })) { nsave(key, 'file:' + key); toast('Audio set', true); done && done(); } else toast('Not enough space to save that audio'); };
-        fr.readAsDataURL(fl);
-      }); f.click();
+        var fl = f.files && f.files[0]; if (!fl) { f.remove(); return; }
+        if (fl.size > 30000000) { f.remove(); return toast('That file is too big (max 30 MB).'); }
+        toast('Saving audio\u2026');
+        zdbPut('zaply_tf_' + key, fl).then(function () {
+          delete AUDURL['zaply_tf_' + key]; f.remove();
+          lsSet('zaply_tf_' + key, { n: fl.name || 'Audio' }); nsave(key, 'file:' + key); toast('Audio set', true); done && done();
+        }).catch(function () { f.remove(); toast('Could not save that audio'); });
+      });
+      f.click();
     }
     function withCustom(opts, key) { var o = opts.concat([['file:' + key, 'Custom audio' + ((lsGet('zaply_tf_' + key, null) || {}).n ? ' (' + lsGet('zaply_tf_' + key, null).n + ')' : '')], ['__file', 'Choose audio from files\u2026'], ['none', 'Silent']]); return o; }
     function openTonePicker(title, key, base, done, ring) {
@@ -3027,7 +3052,7 @@ ZW|Zimbabwe|263`;
     function playTone(id, loops) {
       if (!id || id === 'none') return;
       if (id.indexOf('f:') === 0) { try { var ra = new Audio(id.slice(2)); ra.play().catch(function () {}); } catch (e) {} return; }
-      if (tfKey(id)) { var fo = lsGet(tfKey(id), null); if (fo && fo.d) { try { var au = new Audio(fo.d); au.play().catch(function () {}); } catch (e) {} } return; }
+      if (tfKey(id)) { playCustom(tfKey(id), loops === 'ring', loops === 'ring' ? 40 : 6); return; }
       var c = actx(); if (!c) return; var t = c.currentTime + .02, seq = TONES[id] || TONES.brightline, ty = TONE_TYPE[id] || 'sine', pa = PARTS[ty] || [[1, 1]];
       for (var l = 0; l < (loops || 1); l++) {
         seq.forEach(function (n) {
@@ -3045,10 +3070,14 @@ ZW|Zimbabwe|263`;
     function buzz(kind) { try { if (navigator.vibrate) navigator.vibrate(VIB_PAT[kind] || VIB_PAT['default']); } catch (e) {} }
     function incomingFx(group) {
       var n = nset(); if (document.hidden) return;
+      if (n.tones) playTone(group ? n.g_tone : n.m_tone);
       buzz(group ? n.g_vib : n.m_vib);
     }
     function outgoingFx() {}
-    function callFx() { buzz(nset().c_vib); }
+    function callFx() {
+      var n = nset(); buzz(n.c_vib);
+      if (n.tones && n.c_ring && n.c_ring !== 'none') { if (tfKey(n.c_ring)) playTone(n.c_ring, 'ring'); else { playTone(n.c_ring, 3); } }
+    }
     var lastAtMap = null;
     function chatListFx(chats) {
       var first = !lastAtMap; lastAtMap = lastAtMap || {};
@@ -3070,18 +3099,19 @@ ZW|Zimbabwe|263`;
         function vib(key) { zoptRow(b, 'Vibrate', function () { return labOf(VIB_OPTS, nset()[key]); }, function (ref) { zpick('Vibrate', VIB_OPTS, nset()[key], function (v) { nsave(key, v); buzz(v); ref(); }); }); }
         function opt2(title, key, opts) { zoptRow(b, title, function () { return labOf(opts, nset()[key] || opts[0][0]); }, function (ref) { zpick(title, opts, nset()[key] || opts[0][0], function (v) { nsave(key, v); ref(); }); }); }
         function na(title) { zoptRow(b, title, function () { return 'Not available'; }, null, true); }
-        b.appendChild(mk('div', 'zfoot', 'Zanply uses your phone\u2019s own sounds. To change the message sound or ringtone, open your phone Settings \u203a Apps \u203a Zanply \u203a Notifications.'));
+        b.appendChild(mk('div', 'zfoot', 'Tones play while Zanply is open. When it is closed, your phone\u2019s own notification sound is used (Phone Settings \u203a Apps \u203a Zanply \u203a Notifications).'));
+        sw('Conversation tones', 'Play sounds for incoming and outgoing messages and calls', 'tones');
         sw('Reminders', 'Get occasional reminders about messages, calls or status updates you haven\u2019t seen', 'reminders');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Messages'));
-        vib('m_vib'); opt2('Popup notification', 'm_pop', POP_OPTS); opt2('Light', 'm_light', LIGHT_OPTS);
+        tone('Notification tone', 'm_tone'); vib('m_vib'); opt2('Popup notification', 'm_pop', POP_OPTS); opt2('Light', 'm_light', LIGHT_OPTS);
         sw('Use high priority notifications', 'Show previews of notifications at the top of the screen', 'm_high');
         sw('Reaction notifications', 'Show notifications for reactions to messages you send', 'm_react');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Groups'));
-        vib('g_vib'); opt2('Popup notification', 'g_pop', POP_OPTS); opt2('Light', 'g_light', LIGHT_OPTS);
+        tone('Notification tone', 'g_tone'); vib('g_vib'); opt2('Popup notification', 'g_pop', POP_OPTS); opt2('Light', 'g_light', LIGHT_OPTS);
         sw('Use high priority notifications', 'Show previews of notifications at the top of the screen', 'g_high');
         sw('Reaction notifications', 'Show notifications for reactions to messages you send', 'g_react');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Calls'));
-        vib('c_vib');
+        tone('Ringtone', 'c_ring', RING_OPTS); vib('c_vib');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Status'));
         vib('s_vib');
         sw('Use high priority notifications', 'Show previews of notifications at the top of the screen', 's_high');
@@ -4623,7 +4653,7 @@ ZW|Zimbabwe|263`;
       if (icStream) { icStream.getTracks().forEach(function (t) { t.stop(); }); icStream = null; }
       $('icVid').srcObject = null; $('icVid').classList.add('hidden');
     }
-    function hideIncoming() { $('incoming').classList.add('hidden'); stopIcCam(); }
+    function hideIncoming() { $('incoming').classList.add('hidden'); stopIcCam(); stopAudio(); }
     function fmtPhone(ph) {
       var c = countryOf(ph), d = (ph || '').replace(/\D/g, '');
       return c ? '+' + c.code + ' ' + d.slice(c.code.length).replace(/^(\d{3})(\d+)$/, '$1 $2') : (ph || '');
