@@ -633,7 +633,7 @@ jobs:
                       if (r == null) return;
                       if (Build.VERSION.SDK_INT >= 28) {
                           r.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                                  .setContentType(AudioAttributes.CONTENT_TYPE_SONIC).build());
+                                  .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
                           r.setLooping(true);
                       }
                       r.play();
@@ -652,7 +652,7 @@ jobs:
                       if (r == null) return;
                       if (Build.VERSION.SDK_INT >= 28) {
                           r.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                                  .setContentType(AudioAttributes.CONTENT_TYPE_SONIC).build());
+                                  .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
                       }
                       r.play();
                   } catch (Exception ignored) { }
@@ -710,7 +710,7 @@ jobs:
                   calls.setDescription("Rings with your phone's ringtone");
                   calls.setSound(Settings.System.DEFAULT_RINGTONE_URI, new AudioAttributes.Builder()
                           .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIC).build());
+                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
                   calls.enableVibration(true);
                   calls.setVibrationPattern(new long[]{0, 700, 500, 700, 500, 700, 500, 700});
                   calls.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
@@ -720,7 +720,7 @@ jobs:
                   msg.setDescription("Uses your phone's notification sound");
                   msg.setSound(Settings.System.DEFAULT_NOTIFICATION_URI, new AudioAttributes.Builder()
                           .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIC).build());
+                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
                   msg.enableVibration(true);
                   msg.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
                   nm.createNotificationChannel(msg);
