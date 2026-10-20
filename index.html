@@ -1703,7 +1703,7 @@ ZW|Zimbabwe|263`;
     });
 
     $('btnLogout').addEventListener('click', function () {
-      unsubPush();
+      unsubPush(); try { if (window.ZanplyNative) { var ft = ZanplyNative.fcmToken(); if (ft) chatCall('fcmunreg', { ftoken: ft }).catch(function () {}); } } catch (e) {}
       call('logout').catch(function () {}).then(function () {
         clearToken();
         try { ['zaply_email_skip', 'zaply_user', 'zaply_chats', 'zaply_out', 'zaply_screen', 'zaply_myprof'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
@@ -2959,6 +2959,32 @@ ZW|Zimbabwe|263`;
       NM.forEach(function (nm, i) { var id = 't' + (i + 6); TONES[id] = mk2(i, false); TONE_TYPE[id] = WV[i % 4]; TONE_OPTS.push([id, nm]); });
       NM.concat(['Alpine', 'Velvet']).forEach(function (nm, i) { var id = 'r' + (i + 4); TONES[id] = mk2(i + 2, true); TONE_TYPE[id] = WR[i % 4]; RING_OPTS.push([id, nm]); });
     })();
+    /* space-style tones (original, made in code) */
+    (function () {
+      var AS = [
+        ['a1', 'Astro', 'glass', [[523, .09], [659, .09], [784, .09], [1047, .09], [784, .09], [1047, .09], [1319, .34]]],
+        ['a2', 'Astro Orbit', 'glass', [[880, .1], [1319, .1], [1760, .1], [1319, .1], [988, .1], [1319, .1], [1760, .1], [2093, .38]]],
+        ['a3', 'Astro Pulse', 'bell', [[1047, .12], [1047, .12], [1568, .12], [1047, .12], [1568, .12], [2093, .4]]],
+        ['a4', 'Cosmic', 'marimba', [[392, .1], [523, .1], [659, .1], [784, .1], [1047, .1], [1319, .1], [1568, .36]]],
+        ['a5', 'Nebula', 'sine', [[659, .16], [988, .16], [1319, .16], [988, .16], [1319, .16], [1760, .5]]],
+        ['a6', 'Comet', 'glass', [[2093, .07], [1760, .07], [1568, .07], [1319, .07], [1047, .07], [784, .07], [1047, .07], [1568, .4]]]
+      ];
+      AS.slice().reverse().forEach(function (x) { TONES[x[0]] = x[3]; TONE_TYPE[x[0]] = x[2]; TONE_OPTS.splice(1, 0, [x[0], x[1]]); RING_OPTS.splice(1, 0, [x[0], x[1]]); });
+    })();
+    /* public-domain melodies, played by the app itself */
+    (function () {
+      var N = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+      function hz(n) { var m = /^([A-G])(#|b)?(\d)$/.exec(n), semi = N[m[1]] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0), midi = 12 * (+m[3] + 1) + semi; return Math.round(440 * Math.pow(2, (midi - 69) / 12) * 100) / 100; }
+      function mel(str, d) { return str.split(' ').map(function (t) { var p = t.split(':'); return [hz(p[0]), (p[1] ? +p[1] : 1) * d]; }); }
+      var SG = [
+        ['m1', 'Ode to Joy', 'marimba', 'E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4:1.5 D4:.5 D4:2'],
+        ['m2', 'F\u00fcr Elise', 'glass', 'E5 D#5 E5 D#5 E5 B4 D5 C5 A4:2 C4 E4 A4 B4:2 E4 G#4 B4 C5:2'],
+        ['m3', 'Twinkle', 'bell', 'C5 C5 G5 G5 A5 A5 G5:2 F5 F5 E5 E5 D5 D5 C5:2'],
+        ['m4', 'Greensleeves', 'glass', 'A4 C5:2 D5 E5:1.5 F5:.5 E5 D5:2 B4 G4:1.5 A4:.5 B4 C5:2 A4 A4:1.5 G#4:.5 A4 B4:2 G#4 E4:2'],
+        ['m5', 'Canon', 'marimba', 'F#5 E5 D5 C#5 B4 A4 B4 C#5 D5:2']
+      ];
+      SG.slice().reverse().forEach(function (x) { TONES[x[0]] = mel(x[3], x[0] === 'm1' || x[0] === 'm3' ? .26 : .22); TONE_TYPE[x[0]] = x[2]; TONE_OPTS.splice(1, 0, [x[0], x[1]]); RING_OPTS.splice(1, 0, [x[0], x[1]]); });
+    })();
     TONE_TYPE.classic = 'bell'; TONE_TYPE.chime = 'bell'; TONE_TYPE.ding = 'bell'; TONE_TYPE.brightline = 'glass'; TONE_TYPE.drop = 'marimba';
     /* recorded tones: put audio files in /tones and /ringtones, then list them in list.json inside each folder */
     function loadTonePacks() {
@@ -3076,12 +3102,14 @@ ZW|Zimbabwe|263`;
     function buzz(kind) { try { if (navigator.vibrate) navigator.vibrate(VIB_PAT[kind] || VIB_PAT['default']); } catch (e) {} }
     function incomingFx(group) {
       var n = nset(); if (document.hidden) return;
+      if (window.ZanplyNative) { try { if (n.tones) ZanplyNative.notifSound(); } catch (e) {} buzz(group ? n.g_vib : n.m_vib); return; }
       if (n.tones) playTone(group ? n.g_tone : n.m_tone);
       buzz(group ? n.g_vib : n.m_vib);
     }
     function outgoingFx() {}
     function callFx() {
       var n = nset(); buzz(n.c_vib);
+      if (window.ZanplyNative) { try { ZanplyNative.ringStart(); } catch (e) {} return; }
       if (n.tones && n.c_ring && n.c_ring !== 'none') { if (tfKey(n.c_ring)) playTone(n.c_ring, 'ring'); else { playTone(n.c_ring, 3); } }
     }
     var lastAtMap = null;
@@ -3097,6 +3125,7 @@ ZW|Zimbabwe|263`;
       zOpenPage('Notifications', function (b) {
         function sw(title, desc, key) { zswitchRow(b, title, desc, !!nset()[key], function (v) { nsave(key, v); }); }
         function tone(title, key, opts) {
+          if (window.ZanplyNative) return;
           var base = opts || TONE_OPTS;
           zoptRow(b, title, function () { return labOf(withCustom(base, key), nset()[key]); }, function (ref) {
             openTonePicker(title, key, base, ref, base === RING_OPTS);
@@ -3105,7 +3134,8 @@ ZW|Zimbabwe|263`;
         function vib(key) { zoptRow(b, 'Vibrate', function () { return labOf(VIB_OPTS, nset()[key]); }, function (ref) { zpick('Vibrate', VIB_OPTS, nset()[key], function (v) { nsave(key, v); buzz(v); ref(); }); }); }
         function opt2(title, key, opts) { zoptRow(b, title, function () { return labOf(opts, nset()[key] || opts[0][0]); }, function (ref) { zpick(title, opts, nset()[key] || opts[0][0], function (v) { nsave(key, v); ref(); }); }); }
         function na(title) { zoptRow(b, title, function () { return 'Not available'; }, null, true); }
-        b.appendChild(mk('div', 'zfoot', 'Tones play while Zanply is open. When it is closed, your phone\u2019s own notification sound is used (Phone Settings \u203a Apps \u203a Zanply \u203a Notifications).'));
+        if (window.ZanplyNative) b.appendChild(mk('div', 'zfoot', 'Zanply uses your phone\u2019s own ringtone and notification sound. To change them, open your phone Settings \u203a Sound (or Apps \u203a Zanply \u203a Notifications).'));
+        else b.appendChild(mk('div', 'zfoot', 'Tones play while Zanply is open. When it is closed, your phone\u2019s own notification sound is used (Phone Settings \u203a Apps \u203a Zanply \u203a Notifications).'));
         sw('Conversation tones', 'Play sounds for incoming and outgoing messages and calls', 'tones');
         sw('Reminders', 'Get occasional reminders about messages, calls or status updates you haven\u2019t seen', 'reminders');
         b.appendChild(mk('div', 'zsep')); b.appendChild(mk('div', 'zsec', 'Messages'));
@@ -4659,7 +4689,7 @@ ZW|Zimbabwe|263`;
       if (icStream) { icStream.getTracks().forEach(function (t) { t.stop(); }); icStream = null; }
       $('icVid').srcObject = null; $('icVid').classList.add('hidden');
     }
-    function hideIncoming() { $('incoming').classList.add('hidden'); stopIcCam(); stopAudio(); }
+    function hideIncoming() { $('incoming').classList.add('hidden'); stopIcCam(); stopAudio(); try { window.ZanplyNative && ZanplyNative.ringStop(); } catch (e) {} }
     function fmtPhone(ph) {
       var c = countryOf(ph), d = (ph || '').replace(/\D/g, '');
       return c ? '+' + c.code + ' ' + d.slice(c.code.length).replace(/^(\d{3})(\d+)$/, '$1 $2') : (ph || '');
@@ -4776,6 +4806,23 @@ ZW|Zimbabwe|263`;
       });
     }
 
+    /* ---------- Android app bridge (only active inside the Zanply Android app) ---------- */
+    function nativeCheck() {
+      var N = window.ZanplyNative; if (!N || !getToken()) return;
+      try {
+        var a = N.takeAnswer();
+        if (a) { var o = JSON.parse(a), d = JSON.parse(String(o.body).slice(8)); rang[o.body] = 1; openCall(d.u, d.v, { phone: o.phone, name: o.name || '' }, false, o.body); }
+      } catch (e) {}
+      try { var c = N.takeOpenChat(); if (c) openChatWith(c); } catch (e) {}
+    }
+    window.zNativeCheck = nativeCheck;
+    window.onFcmToken = function (t) { if (t && getToken()) chatCall('fcmreg', { ftoken: t }).catch(function () {}); };
+    function nativeInit() {
+      var N = window.ZanplyNative; if (!N) return;
+      try { var t = N.fcmToken(); if (t) window.onFcmToken(t); } catch (e) {}
+      try { JSON.parse(N.handled() || '[]').forEach(function (b) { rang[b] = 1; }); } catch (e) {}
+      setTimeout(nativeCheck, 700);
+    }
     function startApp(user) {
       clearAuthStep();
       myPhone = user.phone; E2E.init(user.phone).catch(function () {});
@@ -4786,7 +4833,7 @@ ZW|Zimbabwe|263`;
       $('authView').classList.add('hidden');
       $('appView').classList.remove('hidden');
       showTab('chats'); renderChats();
-      initPush();
+      initPush(); nativeInit();
       var qc = new URLSearchParams(location.search).get('chat');
       if (qc) { openChatWith(qc); history.replaceState(null, '', '/'); } else { try { restoreScreen(); } catch (e) {} }
       try { zInit(); applyTheme(); var _t = parseInt(localStorage.getItem('zaply_hid') || '0', 10); if (!_t || Date.now() - _t >= lockDelay()) showLock(); } catch (e) {}
