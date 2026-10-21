@@ -1,4 +1,4 @@
-const CACHE = 'zanply-v15';
+const CACHE = 'zanply-v16';
 const PREFS = 'zanply-prefs';
 const SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', (e) => {
