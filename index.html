@@ -587,6 +587,59 @@
     html.hc:not(.isdark){--muted:#374151;--border:#8b93a1;--accent:#3730a3}
     html.hc:not(.isdark) .zsw{border-color:#4b5563}
     html.hc:not(.isdark) .zir .zl,html.hc:not(.isdark) .zrow2 .rt small,html.hc:not(.isdark) .sub{color:#374151}
+    /* Increase contrast: bold letters everywhere + stronger colours (light and dark) */
+    html.hc,html.hc body,html.hc *{font-weight:700!important;text-shadow:none!important}
+    html.hc{--muted:#1f2937;--border:#6b7280}
+    html.hc.isdark{--muted:#e5e7eb;--border:#9ca3af;--text:#fff}
+    html.hc input::placeholder,html.hc textarea::placeholder{opacity:1;color:var(--muted)}
+    /* Font size: Small / Large scale the whole app, Medium is normal */
+    html.fs-s :is(#welcomeView,#countryView,#authView,#appView,#threadView,#groupView,#infoView,#ginfoView,#profileView,#createView,#aiView,#callView,.zpg,.zpop,.zgs,.zlock){zoom:.88}
+    html.fs-l :is(#welcomeView,#countryView,#authView,#appView,#threadView,#groupView,#infoView,#ginfoView,#profileView,#createView,#aiView,#callView,.zpg,.zpop,.zgs,.zlock){zoom:1.18}
+    /* Chat bubble colour picker */
+    .zbc{display:grid;grid-template-columns:repeat(4,1fr);gap:22px 0;padding:22px 14px;justify-items:center}
+    .zbc button{width:84px;height:84px;border-radius:50%;border:0;padding:0;position:relative;cursor:pointer}
+    .zbc button.on{box-shadow:0 0 0 4px var(--bg),0 0 0 6px #fff}
+    .zbc button .zwk{display:none;position:absolute;inset:0;align-items:center;justify-content:center;color:#fff}
+    .zbc button.on .zwk{display:flex}
+    /* Premium */
+    .zpg.zprem{background:#141a26;color:#fff}
+    .zprem .zpg-h{background:transparent}
+    .zpm-hero{text-align:center;padding:10px 20px 6px;position:relative}
+    .zpm-hero h2{font-size:24px;margin:14px 0 8px}
+    .zpm-hero p{margin:0 auto;max-width:330px;line-height:1.4;opacity:.92}
+    .zpm-plans,.zpm-list{background:#202a3a;border-radius:18px;margin:16px 14px}
+    .zpm-plan,.zpm-f{border-radius:0}
+    .zpm-plan{display:flex;align-items:center;gap:14px;padding:14px 16px;width:100%;background:none;border:0;color:#fff;text-align:left;cursor:pointer}
+    .zpm-plan+.zpm-plan{border-top:1px solid rgba(255,255,255,.12)}
+    .zpm-plan .rd{width:34px;height:34px;border-radius:50%;border:2px solid #7d8696;flex:none;display:flex;align-items:center;justify-content:center}
+    .zpm-plan.on .rd{background:#4d9bff;border-color:#4d9bff}
+    .zpm-plan .nm{flex:1}.zpm-plan .nm s{opacity:.6}
+    .zpm-plan .badge{background:#3b82f6;border-radius:8px;font-size:12px;padding:2px 6px;margin-left:6px}
+    .zpm-f{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;width:100%;background:none;border:0;color:#fff;text-align:left;cursor:pointer}
+    .zpm-f+.zpm-f{border-top:1px solid rgba(255,255,255,.1)}
+    .zpm-f .ic{width:36px;height:36px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .zpm-f .tx{flex:1}.zpm-f .tx small{display:block;opacity:.6;margin-top:3px;line-height:1.35;font-size:14px;font-weight:400}
+    .zpm-f .ch{opacity:.55;align-self:center}
+    .zpm-cta{position:sticky;bottom:14px;margin:8px 14px 14px;height:56px;border-radius:28px;border:0;color:#fff;font-size:17px;width:calc(100% - 28px);background:linear-gradient(90deg,#6c8cff,#c25cf0 60%,#ff6fb5);cursor:pointer}
+    /* Stars + gift picker + affiliate */
+    .zgs{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}
+    .zgs-d{background:var(--card,#1f2a37);color:var(--text);width:100%;max-height:82vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;overflow:hidden;max-width:720px;margin:0 auto}
+    .zgs-t{padding:18px 20px;font-size:20px;font-weight:700;border-bottom:1px solid var(--border)}
+    .zgs-s{padding:14px 20px;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);font:inherit;width:100%;box-sizing:border-box;outline:none;border-radius:0;margin:0}
+    .zgs-l{overflow-y:auto;flex:1}
+    .zgs-h{padding:12px 20px 4px;color:var(--acc,#4d9bff);font-size:14px}
+    .zgs-r{display:flex;align-items:center;gap:14px;padding:10px 20px;width:100%;box-sizing:border-box;background:none;border:0;color:var(--text);text-align:left;cursor:pointer}
+    .zgs-r .av{width:48px;height:48px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:19px;background-size:cover;background-position:center}
+    .zgs-r .nm{flex:1;min-width:0}.zgs-r .nm small{display:block;color:var(--muted);margin-top:2px}
+    .zgs-r .kb{padding:6px 10px;opacity:.7}
+    .zst-hero{text-align:center;padding:6px 20px}
+    .zst-hero p{opacity:.9;line-height:1.4;margin:6px 0 0}
+    .zst-hero a{color:#4d9bff;text-decoration:none}
+    .zaf-circle{width:130px;height:130px;border-radius:50%;margin:10px auto 0;display:flex;align-items:center;justify-content:center;font-size:56px;background:radial-gradient(circle at 35% 30%,#c06bff,#6b3df0);box-shadow:0 0 0 5px #8f7bff55 inset}
+    .zaf-card{background:#202a3a;border-radius:18px;margin:18px 14px;padding:6px 0;color:#fff}
+    .zaf-row{display:flex;gap:16px;padding:12px 18px}
+    .zaf-row .i{font-size:24px;width:30px;text-align:center}
+    .zaf-row small{display:block;opacity:.6;margin-top:3px;font-weight:400;line-height:1.35}
     /* message box: a growing text box so Enter can start a new line */
     .comp .inbox{align-items:flex-end}
     .comp .inbox .ghost{align-self:flex-end}
@@ -2555,8 +2608,8 @@ ZW|Zimbabwe|263`;
     function chatSet() { var d = { enterSend: false, media: true, font: 'medium', stickers: true, keepArch: true }; try { var s = JSON.parse(localStorage.getItem('zaply_chatset') || '{}'); for (var k in s) d[k] = s[k]; } catch (e) {} return d; }
     function setChatSet(k, v) { var s = chatSet(); s[k] = v; try { localStorage.setItem('zaply_chatset', JSON.stringify(s)); } catch (e) {} applyChatSet(); }
     function applyChatSet() {
-      var s = chatSet(), f = { small: '14px', medium: '16px', large: '19px' }[s.font] || '16px';
-      document.documentElement.style.setProperty('--msgfs', f);
+      var s = chatSet(), hh = document.documentElement;
+      hh.style.setProperty('--msgfs', '16px'); hh.classList.toggle('fs-s', s.font === 'small'); hh.classList.toggle('fs-l', s.font === 'large');
       var i = $('msgInput'); if (i) i.setAttribute('enterkeyhint', s.enterSend ? 'send' : 'enter');
       try { stkUpdate(); } catch (e) {}
     }
@@ -2805,7 +2858,7 @@ ZW|Zimbabwe|263`;
     }
     function applyTheme() {
       applyAccent(); applyIcon();
-      var t = curTheme(), r = document.documentElement.style; r.setProperty('--thmine', t.mine); r.setProperty('--thtxt', t.txt);
+      var t = curTheme(), r = document.documentElement.style; r.setProperty('--thmine', t.mine); r.setProperty('--thtxt', t.txt); var bc = lsGet('zaply_bubble', null); if (bc && bc.c) { r.setProperty('--thmine', bc.c); r.setProperty('--thtxt', bc.t); }
       var m = $('msgs'); if (!m) return; var w = lsGet('zaply_wall', null), bg = '';
       if (w && w.css) bg = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; else if (t.bg) bg = t.bg; else bg = defaultChatBg();
       m.style.background = bg;
@@ -2818,23 +2871,21 @@ ZW|Zimbabwe|263`;
         var file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.style.display = 'none'; b.appendChild(file);
         file.addEventListener('change', function () {
           var f = file.files && file.files[0]; if (!f) return; toast('Setting wallpaper\u2026');
-          prepImage(f, 1280, 0.72).then(function (r) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(r.blob); }); })
-            .then(function (u) { if (setWall({ css: 'url("' + u + '") center/cover no-repeat', k: 'gallery' })) toast('Wallpaper set', true); }).catch(function () { toast('Could not use that photo'); });
+          wallFromBlob(f, 'gallery').then(function (ok) { if (ok) toast('Wallpaper set', true); }).catch(function () { toast('Could not use that photo'); });
           file.value = '';
         });
         zrows(b, [['image', 'Choose from gallery', function () { file.click(); }], ['colorize', 'Set a colour', openWallColors], ['sparkle', 'Create with AI', openWallAI]]);
         var grid = mk('div', 'zwg'), cur = lsGet('zaply_wall', null);
         var io = window.IntersectionObserver ? new IntersectionObserver(function (es) {
-          es.forEach(function (e) { if (!e.isIntersecting) return; io.unobserve(e.target); var w = e.target._w; if (w && w.f) { var im = new Image(); im.onload = function () { e.target.style.background = 'url("' + im.src + '") center/cover no-repeat'; }; im.src = w.f; } });
+          es.forEach(function (e) { if (!e.isIntersecting) return; io.unobserve(e.target); wallThumb(e.target); });
         }, { rootMargin: '300px' }) : null;
         WALLS.forEach(function (w, i) {
           var x = mk('button', 'zwi' + ((cur && ((cur.k === 'preset' && cur.css === w.css) || (cur.k === 'photo' && cur.i === i))) ? ' on' : '')); x.style.background = w.css; x._w = w; x.setAttribute('aria-label', w.c + ' ' + w.n); x.innerHTML = '<span class="zwk">' + zico('check') + '</span>';
           x.addEventListener('click', function () {
             toast('Setting wallpaper\u2026');
-            fetch(w.f).then(function (r) { if (!r.ok) throw new Error('bad'); return r.blob(); }).then(function (bl) { if (!/^image\//.test(bl.type)) throw new Error('bad'); return prepImage(bl, 1280, 0.72); })
-              .then(function (r) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(r.blob); }); })
-              .then(function (u) { if (setWall({ css: 'url("' + u + '") center/cover no-repeat', k: 'photo', i: i })) { grid.querySelectorAll('.on').forEach(function (y) { y.classList.remove('on'); }); x.classList.add('on'); toast('Wallpaper set', true); } })
-              .catch(function () { toast('Couldn\u2019t load that picture. Check your internet and try again.'); });
+            wallResolve(w).then(function (src) {
+              if (setWall({ css: 'url("' + src + '") center/cover no-repeat', k: 'photo', i: i })) { grid.querySelectorAll('.on').forEach(function (y) { y.classList.remove('on'); }); x.classList.add('on'); toast('Wallpaper set', true); }
+            }).catch(function () { toast('Couldn\u2019t load that picture. Check your internet and try again.'); });
           });
           grid.appendChild(x); if (io) io.observe(x); else x._w = w;
         });
@@ -2869,8 +2920,7 @@ ZW|Zimbabwe|263`;
         });
         use.addEventListener('click', function () {
           if (!blob) return;
-          prepImage(blob, 1280, 0.72).then(function (r) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(r.blob); }); })
-            .then(function (u) { if (setWall({ css: 'url("' + u + '") center/cover no-repeat', k: 'ai' })) toast('Wallpaper set', true); }).catch(function () { toast('Could not set the wallpaper'); });
+          wallFromBlob(blob, 'ai').then(function (ok) { if (ok) toast('Wallpaper set', true); }).catch(function () { toast('Could not set the wallpaper'); });
         });
       });
     }
@@ -2931,11 +2981,11 @@ ZW|Zimbabwe|263`;
         b.appendChild(mk('div', 'zsec', 'Themes')); var g = mk('div', 'zth'); b.appendChild(g);
         THEMES.forEach(function (t) {
           var x = mk('button', t.id === curTheme().id ? 'on' : ''); x.style.background = t.bg || defaultChatBg(); x.style.setProperty('--mc', t.mine); x.setAttribute('aria-label', t.n); x.appendChild(mk('i')); x.appendChild(mk('i', 'm'));
-          x.addEventListener('click', function () { try { localStorage.setItem('zaply_theme', t.id); localStorage.removeItem('zaply_wall'); } catch (e) {} applyTheme(); Array.prototype.forEach.call(g.children, function (y) { y.classList.remove('on'); }); x.classList.add('on'); });
+          x.addEventListener('click', function () { try { localStorage.setItem('zaply_theme', t.id); localStorage.removeItem('zaply_wall'); localStorage.removeItem('zaply_bubble'); } catch (e) {} applyTheme(); Array.prototype.forEach.call(g.children, function (y) { y.classList.remove('on'); }); x.classList.add('on'); });
           g.appendChild(x);
         });
         b.appendChild(mk('div', 'zfoot', 'The chat bubble and wallpaper will both change.'));
-        b.appendChild(mk('div', 'zsec', 'Customise')); zrows(b, [['chat', 'Chat bubble', soon('Chat bubble')], ['palette', 'Wallpaper', openWallpaper]]);
+        b.appendChild(mk('div', 'zsec', 'Customise')); zrows(b, [['chat', 'Chat bubble', openBubble], ['palette', 'Wallpaper', openWallpaper]]);
       });
     }
 
@@ -3210,19 +3260,12 @@ ZW|Zimbabwe|263`;
     var DL_KINDS = [['photos', 'Photos'], ['audio', 'Audio'], ['video', 'Videos'], ['docs', 'Documents']];
     function dlDefault() { return { mobile: { photos: true, audio: false, video: false, docs: false }, wifi: { photos: true, audio: true, video: true, docs: true }, roaming: { photos: false, audio: false, video: false, docs: false } }; }
     function stSet() {
-      var d = { lessData: false, upHD: false, dl: dlDefault() }, s = lsGet('zaply_stor', {}); for (var k in s) d[k] = s[k];
+      var d = { lessData: false, upHD: false, net: 'auto', dl: dlDefault() }, s = lsGet('zaply_stor', {}); for (var k in s) d[k] = s[k];
       var D = dlDefault(); ['mobile', 'wifi', 'roaming'].forEach(function (n) { var v = d.dl && d.dl[n]; if (v && typeof v === 'object') for (var q in v) D[n][q] = !!v[q]; else if (typeof v === 'boolean') for (var q2 in D[n]) D[n][q2] = q2 === 'photos' ? v : false; });
       d.dl = D; return d;
     }
     function stSave(k, v) { var s = stSet(); s[k] = v; lsSet('zaply_stor', s); }
     function upQ() { return stSet().upHD ? { side: 2560, q: 0.92 } : { side: 1280, q: 0.82 }; }
-    function netKind() {
-      var c = navigator.connection, ty = c && c.type;
-      if (localStorage.getItem('zaply_roam') === '1') return 'roaming';
-      if (ty === 'cellular') return 'mobile'; if (ty === 'wifi' || ty === 'ethernet') return 'wifi';
-      if (c && /^(slow-2g|2g|3g)$/.test(c.effectiveType || '')) return 'mobile';
-      return 'wifi';
-    }
     function autoDl(kind) { return !!stSet().dl[netKind()][kind || 'photos']; }
     function localBytes() { var n = 0; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); n += (k.length + (localStorage.getItem(k) || '').length) * 2; } } catch (e) {} return n; }
     function openStorage() {
@@ -3234,6 +3277,7 @@ ZW|Zimbabwe|263`;
         zoptRow(b, 'Media upload quality', function () { return stSet().upHD ? 'HD quality' : 'Standard quality'; }, function (ref) { zpick('Media upload quality', [['std', 'Standard quality'], ['hd', 'HD quality']], stSet().upHD ? 'hd' : 'std', function (v) { stSave('upHD', v === 'hd'); ref(); }); });
         b.appendChild(mk('div', 'zsec', 'Media auto-download'));
         b.appendChild(mk('div', 'zfoot', 'Choose which media downloads by itself on each connection. Anything not downloaded loads when you tap it.'));
+        zoptRow(b, 'Connection type', function () { return { auto: 'Detect automatically', mobile: 'Mobile data', wifi: 'Wi-Fi' }[stSet().net] || 'Detect automatically'; }, function (ref) { zpick('Connection type', [['auto', 'Detect automatically'], ['mobile', 'Mobile data'], ['wifi', 'Wi-Fi']], stSet().net, function (v) { stSave('net', v); ref(); }); });
         [['mobile', 'When using mobile data'], ['wifi', 'When connected on Wi-Fi'], ['roaming', 'When roaming']].forEach(function (x) {
           function lab() { var on = DL_KINDS.filter(function (k) { return stSet().dl[x[0]][k[0]]; }).map(function (k) { return k[1]; }); return on.length ? on.join(', ') : 'No media'; }
           zoptRow(b, x[1], lab, function (ref) {
@@ -3348,7 +3392,7 @@ ZW|Zimbabwe|263`;
     function langName() { var n = 'English'; LANGS.forEach(function (l) { if (l.c === lang) n = l.n; }); return n; }
     function openLanguage() {
       zOpenPage('App language', function (b) {
-        zradios(b, '', LANGS.map(function (l) { return [l.c, l.n]; }), lang, function (v) {
+        b.setAttribute('data-notr', '1'); zradios(b, '', LANGS.map(function (l) { return [l.c, l.n]; }), lang, function (v) {
           lang = v; try { langSel.value = v; l2.value = v; } catch (e) {} try { localStorage.setItem('zaply_lang', v); } catch (e) {} applyLang();
         });
       });
@@ -3390,31 +3434,6 @@ ZW|Zimbabwe|263`;
     /* ---------- Settings home ---------- */
     /* ---------- Zanply Premium / Stars / Business / Send a gift ---------- */
     function pBtn(label, fn, ghost) { var x = mk('button', ghost ? '' : 'primary', label); x.style.cssText = 'width:100%;margin-top:10px'; x.addEventListener('click', fn); return x; }
-    function openPremium() {
-      zOpenPage('Zanply Premium', function (b) {
-        var w = mk('div'); w.style.padding = '20px'; b.appendChild(w);
-        var hd = mk('div'); hd.style.cssText = 'text-align:center;margin-bottom:18px'; hd.innerHTML = '<div style="font-size:46px;color:var(--acc,#21c063)">\u25c6</div><h2 style="margin:6px 0">Zanply Premium</h2><div class="sub">Do more with Zanply: more statuses, bigger files, more chats and more storage.</div>'; w.appendChild(hd);
-        var perks = [['Post many statuses', 'Share more status updates every day.'], ['Send big files', 'Videos, music and documents far larger than the free limit.'], ['More chats and storage', 'Keep more chats, media and backups.'], ['Double limits', '1000 channels \u2022 30 chat folders \u2022 10 pinned chats \u2022 20 public links \u2022 4 accounts']];
-        perks.forEach(function (p) { var r = mk('div'); r.style.cssText = 'padding:12px 0;border-bottom:1px solid rgba(128,128,128,.2)'; r.innerHTML = '<b></b><div class="sub" style="margin-top:2px"></div>'; r.querySelector('b').textContent = '\u2713 ' + p[0]; r.querySelector('.sub').textContent = p[1]; w.appendChild(r); });
-        w.appendChild(pBtn('Subscribe to Premium', function () { toast('Payments are being connected. Premium will open soon.'); }));
-        var sec = mk('div', 'zsec', 'Add-ons'); sec.style.marginTop = '18px'; w.appendChild(sec);
-        [['Paid messages', 'Let people pay to message you.'], ['Ads', 'Promote your channel or business inside Zanply.'], ['AI tools', 'Zanply AI for writing, images and quizzes.']].forEach(function (a) {
-          var r = mk('div'); r.style.cssText = 'padding:12px 0;border-bottom:1px solid rgba(128,128,128,.2)'; r.innerHTML = '<b></b><div class="sub" style="margin:2px 0 8px"></div>'; r.querySelector('b').textContent = a[0]; r.querySelector('.sub').textContent = a[1];
-          var s = pBtn('Subscribe', function () { toast(a[0] + ' will open soon.'); }); s.style.marginTop = '0'; r.appendChild(s); w.appendChild(r);
-        });
-      });
-    }
-    function starsBal() { return lsGet('zaply_stars', 0); }
-    function openStars() {
-      zOpenPage('Zanply Stars', function (b) {
-        var w = mk('div'); w.style.padding = '10px 18px 24px'; b.appendChild(w);
-        var hd = mk('div'); hd.style.cssText = 'text-align:center;margin:8px 0 18px'; hd.innerHTML = '<div style="font-size:64px;line-height:1">\u2b50</div><h2 style="margin:10px 0 6px">Zanply Stars</h2><div class="sub">Buy Stars to unlock content and services in Zanply, and to send gifts to people you love.</div>'; w.appendChild(hd);
-        var card = mk('div'); card.style.cssText = 'border-radius:16px;padding:22px 16px;text-align:center;background:rgba(128,128,128,.12)'; card.innerHTML = '<div style="font-size:34px;font-weight:700">\u2b50 ' + starsBal() + '</div><div class="sub">your balance</div>'; w.appendChild(card);
-        var buy = pBtn('Buy Stars', function () { toast('Buying Stars opens soon.'); }); buy.style.borderRadius = '26px'; buy.style.height = '50px'; card.appendChild(buy);
-        var g = mk('button', '', '\u{1F381} Gift Stars to Friends'); g.style.cssText = 'margin-top:14px;background:none;border:0;color:var(--acc,#21c063);font-weight:600'; g.addEventListener('click', openGift); card.appendChild(g);
-        var e = mk('button', 'zir'); e.style.cssText = 'margin-top:14px;border-radius:14px;background:rgba(128,128,128,.12);width:100%;text-align:left'; e.innerHTML = '<div class="zt"><div><b>Earn Stars</b> <span style="font-size:11px;padding:2px 6px;border-radius:6px;background:#3b82f6;color:#fff">NEW</span></div><div class="zl">Share Zanply and earn Stars when your friends join.</div></div>'; e.addEventListener('click', function () { try { invite(); } catch (x) { toast('Invite opens soon.'); } }); w.appendChild(e);
-      });
-    }
     var QUIZ_FALLBACK = ['What is my favourite food?', 'Where did we first meet?', 'What is the one thing I always say?'];
     function aiQuiz(topic) {
       var pr = 'Write exactly 3 short, sweet quiz questions a person can ask their partner about: ' + topic + '. One question per line, no numbering, no extra text.';
@@ -3423,13 +3442,13 @@ ZW|Zimbabwe|263`;
         .then(function (tx) { clearTimeout(t); var q = tx.split(/\n+/).map(function (s) { return s.replace(/^[\s\d.\-*)]+/, '').trim(); }).filter(function (s) { return s.length > 8 && s.length < 160; }).slice(0, 3); if (q.length < 3) throw new Error('bad'); return q; })
         .catch(function () { clearTimeout(t); return QUIZ_FALLBACK; });
     }
-    function openGift() {
+    function openGift(pre) {
       zOpenPage('Send a Gift', function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
         w.appendChild(mk('div', 'sub', 'Send your partner a star gift as a quiz. Zanply AI writes the questions and they answer to unlock the gift.'));
         var list = (allChats || []).filter(function (c) { return c && !c.group && /^\+\d{7,15}$/.test(c.phone || ''); }), to = '';
         zlbl(w, 'Send to'); var sel = document.createElement('select'); sel.className = 'zin'; var o0 = document.createElement('option'); o0.value = ''; o0.textContent = list.length ? 'Choose a person' : 'Start a chat first'; sel.appendChild(o0);
-        list.forEach(function (c) { var o = document.createElement('option'); o.value = c.phone; o.textContent = savedName(c.phone) || c.name || c.phone; sel.appendChild(o); }); w.appendChild(sel);
+        list.forEach(function (c) { var o = document.createElement('option'); o.value = c.phone; o.textContent = savedName(c.phone) || c.name || c.phone; sel.appendChild(o); }); w.appendChild(sel); if (typeof pre === 'string' && pre) sel.value = pre;
         zlbl(w, 'Quiz topic'); var tp = zin('For example: our love story', 'text', 80); w.appendChild(tp);
         zlbl(w, 'Stars in the gift'); var st = mk('div', 'sub', starsBal() > 0 ? 'You have ' + starsBal() + ' Stars.' : 'You have 0 Stars. The quiz is sent without Stars until you buy some.'); w.appendChild(st);
         var out = mk('div'); out.style.cssText = 'margin-top:14px;white-space:pre-wrap'; w.appendChild(out); var qs = null;
@@ -3506,6 +3525,131 @@ ZW|Zimbabwe|263`;
     }
     $('menuTheme').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openThemeChooser(); });
 
+    /* ---------- Chat bubble colour (Appearance > Chat theme > Chat bubble) ---------- */
+    var BUBBLE_COLORS = ['#1f7a4d', '#17513b', '#0b4f9c', '#0a3566', '#4b3aa8', '#2f2a66', '#0d5a94', '#0a3a5a', '#7a3290', '#4b2468', '#4d4d4d', '#333333', '#8a3b22', '#52302a', '#415a3c', '#2e3a2c', '#05615b', '#0a3f3d', '#7d1030', '#5a1224', '#6b4128', '#3d2a20', '#7d6650', '#3f372d', '#0e7a64', '#0f4c40', '#b59a00', '#5c5000', '#577a28', '#2f4416', '#c0285f', '#5c2040'];
+    function textOnColor(hex) { var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#06140c' : '#ffffff'; }
+    function openBubble() {
+      zOpenPage('Chat bubble', function (b) {
+        var hd = b.parentNode.querySelector('.zpg-h'), more = mk('button');
+        more.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>';
+        more.style.marginLeft = 'auto'; hd.appendChild(more);
+        var g = mk('div', 'zbc'), cur = lsGet('zaply_bubble', null);
+        more.addEventListener('click', function () { zsheet('Chat bubble', [['Reset to default colour', function () { try { localStorage.removeItem('zaply_bubble'); } catch (e) {} applyTheme(); g.querySelectorAll('.on').forEach(function (y) { y.classList.remove('on'); }); toast('Bubble colour reset', true); }]]); });
+        BUBBLE_COLORS.forEach(function (c) {
+          var x = mk('button', cur && cur.c === c ? 'on' : ''); x.style.background = c; x.setAttribute('aria-label', 'Bubble colour ' + c); x.innerHTML = '<span class="zwk">' + zico('check') + '</span>';
+          x.addEventListener('click', function () { lsSet('zaply_bubble', { c: c, t: textOnColor(c) }); applyTheme(); g.querySelectorAll('.on').forEach(function (y) { y.classList.remove('on'); }); x.classList.add('on'); });
+          g.appendChild(x);
+        });
+        b.appendChild(g);
+      });
+    }
+
+    /* ---------- Wallpapers: real file first (/themes/..), then a generated picture; never fills localStorage ---------- */
+    var WQ = [], WQB = false;
+    function wallProbe(src, ms) { return new Promise(function (res, rej) { var im = new Image(), t = setTimeout(function () { im.src = ''; rej(new Error('slow')); }, ms || 45000); im.onload = function () { clearTimeout(t); res(src); }; im.onerror = function () { clearTimeout(t); rej(new Error('bad')); }; im.src = src; }); }
+    function wallResolve(w) { return wallProbe(w.f, 8000).catch(function () { return wallProbe(wallUrl(w, 720, 1280), 60000).catch(function () { return new Promise(function (r) { setTimeout(r, 2500); }).then(function () { return wallProbe(wallUrl(w, 720, 1280), 60000); }); }); }); }
+    function wallPump() { if (WQB || !WQ.length) return; WQB = true; var el = WQ.shift(), w = el._w; wallProbe(wallUrl(w, 720, 1280), 60000).then(function (s) { el.style.background = 'url("' + s + '") center/cover no-repeat'; }).catch(function () {}).then(function () { WQB = false; setTimeout(wallPump, 400); }); }
+    function wallThumb(el) { var w = el._w; if (!w) return; wallProbe(w.f, 8000).then(function (s) { el.style.background = 'url("' + s + '") center/cover no-repeat'; }).catch(function () { WQ.push(el); wallPump(); }); }
+    function wallFromBlob(blob, k) {
+      function enc(side, q) { return prepImage(blob, side, q).then(function (r) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(r.blob); }); }).then(function (u) { return { css: 'url("' + u + '") center/cover no-repeat', k: k }; }); }
+      return enc(1280, 0.72).then(function (w) { if (lsSet('zaply_wall', w)) { applyTheme(); return true; } return enc(720, 0.55).then(function (w2) { return setWall(w2); }); });
+    }
+
+    /* ---------- Connection used for auto-download ---------- */
+    function netKind() {
+      if (localStorage.getItem('zaply_roam') === '1') return 'roaming';
+      var m = stSet().net; if (m === 'mobile' || m === 'wifi') return m;
+      var c = navigator.connection, ty = c && c.type;
+      if (ty === 'cellular') return 'mobile'; if (ty === 'wifi' || ty === 'ethernet') return 'wifi';
+      if (c && (c.saveData || /^(slow-2g|2g|3g)$/.test(c.effectiveType || ''))) return 'mobile';
+      return 'wifi';
+    }
+
+    /* ---------- Zanply Premium (matches the design screenshots) ---------- */
+    var PREM_FEATS = [['\u25b6', 'Stories', 'Unlimited posting, priority order, stealth mode, permanent view history and more.', '#f59e0b'], ['\ud83d\udcc4', 'Unlimited Cloud Storage', '4 GB per each document, unlimited storage for your chats and media overall.', '#f97316'], ['\u00d72', 'Doubled Limits', 'Up to 1000 channels, 30 folders, 10 pins, 20 public links, 4 accounts and more.', '#f0793c'], ['\ud83c\udfea', 'Zanply Business', 'Upgrade your account with business features such as location, opening hours and quick replies.', '#ef6b4f'],
+      ['\ud83d\udc63', 'Last Seen Times', 'View the last seen and read times of others even if you hide yours.', '#ee6459'], ['\ud83c\udf99', 'Voice-to-Text Conversion', 'Ability to read the transcript of any incoming voice message.', '#e9605f'], ['\u26a1', 'Faster Download Speed', 'No more limits on the speed with which media and documents are downloaded.', '#e55a69'], ['\ud83c\udf10', 'Real-Time Translation', 'Real-time translation of chats and channels into other languages.', '#df5575'],
+      ['\ud83d\ude00', 'Animated Emoji', 'Include animated emoji from different packs in any message you send.', '#d95282'], ['\u270b', 'Emoji Statuses', 'Choose from thousands of emoji to display current activity next to your name.', '#d04f90'], ['\ud83c\udff7', 'Tags in Saved Messages', 'Organize your Saved Messages with tags for quicker access.', '#c64f9f'], ['\ud83c\udfa8', 'Name and Profile Colors', 'Choose a color and logo for your profile and replies to your messages.', '#b954ae'],
+      ['\ud83d\uddbc', 'Wallpaper for Both Sides', 'Set custom wallpapers for you and your chat partner.', '#aa58bb'], ['\u2605', 'Profile Badge', 'An exclusive badge next to your name showing that you subscribe to Zanply Premium.', '#9c5cc7'], ['$', 'Paid Messages', 'Charge a fee for messages from non-contacts or new senders.', '#8f60d0'], ['\ud83d\udd75', 'Disable Sharing', 'Prevent forwarding, saving and copying content in private chats.', '#8564d6'],
+      ['\ud83d\udcac', 'Advanced Chat Management', 'Tools to set the default folder, auto-archive and hide new chats from non-contacts.', '#7b68dc'], ['\ud83d\udeab', 'No Ads', 'No more ads in public channels where Zanply sometimes shows ads.', '#6f78e6'], ['\ud83d\udd37', 'Premium App Icons', 'Choose from a selection of Zanply app icons for your homescreen.', '#6485ee'], ['\u2764', 'Infinite Reactions', 'React with thousands of emoji \u2014 using multiple reactions per message.', '#5a90f2']];
+    var PREM_PLANS = { annual: { label: 'Annual', price: '$28.99/year', per: '$2.41/month', cta: 'Subscribe for $28.99 per year' }, monthly: { label: 'Monthly', price: '$3.99/month', per: '$3.99/month', cta: 'Subscribe for $3.99 per month' } };
+    function startPremiumCheckout(plan) { toast('Payments are being connected. No charge was made.'); }
+    function openPremium() {
+      zOpenPage('Zanply Premium', function (b) {
+        var pg = b.parentNode; pg.classList.add('zprem'); var ttl = pg.querySelector('.zpg-h span'); ttl.textContent = '';
+        var plan = 'annual';
+        var hero = mk('div', 'zpm-hero');
+        hero.innerHTML = '<svg width="190" height="150" viewBox="0 0 190 150"><defs><linearGradient id="zpmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c8cff"/><stop offset=".55" stop-color="#b65cf5"/><stop offset="1" stop-color="#ff6fd0"/></linearGradient></defs><path d="M95 12l17 38 41 5-31 28 9 41-36-21-36 21 9-41-31-28 41-5z" fill="url(#zpmg)" stroke="url(#zpmg)" stroke-width="10" stroke-linejoin="round"/><g fill="#8fa2ff" opacity=".7"><circle cx="30" cy="30" r="2"/><circle cx="160" cy="24" r="2.5"/><circle cx="20" cy="95" r="2"/><circle cx="172" cy="100" r="2"/><circle cx="60" cy="10" r="1.5"/></g></svg><h2></h2><p></p>';
+        hero.querySelector('h2').textContent = 'Zanply Premium'; hero.querySelector('p').textContent = 'Go beyond the limits and unlock dozens of exclusive features by subscribing to Zanply Premium.'; b.appendChild(hero);
+        var plans = mk('div', 'zpm-plans'), cta = mk('button', 'zpm-cta', PREM_PLANS.annual.cta);
+        function drawPlans() {
+          plans.textContent = '';
+          ['annual', 'monthly'].forEach(function (k) {
+            var P = PREM_PLANS[k], x = mk('button', 'zpm-plan' + (plan === k ? ' on' : '')), nm = mk('div', 'nm');
+            x.innerHTML = '<span class="rd">' + (plan === k ? zico('check') : '') + '</span>';
+            if (k === 'annual') { nm.innerHTML = '<b>Annual</b><span class="badge">\u221239%</span><div><s>$47.88</s> ' + P.price + '</div>'; } else nm.innerHTML = '<b>Monthly</b>';
+            x.appendChild(nm); x.appendChild(mk('span', '', P.per)); x.addEventListener('click', function () { plan = k; cta.textContent = P.cta; drawPlans(); }); plans.appendChild(x);
+          });
+        }
+        drawPlans(); b.appendChild(plans);
+        var list = mk('div', 'zpm-list');
+        PREM_FEATS.forEach(function (f) {
+          var r = mk('button', 'zpm-f'); r.innerHTML = '<span class="ic"></span><span class="tx"><b></b><small></small></span><span class="ch">\u203a</span>';
+          var ic = r.querySelector('.ic'); ic.textContent = f[0]; ic.style.background = f[3]; r.querySelector('b').textContent = f[1]; r.querySelector('small').textContent = f[2];
+          r.addEventListener('click', function () { zOpenPage(f[1], function (c) { c.parentNode.classList.add('zprem'); var w = mk('div', 'zpm-hero'); w.innerHTML = '<div style="font-size:64px"></div><h2></h2><p></p>'; w.firstChild.textContent = f[0]; w.querySelector('h2').textContent = f[1]; w.querySelector('p').textContent = f[2]; c.appendChild(w); var s = mk('button', 'zpm-cta', PREM_PLANS[plan].cta); s.addEventListener('click', function () { startPremiumCheckout(plan); }); c.appendChild(s); }); });
+          list.appendChild(r);
+        });
+        b.appendChild(list); cta.addEventListener('click', function () { startPremiumCheckout(plan); }); b.appendChild(cta);
+        b.addEventListener('scroll', function () { ttl.textContent = b.scrollTop > 150 ? 'Zanply Premium' : ''; }, { passive: true });
+      });
+    }
+    function starsBal() { return lsGet('zaply_stars', 0); }
+    function starSvg(w) { return '<svg width="' + w + '" height="' + w + '" viewBox="0 0 100 100"><defs><linearGradient id="zsg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#d98a0b"/></linearGradient></defs><path d="M50 8l12 27 29 3-22 20 7 29-26-15-26 15 7-29L9 38l29-3z" fill="url(#zsg)" stroke="#f0b42c" stroke-width="5" stroke-linejoin="round"/></svg>'; }
+    function openStars() {
+      zOpenPage('Zanply Stars', function (b) {
+        var w = mk('div'); w.style.padding = '6px 14px 24px'; b.appendChild(w);
+        var hd = mk('div', 'zst-hero'); hd.innerHTML = starSvg(130) + '<h2 style="margin:10px 0 6px"></h2><p></p>'; hd.querySelector('h2').textContent = 'Zanply Stars';
+        var p = hd.querySelector('p'); p.textContent = 'Buy Stars to unlock content and services in Zanply. '; var more = mk('a', '', 'More about Stars \u203a'); more.href = '#'; more.addEventListener('click', function (e) { e.preventDefault(); textPage('About Stars', [['What are Stars?', 'Stars are Zanply credits you can use to unlock content and services, and to send gifts to friends.'], ['Earning Stars', 'Join an affiliate program and earn a commission when people you refer spend Stars.']]); }); p.appendChild(more); w.appendChild(hd);
+        var card = mk('div'); card.style.cssText = 'border-radius:16px;padding:22px 16px;text-align:center;background:rgba(128,128,128,.12);margin-top:14px'; card.innerHTML = '<div style="font-size:34px;font-weight:700"></div><div class="sub">your balance</div>'; card.firstChild.textContent = '\u2b50 ' + starsBal(); w.appendChild(card);
+        var buy = pBtn('Buy Stars', function () { toast('Buying Stars opens soon.'); }); buy.style.borderRadius = '26px'; buy.style.height = '50px'; card.appendChild(buy);
+        var g = mk('button', 'zir'); g.style.cssText = 'margin-top:14px;border-radius:14px;background:rgba(128,128,128,.12);width:100%;text-align:left'; g.innerHTML = '<div class="zt"><div><b>Gift Stars to Friends</b></div><div class="zl">Pick a friend and send them a star gift.</div></div>'; g.addEventListener('click', openGiftPicker); w.appendChild(g);
+        var e = mk('button', 'zir'); e.style.cssText = 'margin-top:12px;border-radius:14px;background:rgba(128,128,128,.12);width:100%;text-align:left'; e.innerHTML = '<div class="zt"><div><b>Earn Stars</b> <span style="font-size:11px;padding:2px 6px;border-radius:6px;background:#3b82f6;color:#fff">NEW</span></div><div class="zl">Affiliate programs: earn a commission on referrals.</div></div>'; e.addEventListener('click', openAffiliate); w.appendChild(e);
+      });
+    }
+    function openAffiliate() {
+      zOpenPage('Affiliate Programs', function (b) {
+        var pg = b.parentNode; pg.classList.add('zprem'); pg.querySelector('.zpg-h span').textContent = '';
+        var h = mk('div', 'zpm-hero'); h.innerHTML = '<div class="zaf-circle">\ud83e\udd1d</div><h2></h2><p></p>'; h.querySelector('h2').textContent = 'Affiliate Programs'; h.querySelector('p').textContent = 'Earn a commission each time a user who first accessed a mini app through your referral link spends Stars within it.'; b.appendChild(h);
+        var c = mk('div', 'zaf-card');
+        [['\ud83d\udee1', 'Reliable', 'Receive guaranteed commissions for spending by users you refer.'], ['\ud83d\udd0d', 'Transparent', 'Track your commissions from referred users in real time.'], ['\ud83d\udc4d', 'Simple', 'Choose a mini app below, get your referral link, and start earning Stars.']].forEach(function (x) { var r = mk('div', 'zaf-row'); r.innerHTML = '<span class="i"></span><div><b></b><small></small></div>'; r.querySelector('.i').textContent = x[0]; r.querySelector('b').textContent = x[1]; r.querySelector('small').textContent = x[2]; c.appendChild(r); });
+        b.appendChild(c);
+        var e = mk('div', 'zaf-card'); e.style.cssText += ';min-height:70px;padding:22px 18px;opacity:.7'; e.textContent = 'No mini apps are available yet. They will appear here.'; b.appendChild(e);
+      });
+    }
+    function openGiftPicker() {
+      var p = mk('div', 'zgs'), d = mk('div', 'zgs-d'); p.appendChild(d);
+      d.appendChild(mk('div', 'zgs-t', 'Gift Stars'));
+      var q = mk('input', 'zgs-s'); q.placeholder = 'Search'; d.appendChild(q);
+      var box = mk('div', 'zgs-l'); d.appendChild(box);
+      var map = {}; (allChats || []).forEach(function (c) { if (c && !c.group && /^\+\d{7,15}$/.test(c.phone || '')) map[c.phone] = { phone: c.phone, name: savedName(c.phone) || c.name || c.phone, recent: true }; });
+      var sv = contacts(); Object.keys(sv).forEach(function (ph) { if (/^\+\d{7,15}$/.test(ph) && !map[ph]) map[ph] = { phone: ph, name: savedName(ph) || ph }; });
+      var all = Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b2) { return a.name.localeCompare(b2.name); });
+      function row(c) {
+        var r = mk('div', 'zgs-r'); r.setAttribute('data-notr', '1'); r.setAttribute('role', 'button'); var av = avatar({ name: c.name, phone: c.phone }); av.className = 'av'; r.appendChild(av);
+        var nm = mk('div', 'nm'); nm.appendChild(mk('div', '', c.name)); nm.appendChild(mk('small', '', c.phone)); r.appendChild(nm);
+        var kb = mk('button', 'kb', '\u22ee'); kb.setAttribute('aria-label', 'More'); kb.style.cssText = 'background:none;border:0;color:inherit;font-size:22px'; kb.addEventListener('click', function (e) { e.stopPropagation(); zsheet(c.name, [['Open chat', function () { closeOv(); try { openThread({ phone: c.phone, name: c.name, group: false }); } catch (x) {} }]]); }); r.appendChild(kb);
+        r.addEventListener('click', function () { closeOv(); openGift(c.phone); }); return r;
+      }
+      function draw() {
+        box.textContent = ''; var s = q.value.toLowerCase().trim(), list = all.filter(function (c) { return !s || c.name.toLowerCase().indexOf(s) > -1 || c.phone.indexOf(s) > -1; });
+        if (!list.length) { box.appendChild(mk('div', 'zgs-h', 'No friends found. Start a chat first.')); return; }
+        if (!s) { var fr = list.filter(function (c) { return c.recent; }).slice(0, 5); if (fr.length) { box.appendChild(mk('div', 'zgs-h', 'Frequent Contacts')); fr.forEach(function (c) { box.appendChild(row(c)); }); } }
+        var last = ''; list.forEach(function (c) { var L = (c.name.charAt(0) || '#').toUpperCase(); if (L !== last) { last = L; var h = mk('div', 'zgs-h', L); h.setAttribute('data-notr', '1'); box.appendChild(h); } box.appendChild(row(c)); });
+      }
+      q.addEventListener('input', draw); draw();
+      p.addEventListener('click', function (e) { if (e.target === p) closeOv(); });
+      document.body.appendChild(p); pushOv(function () { p.remove(); });
+    }
+
     function zInit() {
       applyAppTheme(); applyAcc(); applyChatSet(); syncSWPrefs(); renderFolderTabs();
     }
@@ -3514,7 +3658,7 @@ ZW|Zimbabwe|263`;
     var ZRESTORE = { 'Settings': openSettings, 'Account': openAccount, 'Profile': openDetails, 'Account Type': openAcctType, 'Privacy': openPrivacy, 'Security & privacy': openPrivacy, 'Last seen and online': openLastSeen, 'Profile picture': openPhotoPriv,
       'App lock': openAppLock, 'Blocked users': openBlocked, 'Hide phone number': openHidePhone, 'Sync contacts': openSync, 'Chats': openChats, 'Appearance': openAppearance, 'Chat theme': openThemes, 'Two-step verification': openTwoStep,
       'Chat folders': openFolders, 'Notifications': openNotif, 'Storage and data': openStorage, 'Accessibility': openAccess, 'Animation': openAnimation, 'App language': openLanguage, 'Auto-delete messages': openAutoDelete,
-      'Devices': openDevices, 'Wallpaper': openWallpaper, 'Choose theme': openThemeChooser, 'Archived chats': openArchived, 'Zanply FAQ': openFaq, 'Zanply Features': openFeatures, 'Privacy Policy': openPolicy };
+      'Devices': openDevices, 'Wallpaper': openWallpaper, 'Chat bubble': openBubble, 'Choose theme': openThemeChooser, 'Archived chats': openArchived, 'Zanply FAQ': openFaq, 'Zanply Features': openFeatures, 'Privacy Policy': openPolicy };
     function restoreScreen() {
       var s = null; try { s = JSON.parse(localStorage.getItem('zaply_screen') || 'null'); } catch (e) {} if (!s) return;
       if (s.tab && s.tab !== 'chats') { try { showTab(s.tab); } catch (e) {} }
@@ -5093,7 +5237,71 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       if (!cur && !$('dial').value) $('cName').textContent = T(7);
       document.documentElement.lang = lang;
       document.documentElement.dir = RTL.indexOf(lang.split('-')[0]) > -1 ? 'rtl' : 'ltr';
+      try { ZTR.apply(); } catch (e) { console.warn(e); }
     }
+    /* ---------- Whole-app translation: every screen, any language in the list ---------- */
+    var ZTR = (function () {
+      var GM = { he: 'iw', fil: 'tl', jv: 'jw', nb: 'no', zh: 'zh-CN' }, cache = {}, cl = '', waiting = [], timer = 0, busy = false, lnames = null, obs = null;
+      var SKIP = '#msgs,#chatList,#msgInput,.bub,.av,.zav,.znm,.zhead .sub,script,style,textarea,input,select,option,code,pre,svg,[data-notr],[contenteditable="true"]';
+      function tl() { return GM[lang] || GM[lang.split('-')[0]] || lang; }
+      function isEn() { return lang === 'en' || lang.indexOf('en-') === 0; }
+      function loadC() { if (cl === lang) return; cl = lang; try { cache = JSON.parse(localStorage.getItem('zaply_trc_' + lang) || '{}'); } catch (e) { cache = {}; } }
+      function saveC() { try { localStorage.setItem('zaply_trc_' + lang, JSON.stringify(cache)); } catch (e) { try { cache = {}; localStorage.removeItem('zaply_trc_' + lang); } catch (x) {} } }
+      function isLangName(s) { if (!lnames) { lnames = {}; LANGS.forEach(function (l) { lnames[l.n] = 1; }); } return !!lnames[s]; }
+      function staticOwns(n) { var b0 = lang.split('-')[0]; return !!(TR[lang] || TR[b0]) && n.parentNode && n.parentNode.closest && n.parentNode.closest('#welcomeView,#authView,#countryView'); }
+      function okNode(n) { var p = n.parentNode; if (!p || p.nodeType !== 1) return false; if (p.closest && p.closest(SKIP)) return false; return true; }
+      function keyOf(s) { return s.replace(/\s+/g, ' ').trim(); }
+      function handle(n) {
+        if (n._zt !== undefined && n._zt === n.nodeValue) return;
+        var v = n.nodeValue; if (!/[A-Za-z]{2}/.test(v) || !okNode(n)) return;
+        n._zo = v; if (isEn() || staticOwns(n)) return;
+        var k = keyOf(v); if (isLangName(k)) return;
+        if (cache[k]) put(n, k); else waiting.push(n);
+      }
+      function put(n, k) { var o = n._zo, lead = (o.match(/^\s*/) || [''])[0], trail = (o.match(/\s*$/) || [''])[0]; n._zt = lead + cache[k] + trail; n.nodeValue = n._zt; }
+      function scan(root) {
+        if (!root) return;
+        if (root.nodeType === 3) return handle(root);
+        if (root.nodeType !== 1) return;
+        var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n; while ((n = w.nextNode())) handle(n);
+        var els = root.querySelectorAll ? root.querySelectorAll('[placeholder],[aria-label]') : []; Array.prototype.forEach.call(els, attrs); if (root.hasAttribute && (root.hasAttribute('placeholder') || root.hasAttribute('aria-label'))) attrs(root);
+      }
+      function attrs(el) {
+        if (el.closest && el.closest(SKIP.replace('input,', '').replace('textarea,', ''))) return;
+        ['placeholder', 'aria-label'].forEach(function (a) {
+          var v = el.getAttribute(a); if (!v || !/[A-Za-z]{2}/.test(v)) return; el._zoa = el._zoa || {}; var z = el._zoa[a];
+          if (!z || (z.t !== v && z.o !== v)) z = el._zoa[a] = { o: v, t: v };
+          if (isEn()) return; var k = keyOf(z.o);
+          if (cache[k]) { if (v !== cache[k]) { z.t = cache[k]; el.setAttribute(a, cache[k]); } } else if (v === z.o) waiting.push({ el: el, a: a, k: k });
+        });
+      }
+      function gt(texts) {
+        var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=' + encodeURIComponent(tl()) + '&dt=t&q=' + encodeURIComponent(texts.join('\n'));
+        return fetch(url).catch(function () { var er = new Error('net'); er.net = 1; throw er; }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) { var out = (j[0] || []).map(function (x) { return x[0] || ''; }).join(''), parts = out.replace(/\n+$/, '').split('\n'); if (parts.length !== texts.length) throw 0; return parts.map(function (s) { return s.trim(); }); });
+      }
+      function one(t) { return gt([t]).then(function (a) { return a[0]; }).catch(function () { return null; }); }
+      function flush() {
+        timer = 0; if (busy || isEn()) return; var items = waiting; waiting = []; if (!items.length) return; busy = true; loadC();
+        var keys = {}, list = []; items.forEach(function (it) { var k = it.k || keyOf(it.nodeValue != null ? it._zo : ''); if (k && !cache[k] && !keys[k]) { keys[k] = 1; list.push(k); } });
+        var batches = [], cur = [], len = 0; list.forEach(function (k) { if (len + k.length > 1400 || cur.length >= 40) { batches.push(cur); cur = []; len = 0; } cur.push(k); len += k.length + 3; }); if (cur.length) batches.push(cur);
+        var myLang = lang;
+        var chain = batches.reduce(function (p, bt) { return p.then(function () { return gt(bt).catch(function (e) { return e && e.net ? [] : Promise.all(bt.map(one)); }).then(function (res) { if (myLang !== lang) return; bt.forEach(function (k, i) { if (res[i]) cache[k] = res[i]; }); }); }); }, Promise.resolve());
+        chain.then(function () { busy = false; if (myLang !== lang) { api.apply(); return; } saveC(); items.forEach(function (it) { if (it.el) { var k = it.k; if (cache[k] && it.el.isConnected !== false) { it.el._zoa[it.a].t = cache[k]; it.el.setAttribute(it.a, cache[k]); } } else if (it.isConnected !== false && it._zo != null && it._zt !== it.nodeValue) { var k2 = keyOf(it._zo); if (cache[k2]) put(it, k2); } }); if (waiting.length) kick(); });
+      }
+      function kick() { if (!timer) timer = setTimeout(flush, 150); }
+      function restore() {
+        var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), n; while ((n = w.nextNode())) if (n._zo != null && n._zt === n.nodeValue) { n.nodeValue = n._zo; n._zt = undefined; }
+        Array.prototype.forEach.call(document.querySelectorAll('[placeholder],[aria-label]'), function (el) { if (!el._zoa) return; ['placeholder', 'aria-label'].forEach(function (a) { var x = el._zoa[a]; if (x && el.getAttribute(a) === x.t) el.setAttribute(a, x.o); }); });
+      }
+      var api = {
+        apply: function () {
+          loadC(); restore(); waiting = [];
+          if (!obs) { obs = new MutationObserver(function (ms) { if (isEn()) return; ms.forEach(function (m) { if (m.type === 'characterData') handle(m.target); else if (m.type === 'attributes') attrs(m.target); else Array.prototype.forEach.call(m.addedNodes, scan); }); if (waiting.length) kick(); }); obs.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'aria-label'] }); }
+          if (isEn()) return; scan(document.body); if (waiting.length) kick();
+        }
+      };
+      return api;
+    })();
     var langSel = $('lang');
     LANGS.forEach(function (l) { var o = document.createElement('option'); o.value = l.c; o.textContent = l.n; langSel.appendChild(o); });
     try { var sv = localStorage.getItem('zaply_lang'); if (sv && LANGS.some(function (l) { return l.c === sv; })) lang = sv; } catch (e) {}

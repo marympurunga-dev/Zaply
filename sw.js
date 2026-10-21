@@ -1,4 +1,4 @@
-const CACHE = 'zanply-v14';
+const CACHE = 'zanply-v15';
 const PREFS = 'zanply-prefs';
 const SHELL = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', (e) => {
@@ -16,6 +16,11 @@ self.addEventListener('fetch', (e) => {
   if (same && url.pathname.startsWith('/api/')) return;
   // profile pictures: keep a copy so they still show with no internet
   if (!same) {
+    // wallpaper pictures: once a picture has loaded, keep it so it opens instantly and works offline
+    if (url.hostname === 'image.pollinations.ai' && req.destination === 'image') {
+      e.respondWith(caches.open(CACHE).then((c) => c.match(req).then((hit) => hit || fetch(req).then((res) => { if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone()); return res; }))));
+      return;
+    }
     if (url.hostname === 'res.cloudinary.com' && req.destination === 'image') {
       e.respondWith(caches.open(CACHE).then((c) => c.match(req).then((hit) => {
         const net = fetch(req).then((res) => { if (res && (res.ok || res.type === 'opaque')) c.put(req, res.clone()); return res; }).catch(() => hit);
