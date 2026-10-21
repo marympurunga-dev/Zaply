@@ -658,7 +658,17 @@
     #msgs .bub small .tk{display:inline-block;margin-left:4px;vertical-align:-1px;line-height:0}
     .mid span .tk.lt{display:inline-block;margin-right:5px;vertical-align:-1px;line-height:0;opacity:.8}
     .mid span .tk.lt.r{color:#34b7f1;opacity:1}
-    #msgs .bub small .tk.r{color:#0a6cff;opacity:1}
+    /* chat bubbles: dark received bubble, chat-colour sent bubble, white text, WhatsApp-style tail */
+    #msgs .bub{position:relative;border:none;border-radius:12px;background:#2b3238;color:#fff}
+    #msgs .bub:not(.mine){border-top-left-radius:3px}
+    #msgs .bub.mine{border-top-right-radius:3px;background:var(--thmine,#1d6ff2);color:var(--thtxt,#fff)}
+    #msgs .bub::before{content:"";position:absolute;top:0;width:9px;height:13px;background:inherit}
+    #msgs .bub:not(.mine)::before{left:-8px;clip-path:polygon(100% 0,100% 100%,0 0)}
+    #msgs .bub.mine::before{right:-8px;clip-path:polygon(0 0,0 100%,100% 0)}
+    #msgs .bub:not(.mine) + .bub:not(.mine)::before,#msgs .bub.mine + .bub.mine::before,#msgs .bub.stk::before{display:none}
+    #msgs .bub:not(.mine) + .bub:not(.mine){border-top-left-radius:12px}
+    #msgs .bub.mine + .bub.mine{border-top-right-radius:12px}
+    #msgs .bub small .tk.r{color:#8be9fd;opacity:1}
     #msgs .bub.stk{background:transparent!important;border-color:transparent!important;font-size:46px!important;line-height:1.15;padding:2px 6px;animation:stkpop .4s ease}
     @keyframes stkpop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
     @keyframes bubin{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
@@ -866,7 +876,7 @@
 
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">🔔 Turn on notifications</button>
-        <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone (build 17)</button>
+        <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone (build 18)</button>
         <button id="btnNew" class="fabr" aria-label="New chat"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg><span class="fl">Send message</span></button>
         <div class="newbox hidden" id="newBox">
           <input id="newPhone" type="tel" inputmode="tel" placeholder="Friend's number, e.g. +254712345678">
@@ -2523,7 +2533,7 @@ ZW|Zimbabwe|263`;
       });
     }
     /* ---------- Appearance + chat theme ---------- */
-    var THEMES = [{ id: 'default', n: 'Default', bg: '', mine: '#21c063', txt: '#06140c' }, { id: 'midnight', n: 'Midnight', bg: 'linear-gradient(160deg,#0b1020,#1b2a4a)', mine: '#3b82f6', txt: '#fff' },
+    var THEMES = [{ id: 'default', n: 'Default', bg: '', mine: '#1d6ff2', txt: '#fff' }, { id: 'midnight', n: 'Midnight', bg: 'linear-gradient(160deg,#0b1020,#1b2a4a)', mine: '#3b82f6', txt: '#fff' },
       { id: 'forest', n: 'Forest', bg: 'linear-gradient(160deg,#0f2a1d,#1d4d34)', mine: '#21c063', txt: '#06140c' }, { id: 'charcoal', n: 'Charcoal', bg: '#111418', mine: '#21c063', txt: '#06140c' },
       { id: 'orchid', n: 'Orchid', bg: 'linear-gradient(160deg,#cdb4f6,#f3b8e6)', mine: '#7c3aed', txt: '#fff' }, { id: 'rose', n: 'Rose', bg: 'linear-gradient(160deg,#f8c9d4,#e8a0bf)', mine: '#db2777', txt: '#fff' },
       { id: 'sunset', n: 'Sunset', bg: 'linear-gradient(160deg,#f6d365,#fda085)', mine: '#e4572e', txt: '#fff' }, { id: 'ocean', n: 'Ocean', bg: 'linear-gradient(160deg,#7fd6e8,#f6d6b0)', mine: '#0d9488', txt: '#fff' }];
