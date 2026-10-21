@@ -110,6 +110,11 @@ function ensureTable() {
         pet VARCHAR(40) NOT NULL DEFAULT '',
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         UNIQUE KEY uq_username (username))`)]).then(async () => {
+      /* message ticks: delivered_at = receiver's app fetched it, read_at = receiver opened the chat */
+      await db().query("ALTER TABLE messages ADD COLUMN read_at TIMESTAMP NULL").catch(() => {});
+      await db().query("ALTER TABLE messages ADD COLUMN delivered_at TIMESTAMP NULL")
+        .then(() => db().query("UPDATE messages SET delivered_at = created_at, read_at = created_at WHERE read_at IS NULL")).catch(() => {});
+      await db().query("ALTER TABLE messages ADD INDEX idx_rd (receiver, delivered_at)").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN photo_url VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN links VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN privacy VARCHAR(1500) NOT NULL DEFAULT ''").catch(() => {});
@@ -281,6 +286,8 @@ module.exports = async (req, res) => {
     await ensureTable();
 
     if (b.action === 'list') {
+      /* the app is open, so everything waiting for me counts as delivered (two grey ticks for the sender) */
+      await db().query('UPDATE messages SET delivered_at = NOW() WHERE receiver = ? AND delivered_at IS NULL', [me]).catch(() => {});
       const [last] = await db().query(
         `SELECT id, sender, receiver, body, created_at FROM messages
          WHERE id IN (SELECT MAX(id) FROM messages WHERE sender = ? OR receiver = ?
@@ -334,12 +341,24 @@ module.exports = async (req, res) => {
           id: m.id, mine: m.sender === me, body: m.body, at: m.created_at, from: m.name || m.sender })) });
       }
       if (!phoneOk(b.with)) return res.status(400).json({ error: 'Bad request.' });
+      /* the chat is open on my screen, so what they sent me is read (blue ticks for them) */
+      await db().query(
+        'UPDATE messages SET delivered_at = COALESCE(delivered_at, NOW()), read_at = NOW() WHERE receiver = ? AND sender = ? AND read_at IS NULL',
+        [me, b.with]).catch(() => {});
       const [rows] = await db().query(
-        `SELECT id, sender, body, created_at FROM messages
+        `SELECT id, sender, body, created_at, delivered_at, read_at FROM messages
          WHERE id > ? AND ((sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?))
          ORDER BY id ASC LIMIT 200`, [after, me, b.with, b.with, me]);
-      return res.json({ messages: rows.map((m) => ({
-        id: m.id, mine: m.sender === me, body: m.body, at: m.created_at })) });
+      const stOf = (m) => (m.read_at ? 3 : m.delivered_at ? 2 : 1);
+      /* new tick state for my earlier messages the app is still tracking */
+      let ticks = {};
+      const track = (Array.isArray(b.track) ? b.track : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 100);
+      if (track.length) {
+        const [ts] = await db().query('SELECT id, delivered_at, read_at FROM messages WHERE id IN (?) AND sender = ? AND receiver = ?', [track, me, b.with]);
+        ts.forEach((m) => { ticks[m.id] = stOf(m); });
+      }
+      return res.json({ ticks, messages: rows.map((m) => ({
+        id: m.id, mine: m.sender === me, body: m.body, at: m.created_at, st: m.sender === me ? stOf(m) : 0 })) });
     }
 
     if (b.action === 'send') {
@@ -363,7 +382,7 @@ module.exports = async (req, res) => {
       if (bs.blockedMe) return res.status(403).json({ error: "You can't message this person." });
       const [r] = await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [me, b.to, body]);
       await notify(me, b.to, body);
-      return res.json({ message: { id: r.insertId, mine: true, body, at: new Date().toISOString() } });
+      return res.json({ message: { id: r.insertId, mine: true, body, at: new Date().toISOString(), st: 1 } });
     }
 
     if (b.action === 'blockstate') {
