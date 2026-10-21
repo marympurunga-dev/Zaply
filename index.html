@@ -3751,8 +3751,8 @@ ZW|Zimbabwe|263`;
         r.appendChild(avatar(c));
         var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
         if (withChat) { try { folderTags(c).forEach(function (t) { mid.lastChild.appendChild(t); }); } catch (e) {} }
-        var pv = mk('span', '', withChat ? ((c.mine && !(c.st && !c.group && !isCallMsg(c.last))) ? 'You: ' : (!c.mine && c.group && c.from ? c.from + ': ' : '')) + previewOf(c.last) : c.phone);
-        if (withChat && c.mine && c.st && !c.group && !isCallMsg(c.last)) { var tkl = tickEl(c.st); tkl.classList.add('lt'); pv.insertBefore(tkl, pv.firstChild); }
+        var pv = mk('span', '', withChat ? ((c.mine && !(!c.group && !isCallMsg(c.last))) ? 'You: ' : (!c.mine && c.group && c.from ? c.from + ': ' : '')) + previewOf(c.last) : c.phone);
+        if (withChat && c.mine && !c.group && !isCallMsg(c.last)) { var tkl = tickEl(c.st || 1); tkl.classList.add('lt'); pv.insertBefore(tkl, pv.firstChild); }
         mid.appendChild(pv);
         r.appendChild(mid);
         if (withChat) {
