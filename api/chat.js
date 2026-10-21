@@ -1,6 +1,7 @@
 // POST /api/chat  — actions: list, start, history, send, media_sign, media_get, block, unblock, blockstate, report, setkey, getkey,
 //                           group_create, group_info, group_leave (groups are chats with the id "g:<number>"),
-//                           profile_get, profile_set (username, email, address, bio, birthday, pet)
+//                           profile_get, profile_set (username, email, address, bio, birthday, pet),
+//                           presence_ping, presence_get (online / last seen)
 const crypto = require('crypto');
 const mysql = require('mysql2/promise');
 const webpush = require('web-push');
@@ -118,6 +119,9 @@ function ensureTable() {
       await db().query("ALTER TABLE profiles ADD COLUMN photo_url VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN links VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN privacy VARCHAR(1500) NOT NULL DEFAULT ''").catch(() => {});
+      /* online / last seen: last_active = last time their app told us it was open, is_online = 0 once they close it */
+      await db().query("ALTER TABLE profiles ADD COLUMN last_active TIMESTAMP NULL").catch(() => {});
+      await db().query("ALTER TABLE profiles ADD COLUMN is_online TINYINT NOT NULL DEFAULT 0").catch(() => {});
       await db().query(`CREATE TABLE IF NOT EXISTS phone_otps (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
         owner VARCHAR(20) NOT NULL,
@@ -441,6 +445,35 @@ module.exports = async (req, res) => {
       };
       await db().query('INSERT INTO profiles (phone, privacy) VALUES (?, ?) ON DUPLICATE KEY UPDATE privacy = VALUES(privacy)', [me, JSON.stringify(clean)]);
       return res.json({ ok: true });
+    }
+    // Online / last seen. The app pings every ~25s while open; "online" = pinged within the last 60s.
+    if (b.action === 'presence_ping') {
+      await db().query('INSERT INTO profiles (phone, last_active, is_online) VALUES (?, NOW(), ?) ON DUPLICATE KEY UPDATE last_active = NOW(), is_online = VALUES(is_online)', [me, b.online === false ? 0 : 1]);
+      return res.json({ ok: true });
+    }
+    if (b.action === 'presence_get') {
+      const who = b.with;
+      if (!phoneOk(who) || who === me) return res.json({ hidden: true });
+      const bs = await blockState(me, who);
+      if (bs.iBlocked || bs.blockedMe) return res.json({ hidden: true });
+      /* if I hide my own last seen, I can't see other people's either */
+      const [mine] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
+      let mp = {}; try { mp = JSON.parse((mine[0] && mine[0].privacy) || '{}'); } catch (e) {}
+      if (mp.lastseen === 'nobody') return res.json({ hidden: true });
+      const [rows] = await db().query('SELECT privacy, last_active, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS online FROM profiles WHERE phone = ?', [who]);
+      const r = rows[0];
+      if (!r || !r.last_active) return res.json({ hidden: false, online: false, last: null });
+      let pv = {}; try { pv = JSON.parse(r.privacy || '{}'); } catch (e) {}
+      const rule = pv.lastseen || 'contacts';
+      let canLast = rule === 'everyone';
+      if (rule === 'contacts' || rule === 'except') {
+        /* a contact = someone they have chatted with */
+        const [c] = await db().query('SELECT 1 FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?) LIMIT 1', [me, who, who, me]);
+        canLast = c.length > 0;
+        if (rule === 'except' && ((pv.ex && pv.ex.lastseen) || []).includes(me)) canLast = false;
+      }
+      const canOnline = pv.online !== 'same' || canLast;
+      return res.json({ hidden: !canOnline && !canLast, online: canOnline && Number(r.online) === 1, last: canLast ? r.last_active : null });
     }
     if (b.action === 'blocklist') {
       const [r] = await db().query('SELECT b.blocked AS phone, u.name AS name FROM blocks b LEFT JOIN users u ON u.phone = b.blocked WHERE b.blocker = ? ORDER BY b.created_at DESC', [me]);
