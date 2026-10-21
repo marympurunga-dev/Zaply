@@ -289,7 +289,7 @@ module.exports = async (req, res) => {
       /* the app is open, so everything waiting for me counts as delivered (two grey ticks for the sender) */
       await db().query('UPDATE messages SET delivered_at = NOW() WHERE receiver = ? AND delivered_at IS NULL', [me]).catch(() => {});
       const [last] = await db().query(
-        `SELECT id, sender, receiver, body, created_at FROM messages
+        `SELECT id, sender, receiver, body, created_at, delivered_at, read_at FROM messages
          WHERE id IN (SELECT MAX(id) FROM messages WHERE sender = ? OR receiver = ?
                       GROUP BY IF(sender = ?, receiver, sender))
          ORDER BY id DESC LIMIT 100`, [me, me, me]);
@@ -301,7 +301,8 @@ module.exports = async (req, res) => {
       }
       const chats = last.map((m, i) => ({
         phone: others[i], name: names[others[i]] || '', last: m.body,
-        mine: m.sender === me, at: m.created_at }));
+        mine: m.sender === me, at: m.created_at,
+        st: m.sender === me ? (m.read_at ? 3 : m.delivered_at ? 2 : 1) : 0 }));
       const [gs] = await db().query(
         `SELECT g.id, g.name, g.created_at,
            (SELECT body FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS body,
