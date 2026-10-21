@@ -34,8 +34,15 @@ async function sendCodeEmail(to, code, env = process.env, fetchFn = globalThis.f
     body: JSON.stringify(body),
   });
   if (!r.ok) {
-    console.error('Resend error', r.status, await r.text());
-    throw Object.assign(new Error('We could not send the email. Check the address and try again.'), { status: 502 });
+    const raw = await r.text(); let why = ''; try { why = String((JSON.parse(raw) || {}).message || ''); } catch (e) {}
+    console.error('Resend error', r.status, raw);
+    // Resend refuses unverified senders and (with the test sender) any address except the account owner's
+    let msg = 'We could not send the email. Check the address and try again.';
+    if (r.status === 401 || r.status === 400 && /api key/i.test(why)) msg = 'Email is not set up correctly on the server (API key).';
+    else if (r.status === 403 || /verify|own email|testing emails/i.test(why)) msg = 'The email sender is not verified yet, so codes can only go to the account owner. Verify your domain in Resend and set RESEND_FROM.';
+    else if (r.status === 429) msg = 'Too many emails were sent. Please wait a minute and try again.';
+    if (env.RESEND_DEBUG === '1' && why) msg += ' [' + r.status + ': ' + why + ']';
+    throw Object.assign(new Error(msg), { status: 502 });
   }
 }
 
