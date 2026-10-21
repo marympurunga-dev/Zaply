@@ -151,7 +151,20 @@ async function sendSms(to, message) {
   if (process.env.AT_SENDER) form.set('from', process.env.AT_SENDER);
   const base = process.env.AT_USERNAME === 'sandbox' ? 'https://api.sandbox.africastalking.com' : 'https://api.africastalking.com';
   const r = await fetch(base + '/version1/messaging', { method: 'POST', headers: { apiKey: process.env.AT_API_KEY, Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' }, body: form });
-  if (!r.ok) throw new Error('Could not send the SMS. Try again.');
+  const raw = await r.text(); let j = null; try { j = JSON.parse(raw); } catch (e) {}
+  if (!r.ok) {
+    console.error('Africa\'s Talking HTTP', r.status, raw.slice(0, 300));
+    throw new Error(r.status === 401 ? 'SMS login failed. Check AT_USERNAME and AT_API_KEY on the server.' : 'Could not send the SMS. Try again.');
+  }
+  // Africa's Talking answers HTTP 201 even when a message is rejected, so the per-number status must be checked
+  const rec = (j && j.SMSMessageData && j.SMSMessageData.Recipients) || [];
+  const bad = rec.find((x) => ![100, 101, 102].includes(Number(x.statusCode)));
+  if (bad || !rec.length) {
+    console.error('Africa\'s Talking rejected the SMS:', raw.slice(0, 400));
+    const why = String((bad && bad.status) || (j && j.SMSMessageData && j.SMSMessageData.Message) || '');
+    const map = { InvalidSenderId: 'The SMS sender name (AT_SENDER) is not approved on Africa\'s Talking.', InsufficientBalance: 'The SMS account has no balance left.', InvalidPhoneNumber: 'That phone number is not valid.', UnsupportedNumberType: 'SMS cannot be sent to that kind of number.', UserInBlacklist: 'That number has opted out of SMS.', CouldNotRoute: 'SMS cannot be delivered to that network.', RiskHold: 'The SMS was held for review by Africa\'s Talking.' };
+    throw new Error(map[why] || 'The SMS could not be delivered' + (why ? ' (' + why + ')' : '') + '.');
+  }
 }
 // Email codes use the same sender as sign-up (api/_mail.js), so it needs no new Vercel settings
 const { sendCodeEmail } = require('./_mail');
