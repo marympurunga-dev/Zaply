@@ -580,6 +580,7 @@
     #callList .row .mid span{white-space:normal;font-size:13.5px}
     .cb{flex:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border:none;color:#25d366}
     .row.unread time{color:#25d366}
+    .ubn{display:block;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#25d366;color:#06140c;font-size:12px;font-weight:700;line-height:22px;text-align:center;font-style:normal}
 
     /* ===== Zanply additions ===== */
     :root[data-theme="light"]{--bg:#f6f7fb;--card:#ffffff;--text:#1a1d29;--muted:#6b7280;--accent:#4f46e5;--border:#e5e7eb;color-scheme:light}
@@ -661,7 +662,7 @@
     /* chat bubbles: dark received bubble, chat-colour sent bubble, white text, WhatsApp-style tail */
     #msgs .bub{position:relative;border:none;border-radius:12px;background:#2b3238;color:#fff}
     #msgs .bub:not(.mine){border-top-left-radius:3px}
-    #msgs .bub.mine{border-top-right-radius:3px;background:var(--thmine,#1d6ff2);color:var(--thtxt,#fff)}
+    #msgs .bub.mine{border-top-right-radius:3px;background:var(--thmine,#005c4b);color:var(--thtxt,#fff)}
     #msgs .bub::before{content:"";position:absolute;top:0;width:9px;height:13px;background:inherit}
     #msgs .bub:not(.mine)::before{left:-8px;clip-path:polygon(100% 0,100% 100%,0 0)}
     #msgs .bub.mine::before{right:-8px;clip-path:polygon(0 0,0 100%,100% 0)}
@@ -876,7 +877,7 @@
 
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">🔔 Turn on notifications</button>
-        <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone (build 18)</button>
+        <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone (build 19)</button>
         <button id="btnNew" class="fabr" aria-label="New chat"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg><span class="fl">Send message</span></button>
         <div class="newbox hidden" id="newBox">
           <input id="newPhone" type="tel" inputmode="tel" placeholder="Friend's number, e.g. +254712345678">
@@ -2533,7 +2534,7 @@ ZW|Zimbabwe|263`;
       });
     }
     /* ---------- Appearance + chat theme ---------- */
-    var THEMES = [{ id: 'default', n: 'Default', bg: '', mine: '#1d6ff2', txt: '#fff' }, { id: 'midnight', n: 'Midnight', bg: 'linear-gradient(160deg,#0b1020,#1b2a4a)', mine: '#3b82f6', txt: '#fff' },
+    var THEMES = [{ id: 'default', n: 'Default', bg: '', mine: '#005c4b', txt: '#fff' }, { id: 'midnight', n: 'Midnight', bg: 'linear-gradient(160deg,#0b1020,#1b2a4a)', mine: '#3b82f6', txt: '#fff' },
       { id: 'forest', n: 'Forest', bg: 'linear-gradient(160deg,#0f2a1d,#1d4d34)', mine: '#21c063', txt: '#06140c' }, { id: 'charcoal', n: 'Charcoal', bg: '#111418', mine: '#21c063', txt: '#06140c' },
       { id: 'orchid', n: 'Orchid', bg: 'linear-gradient(160deg,#cdb4f6,#f3b8e6)', mine: '#7c3aed', txt: '#fff' }, { id: 'rose', n: 'Rose', bg: 'linear-gradient(160deg,#f8c9d4,#e8a0bf)', mine: '#db2777', txt: '#fff' },
       { id: 'sunset', n: 'Sunset', bg: 'linear-gradient(160deg,#f6d365,#fda085)', mine: '#e4572e', txt: '#fff' }, { id: 'ocean', n: 'Ocean', bg: 'linear-gradient(160deg,#7fd6e8,#f6d6b0)', mine: '#0d9488', txt: '#fff' }];
@@ -2843,38 +2844,28 @@ ZW|Zimbabwe|263`;
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(s + '</svg>');
     }
     function wallUrl(w, wd, ht) { return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(w.p) + '?width=' + wd + '&height=' + ht + '&nologo=true&seed=' + w.s; }
-    var WALLS = (function () {
-      var W = [], CATS = [
-        ['Luxury cars', 'cars', ['Supercar', 'Grand tourer', 'Roadster', 'Hypercar', 'Black coupe', 'Silver sedan', 'Gold edition', 'Night drive', 'Showroom', 'Convertible', 'Classic luxury', 'Sport SUV', 'Track day', 'Red racer', 'White limo'], '#1f2937', '#9ca3af'],
-        ['Luxury houses', 'houses', ['Modern villa', 'Beach mansion', 'Pool house', 'Glass house', 'Hilltop estate', 'Penthouse', 'Garden villa', 'Night mansion', 'Lake house', 'Palm estate', 'Marble hall', 'Sky terrace', 'Desert villa', 'Cliff house', 'Classic manor'], '#78350f', '#fcd34d'],
-        ['Cute girls', 'girls', ['Smile', 'Sunset glow', 'Flower crown', 'Summer day', 'Golden hour', 'Braids', 'Pink dream', 'Sweet laugh', 'Beach breeze', 'Soft light', 'Bright eyes', 'Garden', 'Cozy', 'Sparkle', 'Sunny'], '#9d174d', '#fbcfe8'],
-        ['Mountains', 'mountains', ['Snow peak', 'Misty valley', 'Alpine lake', 'Sunrise ridge', 'Green hills', 'Rocky summit', 'Forest slope', 'Golden range', 'Cloud sea', 'Blue peaks', 'Autumn hills', 'Night sky', 'Waterfall', 'Glacier', 'Kilimanjaro'], '#0f766e', '#a7f3d0'],
-        ['Cute animals', 'animals', ['Kitten', 'Lion', 'Elephant', 'Puppy', 'Giraffe', 'Panda', 'Tiger cub', 'Bunny', 'Baby lion', 'Baby elephant', 'Fox', 'Zebra', 'Koala', 'Penguin', 'Cheetah', 'Deer', 'Owl', 'Red panda', 'Hippo', 'Otter', 'Flamingo', 'Monkey', 'Cat nap', 'Lion pride', 'Elephant herd', 'Fawn', 'Hedgehog', 'Duckling', 'Lamb', 'Parrot'], '#b45309', '#fde68a']
-      ];
-      CATS.forEach(function (c) {
-        c[2].forEach(function (name, k) {
-          var f = '/themes/' + c[1] + '-' + (k < 9 ? '0' : '') + (k + 1) + '.jpg', P0 = { cars: name + ' luxury car', houses: name + ' luxury house exterior', girls: 'cute smiling young woman portrait, ' + name, mountains: name + ' mountain landscape', animals: 'cute ' + name + ' animal' };
-          W.push({ f: f, c: c[0], n: name, p: P0[c[1]] + ', high quality photo, vertical phone wallpaper, no text', s: 1000 + W.length * 7, css: 'linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.28)),url("' + f + '") center/cover no-repeat,linear-gradient(160deg,' + c[3] + ',' + c[4] + ')' });
-        });
-      });
-      return W;
-    })();
+    /* Your own wallpapers: upload the pictures to the "wallpapers" folder on GitHub and list the file names (without .jpg) here */
+    var WALL_DIR = '/wallpapers/';
+    var WALL_NAMES = ['1792135139884','1792582122960','1792582125502','1792582127468','1792582129411','1792582131257','1792582134621','1792582136304','1792582137959','1792582148635','1792582150995','1792582152726','1792582157823','1792582159484','1792582161411','1792582163398','1792582165741','1792582167671','1792582171617','1792582177909','1792582179891','1792582196319','1792582198128','1792582199900','1792582204591','1792582207389','1792582209418','1792582212172','1792582214809','1792582229933','1792582231670','1792582233748','1792582235825','1792582237870','1792582245677','1792582249540','1792582253938','1792582280084','1792582282491','1792582286869','1792582295472','1792582297134','1792582298806','1792582300513','1792582302142','1792582303983','1792582307107'];
+    var WALLS = WALL_NAMES.map(function (id, k) {
+      var f = WALL_DIR + id + '.jpg';
+      return { f: f, own: 1, c: 'Wallpapers', n: 'Wallpaper ' + (k + 1), css: 'linear-gradient(rgba(0,0,0,.28),rgba(0,0,0,.28)),url("' + f + '") center/cover no-repeat,linear-gradient(160deg,#1f2937,#4b5563)' };
+    });
     var WCOLORS = (function () {
       var out = [], H = [0, 24, 45, 95, 150, 180, 205, 232, 272, 322], L = [22, 36, 50, 64, 80];
       L.forEach(function (l) { H.forEach(function (h) { out.push('hsl(' + h + ',' + (l > 70 ? 70 : 62) + '%,' + l + '%)'); }); }); return out;
     })();
+    var DOODLE_BODY = '<g transform="translate(45 40) rotate(-8) scale(0.9)"><path d="M-12 8a16 16 0 1124 0c0 6-6 8-6 14h-12c0-6-6-8-6-14z"/><path d="M-6 26h12M-4 31h8"/></g><g transform="translate(122 46) rotate(-16) scale(0.82)"><circle r="13"/><ellipse rx="26" ry="8" transform="rotate(-20)"/></g><g transform="translate(203 37) rotate(3) scale(0.78)"><rect x="-18" y="-6" width="36" height="26"/><rect x="-21" y="-14" width="42" height="9"/><path d="M0 -14V20M0 -14c-6-10-16-8-14-2M0 -14c6-10 16-8 14-2"/></g><g transform="translate(283 34) rotate(1) scale(0.86)"><path d="M-6 16V-18l18-4v32"/><circle cx="-12" cy="16" r="6"/><circle cx="6" cy="12" r="6"/></g><g transform="translate(359 41) rotate(25) scale(0.78)"><path d="M-12 4h24l-4 22h-16z"/><path d="M0 4V-12"/><circle cx="0" cy="-20" r="5"/><circle cx="-9" cy="-16" r="5"/><circle cx="9" cy="-16" r="5"/><circle cx="-5" cy="-26" r="5"/><circle cx="5" cy="-26" r="5"/></g><g transform="translate(444 37) rotate(-8) scale(0.82)"><ellipse cx="0" cy="8" rx="14" ry="18"/><path d="M-8 -10L-12 -26M0 -10V-30M8 -10L12 -26M-10 0l20 16M10 0l-20 16"/></g><g transform="translate(41 117) rotate(-27) scale(0.78)"><path d="M-16 -14h28v26a8 8 0 01-8 8h-12a8 8 0 01-8-8z"/><path d="M12 -8h6a6 6 0 010 14h-6"/><path d="M-6 -22q4-5 0-10M4 -22q4-5 0-10"/></g><g transform="translate(122 125) rotate(-22) scale(0.9)"><circle r="22"/><path d="M-18 -12q18-8 36 0M-18 12q18 8 36 0M0 -22q-12 22 0 44M0 -22q12 22 0 44"/></g><g transform="translate(194 126) rotate(-10) scale(0.9)"><path d="M-28 -4L28 -22L8 24L-2 6zM-28 -4L-2 6M28 -22L-2 6"/></g><g transform="translate(274 113) rotate(26) scale(0.78)"><path d="M-20 0a20 18 0 0140 0z"/><path d="M-8 0v14h16V0"/><circle cx="-8" cy="-8" r="3"/><circle cx="8" cy="-6" r="2.5"/></g><g transform="translate(356 116) rotate(-25) scale(0.9)"><circle cx="-10" cy="14" r="8"/><circle cx="12" cy="10" r="8"/><path d="M-10 6Q-8 -14 8 -22M12 2Q12 -12 8 -22M8 -22q8-6 14-2q-4 8-14 2"/></g><g transform="translate(439 124) rotate(-3) scale(0.9)"><path d="M-18 18C-22 -10 0 -24 22 -22 24 0 10 22 -18 18zM-18 18L8 -8"/></g><g transform="translate(34 202) rotate(12) scale(0.82)"><path d="M-22 -4a22 16 0 0144 0z"/><path d="M-24 4q6 6 12 0t12 0t12 0t12 0"/><path d="M-22 12h44a0 0 0 010 0 6 6 0 01-6 8h-32a6 6 0 01-6-8z"/></g><g transform="translate(125 203) rotate(-11) scale(0.86)"><path d="M-26 2a26 26 0 0152 0q-6-6-13 0-6-6-13 0-7-6-13 0-7-6-13 0z"/><path d="M0 2v24a5 5 0 01-10 0"/></g><g transform="translate(194 197) rotate(-7) scale(0.78)"><path d="M-12 0L0 30L12 0z"/><path d="M-12 0a12 12 0 0124 0"/><circle cx="0" cy="-17" r="4"/></g><g transform="translate(279 205) rotate(-21) scale(0.82)"><path d="M-10 -10L10 -2L-16 24z"/><path d="M-10 -10l-4-12M-10 -10l-12-4M-10 -10l-10 6"/></g><g transform="translate(356 204) rotate(-22) scale(0.78)"><circle r="20"/><circle r="7"/><path d="M-14 -10q4 2 6 0M8 -14q4 1 5 4M10 8q4-2 6 1M-12 8q3 3 6 1"/></g><g transform="translate(433 200) rotate(23) scale(0.9)"><rect x="-24" y="-16" width="48" height="32" rx="4"/><path d="M-24 -14L0 4L24 -14"/></g><g transform="translate(35 283) rotate(7) scale(0.82)"><path d="M-14 12c0-4 4-6 4-16a10 10 0 0120 0c0 10 4 12 4 16z"/><path d="M-4 16a4 4 0 008 0M0 -16v-4"/></g><g transform="translate(120 281) rotate(-16) scale(0.82)"><path d="M-22 12a10 10 0 010-20 14 14 0 0126-4 12 12 0 019 24z"/></g><g transform="translate(199 283) rotate(-4) scale(0.78)"><path d="M0 18C-30 -2 -18 -24 0 -10 18 -24 30 -2 0 18z"/></g><g transform="translate(279 279) rotate(-15) scale(0.78)"><circle cx="-20" cy="-6" r="6"/><circle cx="-20" cy="6" r="6"/><circle cx="20" cy="-6" r="6"/><circle cx="20" cy="6" r="6"/><path d="M-14 -5h28M-14 5h28"/></g><g transform="translate(357 286) rotate(23) scale(0.86)"><path d="M0 -28c10 8 12 24 8 36h-16c-4-12-2-28 8-36z"/><circle cx="0" cy="-8" r="4"/><path d="M-8 4l-9 10 9-1M8 4l9 10-9-1M-4 14l4 10 4-10"/></g><g transform="translate(447 273) rotate(-15) scale(0.82)"><path d="M0 -22l6 14 15 1-12 10 4 15-13-8-13 8 4-15-12-10 15-1z"/></g><g transform="translate(39 366) rotate(10) scale(0.78)"><path d="M-22 -8h44a10 10 0 0110 12l-4 12a6 6 0 01-10 0l-4-6h-24l-4 6a6 6 0 01-10 0l-4-12a10 10 0 0110-12z"/><path d="M-16 -2v8M-20 2h8"/><circle cx="14" cy="0" r="2"/><circle cx="20" cy="4" r="2"/></g><g transform="translate(113 355) rotate(-15) scale(0.9)"><circle cx="0" cy="-10" r="14"/><path d="M0 4V30M-8 -10a8 8 0 018-8M0 -10a4 4 0 014-4"/></g><g transform="translate(197 353) rotate(21) scale(0.86)"><path d="M-22 16L-26 -14L-12 -2L0 -20L12 -2L26 -14L22 16z"/><path d="M-22 22h44"/></g><g transform="translate(286 357) rotate(-4) scale(0.78)"><path d="M-24 0q14-18 32 0q-18 18-32 0z"/><path d="M8 0l16-10v20z"/><circle cx="-14" cy="-2" r="1.5"/></g><g transform="translate(354 354) rotate(-15) scale(0.82)"><path d="M-22 8a16 14 0 0030 0c8 0 14-6 10-12h-10c0-14-10-20-18-14-6 5-2 14-6 14z"/><circle cx="-6" cy="-12" r="1.5"/></g><g transform="translate(433 362) rotate(-5) scale(0.86)"><path d="M-24 8h48l-8 14h-32z"/><path d="M0 8V-26L18 2H0M-4 2L-14 -6"/></g><g transform="translate(42 440) rotate(-20) scale(0.9)"><path d="M-22 -18c2 22 16 34 38 30 4-1 3-5-1-5-18 0-28-10-30-27z"/></g><g transform="translate(126 442) rotate(-20) scale(0.9)"><rect x="-24" y="-12" width="48" height="32" rx="6"/><circle cx="0" cy="4" r="9"/><path d="M-10 -12l3-6h14l3 6"/></g><g transform="translate(195 443) rotate(-19) scale(0.86)"><circle r="18"/><path d="M-7 -5v2M7 -5v2M-9 5q9 9 18 0"/></g><g transform="translate(287 436) rotate(24) scale(0.82)"><path d="M-24 0q6-8 12 0t12 0t12 0t12 0"/></g><g transform="translate(364 436) rotate(-18) scale(0.82)"><path d="M12 -22a22 22 0 1012 30 18 18 0 01-12-30z"/></g><g transform="translate(443 439) rotate(28) scale(0.9)"><path d="M-22 4c-4-14 8-24 20-20 14-4 28 8 22 22-4 14-20 16-30 12-6-2-10-6-12-14z"/><circle cx="0" cy="2" r="8"/></g>';
+    var DOODLE_CACHE = {};
     function doodleTile(dark) {
-      var c = dark ? 'rgba(255,255,255,.075)' : 'rgba(20,50,90,.11)';
-      var s = '<svg xmlns="http://www.w3.org/2000/svg" width="260" height="260" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M40 52c-8-9 4-20 12-10 8-10 20 1 12 10l-12 12z"/><path d="M150 30l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z"/><circle cx="215" cy="55" r="14"/><path d="M209 52h1M221 52h1M208 60q7 6 14 0"/>' +
-        '<path d="M30 140q0-14 14-14 4-10 16-6 12-2 14 10 10 2 8 12H30z"/><path d="M120 120v34M120 120l22-5v34M120 154a7 7 0 11-1 0M142 149a7 7 0 11-1 0"/>' +
-        '<path d="M190 120h46a8 8 0 018 8v22a8 8 0 01-8 8h-26l-14 12v-12h-6a8 8 0 01-8-8v-22a8 8 0 018-8z"/><path d="M40 205c14-22 40-22 54 0-14 8-40 8-54 0zM67 190v28"/>' +
-        '<circle cx="150" cy="215" r="20"/><path d="M142 207l16 16M158 207l-16 16"/><path d="M215 200l10 10 18-22"/><path d="M110 60c0-12 20-12 20 0 0 10-20 22-20 22s-20-12-20-22c0-12 20-12 20 0z" transform="translate(-6 34) scale(.5)"/></svg>';
-      return 'data:image/svg+xml;utf8,' + encodeURIComponent(s);
+      var k = dark ? 'd' : 'l'; if (DOODLE_CACHE[k]) return DOODLE_CACHE[k];
+      var c = dark ? 'rgba(150,185,215,.15)' : 'rgba(20,50,90,.13)';
+      var s = '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + DOODLE_BODY + '</svg>';
+      return DOODLE_CACHE[k] = 'data:image/svg+xml;utf8,' + encodeURIComponent(s);
     }
     function defaultChatBg() {
       var d = isDarkNow();
-      return 'url("' + doodleTile(d) + '") 0 0/260px 260px repeat,' + (d ? 'linear-gradient(160deg,#0c1622,#13212f 55%,#0c1824)' : 'linear-gradient(160deg,#dbe7f3,#eef3f8 55%,#d6e2ee)');
+      return 'url("' + doodleTile(d) + '") 0 0/480px 480px repeat,' + (d ? 'linear-gradient(170deg,#0e1b29,#0b1621 50%,#0f2031)' : 'linear-gradient(160deg,#dbe7f3,#eef3f8 55%,#d6e2ee)');
     }
     function applyTheme() {
       applyAccent(); applyIcon();
@@ -3567,9 +3558,9 @@ ZW|Zimbabwe|263`;
     /* ---------- Wallpapers: real file first (/themes/..), then a generated picture; never fills localStorage ---------- */
     var WQ = [], WQB = false;
     function wallProbe(src, ms) { return new Promise(function (res, rej) { var im = new Image(), t = setTimeout(function () { im.src = ''; rej(new Error('slow')); }, ms || 45000); im.onload = function () { clearTimeout(t); res(src); }; im.onerror = function () { clearTimeout(t); rej(new Error('bad')); }; im.src = src; }); }
-    function wallResolve(w) { return wallProbe(w.f, 8000).catch(function () { return wallProbe(wallUrl(w, 720, 1280), 60000).catch(function () { return new Promise(function (r) { setTimeout(r, 2500); }).then(function () { return wallProbe(wallUrl(w, 720, 1280), 60000); }); }); }); }
+    function wallResolve(w) { if (w.own) return wallProbe(w.f, 30000).catch(function () { return wallProbe(w.f, 30000); }); return wallProbe(w.f, 8000).catch(function () { return wallProbe(wallUrl(w, 720, 1280), 60000).catch(function () { return new Promise(function (r) { setTimeout(r, 2500); }).then(function () { return wallProbe(wallUrl(w, 720, 1280), 60000); }); }); }); }
     function wallPump() { if (WQB || !WQ.length) return; WQB = true; var el = WQ.shift(), w = el._w; wallProbe(wallUrl(w, 720, 1280), 60000).then(function (s) { el.style.background = 'url("' + s + '") center/cover no-repeat'; }).catch(function () {}).then(function () { WQB = false; setTimeout(wallPump, 400); }); }
-    function wallThumb(el) { var w = el._w; if (!w) return; wallProbe(w.f, 8000).then(function (s) { el.style.background = 'url("' + s + '") center/cover no-repeat'; }).catch(function () { WQ.push(el); wallPump(); }); }
+    function wallThumb(el) { var w = el._w; if (!w) return; if (w.own) { wallProbe(w.f, 30000).then(function (s) { el.style.background = 'url("' + s + '") center/cover no-repeat'; }).catch(function () {}); return; } wallProbe(w.f, 8000).then(function (s) { el.style.background = 'url("' + s + '") center/cover no-repeat'; }).catch(function () { WQ.push(el); wallPump(); }); }
     function wallFromBlob(blob, k) {
       function enc(side, q) { return prepImage(blob, side, q).then(function (r) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(r.blob); }); }).then(function (u) { return { css: 'url("' + u + '") center/cover no-repeat', k: k }; }); }
       return enc(1280, 0.72).then(function (w) { if (lsSet('zaply_wall', w)) { applyTheme(); return true; } return enc(720, 0.55).then(function (w2) { return setWall(w2); }); });
@@ -3729,7 +3720,23 @@ ZW|Zimbabwe|263`;
     }
     try { new MutationObserver(function () { clearTimeout(phTimer); phTimer = setTimeout(paintPhotos, 400); }).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
     function favs() { try { return JSON.parse(localStorage.getItem('zaply_favs') || '[]'); } catch (e) { return []; } }
-    function markSeen(ph) { try { localStorage.setItem('zaply_seen_' + ph, String(Date.now())); localStorage.removeItem('zaply_unread_' + ph); } catch (e) {} }
+    var UC = {}, ucBusy = {}, ucTimer = 0;
+    function ucSoon() { clearTimeout(ucTimer); ucTimer = setTimeout(function () { renderChats(); }, 150); }
+    function unreadN(c) { if (!c.mine && new Date(c.at).getTime() > seenAt(c.phone)) { var u = UC[c.phone]; return u && String(u.at) === String(c.at) ? u.n : 1; } return 0; }
+    function countUnread() {
+      allChats.forEach(function (c) {
+        if (c.mine || !(new Date(c.at).getTime() > seenAt(c.phone))) return;
+        var u = UC[c.phone]; if ((u && String(u.at) === String(c.at)) || ucBusy[c.phone]) return;
+        ucBusy[c.phone] = 1;
+        var sid = 0; try { sid = +localStorage.getItem('zaply_sid_' + c.phone) || 0; } catch (e) {}
+        var sa = seenAt(c.phone), at0 = c.at;
+        chatCall('history', { with: c.phone, after: sid, track: [] }).then(function (res) {
+          var n = 0; (res.messages || []).forEach(function (m) { if (!m.mine && !isCallMsg(m.body) && new Date(m.at).getTime() > sa) n++; });
+          UC[c.phone] = { at: at0, n: Math.max(1, n) };
+        }).catch(function () {}).then(function () { ucBusy[c.phone] = 0; if (UC[c.phone] && UC[c.phone].n > 1) ucSoon(); });
+      });
+    }
+    function markSeen(ph) { delete UC[ph]; try { localStorage.setItem('zaply_seen_' + ph, String(Date.now())); localStorage.removeItem('zaply_unread_' + ph); } catch (e) {} }
     function seenAt(ph) { try { return +localStorage.getItem('zaply_seen_' + ph) || 0; } catch (e) { return 0; } }
     function forcedUnread(ph) { try { return localStorage.getItem('zaply_unread_' + ph) === '1'; } catch (e) { return false; } }
     function isUnread(c) { return forcedUnread(c.phone) || (!c.mine && new Date(c.at).getTime() > seenAt(c.phone)); }
@@ -3767,7 +3774,7 @@ ZW|Zimbabwe|263`;
         r.appendChild(mid);
         if (withChat) {
           var side = mk('div', 'side'); side.appendChild(mk('time', '', hhmm(c.at)));
-          if (un) side.appendChild(mk('i', 'ub'));
+          if (un) { var uc = unreadN(c); side.appendChild(uc ? mk('i', 'ubn', uc > 99 ? '99+' : String(uc)) : mk('i', 'ub')); }
           var st = mk('button', 'star', isFav ? '\u2605' : '\u2606');
           st.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -3797,6 +3804,7 @@ ZW|Zimbabwe|263`;
         try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = '';
         try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
         try { warmProfiles(); } catch (e) {}
+        try { countUnread(); } catch (e) {}
         try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
         if (sig !== chatSig || wasErr) { chatSig = sig; renderChats(); } else updateCounts();
       }).catch(function (e) { loadErr = e && e.status ? 'Server error (' + e.status + ')' : 'Can\u2019t reach the server'; renderChats(); });
@@ -3867,6 +3875,7 @@ ZW|Zimbabwe|263`;
     function fetchMsgs() {
       var who = openWith;
       if (!who) return;
+      if (fmBusy && Date.now() - fmBusy < 5000) return; fmBusy = Date.now();
       var track = isGroupId(who) ? [] : thCache.filter(function (m) { return m && m.mine && m.st && m.st < 3 && typeof m.id === 'number'; }).map(function (m) { return m.id; }).slice(-100);
       var tk = null;
       chatCall('history', { with: who, after: lastId, track: track }).then(function (res) {
@@ -3880,9 +3889,10 @@ ZW|Zimbabwe|263`;
         var added = false;
         msgs.forEach(function (m) { if (addMsg(m)) { added = true; if (!m.mine && Date.now() - new Date(m.at).getTime() < 20000 && !isCallMsg(m.body)) { try { incomingFx(isGroupId(who)); } catch (e) {} } } });
         if (tk) applyTicks(tk, who);
-        if (added) { $('msgs').scrollTop = $('msgs').scrollHeight; saveThread(who); }
-      }).catch(function () {});
+        if (added) { $('msgs').scrollTop = $('msgs').scrollHeight; saveThread(who); try { localStorage.setItem('zaply_sid_' + who, String(lastId)); } catch (e) {} }
+      }).catch(function () {}).then(function () { fmBusy = 0; });
     }
+    var fmBusy = 0;
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
       markSeen(u.phone); openWith = u.phone; saveScreen(); lastId = 0; $('msgs').innerHTML = ''; thCache = []; gameEls = {}; openUser = u;
@@ -3896,7 +3906,7 @@ ZW|Zimbabwe|263`;
       $('threadView').classList.remove('hidden');
       requestAnimationFrame(function () { if (openWith !== u.phone) return; try { autoGrow(); } catch (e) {} loadCachedThread(u.phone); fetchMsgs(); });
     }
-    function closeThread() { stopAudio(); cancelRec(); if (openWith && openWith !== keepUnread) markSeen(openWith); keepUnread = null; openWith = null; saveScreen(); $('threadView').classList.add('hidden'); loadChats(); }
+    function closeThread() { try { if (openWith && lastId) localStorage.setItem('zaply_sid_' + openWith, String(lastId)); } catch (e) {} stopAudio(); cancelRec(); if (openWith && openWith !== keepUnread) markSeen(openWith); keepUnread = null; openWith = null; saveScreen(); $('threadView').classList.add('hidden'); loadChats(); }
     $('thBack').addEventListener('click', closeOv);
     function sendMsg() {
       var body = $('msgInput').value.trim();
@@ -3905,10 +3915,14 @@ ZW|Zimbabwe|263`;
       $('msgInput').value = ''; syncComp(); queueMsg(openWith, body);
     }
     $('btnSendMsg').addEventListener('click', sendMsg);
+    /* fast refresh so new messages and ticks show up within about a second */
+    var pollN = 0;
     setInterval(function () {
       if ($('appView').classList.contains('hidden') || document.hidden) return;
-      if (openWith) fetchMsgs(); else if (!$('paneChats').classList.contains('hidden')) loadChats();
-    }, 3000);
+      pollN++;
+      if (openWith) fetchMsgs(); else if (!$('paneChats').classList.contains('hidden') && pollN % 2 === 0) loadChats();
+    }, 1000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && !$('appView').classList.contains('hidden')) { if (openWith) fetchMsgs(); else loadChats(); } });
 
     var thCache = [], openUser = null, flushing = false, gameEls = {}, gameBusy = {};
     function saveThread(ph) { try { localStorage.setItem('zaply_th_' + ph, JSON.stringify(thCache.filter(function (x) { return !msgExpired(x, ph); }).slice(-200))); } catch (e) {} }
