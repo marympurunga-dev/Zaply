@@ -656,6 +656,8 @@
     #msgs .bub{font-size:var(--msgfs,16px)!important}
     #msgs .bub small{font-size:11px!important}
     #msgs .bub small .tk{display:inline-block;margin-left:4px;vertical-align:-1px;line-height:0}
+    .mid span .tk.lt{display:inline-block;margin-right:5px;vertical-align:-1px;line-height:0;opacity:.8}
+    .mid span .tk.lt.r{color:#34b7f1;opacity:1}
     #msgs .bub small .tk.r{color:#0a6cff;opacity:1}
     #msgs .bub.stk{background:transparent!important;border-color:transparent!important;font-size:46px!important;line-height:1.15;padding:2px 6px;animation:stkpop .4s ease}
     @keyframes stkpop{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.12)}100%{transform:scale(1);opacity:1}}
@@ -3749,7 +3751,9 @@ ZW|Zimbabwe|263`;
         r.appendChild(avatar(c));
         var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
         if (withChat) { try { folderTags(c).forEach(function (t) { mid.lastChild.appendChild(t); }); } catch (e) {} }
-        mid.appendChild(mk('span', '', withChat ? (c.mine ? 'You: ' : (c.group && c.from ? c.from + ': ' : '')) + previewOf(c.last) : c.phone));
+        var pv = mk('span', '', withChat ? ((c.mine && !(c.st && !c.group && !isCallMsg(c.last))) ? 'You: ' : (!c.mine && c.group && c.from ? c.from + ': ' : '')) + previewOf(c.last) : c.phone);
+        if (withChat && c.mine && c.st && !c.group && !isCallMsg(c.last)) { var tkl = tickEl(c.st); tkl.classList.add('lt'); pv.insertBefore(tkl, pv.firstChild); }
+        mid.appendChild(pv);
         r.appendChild(mid);
         if (withChat) {
           var side = mk('div', 'side'); side.appendChild(mk('time', '', hhmm(c.at)));
@@ -3779,7 +3783,7 @@ ZW|Zimbabwe|263`;
           return E2E.decrypt(c.phone, c.last).then(function (t) { c.last = t; return c; }, function () { c.last = '\ud83d\udd12 Message'; return c; });
         }));
       }).then(function (chats) {
-        var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0]; }));
+        var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0, c.st || 0]; }));
         try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = '';
         try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
         try { warmProfiles(); } catch (e) {}
@@ -3835,8 +3839,8 @@ ZW|Zimbabwe|263`;
     function tickEl(st) {
       var s = document.createElement('span'); s.className = 'tk' + (st >= 3 ? ' r' : '');
       s.innerHTML = st >= 2
-        ? '<svg viewBox="0 0 17 11" width="17" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5.8l3.4 3.4L10.6 1.6"/><path d="M6.4 8.4l.8.8L15.6 1.6"/></svg>'
-        : '<svg viewBox="0 0 17 11" width="17" height="11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5.8l3.4 3.4L13 1.6"/></svg>';
+        ? '<svg viewBox="0 0 20 12" width="20" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1.2 6.4l3.4 3.4L11 1.6"/><path d="M6.4 6.4l3.4 3.4 6.4-8.2"/></svg>'
+        : '<svg viewBox="0 0 20 12" width="20" height="12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 6.4l3.4 3.4L14 1.6"/></svg>';
       return s;
     }
     function applyTicks(map, who) {
