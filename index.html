@@ -3745,7 +3745,7 @@ ZW|Zimbabwe|263`;
     document.addEventListener('click', function () { $('menuBox').classList.add('hidden'); });
 
     var chatSig = null, loadErr = '', allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
-    var ONL = {};
+    var ONL = {}, onlLoaded = false;
     function avatar(c) {
       var n = c.name || c.phone || '#', a = mk('div', 'av', n.charAt(0).toUpperCase());
       a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; usePhoto(a, c.phone); if (ONL && ONL[c.phone]) a.classList.add('onl'); return a;
@@ -3971,6 +3971,13 @@ ZW|Zimbabwe|263`;
       return 'last seen ' + d.toLocaleDateString() + ' at ' + tm;
     }
     function presShow(ph, p) { if (ph !== openWith || isGroupId(ph)) return; var t = presText(p); $('thPhone').textContent = t; $('thPhone').classList.toggle('pon', t === 'online'); }
+    /* what to show the instant a chat opens: "online" if we already know they are online (chat list / real-time),
+       otherwise their saved last seen, otherwise nothing (never a stale "last seen" for someone who is online) */
+    function presOpenNow(ph) {
+      if (ONL && ONL[ph]) return { online: true, last: null, hidden: false };
+      if (!onlLoaded) return null;
+      return presCached(ph);
+    }
     function presCached(ph) { try { var p = JSON.parse(localStorage.getItem('zaply_pres_' + ph) || 'null'); if (p) p.online = false; return p; } catch (e) { return null; } }
     function presFetch() {
       var ph = openWith; if (!ph || isGroupId(ph) || !getToken() || document.visibilityState !== 'visible') return;
@@ -3978,13 +3985,15 @@ ZW|Zimbabwe|263`;
       chatCall('presence_get', { with: ph }).then(function (r) {
         var p = { online: !!r.online, last: r.last || null, hidden: !!r.hidden };
         try { localStorage.setItem('zaply_pres_' + ph, JSON.stringify(p)); } catch (e) {}
+        if (p.online) ONL[ph] = 1; else delete ONL[ph];
+        try { onlApply(); } catch (e) {}
         presShow(ph, p);
       }).catch(function () {});
     }
     function presPing(on) { if (!getToken()) return Promise.resolve(); return chatCall('presence_ping', { online: on !== false }).catch(function () {}); }
     setInterval(function () { if (document.visibilityState === 'visible') presPing(true); }, 25000);
     var presN = 0, bulkN = 0;
-    setInterval(function () { if (!RT.up() || ++presN % 4 === 0) presFetch(); }, 8000);
+    setInterval(function () { if (!RT.up() || ++presN % 4 === 0) presFetch(); }, 4000);
     document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { presPing(true); presFetch(); presBulk(); } else presPing(false); });
     window.addEventListener('pagehide', function () { presPing(false); });
     setTimeout(function () { presPing(true); }, 3000);
@@ -3995,9 +4004,9 @@ ZW|Zimbabwe|263`;
       if (priv().lastseen === 'nobody') { ONL = {}; onlApply(); return; }
       var ph = allChats.filter(function (c) { return !c.group && /^\+\d{7,15}$/.test(c.phone); }).map(function (c) { return c.phone; }).slice(0, 80);
       if (!ph.length) return;
-      chatCall('presence_bulk', { phones: ph }).then(function (r) { ONL = r.online || {}; onlApply(); }).catch(function () {});
+      chatCall('presence_bulk', { phones: ph }).then(function (r) { ONL = r.online || {}; onlLoaded = true; onlApply(); }).catch(function () {});
     }
-    setInterval(function () { if (!RT.up() || ++bulkN % 3 === 0) presBulk(); }, 10000); setTimeout(presBulk, 4000);
+    setInterval(function () { if (!RT.up() || ++bulkN % 3 === 0) presBulk(); }, 5000); setTimeout(presBulk, 4000);
 
     /* ---------- real-time (Ably): instant messages, ticks, online / last seen ----------
        The server sends a tiny "something changed" signal; the app then fetches the real data exactly as before.
@@ -4015,6 +4024,7 @@ ZW|Zimbabwe|263`;
       function onPres(ph, act) {
         var on = act === 'enter' || act === 'present' || act === 'update';
         if (on) ONL[ph] = 1; else delete ONL[ph];
+        onlLoaded = true;
         try { onlApply(); } catch (e) {}
         if (ph === openWith && !isGroupId(ph)) {
           if (on) presShow(ph, { online: true, last: null, hidden: false });
@@ -4090,7 +4100,7 @@ ZW|Zimbabwe|263`;
       curBlocked = false; setBlockedUI();
       if (u.group) chatCall('group_info', { group: u.phone }).then(function (r) { if (openWith === u.phone) $('thPhone').textContent = r.members.length + ' members'; }).catch(function () {});
       else chatCall('blockstate', { with: u.phone }).then(function (r) { if (openWith === u.phone) { curBlocked = !!r.blocked; setBlockedUI(); } }).catch(function () {});
-      if (!u.group) { presShow(u.phone, presCached(u.phone)); presFetch(); try { RT.watch(u.phone); } catch (e) {} }
+      if (!u.group) { presShow(u.phone, presOpenNow(u.phone)); presFetch(); try { RT.watch(u.phone); } catch (e) {} }
       compExpanded = false; syncComp();
       /* show the chat at once, then fill in the saved messages on the next frame, so the tap feels instant */
       $('threadView').classList.remove('hidden');
