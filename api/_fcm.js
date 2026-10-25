@@ -39,11 +39,22 @@ async function sendFcm(rows, data, opts) {
   try { at = await accessToken(); } catch (e) { console.error(e.message); if (errs) errs.push(e.message); return []; }
   const flat = {};
   Object.keys(data).forEach((k) => { flat[k] = String(data[k] == null ? '' : data[k]); });
+  // Normal messages also carry a "notification" block, so Android itself shows the notification even when the app is
+  // closed (no app code needed). Calls stay data-only so the native incoming-call screen still works.
+  const visible = (flat.type === 'msg' || !flat.type) && !!flat.title;
+  const build = (token) => {
+    const m = { token, data: flat, android: { priority: 'HIGH', ttl: o.ttl || '86400s' } };
+    if (visible) {
+      m.notification = { title: flat.title, body: flat.body || 'New message' };
+      m.android.notification = { sound: 'default', default_vibrate_timings: true };
+    }
+    return m;
+  };
   await Promise.allSettled(rows.map(async (row) => {
     try {
       const r = await fetch('https://fcm.googleapis.com/v1/projects/' + conf().project_id + '/messages:send', {
         method: 'POST', headers: { Authorization: 'Bearer ' + at, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: { token: row.token, data: flat, android: { priority: 'HIGH', ttl: o.ttl || '86400s' } } }),
+        body: JSON.stringify({ message: build(row.token) }),
       });
       if (!r.ok) {
         const t = await r.text();
