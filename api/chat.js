@@ -1,7 +1,7 @@
 // POST /api/chat  — actions: list, start, history, send, media_sign, media_get, block, unblock, blockstate, report, setkey, getkey,
 //                           group_create, group_info, group_leave (groups are chats with the id "g:<number>"),
 //                           profile_get, profile_set (username, email, address, bio, birthday, pet),
-//                           presence_ping, presence_get (online / last seen)
+//                           presence_ping, presence_get, presence_bulk (online / last seen), ably_auth (real-time token)
 const crypto = require('crypto');
 const mysql = require('mysql2/promise');
 const webpush = require('web-push');
@@ -178,6 +178,7 @@ async function sendSms(to, message) {
 // Email codes use the same sender as sign-up (api/_mail.js), so it needs no new Vercel settings
 const { sendCodeEmail } = require('./_mail');
 const { fcmOn, sendFcm } = require('./_fcm');
+const rt = require('./_realtime');
 const phoneOk = (p) => typeof p === 'string' && /^\+\d{7,15}$/.test(p);
 async function findUser(phone) {
   const [r] = await db().query('SELECT phone, name FROM users WHERE phone = ?', [phone]);
@@ -277,6 +278,33 @@ async function notify(from, to, text) {
   } catch (e) { console.error(e); }
 }
 
+/* which of these people may I watch live (online / last seen)? Same privacy rules as presence_bulk. */
+async function watchAllowed(me, list) {
+  if (!list.length) return [];
+  const [mine] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
+  let mp = {}; try { mp = JSON.parse((mine[0] && mine[0].privacy) || '{}'); } catch (e) {}
+  if (mp.lastseen === 'nobody') return [];
+  const [rows] = await db().query('SELECT phone, privacy FROM profiles WHERE phone IN (?)', [list]);
+  const pr = {}; rows.forEach((r) => { pr[r.phone] = r.privacy; });
+  const out = [];
+  await Promise.all(list.map(async (p) => {
+    const bs = await blockState(me, p); if (bs.iBlocked || bs.blockedMe) return;
+    let pv = {}; try { pv = JSON.parse(pr[p] || '{}'); } catch (e) {}
+    if (pv.online === 'same') {
+      const rule = pv.lastseen || 'contacts';
+      let ok = rule === 'everyone';
+      if (rule === 'contacts' || rule === 'except') {
+        const [k] = await db().query('SELECT 1 FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?) LIMIT 1', [me, p, p, me]);
+        ok = k.length > 0;
+        if (rule === 'except' && ((pv.ex && pv.ex.lastseen) || []).includes(me)) ok = false;
+      }
+      if (!ok) return;
+    }
+    out.push(p);
+  }));
+  return out;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -291,7 +319,10 @@ module.exports = async (req, res) => {
 
     if (b.action === 'list') {
       /* the app is open, so everything waiting for me counts as delivered (two grey ticks for the sender) */
+      let waiting = [];
+      if (rt.on()) { const [ws] = await db().query('SELECT DISTINCT sender FROM messages WHERE receiver = ? AND delivered_at IS NULL', [me]).catch(() => [[]]); waiting = ws.map((x) => x.sender); }
       await db().query('UPDATE messages SET delivered_at = NOW() WHERE receiver = ? AND delivered_at IS NULL', [me]).catch(() => {});
+      if (waiting.length) await rt.signal(waiting, 'tick', { from: me });
       const [last] = await db().query(
         `SELECT id, sender, receiver, body, created_at, delivered_at, read_at FROM messages
          WHERE id IN (SELECT MAX(id) FROM messages WHERE sender = ? OR receiver = ?
@@ -347,9 +378,10 @@ module.exports = async (req, res) => {
       }
       if (!phoneOk(b.with)) return res.status(400).json({ error: 'Bad request.' });
       /* the chat is open on my screen, so what they sent me is read (blue ticks for them) */
-      await db().query(
+      const upd = await db().query(
         'UPDATE messages SET delivered_at = COALESCE(delivered_at, NOW()), read_at = NOW() WHERE receiver = ? AND sender = ? AND read_at IS NULL',
-        [me, b.with]).catch(() => {});
+        [me, b.with]).catch(() => null);
+      if (upd && upd[0] && upd[0].affectedRows) await rt.signal([b.with], 'tick', { from: me });
       const [rows] = await db().query(
         `SELECT id, sender, body, created_at, delivered_at, read_at FROM messages
          WHERE id > ? AND ((sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?))
@@ -377,6 +409,7 @@ module.exports = async (req, res) => {
         if (!(await isMember(g, me))) return res.status(403).json({ error: 'You are not in this group.' });
         const [gr] = await db().query('INSERT INTO group_messages (group_id, sender, body) VALUES (?, ?, ?)', [g, me, body]);
         const [gn] = await db().query('SELECT name FROM chat_groups WHERE id = ?', [g]);
+        if (rt.on()) { const [gm] = await db().query('SELECT phone FROM group_members WHERE group_id = ? AND phone <> ?', [g, me]); await rt.signal(gm.map((x) => x.phone), 'msg', { from: 'g:' + g }); }
         await notifyGroup(me, g, (gn[0] && gn[0].name) || 'Group', body);
         return res.json({ message: { id: gr.insertId, mine: true, body, at: new Date().toISOString(), from: '' } });
       }
@@ -386,6 +419,7 @@ module.exports = async (req, res) => {
       if (bs.iBlocked) return res.status(403).json({ error: 'You blocked this contact. Unblock them to send messages.', blocked: true });
       if (bs.blockedMe) return res.status(403).json({ error: "You can't message this person." });
       const [r] = await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [me, b.to, body]);
+      await rt.signal([b.to], 'msg', { from: me });
       await notify(me, b.to, body);
       return res.json({ message: { id: r.insertId, mine: true, body, at: new Date().toISOString(), st: 1 } });
     }
@@ -446,6 +480,12 @@ module.exports = async (req, res) => {
       await db().query('INSERT INTO profiles (phone, privacy) VALUES (?, ?) ON DUPLICATE KEY UPDATE privacy = VALUES(privacy)', [me, JSON.stringify(clean)]);
       return res.json({ ok: true });
     }
+    // Real-time token (Ably). Only the channels this person is allowed to watch go into it.
+    if (b.action === 'ably_auth') {
+      if (!rt.on()) return res.status(503).json({ error: 'Real-time is not set up.' });
+      const want = Array.from(new Set((Array.isArray(b.watch) ? b.watch : []).filter(phoneOk))).filter((p) => p !== me).slice(0, 40);
+      return res.json({ token: await rt.tokenRequest(me, await watchAllowed(me, want)) });
+    }
     // Online / last seen. The app pings every ~25s while open; "online" = pinged within the last 60s.
     if (b.action === 'presence_ping') {
       await db().query('INSERT INTO profiles (phone, last_active, is_online) VALUES (?, NOW(), ?) ON DUPLICATE KEY UPDATE last_active = NOW(), is_online = VALUES(is_online)', [me, b.online === false ? 0 : 1]);
@@ -474,6 +514,32 @@ module.exports = async (req, res) => {
       }
       const canOnline = pv.online !== 'same' || canLast;
       return res.json({ hidden: !canOnline && !canLast, online: canOnline && Number(r.online) === 1, last: canLast ? r.last_active : null });
+    }
+    // Who is online right now, for the chat list (green dot). Same privacy rules as presence_get.
+    if (b.action === 'presence_bulk') {
+      const list = Array.from(new Set((Array.isArray(b.phones) ? b.phones : []).filter(phoneOk))).filter((p) => p !== me).slice(0, 80);
+      if (!list.length) return res.json({ online: {} });
+      const [mine] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
+      let mp = {}; try { mp = JSON.parse((mine[0] && mine[0].privacy) || '{}'); } catch (e) {}
+      if (mp.lastseen === 'nobody') return res.json({ online: {} });
+      const [rows] = await db().query('SELECT phone, privacy FROM profiles WHERE phone IN (?) AND is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND', [list]);
+      const out = {};
+      await Promise.all(rows.map(async (r) => {
+        const bs = await blockState(me, r.phone); if (bs.iBlocked || bs.blockedMe) return;
+        let pv = {}; try { pv = JSON.parse(r.privacy || '{}'); } catch (e) {}
+        if (pv.online === 'same') {
+          const rule = pv.lastseen || 'contacts';
+          let ok = rule === 'everyone';
+          if (rule === 'contacts' || rule === 'except') {
+            const [k] = await db().query('SELECT 1 FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?) LIMIT 1', [me, r.phone, r.phone, me]);
+            ok = k.length > 0;
+            if (rule === 'except' && ((pv.ex && pv.ex.lastseen) || []).includes(me)) ok = false;
+          }
+          if (!ok) return;
+        }
+        out[r.phone] = 1;
+      }));
+      return res.json({ online: out });
     }
     if (b.action === 'blocklist') {
       const [r] = await db().query('SELECT b.blocked AS phone, u.name AS name FROM blocks b LEFT JOIN users u ON u.phone = b.blocked WHERE b.blocker = ? ORDER BY b.created_at DESC', [me]);
