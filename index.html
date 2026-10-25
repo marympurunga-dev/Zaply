@@ -627,6 +627,8 @@
     #callList .row .mid span{white-space:normal;font-size:13.5px}
     .cb{flex:none;display:flex;align-items:center;justify-content:center;width:42px;height:42px;padding:0;border:none;color:#25d366}
     .row.unread time{color:#25d366}
+    .mutei{margin-left:6px;font-size:13px;opacity:.7;font-weight:400}
+    .row.muted .ubn{background:#8a9aa3}
     .ubn{display:block;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#25d366;color:#06140c;font-size:12px;font-weight:700;line-height:22px;text-align:center;font-style:normal}
 
     /* ===== Zanply additions ===== */
@@ -1018,7 +1020,7 @@
         <button data-a="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg><span>Location</span></button>
       </div>
       <div id="emojiBox" class="emojibox hidden"></div>
-      <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedRot" aria-label="Crop and rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button id="cedEmo" aria-label="Stickers"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6l8-8z"/><path d="M20 12h-4a2 2 0 0 0-2 2v4"/><path d="M8.5 9.5h.01M14.5 9.5h.01"/></svg></button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div><div id="cedTxtOv" class="hidden"><div class="cto-top"><button id="ctoDone" class="cto-t">Done</button><div style="display:flex;gap:8px"><button id="ctoAl" aria-label="Align"></button><button id="ctoBg" aria-label="Background">A</button></div></div><div class="cto-mid"><textarea id="ctoIn" rows="1" placeholder="Add text" maxlength="120"></textarea></div><div class="cto-bot"><input type="range" id="ctoHue" min="0" max="100" value="0" aria-label="Colour"><div id="ctoFonts"></div></div></div><div id="cedStk" class="hidden"><div class="stk-sheet"><div class="stk-h"></div><div class="stk-tabs"><button data-t="e">&#128578;</button><button data-t="s">Stickers</button></div><div class="stk-body" id="stkBody"></div></div></div><div id="cedCrop" class="hidden"><div id="ccStage"><div id="ccWrap"><canvas id="ccCv"></canvas><div id="ccBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div></div></div><div class="cc-bar"><button id="ccCancel">Cancel</button><button id="ccRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="ccDone">Done</button></div></div></div>
+      <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedBri" aria-label="Brighten">☀</button><button id="cedRot" aria-label="Crop and rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button id="cedEmo" aria-label="Stickers"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6l8-8z"/><path d="M20 12h-4a2 2 0 0 0-2 2v4"/><path d="M8.5 9.5h.01M14.5 9.5h.01"/></svg></button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div><div id="cedTxtOv" class="hidden"><div class="cto-top"><button id="ctoDone" class="cto-t">Done</button><div style="display:flex;gap:8px"><button id="ctoAl" aria-label="Align"></button><button id="ctoBg" aria-label="Background">A</button></div></div><div class="cto-mid"><textarea id="ctoIn" rows="1" placeholder="Add text" maxlength="120"></textarea></div><div class="cto-bot"><input type="range" id="ctoHue" min="0" max="100" value="0" aria-label="Colour"><div id="ctoFonts"></div></div></div><div id="cedStk" class="hidden"><div class="stk-sheet"><div class="stk-h"></div><div class="stk-tabs"><button data-t="e">&#128578;</button><button data-t="s">Stickers</button></div><div class="stk-body" id="stkBody"></div></div></div><div id="cedCrop" class="hidden"><div id="ccStage"><div id="ccWrap"><canvas id="ccCv"></canvas><div id="ccBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div></div></div><div class="cc-bar"><button id="ccCancel">Cancel</button><button id="ccRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="ccDone">Done</button></div></div></div>
       <input id="fileImg" type="file" accept="image/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden><input id="fileAudio" type="file" hidden>
       <div id="recBar" class="recbar hidden"><button id="recCancel" aria-label="Cancel recording"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button><span class="recdot"></span><span id="recT">0:00</span><span style="flex:1;opacity:.7;font-size:13px">Recording&hellip;</span><button id="recSend" aria-label="Send voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
       <div id="blockBar" class="blockbar hidden"><span id="blockBarT"></span><button id="blockBarBtn">Unblock</button></div>
@@ -1828,7 +1830,7 @@ ZW|Zimbabwe|263`;
     });
 
     $('btnLogout').addEventListener('click', function () {
-      unsubPush(); try { if (window.ZanplyNative) { var ft = ZanplyNative.fcmToken(); if (ft) chatCall('fcmunreg', { ftoken: ft }).catch(function () {}); } } catch (e) {}
+      unsubPush(); try { if (window.ZanplyNative) { var ft = ZanplyNative.fcmToken(); if (ft) chatCall('fcmunreg', { ftoken: ft }).catch(function () {}); try { ZanplyNative.clearChatKeys(); } catch (x) {} } } catch (e) {}
       call('logout').catch(function () {}).then(function () {
         clearToken();
         try { ['zaply_email_skip', 'zaply_user', 'zaply_chats', 'zaply_out', 'zaply_screen', 'zaply_myprof'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
@@ -1967,7 +1969,7 @@ ZW|Zimbabwe|263`;
       };
       function init(phone) {
         if (!subtle) return Promise.reject(fail('Encryption is not available on this device.'));
-        myPhone = phone;
+        myPhone = phone; shared = {};
         initP = store.get('pair_' + phone).then(function (pair) {
           if (pair) return pair;
           return subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']).then(function (kp) { return store.put('pair_' + phone, kp).then(function () { return kp; }); });
@@ -1980,10 +1982,25 @@ ZW|Zimbabwe|263`;
         return initP;
       }
       function ensure() { return mine ? Promise.resolve() : (initP || (myPhone ? init(myPhone) : Promise.reject(fail('Not signed in.')))); }
+      /* Android app only: hands each chat's message key to the app so a notification can show the real text.
+         The server still only ever sees scrambled text. */
+      var shared = {};
+      function shareKey(phone, tkB64) {
+        var N = window.ZanplyNative;
+        if (!N || !N.setChatKey || !tkB64 || !mine || shared[phone] === tkB64) return;
+        shared[phone] = tkB64;
+        subtle.importKey('raw', unb64(tkB64), { name: 'ECDH', namedCurve: 'P-256' }, false, [])
+          .then(function (pub) { return subtle.deriveBits({ name: 'ECDH', public: pub }, mine.pair.privateKey, 256); })
+          .then(function (bits) { return subtle.importKey('raw', bits, 'HKDF', false, ['deriveKey']); })
+          .then(function (hk) { return subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt: enc.encode('zucket-e2e-v1'), info: enc.encode('chat') }, hk, { name: 'AES-GCM', length: 256 }, true, ['decrypt']); })
+          .then(function (k) { return subtle.exportKey('raw', k); })
+          .then(function (raw) { N.setChatKey(phone, b64(raw), myPhone); })
+          .catch(function () { delete shared[phone]; });
+      }
       function theirKey(phone, fresh) {
         var c = theirs[phone];
-        if (c && !fresh && Date.now() - c.at < 300000) return Promise.resolve(c.key);
-        return chatCall('getkey', { phone: phone }).then(function (r) { theirs[phone] = { key: r.key || null, at: Date.now() }; return theirs[phone].key; });
+        if (c && !fresh && Date.now() - c.at < 300000) { shareKey(phone, c.key); return Promise.resolve(c.key); }
+        return chatCall('getkey', { phone: phone }).then(function (r) { theirs[phone] = { key: r.key || null, at: Date.now() }; shareKey(phone, theirs[phone].key); return theirs[phone].key; });
       }
       function derive(theirB64) {
         if (secrets[theirB64]) return Promise.resolve(secrets[theirB64]);
@@ -2832,6 +2849,8 @@ ZW|Zimbabwe|263`;
       items.push([arch ? 'Unarchive' : 'Archive', function () { setArchived(c.phone, !arch); renderChats(); toast(arch ? 'Chat unarchived' : 'Chat archived', true); }]);
       items.push([un ? 'Mark as read' : 'Mark as unread', function () { if (un) markSeen(c.phone); else { try { localStorage.setItem('zaply_unread_' + c.phone, '1'); } catch (e) {} } renderChats(); }]);
       items.push([fv ? 'Remove from favourites' : 'Add to favourites', function () { var a = favs(), i = a.indexOf(c.phone); if (i > -1) a.splice(i, 1); else a.push(c.phone); lsSet('zaply_favs', a); renderChats(); }]);
+      var mu = isMuted(c.phone);
+      items.push([mu ? 'Unmute notifications' : 'Mute notifications\u2026', function () { if (mu) { setMute(c.phone, 0); renderChats(); toast('Notifications on', true); } else muteChoose(c); }]);
       var fl = folders(); if (fl.length) items.push(['Add to folder\u2026', function () {
         zsheet('Add to folder', fl.map(function (f) { return [f.name, function () { if (f.inc.indexOf(c.phone) < 0) f.inc.push(c.phone); var i = f.exc.indexOf(c.phone); if (i > -1) f.exc.splice(i, 1); saveFolders(fl); renderChats(); toast('Added to ' + f.name, true); }]; }));
       }]);
@@ -3258,10 +3277,30 @@ ZW|Zimbabwe|263`;
     }
     function pushPrefs() { try { if (window.ZanplyNative && ZanplyNative.setPrefs) ZanplyNative.setPrefs(JSON.stringify(nset())); } catch (e) {} }
     function pushSession() { try { if (window.ZanplyNative && ZanplyNative.setSession) ZanplyNative.setSession(getToken() || '', (typeof APIS !== 'undefined' && APIS[0]) || ''); } catch (e) {} }
+    /* ---------- Mute (per chat). Inside the Android app the list lives in the app, so the notification's Mute button and this screen share it. ---------- */
+    function muteMap() {
+      var N = window.ZanplyNative;
+      if (N && N.mutes) { try { var nm = JSON.parse(N.mutes() || '{}'); if (nm && typeof nm === 'object') { lsSet('zaply_mutes', nm); return nm; } } catch (e) {} }
+      var m = lsGet('zaply_mutes', {}); return m && typeof m === 'object' ? m : {};
+    }
+    function muteUntil(ph) { var u = Number(muteMap()[ph]) || 0; return u > Date.now() ? u : 0; }
+    function isMuted(ph) { return muteUntil(ph) > 0; }
+    function setMute(ph, until) {
+      var on = until > Date.now(), m = lsGet('zaply_mutes', {}); if (!m || typeof m !== 'object') m = {};
+      if (on) m[ph] = until; else delete m[ph];
+      lsSet('zaply_mutes', m);
+      try { if (window.ZanplyNative && ZanplyNative.setMute) ZanplyNative.setMute(ph, on ? String(until) : '0'); } catch (e) {}
+      try { syncSWPrefs(); } catch (e) {}
+    }
+    function muteChoose(c) {
+      var H = 3600000, DAY = 24 * H;
+      function go(ms, label) { return [label, function () { setMute(c.phone, Date.now() + ms); renderChats(); toast('Muted ' + (ms > 3650 * DAY ? 'always' : 'for ' + label.toLowerCase()), true); }]; }
+      zsheet('Mute notifications', [go(8 * H, '8 hours'), go(7 * DAY, '1 week'), go(36500 * DAY, 'Always')]);
+    }
     function nsave(k, v) { var s = nset(); s[k] = v; lsSet('zaply_notif', s); syncSWPrefs(); pushPrefs(); if (k === 'badge') { try { updateCounts(); } catch (e) {} } }
     function syncSWPrefs() {
       try {
-        var n = nset(), o = { vib: VIB_PAT[n.m_vib] || VIB_PAT['default'], silent: false, popup: n.m_pop || 'always' };
+        var n = nset(), o = { vib: VIB_PAT[n.m_vib] || VIB_PAT['default'], silent: false, popup: n.m_pop || 'always', muted: muteMap() };
         if (window.caches) caches.open('zanply-prefs').then(function (c) { return c.put('/__prefs', new Response(JSON.stringify(o), { headers: { 'Content-Type': 'application/json' } })); }).catch(function () {});
       } catch (e) {}
     }
@@ -3287,8 +3326,8 @@ ZW|Zimbabwe|263`;
       }
     }
     function buzz(kind) { try { if (navigator.vibrate) navigator.vibrate(VIB_PAT[kind] || VIB_PAT['default']); } catch (e) {} }
-    function incomingFx(group) {
-      var n = nset(); if (document.hidden) return;
+    function incomingFx(group, ph) {
+      var n = nset(); if (document.hidden) return; if (ph && isMuted(ph)) return;
       if (window.ZanplyNative) { try { if (n.tones) { if (ZanplyNative.notifSoundFor) ZanplyNative.notifSoundFor(group ? 'g' : 'm'); else ZanplyNative.notifSound(); } } catch (e) {} buzz(group ? n.g_vib : n.m_vib); return; }
       if (n.tones) playTone(group ? n.g_tone : n.m_tone);
       buzz(group ? n.g_vib : n.m_vib);
@@ -3305,7 +3344,7 @@ ZW|Zimbabwe|263`;
       chats.forEach(function (c) {
         var t = new Date(c.at).getTime(), p = lastAtMap[c.phone]; lastAtMap[c.phone] = t;
         if (first || p == null || t <= p || c.mine || c.phone === openWith || isCallMsg(c.last)) return;
-        if (isArchived(c) && chatSet().keepArch) return; incomingFx(!!c.group);
+        if (isArchived(c) && chatSet().keepArch) return; incomingFx(!!c.group, c.phone);
       });
     }
     function openNotif() {
@@ -3910,9 +3949,11 @@ ZW|Zimbabwe|263`;
       function row(c, withChat) {
         var r = mk('div', 'row'), un = withChat && isUnread(c), isFav = fv.indexOf(c.phone) > -1;
         if (un) r.classList.add('unread');
+        if (withChat && isMuted(c.phone)) r.classList.add('muted');
         r.appendChild(avatar(c));
         var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', c.name || c.phone));
         if (withChat) { try { folderTags(c).forEach(function (t) { mid.lastChild.appendChild(t); }); } catch (e) {} }
+        if (withChat && isMuted(c.phone)) mid.lastChild.appendChild(mk('span', 'mutei', '\uD83D\uDD07'));
         var pv = mk('span', '', withChat ? ((c.mine && !(!c.group && !isCallMsg(c.last))) ? 'You: ' : (!c.mine && c.group && c.from ? c.from + ': ' : '')) + previewOf(c.last) : c.phone);
         if (withChat && c.mine && !c.group && !isCallMsg(c.last)) { var tkl = tickEl(c.st === 0 ? 0 : (c.st || 1)); tkl.classList.add('lt'); pv.insertBefore(tkl, pv.firstChild); }
         mid.appendChild(pv);
@@ -4075,7 +4116,7 @@ ZW|Zimbabwe|263`;
       }).then(function (msgs) {
         if (who !== openWith) return;
         var added = false;
-        msgs.forEach(function (m) { if (addMsg(m)) { added = true; if (!m.mine && Date.now() - new Date(m.at).getTime() < 20000 && !isCallMsg(m.body)) { try { incomingFx(isGroupId(who)); } catch (e) {} } } });
+        msgs.forEach(function (m) { if (addMsg(m)) { added = true; if (!m.mine && Date.now() - new Date(m.at).getTime() < 20000 && !isCallMsg(m.body)) { try { incomingFx(isGroupId(who), who); } catch (e) {} } } });
         if (tk) applyTicks(tk, who);
         if (added) { $('msgs').scrollTop = $('msgs').scrollHeight; saveThread(who); try { localStorage.setItem('zaply_sid_' + who, String(lastId)); } catch (e) {} }
       }).catch(function () {}).then(function () { fmBusy = 0; if (fmAgain) { fmAgain = false; fetchMsgs(); } });
@@ -4522,7 +4563,9 @@ ZW|Zimbabwe|263`;
     }
     function cedLayout() {
       var sc = Math.min(1, 1600 / Math.max(ced.src.width, ced.src.height)), w = Math.round(ced.src.width * sc), h = Math.round(ced.src.height * sc);
-      [$('cedBase'), $('cedInk')].forEach(function (c) { c.width = w; c.height = h; });
+      [$('cedBase'), $('cedInk')].forEach(function (c) { c.width = w; c.height = h; c.style.width = '100%'; c.style.height = '100%'; });
+      var st = document.querySelector('.ced-stage'), f = Math.min(st.clientWidth / w, st.clientHeight / h), wrap = $('cedWrap');
+      if (f > 0 && isFinite(f)) { wrap.style.width = Math.floor(w * f) + 'px'; wrap.style.height = Math.floor(h * f) + 'px'; }
       $('cedBase').getContext('2d').drawImage(ced.src, 0, 0, w, h); cedInk();
     }
     function cedInk() {
@@ -4576,7 +4619,7 @@ ZW|Zimbabwe|263`;
     function cedExport(maxSide, q) {
       var sc = Math.min(1, maxSide / Math.max(ced.src.width, ced.src.height)), w = Math.round(ced.src.width * sc), h = Math.round(ced.src.height * sc);
       var cv = document.createElement('canvas'); cv.width = w; cv.height = h; var x = cv.getContext('2d');
-      x.drawImage(ced.src, 0, 0, w, h); x.drawImage($('cedInk'), 0, 0, w, h);
+      x.filter = $('cedBase').getAttribute('data-f') || 'none'; x.drawImage(ced.src, 0, 0, w, h); x.filter = 'none'; x.drawImage($('cedInk'), 0, 0, w, h);
       ced.items.forEach(function (it) {
         var cx = it.x * w, cy = it.y * h;
         if (it.k === 's') {
@@ -4600,18 +4643,43 @@ ZW|Zimbabwe|263`;
       var side = ced.hd ? 2560 : 1280, q = ced.hd ? 0.92 : 0.82;
       return cedExport(side, q).then(function (r) { return r.blob.size > MEDIA_MAX ? cedExport(side, 0.7) : r; });
     }
+    function looksBlank(c) {
+      try {
+        var w = c.width, h = c.height, pts = [[.5,.5],[.25,.25],[.75,.75],[.25,.75],[.75,.25]];
+        for (var i = 0; i < pts.length; i++) {
+          var d = c.getContext('2d').getImageData(Math.floor(w*pts[i][0]), Math.floor(h*pts[i][1]), 4, 4).data;
+          for (var k = 0; k < d.length; k += 4) if (d[k] || d[k+1] || d[k+2]) return false;
+        }
+        return true;
+      } catch (e) { return false; }
+    }
+    var cedBri = 0;
     function openEditor(file, chat, done) {
+      function build(bm, side) {
+        var sc = Math.min(1, side / Math.max(bm.width, bm.height)), c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(bm.width * sc)); c.height = Math.max(1, Math.round(bm.height * sc));
+        c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+        return c;
+      }
       loadBitmap(file).then(function (bm) {
         if (done) done();
-        var sc = Math.min(1, 4096 / Math.max(bm.width, bm.height)), c = document.createElement('canvas');
-        c.width = Math.round(bm.width * sc); c.height = Math.round(bm.height * sc); c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+        var c = build(bm, 2560);
+        if (looksBlank(c)) c = build(bm, 1280);
         ced = { chat: chat, src: c, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
+        cedBri = 0; $('cedBase').style.filter = 'none'; $('cedBase').removeAttribute('data-f'); $('cedBri').classList.remove('on');
         $('cedHD').classList.remove('on'); $('cedVO').classList.remove('on'); $('cedCap').value = ''; $('cedItems').innerHTML = ''; $('cedSend').disabled = false;
         $('cedTo').textContent = nameOf(chat) || chat; cedTool(''); ['cedTxtOv','cedStk','cedCrop'].forEach(function (i) { $(i).classList.add('hidden'); }); pushOv(cedClose); $('camEd').classList.remove('hidden'); cedLayout();
-      }, function () { if (done) done(); toast('Could not read that photo'); });
+      }).catch(function () { if (done) done(); toast('Could not open that photo. Try again.'); });
     }
     $('cedX').addEventListener('click', closeOv);
     $('cedHD').addEventListener('click', function () { ced.hd = !ced.hd; this.classList.toggle('on', ced.hd); toast(ced.hd ? 'HD quality on' : 'Standard quality'); });
+    $('cedBri').addEventListener('click', function () {
+      cedBri = (cedBri + 1) % 4;
+      this.classList.toggle('on', cedBri > 0);
+      var f = ['none', 'brightness(1.5) contrast(1.05)', 'brightness(2.1) contrast(1.1)', 'brightness(2.8) contrast(1.15)'][cedBri];
+      $('cedBase').style.filter = f; $('cedBase').setAttribute('data-f', f);
+      toast(cedBri ? 'Brightness level ' + cedBri : 'Brightness off');
+    });
     $('cedVO').addEventListener('click', function () { ced.vo = !ced.vo; this.classList.toggle('on', ced.vo); toast(ced.vo ? 'View once: on' : 'View once: off'); });
     $('cedDraw').addEventListener('click', function () { cedTool('draw'); });
     $('cedT_draw').addEventListener('click', function (e) {
@@ -5577,6 +5645,7 @@ ZW|Zimbabwe|263`;
         if (a) { var o = JSON.parse(a), d = JSON.parse(String(o.body).slice(8)); rang[o.body] = 1; openCall(d.u, d.v, { phone: o.phone, name: o.name || '' }, false, o.body); }
       } catch (e) {}
       try { var c = N.takeOpenChat(); if (c) openChatWith(c); } catch (e) {}
+      try { JSON.parse((N.takeRead && N.takeRead()) || '[]').forEach(function (ph) { markSeen(ph); }); renderChats(); } catch (e) {}
     }
     window.zNativeCheck = nativeCheck;
     function nChan() { try { return (window.ZanplyNative && ZanplyNative.channelId && ZanplyNative.channelId()) || ''; } catch (e) { return ''; } }
