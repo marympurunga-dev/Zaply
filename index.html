@@ -349,6 +349,9 @@
     #thName{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     #thPhone:empty{display:none}
     #thPhone{font-size:13px}
+    #thPhone.pon{color:#25d366;font-weight:600}
+    .av.onl{position:relative}
+    .av.onl::after{content:'';position:absolute;right:-1px;bottom:-1px;width:15px;height:15px;border-radius:50%;background:#00c853;border:3px solid var(--bg,#0f1117);box-sizing:content-box}
     #threadView .th-head #thVideo,#threadView .th-head #thAudio,#threadView .th-head #thInfoBtn{padding:8px 7px}
     /* incoming call */
     #incoming{display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;background:#0b141a;color:#fff;overflow:hidden;padding:calc(56px + env(safe-area-inset-top,0px)) 20px calc(34px + env(safe-area-inset-bottom,0px))}
@@ -1057,6 +1060,7 @@
     </div></div>
   <div id="netBanner" class="netb hidden"><span>No internet connection</span><button id="netRetry">Try again</button></div>
 
+  <script src="https://cdn.ably.com/lib/ably.min-1.js" async></script>
   <script>
     var API = 'https://zaply-gamma.vercel.app/api';
     /* try this site's own /api first (works on any domain, e.g. zucket.me), then the old address */
@@ -3736,9 +3740,10 @@ ZW|Zimbabwe|263`;
     document.addEventListener('click', function () { $('menuBox').classList.add('hidden'); });
 
     var chatSig = null, loadErr = '', allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
+    var ONL = {};
     function avatar(c) {
       var n = c.name || c.phone || '#', a = mk('div', 'av', n.charAt(0).toUpperCase());
-      a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; usePhoto(a, c.phone); return a;
+      a.style.background = AVC[(n.charCodeAt(0) + n.length) % AVC.length]; usePhoto(a, c.phone); if (ONL && ONL[c.phone]) a.classList.add('onl'); return a;
     }
     /* profile pictures: shown wherever a person's avatar appears */
     var PH = {}, PHT = {}; try { PH = JSON.parse(localStorage.getItem('zaply_photos') || '{}'); } catch (e) {}
@@ -3857,7 +3862,7 @@ ZW|Zimbabwe|263`;
         }));
       }).then(function (chats) {
         var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0, c.st || 0]; }));
-        try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = '';
+        try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = ''; try { RT.watchChats(allChats); } catch (e) {}
         try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
         try { warmProfiles(); } catch (e) {}
         try { countUnread(); } catch (e) {}
@@ -3932,7 +3937,7 @@ ZW|Zimbabwe|263`;
     function fetchMsgs() {
       var who = openWith;
       if (!who) return;
-      if (fmBusy && Date.now() - fmBusy < 5000) return; fmBusy = Date.now();
+      if (fmBusy && Date.now() - fmBusy < 5000) { fmAgain = true; return; } fmBusy = Date.now();
       var track = isGroupId(who) ? [] : thCache.filter(function (m) { return m && m.mine && m.st && m.st < 3 && typeof m.id === 'number'; }).map(function (m) { return m.id; }).slice(-100);
       var tk = null;
       chatCall('history', { with: who, after: lastId, track: track }).then(function (res) {
@@ -3947,9 +3952,9 @@ ZW|Zimbabwe|263`;
         msgs.forEach(function (m) { if (addMsg(m)) { added = true; if (!m.mine && Date.now() - new Date(m.at).getTime() < 20000 && !isCallMsg(m.body)) { try { incomingFx(isGroupId(who)); } catch (e) {} } } });
         if (tk) applyTicks(tk, who);
         if (added) { $('msgs').scrollTop = $('msgs').scrollHeight; saveThread(who); try { localStorage.setItem('zaply_sid_' + who, String(lastId)); } catch (e) {} }
-      }).catch(function () {}).then(function () { fmBusy = 0; });
+      }).catch(function () {}).then(function () { fmBusy = 0; if (fmAgain) { fmAgain = false; fetchMsgs(); } });
     }
-    var fmBusy = 0;
+    var fmBusy = 0, fmAgain = false;
 
     /* ----- online / last seen (header of a chat) ----- */
     function presText(p) {
@@ -3960,7 +3965,7 @@ ZW|Zimbabwe|263`;
       if (d.getTime() >= t0 - 864e5) return 'last seen yesterday at ' + tm;
       return 'last seen ' + d.toLocaleDateString() + ' at ' + tm;
     }
-    function presShow(ph, p) { if (ph !== openWith || isGroupId(ph)) return; $('thPhone').textContent = presText(p); }
+    function presShow(ph, p) { if (ph !== openWith || isGroupId(ph)) return; var t = presText(p); $('thPhone').textContent = t; $('thPhone').classList.toggle('pon', t === 'online'); }
     function presCached(ph) { try { var p = JSON.parse(localStorage.getItem('zaply_pres_' + ph) || 'null'); if (p) p.online = false; return p; } catch (e) { return null; } }
     function presFetch() {
       var ph = openWith; if (!ph || isGroupId(ph) || !getToken() || document.visibilityState !== 'visible') return;
@@ -3971,21 +3976,110 @@ ZW|Zimbabwe|263`;
         presShow(ph, p);
       }).catch(function () {});
     }
-    function presPing(on) { if (!getToken()) return; chatCall('presence_ping', { online: on !== false }).catch(function () {}); }
+    function presPing(on) { if (!getToken()) return Promise.resolve(); return chatCall('presence_ping', { online: on !== false }).catch(function () {}); }
     setInterval(function () { if (document.visibilityState === 'visible') presPing(true); }, 25000);
-    setInterval(presFetch, 8000);
-    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { presPing(true); presFetch(); } else presPing(false); });
+    var presN = 0, bulkN = 0;
+    setInterval(function () { if (!RT.up() || ++presN % 4 === 0) presFetch(); }, 8000);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { presPing(true); presFetch(); presBulk(); } else presPing(false); });
     window.addEventListener('pagehide', function () { presPing(false); });
     setTimeout(function () { presPing(true); }, 3000);
+    function onlApply() { Array.prototype.forEach.call(document.querySelectorAll('.row .av[data-ph]'), function (a) { a.classList.toggle('onl', !!(ONL && ONL[a.getAttribute('data-ph')])); }); }
+    function presBulk() {
+      if (!getToken() || document.visibilityState !== 'visible' || !allChats || !allChats.length) return;
+      if (!$('threadView').classList.contains('hidden')) return;
+      if (priv().lastseen === 'nobody') { ONL = {}; onlApply(); return; }
+      var ph = allChats.filter(function (c) { return !c.group && /^\+\d{7,15}$/.test(c.phone); }).map(function (c) { return c.phone; }).slice(0, 80);
+      if (!ph.length) return;
+      chatCall('presence_bulk', { phones: ph }).then(function (r) { ONL = r.online || {}; onlApply(); }).catch(function () {});
+    }
+    setInterval(function () { if (!RT.up() || ++bulkN % 3 === 0) presBulk(); }, 10000); setTimeout(presBulk, 4000);
+
+    /* ---------- real-time (Ably): instant messages, ticks, online / last seen ----------
+       The server sends a tiny "something changed" signal; the app then fetches the real data exactly as before.
+       If real-time is not connected the old polling keeps working, just a little slower to react. */
+    var RT = (function () {
+      var rt = null, selfCh = null, watched = {}, want = {}, authBusy = false, authAgain = false, chatsT = 0, retryT = 0;
+      function up() { return !!(rt && rt.connection && rt.connection.state === 'connected'); }
+      function watchList() { return Object.keys(want).slice(-40); }
+      function refreshChats() { clearTimeout(chatsT); chatsT = setTimeout(function () { try { loadChats(); } catch (e) {} }, 120); }
+      function onInbox(m) {
+        var from = m && m.data && m.data.from;
+        if (openWith && (from === openWith || !from)) fetchMsgs();
+        refreshChats();
+      }
+      function onPres(ph, act) {
+        var on = act === 'enter' || act === 'present' || act === 'update';
+        if (on) ONL[ph] = 1; else delete ONL[ph];
+        try { onlApply(); } catch (e) {}
+        if (ph === openWith && !isGroupId(ph)) {
+          if (on) presShow(ph, { online: true, last: null, hidden: false });
+          else setTimeout(presFetch, 600);
+        }
+      }
+      function attach(ph) {
+        if (!rt || watched[ph]) return;
+        var ch = rt.channels.get('p:' + ph, { modes: ['PRESENCE_SUBSCRIBE'] }); watched[ph] = ch;
+        ch.presence.subscribe(function (pm) { onPres(ph, pm.action); });
+        ch.presence.get(function (err, members) { if (!err) onPres(ph, members && members.length ? 'present' : 'absent'); });
+      }
+      /* the token only lists people I am allowed to watch, so ask for a fresh one whenever I want to watch someone new */
+      function sync() {
+        if (!rt || !up()) return;
+        if (authBusy) { authAgain = true; return; }
+        authBusy = true;
+        rt.auth.authorize().then(function () {
+          authBusy = false;
+          watchList().forEach(attach);
+          if (authAgain) { authAgain = false; sync(); }
+        }, function () { authBusy = false; });
+      }
+      function enter() { try { if (selfCh && document.visibilityState === 'visible') selfCh.presence.enter({}); } catch (e) {} }
+      function leave() { try { if (selfCh) selfCh.presence.leave(); } catch (e) {} }
+      function watch(ph) {
+        if (!ph || ph === myPhone || isGroupId(ph) || !/^\+\d{7,15}$/.test(ph)) return;
+        if (want[ph]) { if (rt && up() && !watched[ph]) sync(); return; }
+        want[ph] = 1; sync();
+      }
+      function watchChats(list) {
+        var added = false;
+        (list || []).filter(function (c) { return !c.group && /^\+\d{7,15}$/.test(c.phone); }).slice(0, 30).forEach(function (c) { if (!want[c.phone]) { want[c.phone] = 1; added = true; } });
+        if (added) sync();
+      }
+      function start(phone) {
+        if (rt) return;
+        if (!window.Ably) { clearTimeout(retryT); retryT = setTimeout(function () { start(phone); }, 2500); return; }
+        try { watchChats(allChats); } catch (e) {}
+        rt = new Ably.Realtime({
+          authCallback: function (tp, cb) {
+            chatCall('ably_auth', { watch: watchList() }).then(function (r) { cb(null, r.token); }, function (e) { cb(e, null); });
+          }
+        });
+        rt.channels.get('u:' + phone).subscribe(onInbox);
+        selfCh = rt.channels.get('p:' + phone);
+        rt.connection.on('connected', function () {
+          enter(); watchList().forEach(attach);
+          /* catch up on anything that arrived while the connection was down */
+          try { if (openWith) fetchMsgs(); loadChats(); } catch (e) {}
+        });
+      }
+      document.addEventListener('visibilitychange', function () {
+        if (!rt) return;
+        if (document.visibilityState === 'visible') enter();
+        else Promise.race([presPing(false), new Promise(function (r) { setTimeout(r, 400); })]).then(leave);
+      });
+      window.addEventListener('pagehide', leave);
+      window.addEventListener('online', function () { if (rt) try { rt.connection.connect(); } catch (e) {} });
+      return { start: start, up: up, watch: watch, watchChats: watchChats };
+    })();
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
       markSeen(u.phone); openWith = u.phone; saveScreen(); lastId = 0; $('msgs').innerHTML = ''; thCache = []; gameEls = {}; openUser = u;
-      $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.group ? 'Group' : ''; setAv($('thAv'), u);
+      $('thName').textContent = u.name || u.phone; $('thPhone').textContent = u.group ? 'Group' : ''; $('thPhone').classList.remove('pon'); setAv($('thAv'), u);
       $('thVideo').style.display = u.group ? 'none' : ''; $('thAudio').style.display = u.group ? 'none' : '';
       curBlocked = false; setBlockedUI();
       if (u.group) chatCall('group_info', { group: u.phone }).then(function (r) { if (openWith === u.phone) $('thPhone').textContent = r.members.length + ' members'; }).catch(function () {});
       else chatCall('blockstate', { with: u.phone }).then(function (r) { if (openWith === u.phone) { curBlocked = !!r.blocked; setBlockedUI(); } }).catch(function () {});
-      if (!u.group) { presShow(u.phone, presCached(u.phone)); presFetch(); }
+      if (!u.group) { presShow(u.phone, presCached(u.phone)); presFetch(); try { RT.watch(u.phone); } catch (e) {} }
       compExpanded = false; syncComp();
       /* show the chat at once, then fill in the saved messages on the next frame, so the tap feels instant */
       $('threadView').classList.remove('hidden');
@@ -4005,6 +4099,7 @@ ZW|Zimbabwe|263`;
     setInterval(function () {
       if ($('appView').classList.contains('hidden') || document.hidden) return;
       pollN++;
+      if (RT.up() && pollN % 15 !== 0) return;
       if (openWith) fetchMsgs(); else if (!$('paneChats').classList.contains('hidden') && pollN % 2 === 0) loadChats();
     }, 1000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden && !$('appView').classList.contains('hidden')) { if (openWith) fetchMsgs(); else loadChats(); } });
@@ -5240,7 +5335,7 @@ ZW|Zimbabwe|263`;
     }
     function startApp(user) {
       clearAuthStep();
-      myPhone = user.phone; E2E.init(user.phone).catch(function () {});
+      myPhone = user.phone; E2E.init(user.phone).catch(function () {}); try { RT.start(user.phone); } catch (e) {}
       try { allChats = JSON.parse(localStorage.getItem('zaply_chats') || '[]'); } catch (e) {}
       $('hello').textContent = 'Signed in as ' + user.name;
       $('pfName').textContent = user.name || ''; $('pfPhone').textContent = user.phone || ''; $('pfAv').textContent = (user.name || '#').charAt(0).toUpperCase();
