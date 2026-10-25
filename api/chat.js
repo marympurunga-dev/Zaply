@@ -291,7 +291,11 @@ async function notify(from, to, text) {
       if (isCall) {
         let video = '0'; try { video = JSON.parse(String(text).slice(8)).v ? '1' : '0'; } catch (e) {}
         await fcmPush(rows, { type: 'call', title: name, body: 'Incoming call', sender: from, name, video, call: String(text) }, { ttl: '45s' });
-      } else await fcmPush(rows, { type: 'msg', title: name, body: preview(text), sender: from, photo: await senderPhoto(from, to) });
+      } else {
+        // 'cipher' is still scrambled text (the server cannot read it). The Android app opens it on the phone to show the real message.
+        const cipher = String(text).indexOf('e2e1:') === 0 && String(text).length <= 2500 ? String(text) : '';
+        await fcmPush(rows, { type: 'msg', title: name, body: preview(text), sender: from, photo: await senderPhoto(from, to), cipher, me: to });
+      }
     }
   } catch (e) { console.error(e); }
 }
