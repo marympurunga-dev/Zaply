@@ -389,7 +389,8 @@ jobs:
                   if ("call".equals(type)) {
                       String body = d.get("call");
                       if (body == null || body.length() == 0) return;
-                      Notifs.showCall(this, nz(d.get("sender")), nz(d.get("name")).length() > 0 ? d.get("name") : nz(d.get("sender")),
+                      String saved = Notifs.contactName(this, nz(d.get("sender")));
+                      Notifs.showCall(this, nz(d.get("sender")), saved != null ? saved : (nz(d.get("name")).length() > 0 ? d.get("name") : nz(d.get("sender"))),
                               body, "1".equals(d.get("video")));
                   } else if ("cancel".equals(type)) {
                       Notifs.cancelCall(this);
@@ -401,7 +402,8 @@ jobs:
                           if (pt != null) text = Crypt.preview(pt);
                           else Store.log(this, "Could not open the message text on this phone (no key yet), showing New message.");
                       }
-                      Notifs.showMessage(this, from, nz(d.get("title")).length() > 0 ? d.get("title") : "Zanply", text,
+                      String savedName = Notifs.contactName(this, from);
+                      Notifs.showMessage(this, from, savedName != null ? savedName : (nz(d.get("title")).length() > 0 ? d.get("title") : "Zanply"), text,
                               nz(d.get("photo")), from.startsWith("g:"), "react".equals(type));
                   }
               }
@@ -1213,6 +1215,20 @@ jobs:
                       } catch (Exception ignored) { }
                   }
                   return out;
+              }
+
+              /** The name saved in the phone's own Contacts for this number (like WhatsApp). null = not saved or no permission. */
+              static String contactName(Context c, String phone) {
+                  try {
+                      if (phone == null || phone.length() == 0 || phone.startsWith("g:")) return null;
+                      if (c.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) return null;
+                      Uri u = Uri.withAppendedPath(android.provider.ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(phone));
+                      android.database.Cursor cu = c.getContentResolver().query(u, new String[]{android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME}, null, null, null);
+                      if (cu != null) {
+                          try { if (cu.moveToFirst()) { String n = cu.getString(0); if (n != null && n.length() > 0) return n; } } finally { cu.close(); }
+                      }
+                  } catch (Exception ignored) { }
+                  return null;
               }
 
               /* ---------------- the round picture (profile photo, or a coloured letter) ---------------- */
