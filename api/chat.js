@@ -177,7 +177,7 @@ async function sendSms(to, message) {
 }
 // Email codes use the same sender as sign-up (api/_mail.js), so it needs no new Vercel settings
 const { sendCodeEmail } = require('./_mail');
-const { fcmOn, sendFcm } = require('./_fcm');
+const { fcmOn, fcmWhy, sendFcm } = require('./_fcm');
 const rt = require('./_realtime');
 const phoneOk = (p) => typeof p === 'string' && /^\+\d{7,15}$/.test(p);
 async function findUser(phone) {
@@ -811,7 +811,7 @@ module.exports = async (req, res) => {
       try { await fcmTable(); const [f] = await db().query('SELECT COUNT(*) AS n FROM fcm_tokens WHERE phone = ?', [me]); nFcm = Number(f[0].n); } catch (e) {}
       return res.json({
         vapid: { public: !!process.env.VAPID_PUBLIC_KEY, private: !!process.env.VAPID_PRIVATE_KEY, subject: !!process.env.VAPID_SUBJECT },
-        fcm: !!fcmOn(), webSubs: nWeb, fcmTokens: nFcm, ably: rt.on() });
+        fcm: !!fcmOn(), fcmWhy: fcmOn() ? '' : fcmWhy(), webSubs: nWeb, fcmTokens: nFcm, ably: rt.on() });
     }
     // Sends one real test to every address saved for this account (after a short wait so the app can be closed) and reports each result
     if (b.action === 'pushtest') {
@@ -834,13 +834,15 @@ module.exports = async (req, res) => {
         }
         out.web = rs.join(', ');
       }
-      if (!fcmOn()) out.fcm = 'Server has no Firebase settings';
+      if (!fcmOn()) out.fcm = 'Server has no Firebase settings: ' + fcmWhy();
       else if (!rows.length) out.fcm = 'No Firebase token saved for this account';
       else {
         try {
-          const dead = await sendFcm(rows, { type: 'msg', title: 'Zanply test', body: 'If you can see this, notifications work.', from: '' }, {});
+          const errs = [];
+          const dead = await sendFcm(rows, { type: 'msg', title: 'Zanply test', body: 'If you can see this, notifications work.', from: '' }, { errors: errs });
           if (dead && dead.length) await db().query('DELETE FROM fcm_tokens WHERE id IN (' + dead.map(() => '?').join(',') + ')', dead);
-          out.fcm = dead && dead.length ? 'Google rejected ' + dead.length + ' of ' + rows.length + ' token(s); they were removed. Reopen the app to register again' : 'sent to ' + rows.length + ' phone(s)';
+          if (errs.length) out.fcm = 'Google refused it: ' + errs[0];
+          else out.fcm = dead && dead.length ? 'Google says ' + dead.length + ' of ' + rows.length + ' token(s) are no longer valid and were removed. Reopen the app to register again' : 'accepted by Google for ' + rows.length + ' phone(s)';
         } catch (e) { out.fcm = 'failed: ' + String((e && (e.message || e.code)) || e).slice(0, 140); }
       }
       return res.json(out);

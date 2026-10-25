@@ -2,14 +2,16 @@
 // Vercel setting required: FIREBASE_SERVICE_ACCOUNT = the whole service-account JSON file contents.
 const crypto = require('crypto');
 
-let cfg = null, cached = null, cachedUntil = 0;
+let cfg = null, why = '', cached = null, cachedUntil = 0;
 function conf() {
   if (cfg !== null) return cfg;
-  try { cfg = process.env.FIREBASE_SERVICE_ACCOUNT ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) : false; } catch (e) { console.error('FIREBASE_SERVICE_ACCOUNT is not valid JSON'); cfg = false; }
-  if (cfg && (!cfg.client_email || !cfg.private_key || !cfg.project_id)) cfg = false;
+  if (!process.env.FIREBASE_SERVICE_ACCOUNT) { why = 'FIREBASE_SERVICE_ACCOUNT is not set in Vercel'; cfg = false; return cfg; }
+  try { cfg = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); } catch (e) { console.error('FIREBASE_SERVICE_ACCOUNT is not valid JSON'); why = 'FIREBASE_SERVICE_ACCOUNT is not valid JSON (paste the whole file exactly as downloaded)'; cfg = false; }
+  if (cfg && (!cfg.client_email || !cfg.private_key || !cfg.project_id)) { why = 'FIREBASE_SERVICE_ACCOUNT is missing client_email, private_key or project_id'; cfg = false; }
   return cfg;
 }
 const fcmOn = () => !!conf();
+const fcmWhy = () => { conf(); return why; };
 const b64u = (b) => Buffer.from(b).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 
 async function accessToken() {
@@ -29,11 +31,12 @@ async function accessToken() {
 }
 
 // data: flat object of strings. Returns the list of rows whose token is no longer valid.
+// opts.errors (optional array): Google's error messages are pushed into it, so a caller can show what went wrong.
 async function sendFcm(rows, data, opts) {
   if (!fcmOn() || !rows.length) return [];
-  const o = opts || {}, dead = [];
+  const o = opts || {}, dead = [], errs = Array.isArray(o.errors) ? o.errors : null;
   let at;
-  try { at = await accessToken(); } catch (e) { console.error(e.message); return []; }
+  try { at = await accessToken(); } catch (e) { console.error(e.message); if (errs) errs.push(e.message); return []; }
   const flat = {};
   Object.keys(data).forEach((k) => { flat[k] = String(data[k] == null ? '' : data[k]); });
   await Promise.allSettled(rows.map(async (row) => {
@@ -45,10 +48,10 @@ async function sendFcm(rows, data, opts) {
       if (!r.ok) {
         const t = await r.text();
         if (r.status === 404 || /UNREGISTERED|INVALID_ARGUMENT/.test(t)) dead.push(row.id);
-        else console.error('FCM send failed', r.status, t.slice(0, 200));
+        else { console.error('FCM send failed', r.status, t.slice(0, 200)); if (errs) errs.push(r.status + ' ' + t.replace(/\s+/g, ' ').slice(0, 180)); }
       }
-    } catch (e) { console.error('FCM error', e.message); }
+    } catch (e) { console.error('FCM error', e.message); if (errs) errs.push(e.message); }
   }));
   return dead;
 }
-module.exports = { fcmOn, sendFcm };
+module.exports = { fcmOn, fcmWhy, sendFcm };
