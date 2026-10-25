@@ -96,6 +96,8 @@ jobs:
               <uses-permission android:name="android.permission.CAMERA" />
               <uses-permission android:name="android.permission.RECORD_AUDIO" />
               <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+              <uses-permission android:name="android.permission.READ_CONTACTS" />
+              <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
               <uses-feature android:name="android.hardware.camera" android:required="false" />
               <uses-feature android:name="android.hardware.microphone" android:required="false" />
@@ -277,19 +279,44 @@ jobs:
           cat > app/src/main/java/com/zanply/app/CallReceiver.java <<'ZEOF'
           package com.zanply.app;
 
+          import android.app.NotificationManager;
           import android.content.BroadcastReceiver;
           import android.content.Context;
           import android.content.Intent;
 
           public class CallReceiver extends BroadcastReceiver {
               static final String ACTION_DECLINE = "com.zanply.app.DECLINE";
+              static final String ACTION_READ = "com.zanply.app.READ";
+              static final String ACTION_MUTE = "com.zanply.app.MUTE";
+              static final String ACTION_REMIND = "com.zanply.app.REMIND";
 
               @Override
-              public void onReceive(Context c, Intent i) {
-                  if (ACTION_DECLINE.equals(i.getAction())) {
+              public void onReceive(final Context c, Intent i) {
+                  String a = i.getAction();
+                  if (ACTION_DECLINE.equals(a)) {
                       Store.markHandled(c, i.getStringExtra("call"));
                       Notifs.cancelCall(c);
                       CallActivity.finishIfOpen();
+                  } else if (ACTION_READ.equals(a)) {
+                      final String from = i.getStringExtra("from");
+                      NotificationManager nm = c.getSystemService(NotificationManager.class);
+                      if (nm != null) nm.cancel(i.getIntExtra("nid", 0));
+                      Store.histDrop(c, from);
+                      final PendingResult pr = goAsync();
+                      new Thread(new Runnable() {
+                          @Override public void run() {
+                              try { Notifs.markReadOnServer(c, from); } finally { pr.finish(); }
+                          }
+                      }).start();
+                  } else if (ACTION_MUTE.equals(a)) {
+                      String from = i.getStringExtra("from");
+                      NotificationManager nm = c.getSystemService(NotificationManager.class);
+                      if (nm != null) nm.cancel(i.getIntExtra("nid", 0));
+                      Store.histDrop(c, from);
+                      Store.putLong(c, "mute:" + from, System.currentTimeMillis() + 8L * 60L * 60L * 1000L);
+                      Store.log(c, "Muted " + i.getStringExtra("who") + " for 8 hours (from the notification button).");
+                  } else if (ACTION_REMIND.equals(a)) {
+                      Notifs.remind(c);
                   }
               }
           }
@@ -315,12 +342,13 @@ jobs:
               public void onMessageReceived(RemoteMessage m) {
                   Map<String, String> d = m.getData();
                   if (d == null || d.isEmpty()) return;
-                  Store.putLong(this, "lastPush", System.currentTimeMillis());
-                  Store.putStr(this, "lastType", d.get("type") == null ? "" : d.get("type"));
-                  // While the app is open the web page already plays its own sound and shows the call screen.
-                  if (MainActivity.visible) return;
-
                   String type = d.get("type");
+                  Store.putLong(this, "lastPush", System.currentTimeMillis());
+                  Store.putStr(this, "lastType", type == null ? "" : type);
+                  Store.log(this, "Push received from the server (" + (type == null || type.length() == 0 ? "message" : type) + ").");
+                  // While the app is open the web page already plays its own sound and shows the call screen.
+                  if (MainActivity.visible) { Store.log(this, "Not shown: Zanply is open on the screen, so the app handles it."); return; }
+
                   if ("call".equals(type)) {
                       String body = d.get("call");
                       if (body == null || body.length() == 0) return;
@@ -329,7 +357,9 @@ jobs:
                   } else if ("cancel".equals(type)) {
                       Notifs.cancelCall(this);
                   } else {
-                      Notifs.showMessage(this, nz(d.get("sender")), nz(d.get("title")).length() > 0 ? d.get("title") : "Zanply", nz(d.get("body")));
+                      String from = nz(d.get("sender"));
+                      Notifs.showMessage(this, from, nz(d.get("title")).length() > 0 ? d.get("title") : "Zanply", nz(d.get("body")),
+                              nz(d.get("photo")), from.startsWith("g:"), "react".equals(type));
                   }
               }
 
@@ -344,16 +374,23 @@ jobs:
           import android.app.Activity;
           import android.app.KeyguardManager;
           import android.app.NotificationManager;
+          import android.content.ContentProviderOperation;
+          import android.content.ContentValues;
           import android.content.Context;
           import android.content.Intent;
           import android.content.pm.PackageManager;
+          import android.database.Cursor;
           import android.media.AudioAttributes;
+          import android.media.AudioManager;
           import android.media.Ringtone;
           import android.media.RingtoneManager;
           import android.net.Uri;
           import android.os.Build;
+          import android.os.Environment;
           import android.os.Bundle;
           import android.os.Message;
+          import android.provider.ContactsContract;
+          import android.provider.MediaStore;
           import android.provider.Settings;
           import android.view.View;
           import android.view.ViewGroup;
@@ -368,10 +405,16 @@ jobs:
 
           import com.google.firebase.messaging.FirebaseMessaging;
 
+          import org.json.JSONArray;
           import org.json.JSONObject;
+
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.io.OutputStream;
 
           import java.lang.ref.WeakReference;
           import java.util.ArrayList;
+          import java.util.HashSet;
           import java.util.List;
 
           /** The Zanply web app inside a WebView, plus the bridge that gives it the phone's own sounds. */
@@ -379,7 +422,7 @@ jobs:
               static volatile boolean visible = false;
               private static WeakReference<MainActivity> self;
 
-              private static final int REQ_FILE = 1, REQ_PERM = 2, REQ_NOTIF = 3, REQ_TONE = 4;
+              private static final int REQ_FILE = 1, REQ_PERM = 2, REQ_NOTIF = 3, REQ_TONE = 4, REQ_CONTACTS = 5;
 
               private WebView web;
               private ValueCallback<Uri[]> filePath;
@@ -391,6 +434,7 @@ jobs:
               private volatile String openChat = "";
 
               private Ringtone ring;
+              private String toneKind = "m"; // which tone the picker is open for: m = messages, g = groups, c = calls
 
               /* ---------------- life cycle ---------------- */
 
@@ -487,9 +531,12 @@ jobs:
                   web.evaluateJavascript("window.onToneChosen&&window.onToneChosen()", null);
               }
 
-              private String toneName() {
+              private String toneName() { return toneName("m"); }
+
+              private String toneName(String kind) {
                   try {
-                      String u = Store.getStr(this, "toneUri", "");
+                      String key = "g".equals(kind) ? "toneUriG" : "c".equals(kind) ? "ringUri" : "toneUri";
+                      String u = Store.getStr(this, key, "");
                       if (u.length() == 0) return "Default";
                       if (u.equals("silent")) return "Silent";
                       Ringtone r = RingtoneManager.getRingtone(this, Uri.parse(u));
@@ -539,6 +586,11 @@ jobs:
               public void onRequestPermissionsResult(int code, String[] perms, int[] res) {
                   super.onRequestPermissionsResult(code, perms, res);
                   if (code == REQ_NOTIF) { askFullScreen(); return; }
+                  if (code == REQ_CONTACTS) {
+                      final boolean ok = granted(Manifest.permission.READ_CONTACTS);
+                      if (web != null) web.evaluateJavascript("window.onContactsPerm&&window.onContactsPerm(" + ok + ")", null);
+                      return;
+                  }
                   if (code == REQ_PERM && pendingPerm != null) {
                       PermissionRequest r = pendingPerm;
                       pendingPerm = null;
@@ -637,7 +689,9 @@ jobs:
                   super.onActivityResult(code, res, data);
                   if (code == REQ_TONE && res == RESULT_OK && data != null) {
                       Uri u = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-                      Store.putStr(this, "toneUri", u == null ? "silent" : u.toString());
+                      String key = "g".equals(toneKind) ? "toneUriG" : "c".equals(toneKind) ? "ringUri" : "toneUri";
+                      Store.putStr(this, key, u == null ? "silent" : u.toString());
+                      Store.log(this, ("c".equals(toneKind) ? "Call ringtone" : "g".equals(toneKind) ? "Group tone" : "Message tone") + " changed to: " + toneName(toneKind));
                       Notifs.ensureChannels(this);
                       pokeTone();
                   }
@@ -652,7 +706,9 @@ jobs:
               private void startRing() {
                   stopRing();
                   try {
-                      Ringtone r = RingtoneManager.getRingtone(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE));
+                      Uri ru = Notifs.toneUri(this, "c");
+                      if (ru == null) return;
+                      Ringtone r = RingtoneManager.getRingtone(this, ru);
                       if (r == null) return;
                       if (Build.VERSION.SDK_INT >= 28) {
                           r.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
@@ -669,9 +725,9 @@ jobs:
                   ring = null;
               }
 
-              private void playNotif() {
+              private void playNotif(String kind) {
                   try {
-                      Uri tu = Notifs.toneUri(this);
+                      Uri tu = Notifs.toneUri(this, "g".equals(kind) ? "g" : "m");
                       if (tu == null) return;
                       Ringtone r = RingtoneManager.getRingtone(this, tu);
                       if (r == null) return;
@@ -701,22 +757,151 @@ jobs:
                       runOnUiThread(new Runnable() { @Override public void run() { stopRing(); } });
                   }
 
-                  @JavascriptInterface public void pickTone() {
+                  @JavascriptInterface public void pickTone() { pickToneFor("m"); }
+
+                  /** kind: m = message tone, g = group tone, c = call ringtone. Opens the phone's own sound list. */
+                  @JavascriptInterface public void pickToneFor(final String kind) {
                       runOnUiThread(new Runnable() { @Override public void run() {
                           try {
+                              toneKind = "g".equals(kind) ? "g" : "c".equals(kind) ? "c" : "m";
+                              boolean call = "c".equals(toneKind);
                               Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
-                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
-                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Notification tone");
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, call ? RingtoneManager.TYPE_RINGTONE : RingtoneManager.TYPE_NOTIFICATION);
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, call ? "Call ringtone" : "g".equals(toneKind) ? "Group notification tone" : "Message notification tone");
                               i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
                               i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true);
-                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_NOTIFICATION_URI);
-                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Notifs.toneUri(MainActivity.this));
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, call ? Settings.System.DEFAULT_RINGTONE_URI : Settings.System.DEFAULT_NOTIFICATION_URI);
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Notifs.toneUri(MainActivity.this, toneKind));
                               startActivityForResult(i, REQ_TONE);
                           } catch (Exception ignored) { }
                       } });
                   }
 
-                  @JavascriptInterface public String toneName() { return MainActivity.this.toneName(); }
+                  @JavascriptInterface public String toneName() { return MainActivity.this.toneName("m"); }
+
+                  @JavascriptInterface public String toneNameFor(String kind) { return MainActivity.this.toneName(kind); }
+
+                  /** The page hands over the person's notification settings (JSON) every time one changes. */
+                  @JavascriptInterface public void setPrefs(final String json) {
+                      Store.putStr(MainActivity.this, "prefs", json == null ? "{}" : json);
+                      runOnUiThread(new Runnable() { @Override public void run() { Notifs.ensureChannels(MainActivity.this); } });
+                  }
+
+                  /** Needed so the "Mark as read" button on a notification can tell the server. */
+                  @JavascriptInterface public void setSession(String token, String apiBase) {
+                      Store.putStr(MainActivity.this, "session", token == null ? "" : token);
+                      Store.putStr(MainActivity.this, "apiBase", apiBase == null ? "" : apiBase);
+                  }
+
+                  @JavascriptInterface public String logs() { return Store.logs(MainActivity.this); }
+
+                  @JavascriptInterface public void clearLogs() { Store.clearLogs(MainActivity.this); }
+
+                  /* ---------- the phone's contacts ---------- */
+
+                  @JavascriptInterface public boolean contactsGranted() {
+                      return granted(Manifest.permission.READ_CONTACTS) && granted(Manifest.permission.WRITE_CONTACTS);
+                  }
+
+                  @JavascriptInterface public void askContacts() {
+                      runOnUiThread(new Runnable() { @Override public void run() {
+                          requestPermissions(new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS}, REQ_CONTACTS);
+                      } });
+                  }
+
+                  /** [{n: name, p: number}, ...] from the phone's address book (needs the contacts permission). */
+                  @JavascriptInterface public String phoneContacts() {
+                      JSONArray a = new JSONArray();
+                      if (!granted(Manifest.permission.READ_CONTACTS)) return a.toString();
+                      Cursor cu = null;
+                      try {
+                          cu = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                  new String[]{ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME, ContactsContract.CommonDataKinds.Phone.NUMBER},
+                                  null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " COLLATE NOCASE ASC");
+                          HashSet<String> seen = new HashSet<>();
+                          while (cu != null && cu.moveToNext() && a.length() < 4000) {
+                              String nm = cu.getString(0), num = cu.getString(1);
+                              if (num == null) continue;
+                              String dig = num.replaceAll("[^0-9+]", "");
+                              if (dig.length() < 7) continue;
+                              if (!seen.add((nm == null ? "" : nm) + "|" + dig)) continue;
+                              JSONObject o = new JSONObject();
+                              o.put("n", nm == null ? "" : nm);
+                              o.put("p", dig);
+                              a.put(o);
+                          }
+                      } catch (Exception ignored) {
+                      } finally { if (cu != null) cu.close(); }
+                      return a.toString();
+                  }
+
+                  /** Saves a contact into the phone's address book. Returns "saved", "exists", or "screen" (the Contacts app was opened instead). */
+                  @JavascriptInterface public String saveContact(String first, String last, final String tel) {
+                      final String fn = first == null ? "" : first, ln = last == null ? "" : last;
+                      final String full = (fn + " " + ln).trim();
+                      if (granted(Manifest.permission.WRITE_CONTACTS) && granted(Manifest.permission.READ_CONTACTS)) {
+                          try {
+                              Cursor c = getContentResolver().query(Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(tel)),
+                                      new String[]{ContactsContract.PhoneLookup._ID}, null, null, null);
+                              boolean exists = c != null && c.moveToFirst();
+                              if (c != null) c.close();
+                              if (exists) return "exists";
+                              ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+                              ops.add(ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                                      .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
+                                      .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null).build());
+                              ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                                      .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                                      .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                                      .withValue(ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME, fn)
+                                      .withValue(ContactsContract.CommonDataKinds.StructuredName.FAMILY_NAME, ln).build());
+                              ops.add(ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)
+                                      .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                                      .withValue(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                                      .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER, tel)
+                                      .withValue(ContactsContract.CommonDataKinds.Phone.TYPE, ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build());
+                              getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
+                              return "saved";
+                          } catch (Exception e) { /* fall through: open the Contacts app instead */ }
+                      }
+                      runOnUiThread(new Runnable() { @Override public void run() {
+                          try {
+                              Intent i = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
+                              i.putExtra(ContactsContract.Intents.Insert.NAME, full);
+                              i.putExtra(ContactsContract.Intents.Insert.PHONE, tel);
+                              startActivity(i);
+                          } catch (Exception ignored) { }
+                      } });
+                      return "screen";
+                  }
+
+                  /** Writes a text file into the phone's Downloads/Zanply folder. Returns where it was saved, or "" on failure. */
+                  @JavascriptInterface public String saveTextFile(String name, String text) {
+                      try {
+                          String safe = (name == null ? "zanply" : name).replaceAll("[^A-Za-z0-9._ -]", "_");
+                          byte[] data = (text == null ? "" : text).getBytes("UTF-8");
+                          if (Build.VERSION.SDK_INT >= 29) {
+                              ContentValues v = new ContentValues();
+                              v.put(MediaStore.MediaColumns.DISPLAY_NAME, safe);
+                              v.put(MediaStore.MediaColumns.MIME_TYPE, "text/plain");
+                              v.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/Zanply");
+                              Uri u = getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
+                              if (u == null) return "";
+                              OutputStream os = getContentResolver().openOutputStream(u);
+                              if (os == null) return "";
+                              os.write(data);
+                              os.close();
+                              return "Downloads/Zanply/" + safe;
+                          }
+                          File dir = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+                          if (dir == null) return "";
+                          File f = new File(dir, safe);
+                          FileOutputStream fo = new FileOutputStream(f);
+                          fo.write(data);
+                          fo.close();
+                          return f.getAbsolutePath();
+                      } catch (Exception e) { return ""; }
+                  }
 
                   @JavascriptInterface public String channelId() { return Notifs.msgChannel(MainActivity.this); }
 
@@ -740,6 +925,16 @@ jobs:
                           o.put("android", Build.VERSION.SDK_INT);
                           o.put("lastPush", Store.getLong(MainActivity.this, "lastPush"));
                           o.put("lastType", Store.getStr(MainActivity.this, "lastType", ""));
+                          Notifs.ensureChannels(MainActivity.this);
+                          o.put("chans", Notifs.diagChannels(MainActivity.this));
+                          o.put("dnd", nm != null && nm.getCurrentInterruptionFilter() > NotificationManager.INTERRUPTION_FILTER_ALL);
+                          AudioManager am = getSystemService(AudioManager.class);
+                          if (am != null) {
+                              o.put("ringer", am.getRingerMode());
+                              o.put("notifVol", am.getStreamVolume(AudioManager.STREAM_NOTIFICATION));
+                              o.put("ringVol", am.getStreamVolume(AudioManager.STREAM_RING));
+                          }
+                          o.put("logs", new JSONArray(Store.logs(MainActivity.this)));
                           return o.toString();
                       } catch (Exception e) { return "{}"; }
                   }
@@ -760,7 +955,11 @@ jobs:
                   }
 
                   @JavascriptInterface public void notifSound() {
-                      runOnUiThread(new Runnable() { @Override public void run() { playNotif(); } });
+                      runOnUiThread(new Runnable() { @Override public void run() { playNotif("m"); } });
+                  }
+
+                  @JavascriptInterface public void notifSoundFor(final String kind) {
+                      runOnUiThread(new Runnable() { @Override public void run() { playNotif(kind); } });
                   }
               }
           }
@@ -769,89 +968,351 @@ jobs:
           cat > app/src/main/java/com/zanply/app/Notifs.java <<'ZEOF'
           package com.zanply.app;
 
+          import android.Manifest;
+          import android.app.AlarmManager;
           import android.app.Notification;
           import android.app.NotificationChannel;
           import android.app.NotificationManager;
           import android.app.PendingIntent;
+          import android.app.Person;
           import android.content.Context;
           import android.content.Intent;
+          import android.content.pm.PackageManager;
+          import android.graphics.Bitmap;
+          import android.graphics.BitmapFactory;
+          import android.graphics.Canvas;
+          import android.graphics.Color;
+          import android.graphics.Paint;
+          import android.graphics.PorterDuff;
+          import android.graphics.PorterDuffXfermode;
+          import android.graphics.Rect;
           import android.graphics.drawable.Icon;
-          import android.net.Uri;
           import android.media.AudioAttributes;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.PowerManager;
           import android.provider.Settings;
+          import android.service.notification.StatusBarNotification;
 
-          /** Builds the message and incoming-call notifications. The sounds are the phone's own default sounds. */
+          import org.json.JSONArray;
+          import org.json.JSONObject;
+
+          import java.io.InputStream;
+          import java.net.HttpURLConnection;
+          import java.net.URL;
+          import java.util.Arrays;
+          import java.util.HashSet;
+          import java.util.Set;
+
+          /**
+           * Builds the message and incoming-call notifications.
+           * Everything follows the settings the person chose in Zanply: tone (from the phone's own sounds), vibrate, light,
+           * popup, high priority, conversation tones and reaction notifications - separately for messages, groups and calls.
+           */
           final class Notifs {
-              static final String CH_CALLS = "calls_v1";
-              static final String CH_MSG = "messages_v1";
-              static final int CALL_ID = 4242;
+              static final int CALL_ID = 4242, REMIND_ID = 4343;
 
-              /** The messages channel. A channel's sound cannot change once created, so each chosen tone gets its own channel id. */
-          static String msgChannel(Context c) {
-              String u = Store.getStr(c, "toneUri", "");
-              return u.length() == 0 ? CH_MSG : "messages_t" + Integer.toHexString(u.hashCode());
-          }
+              /* ---------------- the person's settings ---------------- */
 
-          /** null = silent */
-          static Uri toneUri(Context c) {
-              String u = Store.getStr(c, "toneUri", "");
-              if (u.length() == 0) return Settings.System.DEFAULT_NOTIFICATION_URI;
-              if (u.equals("silent")) return null;
-              return Uri.parse(u);
-          }
+              static JSONObject prefs(Context c) {
+                  try { return new JSONObject(Store.getStr(c, "prefs", "{}")); } catch (Exception e) { return new JSONObject(); }
+              }
 
-          static void ensureChannels(Context c) {
+              static boolean screenOn(Context c) {
+                  try { PowerManager pm = c.getSystemService(PowerManager.class); return pm == null || pm.isInteractive(); } catch (Exception e) { return true; }
+              }
+
+              static long[] vibPattern(String v, boolean call) {
+                  if ("off".equals(v)) return null;
+                  if (call) {
+                      if ("short".equals(v)) return new long[]{0, 300, 400, 300, 400, 300};
+                      if ("long".equals(v)) return new long[]{0, 1200, 600, 1200, 600, 1200};
+                      return new long[]{0, 700, 500, 700, 500, 700, 500, 700};
+                  }
+                  if ("short".equals(v)) return new long[]{0, 120};
+                  if ("long".equals(v)) return new long[]{0, 550, 150, 550};
+                  return new long[]{0, 200, 100, 200};
+              }
+
+              static int lightColor(String l) {
+                  if ("green".equals(l)) return 0xFF00C853;
+                  if ("blue".equals(l)) return 0xFF2979FF;
+                  if ("red".equals(l)) return 0xFFFF1744;
+                  if ("yellow".equals(l)) return 0xFFFFEA00;
+                  if ("none".equals(l)) return 0;
+                  return 0xFFFFFFFF;
+              }
+
+              /** kind: "m" messages, "g" groups, "c" calls. null = silent */
+              static Uri toneUri(Context c, String kind) {
+                  String key = "g".equals(kind) ? "toneUriG" : "c".equals(kind) ? "ringUri" : "toneUri";
+                  String u = Store.getStr(c, key, "");
+                  if (u.length() == 0) return "c".equals(kind) ? Settings.System.DEFAULT_RINGTONE_URI : Settings.System.DEFAULT_NOTIFICATION_URI;
+                  if (u.equals("silent")) return null;
+                  return Uri.parse(u);
+              }
+
+              static Uri toneUri(Context c) { return toneUri(c, "m"); }
+
+              /** What the person asked for, as an Android notification channel. */
+              static final class Want {
+                  String id, name, kind;
+                  int imp, light;
+                  Uri sound;
+                  long[] vib;
+              }
+
+              static Want want(Context c, String kind, boolean screen) {
+                  JSONObject p = prefs(c);
+                  Want w = new Want();
+                  w.kind = kind;
+                  if ("c".equals(kind)) {
+                      w.imp = NotificationManager.IMPORTANCE_HIGH;
+                      w.sound = toneUri(c, "c");
+                      w.vib = vibPattern(p.optString("c_vib", "default"), true);
+                      w.light = 0;
+                      w.name = "Incoming calls";
+                  } else {
+                      String k = "g".equals(kind) ? "g" : "m";
+                      w.sound = p.optBoolean("tones", true) ? toneUri(c, k) : null;
+                      w.vib = vibPattern(p.optString(k + "_vib", "default"), false);
+                      w.light = lightColor(p.optString(k + "_light", "white"));
+                      boolean high = p.optBoolean(k + "_high", true);
+                      String pop = p.optString(k + "_pop", "always");
+                      boolean heads = high && !"off".equals(pop) && !("screenon".equals(pop) && !screen);
+                      w.imp = heads ? NotificationManager.IMPORTANCE_HIGH : NotificationManager.IMPORTANCE_DEFAULT;
+                      w.name = ("g".equals(k) ? "Group messages" : "Messages") + (heads ? "" : " (no popup)");
+                  }
+                  w.id = "z" + kind + "_" + Integer.toHexString((String.valueOf(w.sound) + "|" + Arrays.toString(w.vib) + "|" + w.light + "|" + w.imp).hashCode());
+                  return w;
+              }
+
+              /** Creates the channel if it does not exist yet. A channel's sound, vibration and importance cannot change once it exists,
+               *  so every different combination of settings gets its own channel id. */
+              static String channel(Context c, Want w) {
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm == null || nm.getNotificationChannel(w.id) != null) return w.id;
+                  NotificationChannel ch = new NotificationChannel(w.id, w.name, w.imp);
+                  ch.setDescription("c".equals(w.kind) ? "Rings with the ringtone you picked in Zanply" : "Uses the tone, vibration and light you set in Zanply");
+                  AudioAttributes aa = new AudioAttributes.Builder()
+                          .setUsage("c".equals(w.kind) ? AudioAttributes.USAGE_NOTIFICATION_RINGTONE : AudioAttributes.USAGE_NOTIFICATION)
+                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build();
+                  if (w.sound == null) ch.setSound(null, null); else ch.setSound(w.sound, aa);
+                  if (w.vib != null) { ch.enableVibration(true); ch.setVibrationPattern(w.vib); } else ch.enableVibration(false);
+                  if (w.light != 0) { ch.enableLights(true); ch.setLightColor(w.light); } else ch.enableLights(false);
+                  ch.setLockscreenVisibility("c".equals(w.kind) ? Notification.VISIBILITY_PUBLIC : Notification.VISIBILITY_PRIVATE);
+                  nm.createNotificationChannel(ch);
+                  return w.id;
+              }
+
+              /** The id of the messages channel for the current settings (the web page sends it to the server). */
+              static String msgChannel(Context c) { return want(c, "m", screenOn(c)).id; }
+
+              static void ensureChannels(Context c) {
                   NotificationManager nm = c.getSystemService(NotificationManager.class);
                   if (nm == null) return;
-
-                  NotificationChannel calls = new NotificationChannel(CH_CALLS, "Incoming calls", NotificationManager.IMPORTANCE_HIGH);
-                  calls.setDescription("Rings with your phone's ringtone");
-                  calls.setSound(Settings.System.DEFAULT_RINGTONE_URI, new AudioAttributes.Builder()
-                          .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
-                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
-                  calls.enableVibration(true);
-                  calls.setVibrationPattern(new long[]{0, 700, 500, 700, 500, 700, 500, 700});
-                  calls.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-                  nm.createNotificationChannel(calls);
-
-                  NotificationChannel msg = new NotificationChannel(msgChannel(c), "Messages", NotificationManager.IMPORTANCE_HIGH);
-                  msg.setDescription("Uses your phone's notification sound");
-                  msg.setSound(toneUri(c), new AudioAttributes.Builder()
-                          .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                          .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
-                  msg.enableVibration(true);
-                  msg.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-                  nm.createNotificationChannel(msg);
-                  try { // remove channels of tones that are no longer chosen
+                  boolean s = screenOn(c);
+                  Set<String> keep = new HashSet<>();
+                  keep.add(channel(c, want(c, "m", s)));
+                  keep.add(channel(c, want(c, "g", s)));
+                  keep.add(channel(c, want(c, "c", true)));
+                  keep.add(want(c, "m", true).id); keep.add(want(c, "m", false).id);
+                  keep.add(want(c, "g", true).id); keep.add(want(c, "g", false).id);
+                  try { // remove channels of settings that are no longer chosen (and the old fixed ones)
                       for (NotificationChannel x : nm.getNotificationChannels()) {
-                          if (x.getId().startsWith("messages_t") && !x.getId().equals(msgChannel(c))) nm.deleteNotificationChannel(x.getId());
+                          String id = x.getId();
+                          boolean ours = id.startsWith("zm_") || id.startsWith("zg_") || id.startsWith("zc_") || id.startsWith("messages_") || id.equals("calls_v1");
+                          if (ours && !keep.contains(id)) nm.deleteNotificationChannel(id);
                       }
-                      if (!msgChannel(c).equals(CH_MSG)) nm.deleteNotificationChannel(CH_MSG);
                   } catch (Exception ignored) { }
               }
 
-              static void showMessage(Context c, String from, String title, String body) {
-                  ensureChannels(c);
-                  Intent open = new Intent(c, MainActivity.class)
-                          .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                          .putExtra("chat", from == null ? "" : from);
-                  int id = from == null ? 1 : from.hashCode();
-                  PendingIntent pi = PendingIntent.getActivity(c, id, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-                  Notification n = new Notification.Builder(c, msgChannel(c))
+              static String describe(Want w) {
+                  return "popup " + (w.imp >= NotificationManager.IMPORTANCE_HIGH ? "on" : "off") + ", tone " + (w.sound == null ? "off" : "on")
+                          + ", vibrate " + (w.vib == null ? "off" : "on") + ", light " + (w.light == 0 ? "off" : "on");
+              }
+
+              /** For the "Check notifications" screen: what Zanply asked for next to what the phone really has. */
+              static JSONObject diagChannels(Context c) {
+                  JSONObject out = new JSONObject();
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  for (String k : new String[]{"m", "g", "c"}) {
+                      try {
+                          Want w = want(c, k, screenOn(c));
+                          JSONObject a = new JSONObject();
+                          a.put("imp", w.imp); a.put("sound", w.sound != null); a.put("vib", w.vib != null); a.put("light", w.light != 0);
+                          NotificationChannel ch = nm == null ? null : nm.getNotificationChannel(w.id);
+                          JSONObject g = new JSONObject();
+                          g.put("exists", ch != null);
+                          if (ch != null) { g.put("imp", ch.getImportance()); g.put("sound", ch.getSound() != null); g.put("vib", ch.shouldVibrate()); g.put("light", ch.shouldShowLights()); }
+                          JSONObject o = new JSONObject();
+                          o.put("want", a); o.put("got", g);
+                          out.put(k, o);
+                      } catch (Exception ignored) { }
+                  }
+                  return out;
+              }
+
+              /* ---------------- the round picture (profile photo, or a coloured letter) ---------------- */
+
+              static Bitmap avatar(String name, String photo) {
+                  int sz = 192;
+                  Bitmap src = null;
+                  if (photo != null && photo.startsWith("https://")) {
+                      try {
+                          HttpURLConnection h = (HttpURLConnection) new URL(photo).openConnection();
+                          h.setConnectTimeout(4000);
+                          h.setReadTimeout(4000);
+                          InputStream in = h.getInputStream();
+                          src = BitmapFactory.decodeStream(in);
+                          in.close();
+                          h.disconnect();
+                      } catch (Exception e) { src = null; }
+                  }
+                  Bitmap out = Bitmap.createBitmap(sz, sz, Bitmap.Config.ARGB_8888);
+                  Canvas cv = new Canvas(out);
+                  Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
+                  if (src != null) {
+                      int w = src.getWidth(), h = src.getHeight(), s = Math.min(w, h);
+                      Rect from = new Rect((w - s) / 2, (h - s) / 2, (w - s) / 2 + s, (h - s) / 2 + s);
+                      cv.drawCircle(sz / 2f, sz / 2f, sz / 2f, p);
+                      p.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+                      cv.drawBitmap(src, from, new Rect(0, 0, sz, sz), p);
+                      p.setXfermode(null);
+                  } else {
+                      int[] cols = {0xFF1F8F5F, 0xFF3B82F6, 0xFF8B5CF6, 0xFFEF4444, 0xFFF59E0B, 0xFF0EA5A5, 0xFFD946EF};
+                      String n = name == null ? "" : name.replaceFirst("^[+\\s]+", "");
+                      if (n.length() == 0) n = "?";
+                      p.setColor(cols[Math.abs(n.hashCode()) % cols.length]);
+                      cv.drawCircle(sz / 2f, sz / 2f, sz / 2f, p);
+                      p.setColor(Color.WHITE);
+                      p.setTextAlign(Paint.Align.CENTER);
+                      p.setTextSize(sz * 0.46f);
+                      String letter = n.substring(0, n.offsetByCodePoints(0, 1)).toUpperCase();
+                      cv.drawText(letter, sz / 2f, sz / 2f - (p.descent() + p.ascent()) / 2f, p);
+                  }
+                  return out;
+              }
+
+              /* ---------------- messages ---------------- */
+
+              static void showMessage(Context c, String from, String title, String body, String photo, boolean group, boolean react) {
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm == null) return;
+                  String who = (title == null || title.length() == 0) ? "Zanply" : title;
+                  String f = from == null ? "" : from;
+                  JSONObject p = prefs(c);
+                  String k = group ? "g" : "m";
+
+                  if (!nm.areNotificationsEnabled()) { Store.log(c, "NOT SHOWN (" + who + "): notifications are switched OFF for Zanply in the phone settings."); return; }
+                  if (Build.VERSION.SDK_INT >= 33 && c.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                      Store.log(c, "NOT SHOWN (" + who + "): Zanply has no permission to show notifications.");
+                      return;
+                  }
+                  if (react && !p.optBoolean(k + "_react", true)) { Store.log(c, "Not shown: reaction from " + who + " - Reaction notifications are OFF in Zanply."); return; }
+                  if (Store.getLong(c, "mute:" + f) > System.currentTimeMillis()) { Store.log(c, "Not shown: " + who + " is muted."); return; }
+
+                  Want w = want(c, k, screenOn(c));
+                  String ch = channel(c, w);
+                  try {
+                      NotificationChannel live = nm.getNotificationChannel(ch);
+                      if (live != null && live.getImportance() == NotificationManager.IMPORTANCE_NONE) {
+                          Store.log(c, "NOT SHOWN (" + who + "): this notification type is turned OFF in the phone settings (Zanply > Notifications).");
+                          return;
+                      }
+                  } catch (Exception ignored) { }
+
+                  Bitmap av = avatar(who, photo);
+                  int id = f.hashCode();
+                  JSONArray hist = Store.histAdd(c, f, body, System.currentTimeMillis());
+
+                  Intent open = new Intent(c, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("chat", f);
+                  int fl = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+                  PendingIntent pi = PendingIntent.getActivity(c, id, open, fl);
+                  PendingIntent replyPi = PendingIntent.getActivity(c, id + 1, new Intent(open), fl);
+                  PendingIntent readPi = PendingIntent.getBroadcast(c, id + 2, new Intent(c, CallReceiver.class).setAction(CallReceiver.ACTION_READ).putExtra("from", f).putExtra("nid", id), fl);
+                  PendingIntent mutePi = PendingIntent.getBroadcast(c, id + 3, new Intent(c, CallReceiver.class).setAction(CallReceiver.ACTION_MUTE).putExtra("from", f).putExtra("nid", id).putExtra("who", who), fl);
+                  Icon ai = Icon.createWithResource(c, R.drawable.ic_stat);
+
+                  Notification.Builder b = new Notification.Builder(c, ch)
                           .setSmallIcon(R.drawable.ic_stat)
-                          .setContentTitle(title)
+                          .setLargeIcon(av)
+                          .setColor(0xFF1F8F5F)
+                          .setContentTitle(who)
                           .setContentText(body)
-                          .setStyle(new Notification.BigTextStyle().bigText(body))
+                          .setWhen(System.currentTimeMillis())
+                          .setShowWhen(true)
                           .setCategory(Notification.CATEGORY_MESSAGE)
                           .setAutoCancel(true)
                           .setContentIntent(pi)
-                          .build();
-                  NotificationManager nm = c.getSystemService(NotificationManager.class);
-                  if (nm != null) nm.notify(id, n);
+                          .addAction(new Notification.Action.Builder(ai, "Reply", replyPi).build())
+                          .addAction(new Notification.Action.Builder(ai, "Mark as read", readPi).build())
+                          .addAction(new Notification.Action.Builder(ai, "Mute", mutePi).build());
+                  if (Build.VERSION.SDK_INT >= 28) {
+                      try {
+                          Person me = new Person.Builder().setName("You").build();
+                          Person them = new Person.Builder().setName(who).setIcon(Icon.createWithBitmap(av)).build();
+                          Notification.MessagingStyle ms = new Notification.MessagingStyle(me);
+                          if (group) { ms.setConversationTitle(who); ms.setGroupConversation(true); }
+                          for (int i = 0; i < hist.length(); i++) {
+                              JSONObject o = hist.getJSONObject(i);
+                              ms.addMessage(o.optString("x"), o.optLong("t"), them);
+                          }
+                          b.setStyle(ms);
+                      } catch (Exception e) { b.setStyle(new Notification.BigTextStyle().bigText(body)); }
+                  } else {
+                      b.setStyle(new Notification.BigTextStyle().bigText(body));
+                  }
+                  nm.notify(id, b.build());
+                  Store.log(c, "Shown: " + who + " (" + describe(w) + ")" + (w.sound == null ? " - no tone because " + (p.optBoolean("tones", true) ? "the tone is set to Silent" : "Conversation tones is OFF") : ""));
+                  if (p.optBoolean("reminders", true)) scheduleRemind(c);
               }
 
+              /* ---------------- reminders (a second nudge about messages that are still unread) ---------------- */
+
+              private static PendingIntent remindPi(Context c) {
+                  return PendingIntent.getBroadcast(c, 77, new Intent(c, CallReceiver.class).setAction(CallReceiver.ACTION_REMIND),
+                          PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+              }
+
+              static void scheduleRemind(Context c) {
+                  try {
+                      AlarmManager am = c.getSystemService(AlarmManager.class);
+                      if (am != null) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 30L * 60L * 1000L, remindPi(c));
+                  } catch (Exception ignored) { }
+              }
+
+              static void cancelRemind(Context c) {
+                  try { AlarmManager am = c.getSystemService(AlarmManager.class); if (am != null) am.cancel(remindPi(c)); } catch (Exception ignored) { }
+              }
+
+              static void remind(Context c) {
+                  try {
+                      if (!prefs(c).optBoolean("reminders", true)) { Store.log(c, "Reminder skipped: Reminders are OFF in Zanply."); return; }
+                      NotificationManager nm = c.getSystemService(NotificationManager.class);
+                      if (nm == null) return;
+                      int n = 0;
+                      for (StatusBarNotification s : nm.getActiveNotifications()) if (s.getId() != CALL_ID && s.getId() != REMIND_ID) n++;
+                      if (n == 0) return;
+                      String ch = channel(c, want(c, "m", screenOn(c)));
+                      PendingIntent pi = PendingIntent.getActivity(c, 78, new Intent(c, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                              PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                      Notification nn = new Notification.Builder(c, ch).setSmallIcon(R.drawable.ic_stat).setColor(0xFF1F8F5F)
+                              .setContentTitle("Zanply").setContentText("You have " + n + " unread " + (n == 1 ? "chat" : "chats"))
+                              .setAutoCancel(true).setContentIntent(pi).build();
+                      nm.notify(REMIND_ID, nn);
+                      Store.log(c, "Reminder shown (" + n + " unread).");
+                  } catch (Exception ignored) { }
+              }
+
+              /* ---------------- calls ---------------- */
+
               static void showCall(Context c, String from, String name, String callBody, boolean video) {
-                  ensureChannels(c);
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm == null) return;
+                  if (!nm.areNotificationsEnabled()) { Store.log(c, "NOT SHOWN (call from " + name + "): notifications are switched OFF for Zanply in the phone settings."); return; }
+                  Want w = want(c, "c", true);
+                  String ch = channel(c, w);
                   String text = video ? "Incoming video call" : "Incoming voice call";
 
                   Intent screen = new Intent(c, CallActivity.class)
@@ -868,7 +1329,7 @@ jobs:
                   PendingIntent declinePi = PendingIntent.getBroadcast(c, 13, decline, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
                   Icon icon = Icon.createWithResource(c, R.drawable.ic_stat);
-                  Notification n = new Notification.Builder(c, CH_CALLS)
+                  Notification n = new Notification.Builder(c, ch)
                           .setSmallIcon(R.drawable.ic_stat)
                           .setContentTitle(name)
                           .setContentText(text)
@@ -882,8 +1343,8 @@ jobs:
                           .addAction(new Notification.Action.Builder(icon, "Answer", answerPi).build())
                           .build();
                   n.flags |= Notification.FLAG_INSISTENT; // keep ringing until answered, declined or timed out
-                  NotificationManager nm = c.getSystemService(NotificationManager.class);
-                  if (nm != null) nm.notify(CALL_ID, n);
+                  nm.notify(CALL_ID, n);
+                  Store.log(c, "Incoming " + (video ? "video" : "voice") + " call from " + name + " shown (" + describe(w) + ")");
               }
 
               static void cancelCall(Context c) {
@@ -894,6 +1355,33 @@ jobs:
               static void cancelAll(Context c) {
                   NotificationManager nm = c.getSystemService(NotificationManager.class);
                   if (nm != null) nm.cancelAll();
+                  Store.histClear(c);
+                  cancelRemind(c);
+              }
+
+              /** "Mark as read": tells the server the chat was read (so the other person gets blue ticks). Runs on a background thread. */
+              static void markReadOnServer(Context c, String from) {
+                  try {
+                      String tok = Store.getStr(c, "session", ""), base = Store.getStr(c, "apiBase", "");
+                      if (tok.length() == 0 || base.length() == 0 || from == null || from.startsWith("g:") || from.length() == 0) return;
+                      JSONObject o = new JSONObject();
+                      o.put("action", "history");
+                      o.put("token", tok);
+                      o.put("with", from);
+                      o.put("after", 2147483647);
+                      HttpURLConnection h = (HttpURLConnection) new URL(base + "/chat").openConnection();
+                      h.setRequestMethod("POST");
+                      h.setRequestProperty("Content-Type", "application/json");
+                      h.setConnectTimeout(6000);
+                      h.setReadTimeout(6000);
+                      h.setDoOutput(true);
+                      h.getOutputStream().write(o.toString().getBytes("UTF-8"));
+                      int code = h.getResponseCode();
+                      h.disconnect();
+                      Store.log(c, code == 200 ? "Marked as read on the server." : "Mark as read failed (server said " + code + ").");
+                  } catch (Exception e) {
+                      Store.log(c, "Mark as read failed: " + e.getMessage());
+                  }
               }
           }
           ZEOF
@@ -905,6 +1393,7 @@ jobs:
           import android.content.SharedPreferences;
 
           import org.json.JSONArray;
+          import org.json.JSONObject;
 
           import java.util.ArrayList;
           import java.util.List;
@@ -941,15 +1430,65 @@ jobs:
 
               static String getStr(Context c, String k, String d) { return p(c).getString(k, d); }
 
-          static void putStr(Context c, String k, String v) { p(c).edit().putString(k, v).apply(); }
+              static void putStr(Context c, String k, String v) { p(c).edit().putString(k, v).apply(); }
 
-          static long getLong(Context c, String k) { return p(c).getLong(k, 0L); }
+              static long getLong(Context c, String k) { return p(c).getLong(k, 0L); }
 
-          static void putLong(Context c, String k, long v) { p(c).edit().putLong(k, v).apply(); }
+              static void putLong(Context c, String k, long v) { p(c).edit().putLong(k, v).apply(); }
 
-          static boolean flag(Context c, String k) { return p(c).getBoolean(k, false); }
+              static boolean flag(Context c, String k) { return p(c).getBoolean(k, false); }
 
               static void setFlag(Context c, String k) { p(c).edit().putBoolean(k, true).apply(); }
+
+              /* ---------- activity log (shown in "Check notifications") ---------- */
+
+              static synchronized void log(Context c, String msg) {
+                  try {
+                      JSONArray a = new JSONArray(p(c).getString("nlog", "[]"));
+                      JSONObject o = new JSONObject();
+                      o.put("t", System.currentTimeMillis());
+                      o.put("m", msg);
+                      a.put(o);
+                      JSONArray b = new JSONArray();
+                      for (int i = Math.max(0, a.length() - 60); i < a.length(); i++) b.put(a.get(i));
+                      p(c).edit().putString("nlog", b.toString()).apply();
+                  } catch (Exception ignored) { }
+              }
+
+              static synchronized String logs(Context c) { return p(c).getString("nlog", "[]"); }
+
+              static synchronized void clearLogs(Context c) { p(c).edit().putString("nlog", "[]").apply(); }
+
+              /* ---------- the last few unread messages of each chat (so a notification can list them) ---------- */
+
+              static synchronized JSONArray histAdd(Context c, String from, String text, long t) {
+                  try {
+                      JSONObject all = new JSONObject(p(c).getString("hist", "{}"));
+                      JSONArray a = all.optJSONArray(from);
+                      if (a == null) a = new JSONArray();
+                      JSONObject o = new JSONObject();
+                      o.put("x", text);
+                      o.put("t", t);
+                      a.put(o);
+                      JSONArray b = new JSONArray();
+                      for (int i = Math.max(0, a.length() - 6); i < a.length(); i++) b.put(a.get(i));
+                      all.put(from, b);
+                      p(c).edit().putString("hist", all.toString()).apply();
+                      return b;
+                  } catch (Exception e) {
+                      return new JSONArray();
+                  }
+              }
+
+              static synchronized void histDrop(Context c, String from) {
+                  try {
+                      JSONObject all = new JSONObject(p(c).getString("hist", "{}"));
+                      all.remove(from);
+                      p(c).edit().putString("hist", all.toString()).apply();
+                  } catch (Exception ignored) { }
+              }
+
+              static synchronized void histClear(Context c) { p(c).edit().putString("hist", "{}").apply(); }
           }
           ZEOF
           mkdir -p app/src/main/res/drawable
