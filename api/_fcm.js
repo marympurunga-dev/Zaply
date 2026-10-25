@@ -39,17 +39,9 @@ async function sendFcm(rows, data, opts) {
   try { at = await accessToken(); } catch (e) { console.error(e.message); if (errs) errs.push(e.message); return []; }
   const flat = {};
   Object.keys(data).forEach((k) => { flat[k] = String(data[k] == null ? '' : data[k]); });
-  // Normal messages also carry a "notification" block, so Android itself shows the notification even when the app is
-  // closed (no app code needed). Calls stay data-only so the native incoming-call screen still works.
-  const visible = (flat.type === 'msg' || !flat.type) && !!flat.title;
-  const build = (row) => {
-    const m = { token: row.token, data: flat, android: { priority: 'HIGH', ttl: o.ttl || '86400s' } };
-    if (visible) {
-      m.notification = { title: flat.title, body: flat.body || 'New message' };
-      m.android.notification = { channel_id: row.chan || 'messages_v1' }; // the phone's channel decides the sound (the person can pick it in the app)
-    }
-    return m;
-  };
+  // Everything is sent as data-only. The Zanply app itself builds the notification (name, photo, message, Reply / Mark as read /
+  // Mute buttons) and applies the person's own notification settings (tone, vibrate, light, popup, high priority).
+  const build = (row) => ({ token: row.token, data: flat, android: { priority: 'HIGH', ttl: o.ttl || '86400s' } });
   await Promise.allSettled(rows.map(async (row) => {
     try {
       const r = await fetch('https://fcm.googleapis.com/v1/projects/' + conf().project_id + '/messages:send', {

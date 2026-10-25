@@ -248,6 +248,19 @@ async function fcmPush(rows, data, opts) {
   const dead = await sendFcm(rows, data, opts);
   if (dead.length) await db().query('DELETE FROM fcm_tokens WHERE id IN (' + dead.map(() => '?').join(',') + ')', dead);
 }
+async function senderPhoto(from, to) {
+  try {
+    const [r] = await db().query("SELECT photo_url, privacy FROM profiles WHERE phone = ? AND photo_url <> ''", [from]);
+    if (!r.length || !/^https:\/\//.test(r[0].photo_url)) return '';
+    const pv = parsePv(r[0].privacy);
+    if (pv.photo === 'nobody') return '';
+    if (pv.photo === 'contacts') {
+      const [sv] = await db().query('SELECT 1 FROM saved_contacts WHERE owner = ? AND phone = ? LIMIT 1', [from, to]);
+      if (!sv.length) return '';
+    }
+    return r[0].photo_url;
+  } catch (e) { return ''; }
+}
 async function notifyGroup(from, g, groupName, text) {
   try {
     const u = await findUser(from);
@@ -278,7 +291,7 @@ async function notify(from, to, text) {
       if (isCall) {
         let video = '0'; try { video = JSON.parse(String(text).slice(8)).v ? '1' : '0'; } catch (e) {}
         await fcmPush(rows, { type: 'call', title: name, body: 'Incoming call', sender: from, name, video, call: String(text) }, { ttl: '45s' });
-      } else await fcmPush(rows, { type: 'msg', title: name, body: preview(text), sender: from });
+      } else await fcmPush(rows, { type: 'msg', title: name, body: preview(text), sender: from, photo: await senderPhoto(from, to) });
     }
   } catch (e) { console.error(e); }
 }
