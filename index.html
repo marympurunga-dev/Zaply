@@ -1105,8 +1105,8 @@
       try { localStorage.setItem(AUTH_KEY, JSON.stringify(d)); } catch (e) {}
     }
     function clearAuthStep() { try { localStorage.removeItem(AUTH_KEY); } catch (e) {} }
-    function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} clearAuthStep(); }
-    function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} clearAuthStep(); }
+    function setToken(t) { try { localStorage.setItem(TOKEN_KEY, t); } catch (e) {} clearAuthStep(); try { pushSession(); } catch (e) {} }
+    function clearToken() { try { localStorage.removeItem(TOKEN_KEY); } catch (e) {} clearAuthStep(); try { pushSession(); } catch (e) {} }
 
     /* Demo mode: no SMS provider yet, so the code is fixed and sign-in is kept on this device.
        Set DEMO to false when a real SMS provider is connected. */
@@ -2583,9 +2583,73 @@ ZW|Zimbabwe|263`;
         zswitchRow(b, 'Keep chats archived', 'Archived chats will remain archived when you receive a new message', s.keepArch, function (v) { setChatSet('keepArch', v); });
         zrow2(b, 'archive', 'Archived chats', 'Press and hold a chat in your list to archive it', openArchived);
         b.appendChild(mk('div', 'zsep'));
-        zrows(b, [['storage', 'Chat backup', soon('Chat backup')], ['device', 'Transfer chats', soon('Transfer chats')], ['chat', 'Chat history', soon('Chat history')]]);
+        zrows(b, [['storage', 'Chat backup', soon('Chat backup')], ['device', 'Transfer chats', soon('Transfer chats')], ['chat', 'Chat history', openChatHistory]]);
       });
     }
+    /* ---------- Chat history: every chat, with a readable copy you can keep on the phone ---------- */
+    function bodyText(c, m) {
+      var b = typeof m.body === 'string' ? m.body : '';
+      if (b.indexOf('__call__') === 0) return Promise.resolve('[Call]');
+      if (b.indexOf('__media__') === 0) return Promise.resolve('[Photo, video or file]');
+      if (b.indexOf('__loc__') === 0) return Promise.resolve('[Location]');
+      if (b.indexOf('__game__') === 0) return Promise.resolve('[Game]');
+      return E2E.decrypt(c.phone, b).catch(function () { return '[could not be read]'; });
+    }
+    function allMessagesOf(c) {
+      var out = [], after = 0;
+      return new Promise(function (res, rej) {
+        (function next() {
+          chatCall('history', { with: c.phone, after: after }).then(function (r) {
+            var ms = r.messages || []; ms.forEach(function (m) { out.push(m); if (m.id > after) after = m.id; });
+            if (ms.length < 200) res(out); else next();
+          }).catch(rej);
+        })();
+      });
+    }
+    function chatToText(c) {
+      var title = c.name || c.phone;
+      return allMessagesOf(c).then(function (ms) {
+        return Promise.all(ms.map(function (m) { return bodyText(c, m); })).then(function (tx) {
+          var lines = ['Zanply chat with ' + title, ''];
+          ms.forEach(function (m, i) {
+            var d = new Date(m.at), p2 = function (n) { return ('0' + n).slice(-2); };
+            var when = d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
+            lines.push('[' + when + '] ' + (m.mine ? 'Me' : (c.group && m.from ? m.from : title)) + ': ' + tx[i]);
+          });
+          return { text: lines.join('\n'), count: ms.length };
+        });
+      });
+    }
+    function openChatHistory() {
+      zOpenPage('Chat history', function (b) {
+        var N = window.ZanplyNative, can = !!(N && N.saveTextFile);
+        var chats = (allChats || []).filter(function (c) { return c && c.phone; });
+        b.appendChild(mk('div', 'zfoot', 'Your messages are end-to-end encrypted, so only this phone can read them. ' + (can ? 'Tap a chat to save a readable copy on this phone (Downloads \u203a Zanply).' : 'Tap a chat to open it.')));
+        if (!chats.length) { zempty(b, 'You have no chats yet.'); return; }
+        var busy = false;
+        function save(list, fname, label) {
+          if (busy) return toast('Please wait, still saving\u2026'); busy = true; toast('Saving ' + label + '\u2026');
+          var parts = [], i = 0, total = 0;
+          (function next() {
+            if (i >= list.length) {
+              busy = false; var where = ''; try { where = N.saveTextFile(fname, parts.join('\n\n----------------------------------------\n\n')); } catch (e) {}
+              return where ? toast('Saved ' + total + ' messages to ' + where, true, 7000) : toast('Could not save the file on this phone');
+            }
+            chatToText(list[i++]).then(function (r) { parts.push(r.text); total += r.count; next(); }).catch(function (e) { busy = false; toast(e && e.offline ? 'No internet connection. Try again.' : 'Could not read that chat. Try again.'); });
+          })();
+        }
+        if (can) zrow2(b, 'storage', 'Save all chats on this phone', chats.length + (chats.length === 1 ? ' chat' : ' chats'), function () { save(chats, 'Zanply all chats.txt', 'all chats'); });
+        b.appendChild(mk('div', 'zsep'));
+        chats.forEach(function (c) {
+          var when = c.at ? new Date(c.at).toLocaleString() : '';
+          zrow2(b, c.group ? 'person' : 'chat', c.name || c.phone, when, function () {
+            if (can) save([c], 'Zanply chat - ' + (c.name || c.phone) + '.txt', c.name || c.phone);
+            else { closeOv(); setTimeout(function () { openChatWith(c.phone); }, 80); }
+          });
+        });
+      });
+    }
+
     /* ---------- Appearance + chat theme ---------- */
     var THEMES = [{ id: 'default', n: 'Default', bg: '', mine: '#005c4b', txt: '#fff' }, { id: 'midnight', n: 'Midnight', bg: 'linear-gradient(160deg,#0b1020,#1b2a4a)', mine: '#3b82f6', txt: '#fff' },
       { id: 'forest', n: 'Forest', bg: 'linear-gradient(160deg,#0f2a1d,#1d4d34)', mine: '#21c063', txt: '#06140c' }, { id: 'charcoal', n: 'Charcoal', bg: '#111418', mine: '#21c063', txt: '#06140c' },
@@ -2916,16 +2980,23 @@ ZW|Zimbabwe|263`;
       var s = '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480" fill="none" stroke="' + c + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + DOODLE_BODY + '</svg>';
       return DOODLE_CACHE[k] = 'data:image/svg+xml;utf8,' + encodeURIComponent(s);
     }
+    /* The wallpaper everyone gets until they choose their own. Upload the picture to the "wallpapers" folder on GitHub with this name.
+       In dark mode the same picture is turned dark automatically. */
+    var DEFAULT_WALL = '/wallpapers/default.jpg', DEF_WALL_OK = false;
+    try { var dwi = new Image(); dwi.onload = function () { DEF_WALL_OK = true; try { applyTheme(); } catch (e) {} }; dwi.src = DEFAULT_WALL; } catch (e) {}
     function defaultChatBg() {
       var d = isDarkNow();
+      if (DEF_WALL_OK) { window.__defBlend = d ? 'difference' : 'normal'; return 'url("' + DEFAULT_WALL + '") center/cover no-repeat ' + (d ? '#f2f6fb' : '#eceff1'); }
+      window.__defBlend = '';
       return 'url("' + doodleTile(d) + '") 0 0/480px 480px repeat,' + (d ? 'linear-gradient(170deg,#0e1b29,#0b1621 50%,#0f2031)' : 'linear-gradient(160deg,#dbe7f3,#eef3f8 55%,#d6e2ee)');
     }
     function applyTheme() {
       applyAccent(); applyIcon();
       var t = curTheme(), r = document.documentElement.style; r.setProperty('--thmine', t.mine); r.setProperty('--thtxt', t.txt); var bc = lsGet('zaply_bubble', null); if (bc && bc.c) { r.setProperty('--thmine', bc.c); r.setProperty('--thtxt', bc.t); }
       var m = $('msgs'); if (!m) return; var w = lsGet('zaply_wall', null), bg = '';
-      if (w && w.css) bg = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; else if (t.bg) bg = t.bg; else bg = defaultChatBg();
-      m.style.background = bg;
+      var usedDef = false;
+      if (w && w.css) bg = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; else if (t.bg) bg = t.bg; else { bg = defaultChatBg(); usedDef = true; }
+      m.style.background = bg; m.style.backgroundBlendMode = (usedDef && window.__defBlend) ? window.__defBlend : '';
     }
     function setWall(w) { if (w) { if (!lsSet('zaply_wall', w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_wall'); } catch (e) {} } applyTheme(); return true; }
     function openWallpaper() {
@@ -3185,7 +3256,9 @@ ZW|Zimbabwe|263`;
       var d = { tones: true, reminders: true, m_tone: 'brightline', m_vib: 'default', m_high: true, m_react: true, g_tone: 'brightline', g_vib: 'default', g_high: true, g_react: true, c_ring: 'brightline', c_vib: 'default', s_tone: 'brightline', s_vib: 'default', s_high: true, s_react: true, badge: true };
       var s = lsGet('zaply_notif', {}); for (var k in s) d[k] = s[k]; return d;
     }
-    function nsave(k, v) { var s = nset(); s[k] = v; lsSet('zaply_notif', s); syncSWPrefs(); if (k === 'badge') { try { updateCounts(); } catch (e) {} } }
+    function pushPrefs() { try { if (window.ZanplyNative && ZanplyNative.setPrefs) ZanplyNative.setPrefs(JSON.stringify(nset())); } catch (e) {} }
+    function pushSession() { try { if (window.ZanplyNative && ZanplyNative.setSession) ZanplyNative.setSession(getToken() || '', (typeof APIS !== 'undefined' && APIS[0]) || ''); } catch (e) {} }
+    function nsave(k, v) { var s = nset(); s[k] = v; lsSet('zaply_notif', s); syncSWPrefs(); pushPrefs(); if (k === 'badge') { try { updateCounts(); } catch (e) {} } }
     function syncSWPrefs() {
       try {
         var n = nset(), o = { vib: VIB_PAT[n.m_vib] || VIB_PAT['default'], silent: false, popup: n.m_pop || 'always' };
@@ -3216,7 +3289,7 @@ ZW|Zimbabwe|263`;
     function buzz(kind) { try { if (navigator.vibrate) navigator.vibrate(VIB_PAT[kind] || VIB_PAT['default']); } catch (e) {} }
     function incomingFx(group) {
       var n = nset(); if (document.hidden) return;
-      if (window.ZanplyNative) { try { if (n.tones) ZanplyNative.notifSound(); } catch (e) {} buzz(group ? n.g_vib : n.m_vib); return; }
+      if (window.ZanplyNative) { try { if (n.tones) { if (ZanplyNative.notifSoundFor) ZanplyNative.notifSoundFor(group ? 'g' : 'm'); else ZanplyNative.notifSound(); } } catch (e) {} buzz(group ? n.g_vib : n.m_vib); return; }
       if (n.tones) playTone(group ? n.g_tone : n.m_tone);
       buzz(group ? n.g_vib : n.m_vib);
     }
@@ -3240,7 +3313,8 @@ ZW|Zimbabwe|263`;
         function sw(title, desc, key) { zswitchRow(b, title, desc, !!nset()[key], function (v) { nsave(key, v); }); }
         function tone(title, key, opts) {
           if (window.ZanplyNative) {
-            if (key === 'm_tone' && ZanplyNative.pickTone) zoptRow(b, 'Notification tone', function () { try { return ZanplyNative.toneName(); } catch (e) { return 'Default'; } }, function (ref) { toneRef = ref; try { ZanplyNative.pickTone(); } catch (e) {} });
+            var kind = key === 'm_tone' ? 'm' : key === 'g_tone' ? 'g' : key === 'c_ring' ? 'c' : '';
+            if (kind && ZanplyNative.pickToneFor) zoptRow(b, title, function () { try { return ZanplyNative.toneNameFor(kind); } catch (e) { return 'Default'; } }, function (ref) { toneRef = ref; try { ZanplyNative.pickToneFor(kind); } catch (e) {} });
             return;
           }
           var base = opts || TONE_OPTS;
@@ -3251,7 +3325,7 @@ ZW|Zimbabwe|263`;
         function vib(key) { zoptRow(b, 'Vibrate', function () { return labOf(VIB_OPTS, nset()[key]); }, function (ref) { zpick('Vibrate', VIB_OPTS, nset()[key], function (v) { nsave(key, v); buzz(v); ref(); }); }); }
         function opt2(title, key, opts) { zoptRow(b, title, function () { return labOf(opts, nset()[key] || opts[0][0]); }, function (ref) { zpick(title, opts, nset()[key] || opts[0][0], function (v) { nsave(key, v); ref(); }); }); }
         function na(title) { zoptRow(b, title, function () { return 'Not available'; }, null, true); }
-        if (window.ZanplyNative) b.appendChild(mk('div', 'zfoot', 'Pick a notification tone from the sounds on your phone. Calls use your phone\u2019s ringtone. For more options open Apps \u203a Zanply \u203a Notifications).'));
+        if (window.ZanplyNative) b.appendChild(mk('div', 'zfoot', 'Messages and groups use a notification tone, and calls use a ringtone. Pick them from the sounds already on your phone. Anything you cannot make work shows up in Check notifications (menu).'));
         else b.appendChild(mk('div', 'zfoot', 'Tones play while Zanply is open. When it is closed, your phone\u2019s own notification sound is used (Phone Settings \u203a Apps \u203a Zanply \u203a Notifications).'));
         sw('Conversation tones', 'Play sounds for incoming and outgoing messages and calls', 'tones');
         sw('Reminders', 'Get occasional reminders about messages, calls or status updates you haven\u2019t seen', 'reminders');
@@ -3889,8 +3963,50 @@ ZW|Zimbabwe|263`;
       else if (navigator.clipboard) navigator.clipboard.writeText(m).then(function () { toast('Invite link copied'); });
     });
 
+    function openNumberBox() { $('newBox').classList.toggle('hidden'); $('newMsg').textContent = ''; $('newPhone').focus(); }
+    var contactsPermCbs = [];
+    window.onContactsPerm = function (ok) { var l = contactsPermCbs.splice(0); l.forEach(function (f) { try { f(ok); } catch (e) {} }); };
+    function askContactsThen(fn) { contactsPermCbs.push(fn); try { ZanplyNative.askContacts(); } catch (e) { contactsPermCbs.pop(); fn(false); } }
+    function contactNum(raw) {
+      var d = String(raw || '').replace(/\D/g, ''), t = String(raw || '').trim();
+      if (t.charAt(0) === '+') return d.length >= 7 && d.length <= 15 ? '+' + d : '';
+      if (d.indexOf('00') === 0) d = d.slice(2); else if (d.charAt(0) === '0') d = (cur ? cur.code : '254') + d.replace(/^0+/, ''); else if (d.length <= 9) d = (cur ? cur.code : '254') + d;
+      return d.length >= 7 && d.length <= 15 ? '+' + d : '';
+    }
+    function openContactPicker() {
+      var N = window.ZanplyNative;
+      zOpenPage('New chat', function (b) {
+        var top = mk('div'); top.style.padding = '10px 16px 4px';
+        var q = mk('input', 'zin'); q.placeholder = 'Search your contacts'; top.appendChild(q); b.appendChild(top);
+        zrow2(b, 'add', 'New chat by phone number', 'Type a number yourself', function () { closeOv(); setTimeout(openNumberBox, 80); });
+        var list = mk('div'), all = null; b.appendChild(list);
+        function start(c) {
+          var num = contactNum(c.p); if (!num) return toast('That number does not look right');
+          chatCall('start', { phone: num }).then(function (res) { closeOv(); setTimeout(function () { openThread(res.user); }, 60); })
+            .catch(function (e) { toast(e && e.status === 404 ? (c.n || num) + ' is not on Zanply yet' : ((e && e.message) || 'Could not start the chat')); });
+        }
+        function paint() {
+          list.innerHTML = '';
+          var granted = false; try { granted = N.contactsGranted(); } catch (e) {}
+          if (!granted) { zempty(list, 'Allow Zanply to see your phone contacts so you can start a chat with anyone in your address book.', 'Allow contacts', function () { askContactsThen(function (ok) { if (ok) paint(); else toast('Contacts permission was not allowed'); }); }); return; }
+          if (!all) { try { all = JSON.parse(N.phoneContacts() || '[]'); } catch (e) { all = []; } }
+          var t = q.value.trim().toLowerCase(), n = 0;
+          all.forEach(function (c) {
+            if (n >= 150) return; if (t && (c.n || '').toLowerCase().indexOf(t) < 0 && c.p.indexOf(t.replace(/\D/g, '') || '\u0000') < 0) return; n++;
+            var r = mk('button', 'zrow zrow2'), av = mk('div', 'av'), nm = c.n || c.p;
+            av.textContent = nm.replace(/^[+\s]+/, '').charAt(0).toUpperCase() || '#'; av.style.background = AVC[(nm.charCodeAt(0) + nm.length) % AVC.length];
+            av.style.cssText += ';width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;flex:none';
+            var rt = mk('div', 'rt'); rt.appendChild(mk('span', '', nm)); if (c.n) rt.appendChild(mk('small', '', c.p));
+            r.appendChild(av); r.appendChild(rt); r.addEventListener('click', function () { start(c); }); list.appendChild(r);
+          });
+          if (!n) zempty(list, all.length ? 'No contact matches your search.' : 'No contacts with a phone number were found on this phone.');
+        }
+        q.addEventListener('input', paint); paint();
+      });
+    }
     $('btnNew').addEventListener('click', function () {
-      $('newBox').classList.toggle('hidden'); $('newMsg').textContent = ''; $('newPhone').focus();
+      if (window.ZanplyNative && ZanplyNative.phoneContacts) { openContactPicker(); return; }
+      openNumberBox();
     });
     function startChat() {
       var raw = $('newPhone').value.trim(), d = raw.replace(/\D/g, ''), num;
@@ -4961,6 +5077,7 @@ ZW|Zimbabwe|263`;
         b.disabled = false; closeOv(); toast('Report submitted successfully. Our team will review your report and reply to you within 24 hours.', true);
       }).catch(function (e) { b.disabled = false; toast(e && e.offline ? 'No internet connection. Try again.' : 'Could not send your report. Please try again.'); });
     });
+    try { if (window.ZanplyNative && ZanplyNative.saveContact) { $('svPhoneAdd').checked = true; (($('svPhoneAdd').closest('label')) || $('svPhoneAdd').parentNode).style.display = 'none'; } } catch (e) {}
     var svSel = $('svCountry');
     COUNTRIES.forEach(function (c) { var o = document.createElement('option'); o.value = c.iso; o.textContent = c.name + ' ' + flag(c.iso) + ' +' + c.code; svSel.appendChild(o); });
     function openSave() {
@@ -4975,14 +5092,23 @@ ZW|Zimbabwe|263`;
       a[openUser.phone] = { first: first, last: last, iso: svSel.value, number: $('svPhone').value.trim(), cc: c ? c.code : '' };
       try { localStorage.setItem('zaply_contacts', JSON.stringify(a)); } catch (e) {} syncSavedContacts();
       var full = (first + ' ' + last).trim() || openUser.phone; openUser.name = full; $('thName').textContent = full; setAv($('thAv'), openUser);
-      var wantPhone = $('svPhoneAdd').checked && (first || last);
+      var wantPhone = (!!(window.ZanplyNative && ZanplyNative.saveContact) || $('svPhoneAdd').checked) && (first || last);
       var tel = c && a[openUser.phone].number ? '+' + c.code + a[openUser.phone].number.replace(/\D/g, '').replace(/^0+/, '') : openUser.phone;
       if (wantPhone) addToPhoneContacts(first, last, tel); /* must run inside this tap so the phone allows the share sheet */
-      renderChats(); closeOv(); toast(wantPhone ? 'Saved. Tap Save in your phone’s Contacts to finish.' : 'Contact saved', true);
+      renderChats(); closeOv(); if (!(window.ZanplyNative && ZanplyNative.saveContact)) toast(wantPhone ? 'Saved. Tap Save in your phone’s Contacts to finish.' : 'Contact saved', true);
     });
     /* A web app is not allowed to write into the phone's address book directly. The closest thing the phone allows is
        handing it a contact card (.vcf): the phone's Contacts app opens it and the person taps Save once. */
     function addToPhoneContacts(first, last, tel) {
+      if (window.ZanplyNative && ZanplyNative.saveContact) {
+        var done = function () {
+          var r = ''; try { r = ZanplyNative.saveContact(first, last, tel); } catch (e) {}
+          toast(r === 'saved' ? 'Saved to your phone contacts' : r === 'exists' ? 'Saved. This number is already in your phone contacts' : 'Saved. Tap Save in your phone’s Contacts to finish', true);
+        };
+        var ok = false; try { ok = ZanplyNative.contactsGranted(); } catch (e) {}
+        if (ok) done(); else askContactsThen(function () { done(); });
+        return;
+      }
       var clean = function (x) { return String(x || '').replace(/[\r\n]+/g, ' ').replace(/([,;\\])/g, '\\$1'); };
       var full = (first + ' ' + last).trim();
       function viaCard() {
@@ -5384,6 +5510,28 @@ ZW|Zimbabwe|263`;
             else if (dg.channel === 'missing') bad('The "Messages" notification type does not exist yet', 'Close and open Zanply once, then check again.'); else if (dg.channel === 'ok') ok('"Messages" notifications are on');
             if (dg.battery === false) bad('Battery saving is ON for Zanply. Phones like Tecno, Infinix, Xiaomi and Samsung then stop Zanply and block its notifications when it is closed', 'Tap "Battery settings" below and set Zanply to Unrestricted / Don\u2019t optimise. Also allow Auto-start for Zanply in the phone\u2019s security or battery app if it has that option.'); else if (dg.battery) ok('Battery saving is off for Zanply');
             if (dg.fsi === false) L.push('\u26A0 "Full-screen notifications" are off, so the incoming call screen will not appear over the lock screen');
+            var CHN = dg.chans || {}, CHNAME = { m: 'Messages', g: 'Groups', c: 'Calls' };
+            ['m', 'g', 'c'].forEach(function (k) {
+              var x = CHN[k]; if (!x) return; var w = x.want || {}, g = x.got || {}, nm = CHNAME[k], pr = [];
+              if (!g.exists) { bad(nm + ': the phone does not have the notification type for your settings yet', 'Close and open Zanply once, then check again.'); return; }
+              if (g.imp === 0) pr.push('it is turned OFF in the phone settings');
+              else {
+                if (g.imp < w.imp) pr.push('your settings ask for a popup / high priority but the phone shows it quietly');
+                if (w.sound && !g.sound) pr.push('a tone is chosen in Zanply but the phone has this type on silent');
+                if (w.vib && !g.vib) pr.push('Vibrate is on in Zanply but the phone has vibration off for it');
+                if (w.light && !g.light) pr.push('Light is on in Zanply but the phone has the notification light off for it');
+              }
+              if (pr.length) bad(nm + ' do not match your Zanply settings: ' + pr.join('; '), 'Tap \"Phone notification settings\" below, open ' + nm + ' and switch on what you want.');
+              else ok(nm + ' notifications match your Zanply settings');
+            });
+            if (dg.dnd) L.push('\u26A0 Do Not Disturb is ON, so your phone may hide popups and sounds');
+            if (dg.ringer === 0) L.push('\u26A0 The phone is on SILENT, so tones will not play'); else if (dg.ringer === 1) L.push('\u26A0 The phone is on VIBRATE only, so tones will not play');
+            if (dg.notifVol === 0 && dg.ringer === 2) L.push('\u26A0 The notification volume is 0, so message tones will not play');
+            if (dg.ringVol === 0 && dg.ringer === 2) L.push('\u26A0 The ringtone volume is 0, so calls will not ring');
+            var lg = Array.isArray(dg.logs) ? dg.logs : [];
+            L.push('\nRecent notification activity:');
+            if (!lg.length) L.push('  Nothing yet. Close Zanply and send yourself a message.');
+            lg.slice(-12).forEach(function (e) { var d = new Date(e.t); L.push('  ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2) + '  ' + e.m); });
             L.push(dg.lastPush ? 'Last push handled by the app: ' + new Date(dg.lastPush).toLocaleString() + (dg.lastType ? ' (' + dg.lastType + ')' : '') : 'No push has been handled by the app yet (pushes shown by the phone itself while the app is closed are not counted)');
             try { if (!$('diagSetApp')) {
               var bx = $('diagBox'), mkb = function (id, t, w) { var b = document.createElement('button'); b.className = 'link'; b.id = id; b.style.cssText = 'width:100%;margin-top:8px'; b.textContent = t; b.addEventListener('click', function () { try { N.openSettings(w); } catch (e) {} }); bx.insertBefore(b, $('diagTest')); };
@@ -5441,6 +5589,7 @@ ZW|Zimbabwe|263`;
     };
     function nativeInit() {
       var N = window.ZanplyNative; if (!N) return;
+      pushPrefs(); pushSession();
       try { var t = N.fcmToken(); if (t) window.onFcmToken(t); } catch (e) {}
       try { JSON.parse(N.handled() || '[]').forEach(function (b) { rang[b] = 1; }); } catch (e) {}
       setTimeout(nativeCheck, 700);
