@@ -917,7 +917,7 @@
       <header>
         <h1>Zanply</h1>
         <div class="hr"><button id="btnCam" aria-label="Camera"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" ><rect x="3" y="6.5" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 6.5 9.5 4h5L16 6.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
-          <div id="menuBox" class="menubox hidden"><button id="menuBroadcast">Broadcast lists</button><button id="menuLinked">Linked devices</button><button id="menuReadAll">Read all</button><button id="menuTheme">Theme</button><button id="menuSettings">Settings</button><button id="menuSwitch" class="hidden">Switch account &#8963;</button><button id="btnLogout" class="hidden">Log out</button></div></div></div>
+          <div id="menuBox" class="menubox hidden"><button id="menuBroadcast">Broadcast lists</button><button id="menuLinked">Linked devices</button><button id="menuReadAll">Read all</button><button id="menuTheme">Theme</button><button id="menuDiag">Check notifications</button><button id="menuSettings">Settings</button><button id="menuSwitch" class="hidden">Switch account &#8963;</button><button id="btnLogout" class="hidden">Log out</button></div></div></div>
       </header>
       <div class="searchbox" id="searchBox"><input id="chatSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
       <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button><button id="btnPlusList" class="plusb" aria-label="Create">+</button></nav>
@@ -925,6 +925,11 @@
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">🔔 Turn on notifications</button>
         <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone (build 19)</button>
+        <div id="diagBox" class="hidden" style="margin:8px;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:13px;line-height:1.5">
+          <div id="diagOut" style="white-space:pre-wrap;word-break:break-word"></div>
+          <button class="link" id="diagTest" style="width:100%;margin-top:10px">Send a real test (then close Zanply)</button>
+          <button class="link" id="diagClose" style="width:100%;margin-top:6px">Close</button>
+        </div>
         <button id="btnNew" class="fabr" aria-label="New chat"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-3 9h-4v4h-2v-4H7V9h4V5h2v4h4v2z"/></svg><span class="fl">Send message</span></button>
         <div class="newbox hidden" id="newBox">
           <input id="newPhone" type="tel" inputmode="tel" placeholder="Friend's number, e.g. +254712345678">
@@ -5305,6 +5310,60 @@ ZW|Zimbabwe|263`;
       chatCall('testpush').then(function (r) { b.textContent = 'Server result: ' + r.results.join(', '); })
         .catch(function (e) { b.textContent = '\u26A0 ' + e.message; });
     });
+    /* ---------- Check notifications: says exactly what is missing ---------- */
+    function diagRun() {
+      var out = $('diagOut'), N = window.ZanplyNative, L = [], todo = [];
+      $('diagBox').classList.remove('hidden'); out.textContent = 'Checking\u2026';
+      var ok = function (t) { L.push('\u2705 ' + t); }, bad = function (t, fix) { L.push('\u274C ' + t); if (fix) todo.push(fix); };
+      var tasks = [chatCall('pushdiag').catch(function (e) { return { err: (e && e.message) || 'Could not reach the server' }; })];
+      tasks.push(('serviceWorker' in navigator) ? navigator.serviceWorker.getRegistration().then(function (r) { return r || null; }).catch(function () { return null; }) : Promise.resolve(false));
+      Promise.all(tasks).then(function (res) {
+        var sv = res[0], reg = res[1], sub = null;
+        return (reg && reg.pushManager ? reg.pushManager.getSubscription().catch(function () { return null; }) : Promise.resolve(null)).then(function (s) {
+          sub = s;
+          if (sv.err) { bad('Server: ' + sv.err, 'Check that the app is online and you are signed in.'); }
+          if (N) {
+            L.push('Running as: Android app');
+            var ft = ''; try { ft = N.fcmToken() || ''; } catch (e) {}
+            if (ft) ok('This phone has a Firebase token'); else bad('This phone has NO Firebase token', 'The Android app was built without Firebase (google-services.json) or Google Play services is missing on this phone. Fix this in the Android app build, not in Vercel.');
+            if (!sv.err) {
+              if (sv.fcm) ok('Server has Firebase settings'); else bad('Server has NO Firebase settings', 'Add the Firebase service-account setting that _fcm.js reads in Vercel, then redeploy.');
+              if (sv.fcmTokens > 0) ok('Server saved this account\u2019s token (' + sv.fcmTokens + ')'); else if (ft) bad('Server did not save the token', 'Sign out and sign in again. If it stays, send me the Vercel log for the fcmreg action.');
+            }
+          } else {
+            L.push('Running as: browser / installed web app');
+            if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) bad('This browser cannot receive push while closed', 'Open Zanply in Chrome, or use the Android app.');
+            else {
+              if (Notification.permission === 'granted') ok('Notifications are allowed'); else bad('Notifications are ' + (Notification.permission === 'denied' ? 'BLOCKED' : 'not allowed yet'), 'Allow notifications for this site in the browser or phone settings, then reload.');
+              if (reg) ok('Service worker is running'); else bad('Service worker is not running', 'Make sure sw.js is in your main folder, then reload the page.');
+              if (sub) ok('This browser is subscribed'); else bad('This browser is not subscribed', 'Allow notifications, then reload. If it stays, the VAPID keys on the server may be missing.');
+            }
+            if (!sv.err) {
+              var v = sv.vapid || {};
+              if (v.public && v.private) ok('Server has VAPID keys'); else bad('Server is missing VAPID setting(s): ' + [!v.public && 'VAPID_PUBLIC_KEY', !v.private && 'VAPID_PRIVATE_KEY'].filter(Boolean).join(', '), 'Add them in Vercel > Environment Variables, then redeploy.');
+              if (!v.subject) L.push('\u26A0 VAPID_SUBJECT is not set (optional, a default is used)');
+              if (sv.webSubs > 0) ok('Server saved this account\u2019s address (' + sv.webSubs + ')'); else bad('Server has no notification address for this account', 'Allow notifications, then reload so the browser registers again.');
+            }
+          }
+          if (!sv.err) L.push((sv.ably ? '\u2705' : '\u274C') + ' Real-time (Ably) server key: ' + (sv.ably ? 'set' : 'ABLY_API_KEY is missing in Vercel'));
+          L.push((RT.up() ? '\u2705' : '\u274C') + ' Real-time connection: ' + (RT.up() ? 'connected' : 'not connected'));
+          L.push('\nAlso check on the phone: Settings > Apps > Zanply > Notifications is ON, and battery use is set to Unrestricted. Phones like Tecno, Infinix and Samsung close apps and block their notifications otherwise.');
+          if (todo.length) L.push('\nWhat to fix:\n- ' + todo.join('\n- '));
+          else if (!sv.err) L.push('\nEverything above looks right. Tap "Send a real test" and close Zanply.');
+          out.textContent = L.join('\n');
+        });
+      });
+    }
+    $('menuDiag').addEventListener('click', function () { $('menuBox').classList.add('hidden'); try { showTab('chats'); } catch (e) {} diagRun(); });
+    $('diagClose').addEventListener('click', function () { $('diagBox').classList.add('hidden'); });
+    $('diagTest').addEventListener('click', function () {
+      var b = $('diagTest'); b.disabled = true; b.textContent = 'Now close Zanply completely. A test arrives in about 8 seconds\u2026';
+      chatCall('pushtest').then(function (r) {
+        $('diagOut').textContent += '\n\nTest result from the server:\n' + (N0() ? 'Android app (Firebase): ' + r.fcm + '\n' : '') + 'Browser (web push): ' + r.web + '\n\nIf it says "sent" but nothing appeared, the problem is on the phone: notification settings or battery saving.';
+      }).catch(function (e) { $('diagOut').textContent += '\n\nTest failed: ' + (e && e.message ? e.message : 'unknown'); })
+        .then(function () { b.disabled = false; b.textContent = 'Send a real test (then close Zanply)'; });
+    });
+    function N0() { return !!window.ZanplyNative; }
     function openChatWith(phone) {
       if (!phone) return;
       if (isGroupId(phone)) { var gc = allChats.filter(function (c) { return c.phone === phone; })[0] || {}; return openThread({ phone: phone, name: gc.name || 'Group', group: true }); }
