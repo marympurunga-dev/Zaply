@@ -58,7 +58,7 @@ async function sendFcm(rows, data, opts) {
       });
       if (!r.ok) {
         const t = await r.text();
-        if (r.status === 404 || /UNREGISTERED|INVALID_ARGUMENT/.test(t)) dead.push(row.id);
+        if (r.status === 404 || /UNREGISTERED/.test(t)) dead.push(row.id);
         else { console.error('FCM send failed', r.status, t.slice(0, 200)); if (errs) errs.push(r.status + ' ' + t.replace(/\s+/g, ' ').slice(0, 180)); }
       }
     } catch (e) { console.error('FCM error', e.message); if (errs) errs.push(e.message); }

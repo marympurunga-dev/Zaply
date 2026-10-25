@@ -260,7 +260,7 @@ async function notifyGroup(from, g, groupName, text) {
     if (fcmOn()) {
       await fcmTable();
       const [rows] = await db().query('SELECT t.id, t.token, t.chan FROM fcm_tokens t JOIN group_members m ON m.phone = t.phone WHERE m.group_id = ? AND t.phone <> ?', [g, from]);
-      await fcmPush(rows, { type: 'msg', title: groupName, body, from: 'g:' + g });
+      await fcmPush(rows, { type: 'msg', title: groupName, body, sender: 'g:' + g });
     }
   } catch (e) { console.error(e); }
 }
@@ -277,8 +277,8 @@ async function notify(from, to, text) {
       const [rows] = await db().query('SELECT id, token, chan FROM fcm_tokens WHERE phone = ?', [to]);
       if (isCall) {
         let video = '0'; try { video = JSON.parse(String(text).slice(8)).v ? '1' : '0'; } catch (e) {}
-        await fcmPush(rows, { type: 'call', title: name, body: 'Incoming call', from, name, video, call: String(text) }, { ttl: '45s' });
-      } else await fcmPush(rows, { type: 'msg', title: name, body: preview(text), from });
+        await fcmPush(rows, { type: 'call', title: name, body: 'Incoming call', sender: from, name, video, call: String(text) }, { ttl: '45s' });
+      } else await fcmPush(rows, { type: 'msg', title: name, body: preview(text), sender: from });
     }
   } catch (e) { console.error(e); }
 }
@@ -845,7 +845,7 @@ module.exports = async (req, res) => {
       else {
         try {
           const errs = [];
-          const dead = await sendFcm(rows, { type: 'msg', title: 'Zanply test', body: 'If you can see this, notifications work.', from: '' }, { errors: errs });
+          const dead = await sendFcm(rows, { type: 'msg', title: 'Zanply test', body: 'If you can see this, notifications work.', sender: '' }, { errors: errs });
           if (dead && dead.length) await db().query('DELETE FROM fcm_tokens WHERE id IN (' + dead.map(() => '?').join(',') + ')', dead);
           if (errs.length) out.fcm = 'Google refused it: ' + errs[0];
           else out.fcm = dead && dead.length ? 'Google says ' + dead.length + ' of ' + rows.length + ' token(s) are no longer valid and were removed. Reopen the app to register again' : 'accepted by Google for ' + rows.length + ' phone(s)';
