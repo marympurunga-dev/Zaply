@@ -5327,7 +5327,7 @@ ZW|Zimbabwe|263`;
             var ft = ''; try { ft = N.fcmToken() || ''; } catch (e) {}
             if (ft) ok('This phone has a Firebase token'); else bad('This phone has NO Firebase token', 'The Android app was built without Firebase (google-services.json) or Google Play services is missing on this phone. Fix this in the Android app build, not in Vercel.');
             if (!sv.err) {
-              if (sv.fcm) ok('Server has Firebase settings'); else bad('Server has NO Firebase settings', 'Add the Firebase service-account setting that _fcm.js reads in Vercel, then redeploy.');
+              if (sv.fcm) ok('Server has Firebase settings'); else bad('Server Firebase: ' + (sv.fcmWhy || 'not set up'), 'Fix FIREBASE_SERVICE_ACCOUNT in Vercel (Settings > Environment Variables), then redeploy.');
               if (sv.fcmTokens > 0) ok('Server saved this account\u2019s token (' + sv.fcmTokens + ')'); else if (ft) bad('Server did not save the token', 'Sign out and sign in again. If it stays, send me the Vercel log for the fcmreg action.');
             }
           } else {
