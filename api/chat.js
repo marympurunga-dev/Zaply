@@ -804,6 +804,48 @@ module.exports = async (req, res) => {
       return res.json({ results });
     }
 
+    // Notification check: what the server has set up, and what it saved for this account
+    if (b.action === 'pushdiag') {
+      let nWeb = 0, nFcm = 0;
+      try { const [w] = await db().query('SELECT COUNT(*) AS n FROM push_subs WHERE phone = ?', [me]); nWeb = Number(w[0].n); } catch (e) {}
+      try { await fcmTable(); const [f] = await db().query('SELECT COUNT(*) AS n FROM fcm_tokens WHERE phone = ?', [me]); nFcm = Number(f[0].n); } catch (e) {}
+      return res.json({
+        vapid: { public: !!process.env.VAPID_PUBLIC_KEY, private: !!process.env.VAPID_PRIVATE_KEY, subject: !!process.env.VAPID_SUBJECT },
+        fcm: !!fcmOn(), webSubs: nWeb, fcmTokens: nFcm, ably: rt.on() });
+    }
+    // Sends one real test to every address saved for this account (after a short wait so the app can be closed) and reports each result
+    if (b.action === 'pushtest') {
+      const out = { web: null, fcm: null };
+      let subs = [], rows = [];
+      try { [subs] = await db().query('SELECT id, sub FROM push_subs WHERE phone = ?', [me]); } catch (e) {}
+      try { if (fcmOn()) { await fcmTable(); [rows] = await db().query('SELECT id, token FROM fcm_tokens WHERE phone = ?', [me]); } } catch (e) {}
+      await new Promise((r) => setTimeout(r, 6000));
+      if (!pushOn) out.web = 'Server has no VAPID keys';
+      else if (!subs.length) out.web = 'No web-push address saved for this account';
+      else {
+        const payload = JSON.stringify({ title: 'Zanply test', body: 'If you can see this, notifications work.', tag: 'test', from: '' });
+        const rs = [];
+        for (const r of subs) {
+          try { await webpush.sendNotification(JSON.parse(r.sub), payload, { TTL: 60, urgency: 'high' }); rs.push('sent'); }
+          catch (e) {
+            rs.push('failed ' + (e.statusCode || '') + ' ' + String(e.body || e.message || '').slice(0, 80));
+            if (e.statusCode === 404 || e.statusCode === 410) await db().query('DELETE FROM push_subs WHERE id = ?', [r.id]);
+          }
+        }
+        out.web = rs.join(', ');
+      }
+      if (!fcmOn()) out.fcm = 'Server has no Firebase settings';
+      else if (!rows.length) out.fcm = 'No Firebase token saved for this account';
+      else {
+        try {
+          const dead = await sendFcm(rows, { type: 'msg', title: 'Zanply test', body: 'If you can see this, notifications work.', from: '' }, {});
+          if (dead && dead.length) await db().query('DELETE FROM fcm_tokens WHERE id IN (' + dead.map(() => '?').join(',') + ')', dead);
+          out.fcm = dead && dead.length ? 'Google rejected ' + dead.length + ' of ' + rows.length + ' token(s); they were removed. Reopen the app to register again' : 'sent to ' + rows.length + ' phone(s)';
+        } catch (e) { out.fcm = 'failed: ' + String((e && (e.message || e.code)) || e).slice(0, 140); }
+      }
+      return res.json(out);
+    }
+
     if (b.action === 'fcmreg') {
       const ft = typeof b.ftoken === 'string' ? b.ftoken.trim() : '';
       if (ft.length < 20 || ft.length > 500) return res.status(400).json({ error: 'Bad request.' });
