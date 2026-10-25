@@ -484,7 +484,12 @@ module.exports = async (req, res) => {
     if (b.action === 'ably_auth') {
       if (!rt.on()) return res.status(503).json({ error: 'Real-time is not set up.' });
       const want = Array.from(new Set((Array.isArray(b.watch) ? b.watch : []).filter(phoneOk))).filter((p) => p !== me).slice(0, 40);
-      return res.json({ token: await rt.tokenRequest(me, await watchAllowed(me, want)) });
+      try {
+        return res.json({ token: await rt.tokenRequest(me, await watchAllowed(me, want)) });
+      } catch (e) {
+        console.error('ably_auth failed', e);
+        return res.status(500).json({ error: 'Real-time token failed: ' + String((e && e.message) || e).slice(0, 160) });
+      }
     }
     // Online / last seen. The app pings every ~25s while open; "online" = pinged within the last 60s.
     if (b.action === 'presence_ping') {

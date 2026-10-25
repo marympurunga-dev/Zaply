@@ -46,7 +46,7 @@ async function sendFcm(rows, data, opts) {
     const m = { token, data: flat, android: { priority: 'HIGH', ttl: o.ttl || '86400s' } };
     if (visible) {
       m.notification = { title: flat.title, body: flat.body || 'New message' };
-      m.android.notification = { sound: 'default', default_vibrate_timings: true };
+      m.android.notification = { channel_id: 'messages_v1', sound: 'default', default_vibrate_timings: true };
     }
     return m;
   };
