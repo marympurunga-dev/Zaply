@@ -283,12 +283,19 @@ jobs:
           import android.content.BroadcastReceiver;
           import android.content.Context;
           import android.content.Intent;
+          import android.app.RemoteInput;
+          import android.os.Bundle;
+          import android.os.Handler;
+          import android.os.Looper;
+          import android.widget.Toast;
 
           public class CallReceiver extends BroadcastReceiver {
               static final String ACTION_DECLINE = "com.zanply.app.DECLINE";
               static final String ACTION_READ = "com.zanply.app.READ";
               static final String ACTION_MUTE = "com.zanply.app.MUTE";
               static final String ACTION_REMIND = "com.zanply.app.REMIND";
+              static final String ACTION_REPLY = "com.zanply.app.REPLY";
+              static final String KEY_REPLY = "reply_text";
 
               @Override
               public void onReceive(final Context c, Intent i) {
@@ -302,6 +309,7 @@ jobs:
                       NotificationManager nm = c.getSystemService(NotificationManager.class);
                       if (nm != null) nm.cancel(i.getIntExtra("nid", 0));
                       Store.histDrop(c, from);
+                      Store.readAdd(c, from);
                       final PendingResult pr = goAsync();
                       new Thread(new Runnable() {
                           @Override public void run() {
@@ -313,8 +321,37 @@ jobs:
                       NotificationManager nm = c.getSystemService(NotificationManager.class);
                       if (nm != null) nm.cancel(i.getIntExtra("nid", 0));
                       Store.histDrop(c, from);
-                      Store.putLong(c, "mute:" + from, System.currentTimeMillis() + 8L * 60L * 60L * 1000L);
+                      Store.muteSet(c, from, System.currentTimeMillis() + 8L * 60L * 60L * 1000L);
                       Store.log(c, "Muted " + i.getStringExtra("who") + " for 8 hours (from the notification button).");
+                  } else if (ACTION_REPLY.equals(a)) {
+                      final String from = i.getStringExtra("from");
+                      final String who = i.getStringExtra("who");
+                      final int nid = i.getIntExtra("nid", 0);
+                      Bundle res = RemoteInput.getResultsFromIntent(i);
+                      CharSequence cs = res == null ? null : res.getCharSequence(KEY_REPLY);
+                      final String text = cs == null ? "" : cs.toString().trim();
+                      final NotificationManager nm = c.getSystemService(NotificationManager.class);
+                      if (text.length() == 0 || from == null) { if (nm != null) nm.cancel(nid); return; }
+                      final PendingResult pr = goAsync();
+                      new Thread(new Runnable() {
+                          @Override public void run() {
+                              boolean ok = false;
+                              try { ok = Notifs.sendReplyOnServer(c, from, text); } finally {
+                                  if (nm != null) nm.cancel(nid); // also stops the spinner on the reply box
+                                  if (ok) {
+                                      Store.histDrop(c, from);
+                                      Store.readAdd(c, from);
+                                      Notifs.markReadOnServer(c, from);
+                                  } else {
+                                      Notifs.replyFailed(c, from, who);
+                                      new Handler(Looper.getMainLooper()).post(new Runnable() {
+                                          @Override public void run() { Toast.makeText(c, "Reply not sent", Toast.LENGTH_LONG).show(); }
+                                      });
+                                  }
+                                  pr.finish();
+                              }
+                          }
+                      }).start();
                   } else if (ACTION_REMIND.equals(a)) {
                       Notifs.remind(c);
                   }
@@ -358,7 +395,13 @@ jobs:
                       Notifs.cancelCall(this);
                   } else {
                       String from = nz(d.get("sender"));
-                      Notifs.showMessage(this, from, nz(d.get("title")).length() > 0 ? d.get("title") : "Zanply", nz(d.get("body")),
+                      String text = nz(d.get("body"));
+                      if (nz(d.get("cipher")).length() > 0 && !from.startsWith("g:")) {
+                          String pt = Crypt.decrypt(this, from, nz(d.get("me")), d.get("cipher"));
+                          if (pt != null) text = Crypt.preview(pt);
+                          else Store.log(this, "Could not open the message text on this phone (no key yet), showing New message.");
+                      }
+                      Notifs.showMessage(this, from, nz(d.get("title")).length() > 0 ? d.get("title") : "Zanply", text,
                               nz(d.get("photo")), from.startsWith("g:"), "react".equals(type));
                   }
               }
@@ -749,6 +792,24 @@ jobs:
 
                   @JavascriptInterface public String takeOpenChat() { String c = openChat; openChat = ""; return c; }
 
+                  /** Chats the person marked as read or replied to from a notification: ["+234...", "g:12"] */
+                  @JavascriptInterface public String takeRead() { return Store.readTake(MainActivity.this); }
+
+                  /** Muted chats, e.g. {"+234...": 1790000000000}. Expired ones are left out. */
+                  @JavascriptInterface public String mutes() { return Store.muteJson(MainActivity.this); }
+
+                  /** The key for one chat, so notifications can show the real message text. */
+                  @JavascriptInterface public void setChatKey(String phone, String keyB64, String me) { Crypt.saveKey(MainActivity.this, phone, keyB64, me); }
+
+                  @JavascriptInterface public void clearChatKeys() { Crypt.clear(MainActivity.this); }
+
+                  /** until = milliseconds since 1970 as text, or "0" to unmute. */
+                  @JavascriptInterface public void setMute(String phone, String until) {
+                      long u = 0L;
+                      try { u = Long.parseLong(until); } catch (Exception ignored) { }
+                      Store.muteSet(MainActivity.this, phone, u);
+                  }
+
                   @JavascriptInterface public void ringStart() {
                       runOnUiThread(new Runnable() { @Override public void run() { startRing(); } });
                   }
@@ -975,6 +1036,7 @@ jobs:
           import android.app.NotificationManager;
           import android.app.PendingIntent;
           import android.app.Person;
+          import android.app.RemoteInput;
           import android.content.Context;
           import android.content.Intent;
           import android.content.pm.PackageManager;
@@ -1210,7 +1272,7 @@ jobs:
                       return;
                   }
                   if (react && !p.optBoolean(k + "_react", true)) { Store.log(c, "Not shown: reaction from " + who + " - Reaction notifications are OFF in Zanply."); return; }
-                  if (Store.getLong(c, "mute:" + f) > System.currentTimeMillis()) { Store.log(c, "Not shown: " + who + " is muted."); return; }
+                  if (Store.muteGet(c, f) > System.currentTimeMillis()) { Store.log(c, "Not shown: " + who + " is muted."); return; }
 
                   Want w = want(c, k, screenOn(c));
                   String ch = channel(c, w);
@@ -1229,7 +1291,10 @@ jobs:
                   Intent open = new Intent(c, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("chat", f);
                   int fl = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
                   PendingIntent pi = PendingIntent.getActivity(c, id, open, fl);
-                  PendingIntent replyPi = PendingIntent.getActivity(c, id + 1, new Intent(open), fl);
+                  RemoteInput ri = new RemoteInput.Builder(CallReceiver.KEY_REPLY).setLabel("Reply").build();
+                  // an inline reply needs a MUTABLE pending intent so Android can put the typed text into it
+                  PendingIntent replyPi = PendingIntent.getBroadcast(c, id + 1, new Intent(c, CallReceiver.class).setAction(CallReceiver.ACTION_REPLY).putExtra("from", f).putExtra("nid", id).putExtra("who", who),
+                          PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 31 ? PendingIntent.FLAG_MUTABLE : 0));
                   PendingIntent readPi = PendingIntent.getBroadcast(c, id + 2, new Intent(c, CallReceiver.class).setAction(CallReceiver.ACTION_READ).putExtra("from", f).putExtra("nid", id), fl);
                   PendingIntent mutePi = PendingIntent.getBroadcast(c, id + 3, new Intent(c, CallReceiver.class).setAction(CallReceiver.ACTION_MUTE).putExtra("from", f).putExtra("nid", id).putExtra("who", who), fl);
                   Icon ai = Icon.createWithResource(c, R.drawable.ic_stat);
@@ -1245,7 +1310,7 @@ jobs:
                           .setCategory(Notification.CATEGORY_MESSAGE)
                           .setAutoCancel(true)
                           .setContentIntent(pi)
-                          .addAction(new Notification.Action.Builder(ai, "Reply", replyPi).build())
+                          .addAction(new Notification.Action.Builder(ai, "Reply", replyPi).addRemoteInput(ri).setAllowGeneratedReplies(true).build())
                           .addAction(new Notification.Action.Builder(ai, "Mark as read", readPi).build())
                           .addAction(new Notification.Action.Builder(ai, "Mute", mutePi).build());
                   if (Build.VERSION.SDK_INT >= 28) {
@@ -1358,6 +1423,47 @@ jobs:
                   Store.histClear(c);
                   cancelRemind(c);
               }
+
+          /** Inline reply: sends the typed text to the server as a normal message. Runs on a background thread. */
+          static boolean sendReplyOnServer(Context c, String to, String text) {
+              try {
+                  String tok = Store.getStr(c, "session", ""), base = Store.getStr(c, "apiBase", "");
+                  if (tok.length() == 0 || base.length() == 0 || to == null || to.length() == 0) { Store.log(c, "Reply not sent: no saved sign-in. Open Zanply once."); return false; }
+                  JSONObject o = new JSONObject();
+                  o.put("action", "send");
+                  o.put("token", tok);
+                  o.put("to", to);
+                  o.put("body", text);
+                  HttpURLConnection h = (HttpURLConnection) new URL(base + "/chat").openConnection();
+                  h.setRequestMethod("POST");
+                  h.setRequestProperty("Content-Type", "application/json");
+                  h.setConnectTimeout(8000);
+                  h.setReadTimeout(8000);
+                  h.setDoOutput(true);
+                  h.getOutputStream().write(o.toString().getBytes("UTF-8"));
+                  int code = h.getResponseCode();
+                  h.disconnect();
+                  Store.log(c, code == 200 ? "Reply sent from the notification." : "Reply failed (server said " + code + ").");
+                  return code == 200;
+              } catch (Exception e) {
+                  Store.log(c, "Reply failed: " + e.getMessage());
+                  return false;
+              }
+          }
+
+          static void replyFailed(Context c, String from, String who) {
+              try {
+                  NotificationManager nm = c.getSystemService(NotificationManager.class);
+                  if (nm == null) return;
+                  String ch = channel(c, want(c, "m", screenOn(c)));
+                  PendingIntent pi = PendingIntent.getActivity(c, 79, new Intent(c, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP).putExtra("chat", from),
+                          PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                  Notification n = new Notification.Builder(c, ch).setSmallIcon(R.drawable.ic_stat).setColor(0xFF1F8F5F)
+                          .setContentTitle("Reply not sent").setContentText("Tap to open the chat with " + (who == null || who.length() == 0 ? "this contact" : who))
+                          .setAutoCancel(true).setContentIntent(pi).build();
+                  nm.notify(REMIND_ID + 1, n);
+              } catch (Exception ignored) { }
+          }
 
               /** "Mark as read": tells the server the chat was read (so the other person gets blue ticks). Runs on a background thread. */
               static void markReadOnServer(Context c, String from) {
@@ -1488,7 +1594,112 @@ jobs:
                   } catch (Exception ignored) { }
               }
 
-              static synchronized void histClear(Context c) { p(c).edit().putString("hist", "{}").apply(); }
+          /* muted chats: {"+234...": untilMillis}. Shared by the notification's Mute button and the page's Mute menu. */
+          static synchronized void muteSet(Context c, String from, long until) {
+              if (from == null || from.length() == 0) return;
+              try {
+                  JSONObject o = new JSONObject(p(c).getString("mutes", "{}"));
+                  if (until > System.currentTimeMillis()) o.put(from, until); else o.remove(from);
+                  p(c).edit().putString("mutes", o.toString()).apply();
+              } catch (Exception ignored) { }
+          }
+
+          static synchronized long muteGet(Context c, String from) {
+              try { return new JSONObject(p(c).getString("mutes", "{}")).optLong(from, 0L); } catch (Exception e) { return 0L; }
+          }
+
+          /** Only the mutes that have not run out yet. */
+          static synchronized String muteJson(Context c) {
+              try {
+                  JSONObject o = new JSONObject(p(c).getString("mutes", "{}")), out = new JSONObject();
+                  long now = System.currentTimeMillis();
+                  java.util.Iterator<String> it = o.keys();
+                  while (it.hasNext()) { String k = it.next(); long u = o.optLong(k, 0L); if (u > now) out.put(k, u); }
+                  return out.toString();
+              } catch (Exception e) { return "{}"; }
+          }
+
+              /* chats whose notification was marked as read / replied to: the page picks them up and clears its own unread badge */
+          static synchronized void readAdd(Context c, String from) {
+              if (from == null || from.length() == 0) return;
+              try {
+                  JSONArray a = new JSONArray(p(c).getString("readq", "[]"));
+                  for (int i = 0; i < a.length(); i++) if (from.equals(a.getString(i))) return;
+                  a.put(from);
+                  p(c).edit().putString("readq", a.toString()).apply();
+              } catch (Exception ignored) { }
+          }
+
+          static synchronized String readTake(Context c) {
+              String v = p(c).getString("readq", "[]");
+              p(c).edit().putString("readq", "[]").apply();
+              return v;
+          }
+
+          static synchronized void histClear(Context c) { p(c).edit().putString("hist", "{}").apply(); }
+          }
+          ZEOF
+          mkdir -p app/src/main/java/com/zanply/app
+          cat > app/src/main/java/com/zanply/app/Crypt.java <<'ZEOF'
+          package com.zanply.app;
+
+          import android.content.Context;
+          import android.util.Base64;
+
+          import org.json.JSONObject;
+
+          import java.util.Arrays;
+
+          import javax.crypto.Cipher;
+          import javax.crypto.spec.GCMParameterSpec;
+          import javax.crypto.spec.SecretKeySpec;
+
+          /** Opens end-to-end encrypted messages for notifications. The page hands over each chat's key (setChatKey); the server only forwards scrambled text. */
+          final class Crypt {
+              static synchronized void saveKey(Context c, String phone, String keyB64, String me) {
+                  if (phone == null || phone.length() == 0 || keyB64 == null || keyB64.length() == 0) return;
+                  try {
+                      JSONObject o = new JSONObject(Store.getStr(c, "ckeys", "{}"));
+                      o.put(phone, keyB64);
+                      Store.putStr(c, "ckeys", o.toString());
+                      if (me != null && me.length() > 0) Store.putStr(c, "mephone", me);
+                  } catch (Exception ignored) { }
+              }
+
+              static synchronized void clear(Context c) {
+                  Store.putStr(c, "ckeys", "{}");
+                  Store.putStr(c, "mephone", "");
+                  Store.histClear(c);
+              }
+
+              /** The readable text, or null when it cannot be opened here (no key yet, key changed, not encrypted). */
+              static String decrypt(Context c, String from, String me, String wire) {
+                  try {
+                      if (wire == null || !wire.startsWith("e2e1:") || from == null || from.length() == 0) return null;
+                      String kb = new JSONObject(Store.getStr(c, "ckeys", "{}")).optString(from, "");
+                      if (kb.length() == 0) return null;
+                      String mine = (me != null && me.length() > 0) ? me : Store.getStr(c, "mephone", "");
+                      if (mine.length() == 0) return null;
+                      byte[] all = Base64.decode(wire.substring(5), Base64.DEFAULT);
+                      if (all.length < 29) return null;
+                      byte[] key = Base64.decode(kb, Base64.DEFAULT);
+                      String[] pair = {mine, from};
+                      Arrays.sort(pair);
+                      Cipher ci = Cipher.getInstance("AES/GCM/NoPadding");
+                      ci.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new GCMParameterSpec(128, all, 0, 12));
+                      ci.updateAAD((pair[0] + "|" + pair[1]).getBytes("UTF-8"));
+                      return new String(ci.doFinal(all, 12, all.length - 12), "UTF-8");
+                  } catch (Exception e) { return null; }
+              }
+
+              /** Same wording the server uses for messages it can read. */
+              static String preview(String t) {
+                  if (t.startsWith("__call__")) return "Incoming call";
+                  if (t.startsWith("__media__")) return "Sent an attachment";
+                  if (t.startsWith("__loc__")) return "Shared a location";
+                  if (t.startsWith("__game__")) return "Game move";
+                  return t.length() > 140 ? t.substring(0, 140) : t;
+              }
           }
           ZEOF
           mkdir -p app/src/main/res/drawable
