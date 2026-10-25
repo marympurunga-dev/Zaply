@@ -1065,7 +1065,7 @@
     </div></div>
   <div id="netBanner" class="netb hidden"><span>No internet connection</span><button id="netRetry">Try again</button></div>
 
-  <script src="https://cdn.ably.com/lib/ably.min-1.js" async></script>
+  <script src="https://cdn.ably.com/lib/ably.min-1.js" async onerror="window.__ablyFail=(window.__ablyFail||'')+'cdn.ably.com ';var s=document.createElement('script');s.async=true;s.src='https://cdn.jsdelivr.net/npm/ably@1.2.50/build/ably.min-1.js';s.onerror=function(){window.__ablyFail+='jsdelivr ';var t=document.createElement('script');t.async=true;t.src='https://unpkg.com/ably@1.2.50/build/ably.min-1.js';t.onerror=function(){window.__ablyFail+='unpkg'};document.head.appendChild(t)};document.head.appendChild(s)"></script>
   <script>
     var API = 'https://zaply-gamma.vercel.app/api';
     /* try this site's own /api first (works on any domain, e.g. zucket.me), then the old address */
@@ -4050,13 +4050,19 @@ ZW|Zimbabwe|263`;
         (list || []).filter(function (c) { return !c.group && /^\+\d{7,15}$/.test(c.phone); }).slice(0, 30).forEach(function (c) { if (!want[c.phone]) { want[c.phone] = 1; added = true; } });
         if (added) sync();
       }
+      var authErr = '';
+      function info() {
+        var st = rt ? rt.connection.state : (window.Ably ? 'not started' : 'library not loaded' + (window.__ablyFail ? ' (blocked: ' + window.__ablyFail.trim() + ')' : ''));
+        var er = rt && rt.connection.errorReason ? (rt.connection.errorReason.message || String(rt.connection.errorReason)) : '';
+        return { lib: !!window.Ably, state: st, error: authErr || er };
+      }
       function start(phone) {
         if (rt) return;
         if (!window.Ably) { clearTimeout(retryT); retryT = setTimeout(function () { start(phone); }, 2500); return; }
         try { watchChats(allChats); } catch (e) {}
         rt = new Ably.Realtime({
           authCallback: function (tp, cb) {
-            chatCall('ably_auth', { watch: watchList() }).then(function (r) { cb(null, r.token); }, function (e) { cb(e, null); });
+            chatCall('ably_auth', { watch: watchList() }).then(function (r) { authErr = ''; cb(null, r.token); }, function (e) { authErr = 'token request failed: ' + ((e && e.message) || e); cb(e, null); });
           }
         });
         rt.channels.get('u:' + phone).subscribe(onInbox);
@@ -4074,7 +4080,7 @@ ZW|Zimbabwe|263`;
       });
       window.addEventListener('pagehide', leave);
       window.addEventListener('online', function () { if (rt) try { rt.connection.connect(); } catch (e) {} });
-      return { start: start, up: up, watch: watch, watchChats: watchChats };
+      return { start: start, up: up, info: info, watch: watch, watchChats: watchChats };
     })();
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
@@ -5347,6 +5353,7 @@ ZW|Zimbabwe|263`;
           }
           if (!sv.err) L.push((sv.ably ? '\u2705' : '\u274C') + ' Real-time (Ably) server key: ' + (sv.ably ? 'set' : 'ABLY_API_KEY is missing in Vercel'));
           L.push((RT.up() ? '\u2705' : '\u274C') + ' Real-time connection: ' + (RT.up() ? 'connected' : 'not connected'));
+          if (!RT.up()) { try { var ri = RT.info(); L.push('    Ably library loaded: ' + (ri.lib ? 'yes' : 'NO') + ' \u2022 state: ' + ri.state + (ri.error ? ' \u2022 reason: ' + ri.error : '')); } catch (e) {} }
           L.push('\nAlso check on the phone: Settings > Apps > Zanply > Notifications is ON, and battery use is set to Unrestricted. Phones like Tecno, Infinix and Samsung close apps and block their notifications otherwise.');
           if (todo.length) L.push('\nWhat to fix:\n- ' + todo.join('\n- '));
           else if (!sv.err) L.push('\nEverything above looks right. Tap "Send a real test" and close Zanply.');
