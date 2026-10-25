@@ -315,6 +315,8 @@ jobs:
               public void onMessageReceived(RemoteMessage m) {
                   Map<String, String> d = m.getData();
                   if (d == null || d.isEmpty()) return;
+                  Store.putLong(this, "lastPush", System.currentTimeMillis());
+                  Store.putStr(this, "lastType", d.get("type") == null ? "" : d.get("type"));
                   // While the app is open the web page already plays its own sound and shows the call screen.
                   if (MainActivity.visible) return;
 
@@ -377,7 +379,7 @@ jobs:
               static volatile boolean visible = false;
               private static WeakReference<MainActivity> self;
 
-              private static final int REQ_FILE = 1, REQ_PERM = 2, REQ_NOTIF = 3;
+              private static final int REQ_FILE = 1, REQ_PERM = 2, REQ_NOTIF = 3, REQ_TONE = 4;
 
               private WebView web;
               private ValueCallback<Uri[]> filePath;
@@ -478,6 +480,21 @@ jobs:
                       openChat = chat;
                       i.removeExtra("chat");
                   }
+              }
+
+              private void pokeTone() {
+                  if (web == null) return;
+                  web.evaluateJavascript("window.onToneChosen&&window.onToneChosen()", null);
+              }
+
+              private String toneName() {
+                  try {
+                      String u = Store.getStr(this, "toneUri", "");
+                      if (u.length() == 0) return "Default";
+                      if (u.equals("silent")) return "Silent";
+                      Ringtone r = RingtoneManager.getRingtone(this, Uri.parse(u));
+                      return r == null ? "Custom" : r.getTitle(this);
+                  } catch (Exception e) { return "Custom"; }
               }
 
               private void pokePage() {
@@ -618,6 +635,12 @@ jobs:
               @Override
               protected void onActivityResult(int code, int res, Intent data) {
                   super.onActivityResult(code, res, data);
+                  if (code == REQ_TONE && res == RESULT_OK && data != null) {
+                      Uri u = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+                      Store.putStr(this, "toneUri", u == null ? "silent" : u.toString());
+                      Notifs.ensureChannels(this);
+                      pokeTone();
+                  }
                   if (code == REQ_FILE && filePath != null) {
                       filePath.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(res, data));
                       filePath = null;
@@ -648,7 +671,9 @@ jobs:
 
               private void playNotif() {
                   try {
-                      Ringtone r = RingtoneManager.getRingtone(this, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                      Uri tu = Notifs.toneUri(this);
+                      if (tu == null) return;
+                      Ringtone r = RingtoneManager.getRingtone(this, tu);
                       if (r == null) return;
                       if (Build.VERSION.SDK_INT >= 28) {
                           r.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_NOTIFICATION)
@@ -676,6 +701,64 @@ jobs:
                       runOnUiThread(new Runnable() { @Override public void run() { stopRing(); } });
                   }
 
+                  @JavascriptInterface public void pickTone() {
+                      runOnUiThread(new Runnable() { @Override public void run() {
+                          try {
+                              Intent i = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION);
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Notification tone");
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true);
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_NOTIFICATION_URI);
+                              i.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, Notifs.toneUri(MainActivity.this));
+                              startActivityForResult(i, REQ_TONE);
+                          } catch (Exception ignored) { }
+                      } });
+                  }
+
+                  @JavascriptInterface public String toneName() { return MainActivity.this.toneName(); }
+
+                  @JavascriptInterface public String channelId() { return Notifs.msgChannel(MainActivity.this); }
+
+                  /** Plain facts about this phone's notification setup, for the "Check notifications" screen. */
+                  @JavascriptInterface public String diag() {
+                      try {
+                          JSONObject o = new JSONObject();
+                          NotificationManager nm = getSystemService(NotificationManager.class);
+                          o.put("enabled", nm != null && nm.areNotificationsEnabled());
+                          o.put("permission", Build.VERSION.SDK_INT < 33 || granted(Manifest.permission.POST_NOTIFICATIONS));
+                          String ch = "missing";
+                          if (nm != null) {
+                              android.app.NotificationChannel c = nm.getNotificationChannel(Notifs.msgChannel(MainActivity.this));
+                              if (c != null) ch = c.getImportance() == NotificationManager.IMPORTANCE_NONE ? "blocked" : c.getImportance() < NotificationManager.IMPORTANCE_DEFAULT ? "quiet" : "ok";
+                          }
+                          o.put("channel", ch);
+                          android.os.PowerManager pm = getSystemService(android.os.PowerManager.class);
+                          o.put("battery", pm != null && pm.isIgnoringBatteryOptimizations(getPackageName()));
+                          o.put("fsi", Build.VERSION.SDK_INT < 34 || (nm != null && nm.canUseFullScreenIntent()));
+                          o.put("maker", Build.MANUFACTURER + " " + Build.MODEL);
+                          o.put("android", Build.VERSION.SDK_INT);
+                          o.put("lastPush", Store.getLong(MainActivity.this, "lastPush"));
+                          o.put("lastType", Store.getStr(MainActivity.this, "lastType", ""));
+                          return o.toString();
+                      } catch (Exception e) { return "{}"; }
+                  }
+
+                  /** what = "app" (notification settings), "channel" (the Messages sound/importance), "battery" */
+                  @JavascriptInterface public void openSettings(final String what) {
+                      runOnUiThread(new Runnable() { @Override public void run() {
+                          try {
+                              Intent i;
+                              if ("battery".equals(what)) i = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                              else if ("channel".equals(what)) i = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName()).putExtra(Settings.EXTRA_CHANNEL_ID, Notifs.msgChannel(MainActivity.this));
+                              else i = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+                              startActivity(i);
+                          } catch (Exception e) {
+                              try { startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()))); } catch (Exception ignored) { }
+                          }
+                      } });
+                  }
+
                   @JavascriptInterface public void notifSound() {
                       runOnUiThread(new Runnable() { @Override public void run() { playNotif(); } });
                   }
@@ -693,6 +776,7 @@ jobs:
           import android.content.Context;
           import android.content.Intent;
           import android.graphics.drawable.Icon;
+          import android.net.Uri;
           import android.media.AudioAttributes;
           import android.provider.Settings;
 
@@ -702,7 +786,21 @@ jobs:
               static final String CH_MSG = "messages_v1";
               static final int CALL_ID = 4242;
 
-              static void ensureChannels(Context c) {
+              /** The messages channel. A channel's sound cannot change once created, so each chosen tone gets its own channel id. */
+          static String msgChannel(Context c) {
+              String u = Store.getStr(c, "toneUri", "");
+              return u.length() == 0 ? CH_MSG : "messages_t" + Integer.toHexString(u.hashCode());
+          }
+
+          /** null = silent */
+          static Uri toneUri(Context c) {
+              String u = Store.getStr(c, "toneUri", "");
+              if (u.length() == 0) return Settings.System.DEFAULT_NOTIFICATION_URI;
+              if (u.equals("silent")) return null;
+              return Uri.parse(u);
+          }
+
+          static void ensureChannels(Context c) {
                   NotificationManager nm = c.getSystemService(NotificationManager.class);
                   if (nm == null) return;
 
@@ -716,14 +814,20 @@ jobs:
                   calls.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
                   nm.createNotificationChannel(calls);
 
-                  NotificationChannel msg = new NotificationChannel(CH_MSG, "Messages", NotificationManager.IMPORTANCE_HIGH);
+                  NotificationChannel msg = new NotificationChannel(msgChannel(c), "Messages", NotificationManager.IMPORTANCE_HIGH);
                   msg.setDescription("Uses your phone's notification sound");
-                  msg.setSound(Settings.System.DEFAULT_NOTIFICATION_URI, new AudioAttributes.Builder()
+                  msg.setSound(toneUri(c), new AudioAttributes.Builder()
                           .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                           .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build());
                   msg.enableVibration(true);
                   msg.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
                   nm.createNotificationChannel(msg);
+                  try { // remove channels of tones that are no longer chosen
+                      for (NotificationChannel x : nm.getNotificationChannels()) {
+                          if (x.getId().startsWith("messages_t") && !x.getId().equals(msgChannel(c))) nm.deleteNotificationChannel(x.getId());
+                      }
+                      if (!msgChannel(c).equals(CH_MSG)) nm.deleteNotificationChannel(CH_MSG);
+                  } catch (Exception ignored) { }
               }
 
               static void showMessage(Context c, String from, String title, String body) {
@@ -733,7 +837,7 @@ jobs:
                           .putExtra("chat", from == null ? "" : from);
                   int id = from == null ? 1 : from.hashCode();
                   PendingIntent pi = PendingIntent.getActivity(c, id, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-                  Notification n = new Notification.Builder(c, CH_MSG)
+                  Notification n = new Notification.Builder(c, msgChannel(c))
                           .setSmallIcon(R.drawable.ic_stat)
                           .setContentTitle(title)
                           .setContentText(body)
@@ -835,7 +939,15 @@ jobs:
                   return l;
               }
 
-              static boolean flag(Context c, String k) { return p(c).getBoolean(k, false); }
+              static String getStr(Context c, String k, String d) { return p(c).getString(k, d); }
+
+          static void putStr(Context c, String k, String v) { p(c).edit().putString(k, v).apply(); }
+
+          static long getLong(Context c, String k) { return p(c).getLong(k, 0L); }
+
+          static void putLong(Context c, String k, long v) { p(c).edit().putLong(k, v).apply(); }
+
+          static boolean flag(Context c, String k) { return p(c).getBoolean(k, false); }
 
               static void setFlag(Context c, String k) { p(c).edit().putBoolean(k, true).apply(); }
           }
