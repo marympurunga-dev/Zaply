@@ -52,6 +52,11 @@ function ensureTable() {
         hash CHAR(64) NOT NULL UNIQUE,
         sub TEXT NOT NULL,
         INDEX idx_p (phone))`),
+      db().query(`CREATE TABLE IF NOT EXISTS saved_contacts (
+        owner VARCHAR(20) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        PRIMARY KEY (owner, phone),
+        INDEX idx_phone (phone))`),
       db().query(`CREATE TABLE IF NOT EXISTS blocks (
         blocker VARCHAR(20) NOT NULL,
         blocked VARCHAR(20) NOT NULL,
@@ -235,7 +240,7 @@ async function pushTo(subs, payload) {
 }
 let fcmReady = null;
 function fcmTable() {
-  if (!fcmReady) fcmReady = db().query('CREATE TABLE IF NOT EXISTS fcm_tokens (id BIGINT AUTO_INCREMENT PRIMARY KEY, phone VARCHAR(20) NOT NULL, hash CHAR(64) NOT NULL, token VARCHAR(512) NOT NULL, updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY uq_h (hash), INDEX idx_p (phone))').catch((e) => { fcmReady = null; throw e; });
+  if (!fcmReady) fcmReady = db().query('CREATE TABLE IF NOT EXISTS fcm_tokens (id BIGINT AUTO_INCREMENT PRIMARY KEY, phone VARCHAR(20) NOT NULL, hash CHAR(64) NOT NULL, token VARCHAR(512) NOT NULL, updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, UNIQUE KEY uq_h (hash), INDEX idx_p (phone))').then(() => db().query("ALTER TABLE fcm_tokens ADD COLUMN chan VARCHAR(80) NOT NULL DEFAULT ''").catch(() => {})).catch((e) => { fcmReady = null; throw e; });
   return fcmReady;
 }
 async function fcmPush(rows, data, opts) {
@@ -254,7 +259,7 @@ async function notifyGroup(from, g, groupName, text) {
     }
     if (fcmOn()) {
       await fcmTable();
-      const [rows] = await db().query('SELECT t.id, t.token FROM fcm_tokens t JOIN group_members m ON m.phone = t.phone WHERE m.group_id = ? AND t.phone <> ?', [g, from]);
+      const [rows] = await db().query('SELECT t.id, t.token, t.chan FROM fcm_tokens t JOIN group_members m ON m.phone = t.phone WHERE m.group_id = ? AND t.phone <> ?', [g, from]);
       await fcmPush(rows, { type: 'msg', title: groupName, body, from: 'g:' + g });
     }
   } catch (e) { console.error(e); }
@@ -269,7 +274,7 @@ async function notify(from, to, text) {
     }
     if (fcmOn()) {
       await fcmTable();
-      const [rows] = await db().query('SELECT id, token FROM fcm_tokens WHERE phone = ?', [to]);
+      const [rows] = await db().query('SELECT id, token, chan FROM fcm_tokens WHERE phone = ?', [to]);
       if (isCall) {
         let video = '0'; try { video = JSON.parse(String(text).slice(8)).v ? '1' : '0'; } catch (e) {}
         await fcmPush(rows, { type: 'call', title: name, body: 'Incoming call', from, name, video, call: String(text) }, { ttl: '45s' });
@@ -278,29 +283,38 @@ async function notify(from, to, text) {
   } catch (e) { console.error(e); }
 }
 
+/* ---- last seen / online rules ----
+   last seen:  everyone = anyone who has a chat with me | contacts = people I saved in my contacts | nobody = no one
+   online:     everyone | contacts | same (= follows the last seen rule, so "nobody" hides online too)
+   Old saved values: "except" counts as "contacts". */
+function parsePv(raw) { try { return JSON.parse(raw || '{}') || {}; } catch (e) { return {}; } }
+const lsRule = (pv) => (pv.lastseen === 'nobody' ? 'nobody' : pv.lastseen === 'contacts' || pv.lastseen === 'except' ? 'contacts' : 'everyone');
+const onRule = (pv) => (pv.online === 'same' ? 'same' : pv.online === 'contacts' ? 'contacts' : 'everyone');
+/* how does `viewer` stand with `owner`? */
+async function relation(owner, viewer) {
+  const [s] = await db().query('SELECT 1 FROM saved_contacts WHERE owner = ? AND phone = ? LIMIT 1', [owner, viewer]);
+  const [c] = await db().query('SELECT 1 FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?) LIMIT 1', [owner, viewer, viewer, owner]);
+  return { saved: s.length > 0, chat: c.length > 0 || s.length > 0 };
+}
+function rulePass(rule, rel) { return rule === 'everyone' ? rel.chat : rule === 'contacts' ? rel.saved : false; }
+/* what may `viewer` see about `owner`? */
+async function presenceAccess(owner, ownerPrivacyRaw, viewer) {
+  const pv = parsePv(ownerPrivacyRaw), rel = await relation(owner, viewer), lr = lsRule(pv), or = onRule(pv);
+  const canLast = rulePass(lr, rel);
+  const canOnline = or === 'everyone' ? true : or === 'contacts' ? rel.saved : canLast;
+  return { canLast, canOnline };
+}
+
 /* which of these people may I watch live (online / last seen)? Same privacy rules as presence_bulk. */
 async function watchAllowed(me, list) {
   if (!list.length) return [];
-  const [mine] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
-  let mp = {}; try { mp = JSON.parse((mine[0] && mine[0].privacy) || '{}'); } catch (e) {}
-  if (mp.lastseen === 'nobody') return [];
   const [rows] = await db().query('SELECT phone, privacy FROM profiles WHERE phone IN (?)', [list]);
   const pr = {}; rows.forEach((r) => { pr[r.phone] = r.privacy; });
   const out = [];
   await Promise.all(list.map(async (p) => {
     const bs = await blockState(me, p); if (bs.iBlocked || bs.blockedMe) return;
-    let pv = {}; try { pv = JSON.parse(pr[p] || '{}'); } catch (e) {}
-    if (pv.online === 'same') {
-      const rule = pv.lastseen || 'contacts';
-      let ok = rule === 'everyone';
-      if (rule === 'contacts' || rule === 'except') {
-        const [k] = await db().query('SELECT 1 FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?) LIMIT 1', [me, p, p, me]);
-        ok = k.length > 0;
-        if (rule === 'except' && ((pv.ex && pv.ex.lastseen) || []).includes(me)) ok = false;
-      }
-      if (!ok) return;
-    }
-    out.push(p);
+    const acc = await presenceAccess(p, pr[p], me);
+    if (acc.canOnline) out.push(p);
   }));
   return out;
 }
@@ -473,7 +487,7 @@ module.exports = async (req, res) => {
     if (b.action === 'privacy_set') {
       let pv; try { pv = JSON.parse(String(b.privacy || '{}')); } catch (e) { return res.status(400).json({ error: 'Bad request.' }); }
       const ok = ['everyone', 'contacts', 'except', 'nobody'], clean = {
-        lastseen: ok.includes(pv.lastseen) ? pv.lastseen : 'contacts', online: pv.online === 'same' ? 'same' : 'everyone',
+        lastseen: pv.lastseen === 'except' ? 'contacts' : ['everyone', 'contacts', 'nobody'].includes(pv.lastseen) ? pv.lastseen : 'everyone', online: ['everyone', 'contacts', 'same'].includes(pv.online) ? pv.online : 'everyone',
         photo: ok.includes(pv.photo) ? pv.photo : 'everyone', hidePhone: !!pv.hidePhone,
         ex: { lastseen: (pv.ex && Array.isArray(pv.ex.lastseen) ? pv.ex.lastseen : []).filter(phoneOk).slice(0, 60), photo: (pv.ex && Array.isArray(pv.ex.photo) ? pv.ex.photo : []).filter(phoneOk).slice(0, 60) }
       };
@@ -501,50 +515,37 @@ module.exports = async (req, res) => {
       if (!phoneOk(who) || who === me) return res.json({ hidden: true });
       const bs = await blockState(me, who);
       if (bs.iBlocked || bs.blockedMe) return res.json({ hidden: true });
-      /* if I hide my own last seen, I can't see other people's either */
       const [mine] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
-      let mp = {}; try { mp = JSON.parse((mine[0] && mine[0].privacy) || '{}'); } catch (e) {}
-      if (mp.lastseen === 'nobody') return res.json({ hidden: true });
+      const myLast = lsRule(parsePv(mine[0] && mine[0].privacy)) !== 'nobody'; /* if I hide my own last seen, I can't see other people's last seen either (online is still shown) */
       const [rows] = await db().query('SELECT privacy, last_active, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS online FROM profiles WHERE phone = ?', [who]);
       const r = rows[0];
       if (!r || !r.last_active) return res.json({ hidden: false, online: false, last: null });
-      let pv = {}; try { pv = JSON.parse(r.privacy || '{}'); } catch (e) {}
-      const rule = pv.lastseen || 'contacts';
-      let canLast = rule === 'everyone';
-      if (rule === 'contacts' || rule === 'except') {
-        /* a contact = someone they have chatted with */
-        const [c] = await db().query('SELECT 1 FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?) LIMIT 1', [me, who, who, me]);
-        canLast = c.length > 0;
-        if (rule === 'except' && ((pv.ex && pv.ex.lastseen) || []).includes(me)) canLast = false;
-      }
-      const canOnline = pv.online !== 'same' || canLast;
-      return res.json({ hidden: !canOnline && !canLast, online: canOnline && Number(r.online) === 1, last: canLast ? r.last_active : null });
+      const acc = await presenceAccess(who, r.privacy, me);
+      const online = acc.canOnline && Number(r.online) === 1;
+      return res.json({ hidden: false, online, last: acc.canLast && myLast && !online ? r.last_active : null });
     }
     // Who is online right now, for the chat list (green dot). Same privacy rules as presence_get.
     if (b.action === 'presence_bulk') {
       const list = Array.from(new Set((Array.isArray(b.phones) ? b.phones : []).filter(phoneOk))).filter((p) => p !== me).slice(0, 80);
       if (!list.length) return res.json({ online: {} });
-      const [mine] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
-      let mp = {}; try { mp = JSON.parse((mine[0] && mine[0].privacy) || '{}'); } catch (e) {}
-      if (mp.lastseen === 'nobody') return res.json({ online: {} });
       const [rows] = await db().query('SELECT phone, privacy FROM profiles WHERE phone IN (?) AND is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND', [list]);
       const out = {};
       await Promise.all(rows.map(async (r) => {
         const bs = await blockState(me, r.phone); if (bs.iBlocked || bs.blockedMe) return;
-        let pv = {}; try { pv = JSON.parse(r.privacy || '{}'); } catch (e) {}
-        if (pv.online === 'same') {
-          const rule = pv.lastseen || 'contacts';
-          let ok = rule === 'everyone';
-          if (rule === 'contacts' || rule === 'except') {
-            const [k] = await db().query('SELECT 1 FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?) LIMIT 1', [me, r.phone, r.phone, me]);
-            ok = k.length > 0;
-            if (rule === 'except' && ((pv.ex && pv.ex.lastseen) || []).includes(me)) ok = false;
-          }
-          if (!ok) return;
-        }
-        out[r.phone] = 1;
+        const acc = await presenceAccess(r.phone, r.privacy, me);
+        if (acc.canOnline) out[r.phone] = 1;
       }));
       return res.json({ online: out });
+    }
+    // The phone tells the server which numbers are saved in this person's contacts (needed for the "My contacts" privacy choice).
+    if (b.action === 'contacts_sync') {
+      const list = Array.from(new Set((Array.isArray(b.phones) ? b.phones : []).filter(phoneOk))).filter((p) => p !== me).slice(0, 3000);
+      await db().query('DELETE FROM saved_contacts WHERE owner = ?', [me]);
+      for (let i = 0; i < list.length; i += 500) {
+        const part = list.slice(i, i + 500);
+        await db().query('INSERT IGNORE INTO saved_contacts (owner, phone) VALUES ' + part.map(() => '(?, ?)').join(','), part.flatMap((p) => [me, p]));
+      }
+      return res.json({ ok: true, n: list.length });
     }
     if (b.action === 'blocklist') {
       const [r] = await db().query('SELECT b.blocked AS phone, u.name AS name FROM blocks b LEFT JOIN users u ON u.phone = b.blocked WHERE b.blocker = ? ORDER BY b.created_at DESC', [me]);
@@ -823,7 +824,7 @@ module.exports = async (req, res) => {
       const out = { web: null, fcm: null };
       let subs = [], rows = [];
       try { [subs] = await db().query('SELECT id, sub FROM push_subs WHERE phone = ?', [me]); } catch (e) {}
-      try { if (fcmOn()) { await fcmTable(); [rows] = await db().query('SELECT id, token FROM fcm_tokens WHERE phone = ?', [me]); } } catch (e) {}
+      try { if (fcmOn()) { await fcmTable(); [rows] = await db().query('SELECT id, token, chan FROM fcm_tokens WHERE phone = ?', [me]); } } catch (e) {}
       await new Promise((r) => setTimeout(r, 6000));
       if (!pushOn) out.web = 'Server has no VAPID keys';
       else if (!subs.length) out.web = 'No web-push address saved for this account';
@@ -857,7 +858,8 @@ module.exports = async (req, res) => {
       const ft = typeof b.ftoken === 'string' ? b.ftoken.trim() : '';
       if (ft.length < 20 || ft.length > 500) return res.status(400).json({ error: 'Bad request.' });
       await fcmTable();
-      await db().query('INSERT INTO fcm_tokens (phone, hash, token) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE phone = VALUES(phone), token = VALUES(token)', [me, sha(ft), ft]);
+      const chan = typeof b.chan === 'string' && /^[A-Za-z0-9_]{1,80}$/.test(b.chan) ? b.chan : '';
+      await db().query('INSERT INTO fcm_tokens (phone, hash, token, chan) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE phone = VALUES(phone), token = VALUES(token), chan = VALUES(chan)', [me, sha(ft), ft, chan]);
       return res.json({ ok: true, server: fcmOn() });
     }
 
