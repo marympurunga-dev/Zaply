@@ -3323,7 +3323,7 @@ ZW|Zimbabwe|263`;
       var s = lsGet('zaply_notif', {}); for (var k in s) d[k] = s[k]; return d;
     }
     function pushPrefs() { try { if (window.ZanplyNative && ZanplyNative.setPrefs) ZanplyNative.setPrefs(JSON.stringify(nset())); } catch (e) {} }
-    function pushSession() { try { if (window.ZanplyNative && ZanplyNative.setSession) ZanplyNative.setSession(getToken() || '', (typeof APIS !== 'undefined' && APIS[0]) || ''); } catch (e) {} }
+    function pushSession() { try { if (window.ZanplyNative && ZanplyNative.setSession) ZanplyNative.setSession(getToken() || '', API); } catch (e) {} }
     /* ---------- Mute (per chat). Inside the Android app the list lives in the app, so the notification's Mute button and this screen share it. ---------- */
     function muteMap() {
       var N = window.ZanplyNative;
@@ -4061,12 +4061,53 @@ ZW|Zimbabwe|263`;
       if (d.indexOf('00') === 0) d = d.slice(2); else if (d.charAt(0) === '0') d = (cur ? cur.code : '254') + d.replace(/^0+/, ''); else if (d.length <= 9) d = (cur ? cur.code : '254') + d;
       return d.length >= 7 && d.length <= 15 ? '+' + d : '';
     }
+
+    /* shortens a long @username for display: @fatepagsfdamp -> @fatep... */
+    function shortUser(u) { u = String(u || '').replace(/^@/, ''); return '@' + (u.length > 12 ? u.slice(0, 5) + '...' : u); }
+    function openNewContact() {
+      zOpenPage('New Contact', function (b) {
+        var w = mk('div'); w.style.padding = '14px 20px';
+        function fld(label, ph, max) { var l = mk('div', '', label); l.style.cssText = 'font-size:13px;color:var(--muted);margin:12px 0 6px'; var i = mk('input', 'zin'); i.placeholder = ph; if (max) i.maxLength = max; w.appendChild(l); w.appendChild(i); return i; }
+        var fn = fld('First name', 'First name', 40), ln = fld('Last name', 'Last name', 40), un = fld('Username', 'username (optional)', 30);
+        un.addEventListener('input', function () { un.value = un.value.replace(/[^A-Za-z0-9_.]/g, ''); });
+        var pl = mk('div', '', 'Phone number'); pl.style.cssText = 'font-size:13px;color:var(--muted);margin:12px 0 6px'; w.appendChild(pl);
+        var row = mk('div', 'zline'), sel = mk('select', 'zin'); sel.style.cssText = 'flex:none;width:46%';
+        COUNTRIES.forEach(function (c) { var o = mk('option', '', flag(c.iso) + ' ' + c.name + ' +' + c.code); o.value = c.iso; sel.appendChild(o); });
+        sel.value = (cur && cur.iso) || 'KE';
+        var ph = mk('input', 'zin'); ph.type = 'tel'; ph.placeholder = 'Phone number'; ph.inputMode = 'tel';
+        row.appendChild(sel); row.appendChild(ph); w.appendChild(row);
+        var lab = mk('label'); lab.style.cssText = 'display:flex;gap:10px;align-items:center;margin:18px 0 6px;font-size:15px';
+        var sync = mk('input'); sync.type = 'checkbox'; sync.checked = true; lab.appendChild(sync); lab.appendChild(mk('span', '', 'Sync contact to phone')); w.appendChild(lab);
+        var save = mk('button', '', 'Save'); save.style.cssText = 'width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;color:#fff;font:inherit;font-weight:600;font-size:16px;background:linear-gradient(135deg,#4f46e5,#a855f7)';
+        w.appendChild(save); b.appendChild(w);
+        function done(inApp, user) {
+          var ov = mk('div'); ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px';
+          var bx = mk('div'); bx.style.cssText = 'background:var(--card);color:var(--text);border-radius:16px;padding:22px;width:100%;max-width:320px;text-align:center';
+          bx.appendChild(mk('div', '', 'Contact save successfully')); bx.firstChild.style.cssText = 'font-size:17px;font-weight:600;margin-bottom:18px';
+          var bs = mk('div'); bs.style.cssText = 'display:flex;gap:10px;justify-content:center';
+          function pill(t, primary, fn2) { var x = mk('button', '', t); x.style.cssText = 'padding:11px 24px;border-radius:999px;font:inherit;font-weight:600;border:1px solid var(--border);background:' + (primary ? 'linear-gradient(135deg,#4f46e5,#a855f7)' : 'transparent') + ';color:' + (primary ? '#fff' : 'var(--text)'); x.addEventListener('click', function () { ov.remove(); fn2(); }); bs.appendChild(x); }
+          if (inApp) { pill('Message', true, function () { closeOv(); setTimeout(function () { openThread(user); }, 60); }); pill('Back', false, function () { closeOv(); }); }
+          else pill('OK', true, function () { closeOv(); });
+          bx.appendChild(bs); ov.appendChild(bx); document.body.appendChild(ov);
+        }
+        save.addEventListener('click', function () {
+          var first = fn.value.trim(), last = ln.value.trim(), c = byIso(sel.value), d = ph.value.replace(/\D/g, '').replace(/^0+/, '');
+          if (!first && !last) return toast('Enter a first or last name');
+          if (d.length < 5 || d.length > 14) return toast('That number does not look right');
+          var tel = '+' + c.code + d, a = contacts();
+          a[tel] = { first: first, last: last, iso: c.iso, number: d, cc: c.code, username: un.value.trim() };
+          try { localStorage.setItem('zaply_contacts', JSON.stringify(a)); } catch (e) {} try { syncSavedContacts(); } catch (e) {} try { renderChats(); } catch (e) {}
+          if (sync.checked) addToPhoneContacts(first, last, tel);
+          chatCall('start', { phone: tel }).then(function (res) { done(true, res.user); }).catch(function () { done(false); });
+        });
+      });
+    }
     function openContactPicker() {
       var N = window.ZanplyNative;
       zOpenPage('New chat', function (b) {
         var top = mk('div'); top.style.padding = '10px 16px 4px';
         var q = mk('input', 'zin'); q.placeholder = 'Search your contacts'; top.appendChild(q); b.appendChild(top);
-        zrow2(b, 'add', 'New chat by phone number', 'Type a number yourself', function () { closeOv(); setTimeout(openNumberBox, 80); });
+        zrow2(b, 'add', 'New Contact', 'Save a name, username and number', function () { closeOv(); setTimeout(openNewContact, 80); });
         var list = mk('div'), all = null; b.appendChild(list);
         function start(c) {
           var num = contactNum(c.p); if (!num) return toast('That number does not look right');
