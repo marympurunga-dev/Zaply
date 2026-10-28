@@ -5,6 +5,8 @@ const mysql = require('mysql2/promise');
 
 const SECRET = process.env.AUTH_SECRET || 'change-me';
 const CODE = process.env.DEMO_CODE || ''; // demo sign-in is OFF unless you set DEMO_CODE in Vercel
+const DEMO_PHONES = String(process.env.DEMO_PHONES || '').split(',').map((x) => x.trim()).filter(Boolean); // optional: only these numbers (e.g. +254712345678) may use DEMO_CODE
+const demoOk = (p) => !!CODE && (!DEMO_PHONES.length || DEMO_PHONES.includes(p));
 const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY || '';
 if (SECRET === 'change-me') console.warn('WARNING: set AUTH_SECRET in Vercel, otherwise login tokens can be forged.');
 
@@ -117,6 +119,7 @@ module.exports = async (req, res) => {
 
     if (b.action === 'send') {
       if (!phoneOk(b.phone)) return res.status(400).json({ error: 'Enter a valid phone number.' });
+      if (demoOk(b.phone)) return res.json({ ok: true }); // demo number: no SMS is sent, use DEMO_CODE
       const [prev] = await db().query('SELECT TIMESTAMPDIFF(SECOND, created_at, NOW()) AS age FROM phone_codes WHERE phone = ?', [b.phone]);
       if (prev[0] && prev[0].age < 30) return res.status(429).json({ error: 'Please wait a little before asking for another code.' });
       const code = String(crypto.randomInt(0, 1000000)).padStart(6, '0');
@@ -134,7 +137,7 @@ module.exports = async (req, res) => {
       if (!phoneOk(b.phone)) return res.status(400).json({ error: 'Enter a valid phone number.' });
       let verified = false;
       if (b.idToken) verified = (await phoneFromFirebase(b.idToken)) === b.phone;
-      else if (CODE && String(b.code) === CODE) verified = true; // only when DEMO_CODE is set
+      else if (demoOk(b.phone) && String(b.code) === CODE) verified = true; // only when DEMO_CODE is set (and the number is allowed)
       else if (b.code) {
         const [rows] = await db().query('SELECT code_hash, attempts, (expires_at > NOW()) AS valid FROM phone_codes WHERE phone = ?', [b.phone]);
         const row = rows[0];
