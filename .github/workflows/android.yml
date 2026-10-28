@@ -1441,7 +1441,28 @@ jobs:
               }
 
           /** Inline reply: sends the typed text to the server as a normal message. Runs on a background thread. */
+          /** Opens a connection on the phone's active network. Background code sometimes cannot use the default route, which shows up as "Unable to resolve host". */
+          static HttpURLConnection openConn(Context c, String u) throws Exception {
+              URL url = new URL(u);
+              try {
+                  android.net.ConnectivityManager cm = (android.net.ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
+                  if (cm != null) {
+                      android.net.Network n = cm.getActiveNetwork();
+                      if (n != null) return (HttpURLConnection) n.openConnection(url);
+                  }
+              } catch (Exception ignored) { }
+              return (HttpURLConnection) url.openConnection();
+          }
+
+          /** Tries up to 3 times, because the network is often still waking up when the reply button is tapped. */
           static boolean sendReplyOnServer(Context c, String to, String text) {
+              for (int i = 0; i < 3; i++) {
+                  if (sendReplyOnce(c, to, text)) return true;
+                  try { Thread.sleep(2500); } catch (InterruptedException ignored) { }
+              }
+              return false;
+          }
+          static boolean sendReplyOnce(Context c, String to, String text) {
               try {
                   String tok = Store.getStr(c, "session", ""), base = Store.getStr(c, "apiBase", "");
                   if (tok.length() == 0 || base.length() == 0 || to == null || to.length() == 0) { Store.log(c, "Reply not sent: no saved sign-in. Open Zanply once."); return false; }
@@ -1450,7 +1471,7 @@ jobs:
                   o.put("token", tok);
                   o.put("to", to);
                   o.put("body", text);
-                  HttpURLConnection h = (HttpURLConnection) new URL(base + "/chat").openConnection();
+                  HttpURLConnection h = openConn(c, base + "/chat");
                   h.setRequestMethod("POST");
                   h.setRequestProperty("Content-Type", "application/json");
                   h.setConnectTimeout(8000);
@@ -1491,7 +1512,7 @@ jobs:
                       o.put("token", tok);
                       o.put("with", from);
                       o.put("after", 2147483647);
-                      HttpURLConnection h = (HttpURLConnection) new URL(base + "/chat").openConnection();
+                      HttpURLConnection h = openConn(c, base + "/chat");
                       h.setRequestMethod("POST");
                       h.setRequestProperty("Content-Type", "application/json");
                       h.setConnectTimeout(6000);
