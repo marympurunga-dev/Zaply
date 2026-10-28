@@ -1566,9 +1566,56 @@ ZW|Zimbabwe|263`;
       $('phone').focus();
     });
     function delay(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+    /* ---------- Firebase phone sign-in (Google sends the SMS, so no Sender ID is needed) ----------
+       Paste your Firebase web app settings below (Firebase Console > Project settings > Your apps > Web app).
+       While apiKey is empty, sign-in keeps using the server's own SMS provider. */
+    var FB_CFG = { apiKey: '', authDomain: '', projectId: '', appId: '' };
+    var fbConf = null;
+    function fbOn() { return !!(FB_CFG.apiKey && FB_CFG.projectId); }
+    function fbLoad() {
+      if (window.firebase && firebase.auth) return Promise.resolve();
+      function ld(u) { return new Promise(function (ok, no) { var e = document.createElement('script'); e.src = u; e.onload = ok; e.onerror = function () { no(new Error('Could not load the verification service. Check your internet and try again.')); }; document.head.appendChild(e); }); }
+      var B = 'https://www.gstatic.com/firebasejs/10.12.2/';
+      return ld(B + 'firebase-app-compat.js').then(function () { return ld(B + 'firebase-auth-compat.js'); });
+    }
+    function fbErr(e) {
+      var c = (e && e.code) || '';
+      if (c === 'auth/invalid-phone-number') return 'That phone number does not look right.';
+      if (c === 'auth/too-many-requests') return 'Too many tries. Please wait a while and try again.';
+      if (c === 'auth/quota-exceeded') return 'The SMS limit was reached. Try again later.';
+      if (c === 'auth/captcha-check-failed' || c === 'auth/missing-recaptcha-token') return 'Security check failed. Please try again.';
+      if (c === 'auth/operation-not-allowed') return 'Phone sign-in is not turned on in Firebase (or this country is blocked).';
+      if (c === 'auth/unauthorized-domain') return 'This website is not allowed in Firebase. Add zaply-gamma.vercel.app to Authorized domains.';
+      if (c === 'auth/network-request-failed') return 'No internet connection. Check your data or WiFi and try again.';
+      return (e && e.message) ? e.message : 'Could not send the code. Please try again.';
+    }
+    function fbSend(phone) {
+      return fbLoad().then(function () {
+        if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
+        try { if (window.fbVerifier) window.fbVerifier.clear(); } catch (e) {}
+        $('fbCaptcha').innerHTML = '';
+        window.fbVerifier = new firebase.auth.RecaptchaVerifier('fbCaptcha', { size: 'invisible' });
+        return firebase.auth().signInWithPhoneNumber(phone, window.fbVerifier);
+      }).then(function (cr) { fbConf = cr; return { ok: true }; })
+        .catch(function (e) { console.error('Firebase send', e); throw new Error(fbErr(e)); });
+    }
+    function fbVerify(phone, code) {
+      if (!fbConf) return Promise.reject(new Error('Please go back and ask for a new code.'));
+      return fbConf.confirm(code).then(function (cred) { return cred.user.getIdToken(); })
+        .then(function (t) { try { firebase.auth().signOut(); } catch (e) {} return call('verify', { phone: phone, idToken: t }); })
+        .catch(function (e) {
+          var c = (e && e.code) || '';
+          if (c === 'auth/invalid-verification-code') throw new Error('Wrong code. Please try again.');
+          if (c === 'auth/code-expired') throw new Error('That code has expired. Request a new one.');
+          throw (e && e.message && !c ? e : new Error(fbErr(e)));
+        });
+    }
+    function sendCode(data) { return fbOn() ? fbSend(data.phone) : call('send', data); }
+    function verifyCode(phone, code) { return fbOn() ? fbVerify(phone, code) : call('verify', { phone: phone, code: code }); }
+
     /* "Connecting" 3s, then "Sending code" 3s. The SMS provider is only called after 5s so the message does not go out instantly. */
     function sendCodeFlow(data) {
-      var api = delay(5000).then(function () { return call('send', data); });
+      var api = delay(5000).then(function () { return sendCode(data); });
       api.catch(function () {});
       return showLoader('Connecting\u2026', 3000)
         .then(function () { return showLoaderWhile('Sending code\u2026', api, 3000); })
@@ -1581,7 +1628,7 @@ ZW|Zimbabwe|263`;
       /* "Connecting" on the number page, then the code page opens and shows "Sending code".
          The SMS provider is only called 5 seconds after the tap, so the message does not go out instantly. */
       var data = { phone: phoneValue, method: 'sms' };
-      var api = delay(5000).then(function () { return call('send', data); });
+      var api = delay(5000).then(function () { return sendCode(data); });
       api.catch(function () {});
       showLoader('Connecting\u2026', 3000)
         .then(function () {
@@ -1751,7 +1798,7 @@ ZW|Zimbabwe|263`;
       if (code.length !== 6 || phoneVerifying) return;
       phoneVerifying = true;
       $('msgCode').textContent = '';
-      showLoaderWhile('Checking OTP you just entered\u2026', call('verify', { phone: phoneValue, code: code }), 3000)
+      showLoaderWhile('Checking OTP you just entered\u2026', verifyCode(phoneValue, code), 3000)
         .then(function (res) {
           return loaderDone('Verified', 1500).then(function () { setToken(res.token); afterAuth(res.user); });
         })
@@ -6067,5 +6114,6 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
     }
   </script>
+<div id="fbCaptcha"></div>
 </body>
 </html>
