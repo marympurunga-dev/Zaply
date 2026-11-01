@@ -250,6 +250,9 @@
     .cbtn{width:72px;height:72px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;padding:0;background:var(--card);color:var(--text)}
     .srow{display:flex;align-items:center;gap:16px;padding:10px 0;cursor:pointer}
     .srow i{width:48px;height:48px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none}
+    .srow span small{display:block;color:var(--muted);font-size:13px;margin-top:2px}.srow .rt{flex:1;min-width:0}
+    .zsw2{margin-left:auto;width:46px;height:26px;border-radius:13px;background:#5b6269;position:relative;flex:none}.zsw2::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}.zsw2.on{background:#2f6bff}.zsw2.on::after{left:23px}
+    .bub.kept small::before{content:"\1F516 "}#msgs.acp,#msgs.acp *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
     .start{text-align:center;padding:40px 24px}
     .start h3{margin:14px 0 6px;font-size:24px}
     .start p{color:var(--muted);margin:0 0 20px}
@@ -991,10 +994,22 @@
     </div>
 
     <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button></div>
-    <div class="sset"><div class="pv-top si-top"><div class="av big" id="inAv"></div><div class="pv-name" id="inName"></div><div class="sub" id="inPhone" style="margin:4px 0 0"></div></div><div class="acts"><div class="act"><button id="sCall" class="cbtn" aria-label="Call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><span>Call</span></div><div class="act"><button id="sVideoBtn" class="cbtn" aria-label="Video Chat"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><span>Video Chat</span></div><div class="act"><button id="sProfileBtn" class="cbtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Profile</span></div><div class="act"><button id="sSaveBtn" class="cbtn" aria-label="Save"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Save</span></div></div>
-    <div id="inBiz" style="padding:0 16px"></div>
-    <h4>Actions</h4><div class="srow" id="sUnread"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></i><span>Mark as unread</span></div><div class="srow" id="sShare"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span>Share contact</span></div><div class="srow" id="sGroup"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></i><span  id="sGroupT">Create group</span></div>
-    <h4>Privacy &amp; support</h4><div class="srow" id="sEnc"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span>Verify end-to-end encryption</span></div><div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></i><span>Disappearing messages</span></div><div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></i><span>Read receipts</span></div><div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg></i><span  id="sBlockT">Block</span></div><div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></i><span>Report</span></div></div></div>
+    <div class="sset"><div class="pv-top si-top"><div class="av big" id="inAv"></div><div class="pv-name" id="inName"></div><div class="sub" id="inPhone" style="margin:4px 0 0"></div></div><div class="acts"><div class="act"><button id="sCall" class="cbtn" aria-label="Call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><span>Call</span></div><div class="act"><button id="sVideoBtn" class="cbtn" aria-label="Video Chat"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><span>Video Chat</span></div><div class="act"><button id="sProfileBtn" class="cbtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Profile</span></div></div>
+    <div class="srow" id="sAddC"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></i><span class="rt">Add to contacts</span></div>
+    <div id="inBiz" style="padding:0"></div>
+    <div class="srow" id="sNotif"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></i><span class="rt">Notifications<small id="sNotifS">On</small></span></div>
+    <div class="srow" id="sMedia"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></i><span class="rt">Media visibility<small id="sMediaS">On</small></span></div>
+    <div class="srow" id="sKept"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15-5-2.18L7 18V5h10v13z"/></svg></i><span class="rt">Kept messages</span></div>
+    <div class="srow" id="sEnc"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span>Verify end-to-end encryption</span></div>
+    <div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></i><span>Disappearing messages</span></div>
+    <div class="srow" id="sLock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span class="rt">Chat lock<small id="sLockS">Lock and hide this chat on this device.</small></span><b class="zsw2" id="sLockSw"></b></div>
+    <div class="srow" id="sAdv"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></i><span class="rt">Advanced chat privacy<small id="sAdvS">Off</small></span></div>
+    <div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></i><span>Read receipts</span></div>
+    <div class="srow" id="sUnread"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></i><span>Mark as unread</span></div>
+    <div class="srow" id="sShare"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span>Share contact</span></div>
+    <div class="srow" id="sGroup"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></i><span  id="sGroupT">Create group</span></div>
+    <div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg></i><span  id="sBlockT">Block</span></div>
+    <div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></i><span>Report</span></div></div></div>
     <div id="blockSheet" class="bsh hidden"><div class="bsh-box">
       <h3 id="bshTitle">Block</h3>
       <div class="bsh-i"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h9.3A6.9 6.9 0 0 1 13 18c0-1.3.36-2.5.98-3.55C13.2 14.15 12.6 14 12 14z"/><path d="M18 14a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-2.5 4a2.5 2.5 0 0 1 4-2l-3.5 3.5a2.5 2.5 0 0 1-.5-1.5zm2.5 2.5c-.55 0-1.05-.18-1.5-.5l3.5-3.5c.32.45.5.95.5 1.5a2.5 2.5 0 0 1-2.5 2.5z"/></svg><div><b>Prevents unwanted contact</b><span>They won't be able to call or message you outside groups.</span></div></div>
@@ -2598,7 +2613,7 @@ ZW|Zimbabwe|263`;
     function openChatHistory() {
       zOpenPage('Chat history', function (b) {
         var N = window.ZanplyNative, can = !!(N && N.saveTextFile);
-        var chats = (allChats || []).filter(function (c) { return c && c.phone; });
+        var chats = (allChats || []).filter(function (c) { return c && c.phone && !acpOn(c.phone); });
         b.appendChild(mk('div', 'zfoot', 'Your messages are end-to-end encrypted, so only this phone can read them. ' + (can ? 'Tap a chat to save a readable copy on this phone (Downloads \u203a Zanply).' : 'Tap a chat to open it.')));
         if (!chats.length) { zempty(b, 'You have no chats yet.'); return; }
         var busy = false;
@@ -3483,7 +3498,7 @@ ZW|Zimbabwe|263`;
     function msgExpired(m, ph) { var e = expiryMs(ph); if (!e) return false; var t = new Date(m.at).getTime(); return t > 0 && Date.now() - t > e; }
     setInterval(function () {
       var e = expiryMs(); if (!e || !openWith) return; var now = Date.now();
-      Array.prototype.slice.call(document.querySelectorAll('#msgs .bub[data-at]')).forEach(function (el) { if (now - (+el.getAttribute('data-at')) > e) el.remove(); });
+      Array.prototype.slice.call(document.querySelectorAll('#msgs .bub[data-at]')).forEach(function (el) { if (now - (+el.getAttribute('data-at')) > e && !el.classList.contains('kept')) el.remove(); });
     }, 30000);
     function openAutoDelete() {
       zOpenPage('Auto-delete messages', function (b) {
@@ -3873,7 +3888,7 @@ ZW|Zimbabwe|263`;
       updateCounts(); try { archiveSweep(); } catch (e) {}
       allChats.forEach(function (c) { var s = savedName(c.phone); if (s) c.name = s; if (!c.mine && isCallMsg(c.last)) ringFor(c.last, c.at, c); });
       var q = ($('chatSearch').value || '').toLowerCase().trim(), fv = favs();
-      var base = withPending(allChats).filter(function (c) { return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
+      var base = withPending(allChats).filter(function (c) { if (isLocked(c.phone)) return false; return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
       var shown = base.filter(function (c) {
         if (isArchived(c)) return false;
         if (/^f:/.test(filt)) return inFolder(filt.slice(2), c);
@@ -3915,6 +3930,7 @@ ZW|Zimbabwe|263`;
       }
       shown.forEach(function (c) { box.appendChild(row(c, true)); });
       try { archRow(box); } catch (e) {}
+      try { lockedRow(box); } catch (e) {}
       base.filter(function (c) { return !c.group; }).forEach(function (c) { cb.appendChild(row(c, false)); });
     }
     function loadChats() {
@@ -4014,6 +4030,7 @@ ZW|Zimbabwe|263`;
       var sm = mk('small', '', hhmm(m.at)); b.appendChild(sm);
       if (m.mine && m.st && !wasCall && bd.indexOf('__game__') !== 0 && !(openUser && openUser.group)) sm.appendChild(tickEl(m.st));
       if (m.id) b.setAttribute('data-id', String(m.id));
+      if (m.id && openWith && keptMap(openWith)[m.id]) b.classList.add('kept');
       if (openUser && openUser.group && !m.mine && m.from) b.insertBefore(mk('span', 'gfrom', m.from), b.firstChild);
       b.setAttribute('data-at', String(new Date(m.at).getTime())); if (Date.now() - new Date(m.at).getTime() < 15000) b.classList.add('fresh');
       $('msgs').appendChild(b);
@@ -5107,6 +5124,120 @@ ZW|Zimbabwe|263`;
       var tel = c && a[openUser.phone].number ? '+' + c.code + a[openUser.phone].number.replace(/\D/g, '').replace(/^0+/, '') : openUser.phone;
       if (wantPhone) addToPhoneContacts(first, last, tel); /* must run inside this tap so the phone allows the share sheet */
       renderChats(); closeOv(); if (!(window.ZanplyNative && ZanplyNative.saveContact)) toast(wantPhone ? 'Saved. Tap Save in your phone’s Contacts to finish.' : 'Contact saved', true);
+    });
+
+    /* ================= per-chat settings on the contact page: contacts, notifications, media, kept messages, chat lock, advanced privacy ================= */
+    function pcGet(k, ph) { return !!lsGet('zaply_' + k, {})[ph]; }
+    function pcSet(k, ph, on) { var m = lsGet('zaply_' + k, {}); if (on) m[ph] = 1; else delete m[ph]; lsSet('zaply_' + k, m); }
+    function isLocked(ph) { return pcGet('clock', ph); }
+    function acpOn(ph) { return pcGet('acp', ph); }
+    function mediaOff(ph) { return pcGet('mvoff', ph) || acpOn(ph); }
+    function keptMap(ph) { return lsGet('zaply_kept_' + ph, {}); }
+    /* media visibility off (or advanced privacy on): photos from this chat don't download by themselves and can't be saved */
+    var _adl = autoDl; autoDl = function (k) { return (openWith && mediaOff(openWith)) ? false : _adl(k); };
+    var _ov = openViewer; openViewer = function (u, n) { _ov(u, n); $('vwDl').style.display = (openWith && mediaOff(openWith)) ? 'none' : ''; };
+    /* kept messages survive disappearing messages */
+    var _me = msgExpired; msgExpired = function (m, ph) { var p = ph || openWith; if (m && m.id && p && keptMap(p)[m.id]) return false; return _me(m, ph); };
+    /* chat lock: biometric / screen lock through the phone */
+    var unlockedChats = {};
+    document.addEventListener('visibilitychange', function () { if (document.hidden) unlockedChats = {}; });
+    function lockAuth() {
+      if (!(window.PublicKeyCredential && navigator.credentials)) return Promise.reject(new Error('Chat lock needs your phone\u2019s fingerprint, face or screen lock, which isn\u2019t available here.'));
+      if (!localStorage.getItem('zaply_lockid')) return enableLock();
+      return navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: unb64u(localStorage.getItem('zaply_lockid')) }], userVerification: 'required', timeout: 60000 } });
+    }
+    function lockFail(e) { toast((e && e.name !== 'NotAllowedError' && e.message) || 'Could not unlock. Try again.'); }
+    function applyThreadPrivacy(u) { $('msgs').classList.toggle('acp', !!(u && acpOn(u.phone))); }
+    var _ot = openThread;
+    openThread = function (u) {
+      if (u && isLocked(u.phone) && !unlockedChats[u.phone]) { lockAuth().then(function () { unlockedChats[u.phone] = 1; _ot(u); applyThreadPrivacy(u); }).catch(lockFail); return; }
+      _ot(u); applyThreadPrivacy(u);
+    };
+    function lockedRow(box) {
+      var n = allChats.filter(function (c) { return isLocked(c.phone); }).length; if (!n || filt !== 'all' || ($('chatSearch').value || '').trim()) return;
+      var r = mk('div', 'row archrow'), ic = mk('div', 'av'); ic.style.background = 'transparent'; ic.style.color = 'var(--muted)'; ic.textContent = '\uD83D\uDD12';
+      var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', 'Locked chats')); r.appendChild(ic); r.appendChild(mid); r.appendChild(mk('time', '', String(n)));
+      r.addEventListener('click', function () { lockAuth().then(openLocked).catch(lockFail); }); box.insertBefore(r, box.firstChild);
+    }
+    function openLocked() {
+      allChats.forEach(function (c) { if (isLocked(c.phone)) unlockedChats[c.phone] = 1; });
+      zOpenPage('Locked chats', function (b) {
+        var list = allChats.filter(function (c) { return isLocked(c.phone); });
+        if (!list.length) return zempty(b, 'No locked chats. Turn on Chat lock in a contact\u2019s info.');
+        list.forEach(function (c) {
+          var r = mk('div', 'row'); r.style.padding = '12px 16px'; r.appendChild(avatar(c));
+          var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', shortUser(labelOf(c)))); mid.appendChild(mk('span', '', previewOf(c.last))); r.appendChild(mid);
+          r.addEventListener('click', function () { closeOv(); openThread({ phone: c.phone, name: c.name, group: !!c.group }); }); b.appendChild(r);
+        });
+      });
+    }
+    /* kept messages: press and hold a message */
+    function keepSheet(el) {
+      var id = +el.getAttribute('data-id'), ph = openWith, m = thCache.filter(function (x) { return x && x.id === id; })[0]; if (!m || !ph) return;
+      var map = keptMap(ph), on = !!map[id];
+      zsheet('Message', [[on ? 'Remove from kept messages' : 'Keep message', function () {
+        map = keptMap(ph); if (on) delete map[id]; else map[id] = { body: m.body, at: m.at, mine: !!m.mine };
+        lsSet('zaply_kept_' + ph, map); el.classList.toggle('kept', !on); toast(on ? 'Removed from kept messages' : 'Message kept. It won\u2019t disappear.', true);
+      }]]);
+    }
+    (function () {
+      var tm = 0, sx = 0, sy = 0, armed = null, box = $('msgs');
+      function bub(e) { return e.target.closest && e.target.closest('.bub[data-id]'); }
+      box.addEventListener('touchstart', function (e) { armed = null; var b = bub(e); if (!b) return; var t = e.touches[0]; sx = t.clientX; sy = t.clientY; clearTimeout(tm); tm = setTimeout(function () { armed = b; if (navigator.vibrate) { try { navigator.vibrate(15); } catch (x) {} } }, 550); }, { passive: true });
+      box.addEventListener('touchmove', function (e) { var t = e.touches[0]; if (Math.abs(t.clientX - sx) > 8 || Math.abs(t.clientY - sy) > 8) { clearTimeout(tm); armed = null; } }, { passive: true });
+      box.addEventListener('touchend', function (e) { clearTimeout(tm); if (armed) { e.preventDefault(); var b = armed; armed = null; keepSheet(b); } });
+      box.addEventListener('touchcancel', function () { clearTimeout(tm); armed = null; });
+      box.addEventListener('contextmenu', function (e) { var b = bub(e); if (b) { e.preventDefault(); keepSheet(b); } });
+      box.addEventListener('copy', function (e) { if (openWith && acpOn(openWith)) e.preventDefault(); });
+    })();
+    function openKept() {
+      var ph = openUser.phone;
+      zOpenPage('Kept messages', function (b) {
+        var map = keptMap(ph), ids = Object.keys(map).sort(function (x, y) { return new Date(map[y].at) - new Date(map[x].at); });
+        if (!ids.length) return zempty(b, 'No kept messages. Press and hold a message in the chat to keep it, so it stays even when disappearing messages is on.');
+        ids.forEach(function (id) {
+          var k = map[id], r = mk('div', 'row'); r.style.padding = '12px 16px'; var mid = mk('div', 'mid');
+          mid.appendChild(mk('b', '', k.mine ? 'You' : shortUser(labelOf(openUser)))); mid.appendChild(mk('span', '', previewOf(k.body))); r.appendChild(mid); r.appendChild(mk('time', '', new Date(k.at).toLocaleDateString()));
+          r.addEventListener('click', function () { zsheet('Kept message', [['Remove from kept messages', function () { var mm = keptMap(ph); delete mm[id]; lsSet('zaply_kept_' + ph, mm); r.remove(); if (!b.querySelector('.row')) zempty(b, 'No kept messages.'); }]]); });
+          b.appendChild(r);
+        });
+      });
+    }
+    /* contact page rows */
+    function refreshInfoRows() {
+      if (!openUser || openUser.group) return; var ph = openUser.phone;
+      $('sAddC').style.display = savedName(ph) ? 'none' : '';
+      $('sNotifS').textContent = isMuted(ph) ? 'Muted' : 'On';
+      $('sMediaS').textContent = mediaOff(ph) ? 'Off' : 'On';
+      $('sLockSw').classList.toggle('on', isLocked(ph));
+      $('sAdvS').textContent = acpOn(ph) ? 'On' : 'Off';
+    }
+    var _oi2 = openInfo; openInfo = function () { _oi2.apply(this, arguments); try { refreshInfoRows(); } catch (e) {} };
+    $('infoView').addEventListener('click', function (e) {
+      var rw = e.target.closest('.srow'); if (!rw || !openUser || openUser.group) return; var ph = openUser.phone, id = rw.id;
+      if (id === 'sAddC') openSave();
+      else if (id === 'sNotif') {
+        var H = 3600000, D = 24 * H;
+        var go = function (ms, label) { return [label, function () { setMute(ph, Date.now() + ms); refreshInfoRows(); renderChats(); toast('Muted ' + (ms > 3650 * D ? 'always' : 'for ' + label.toLowerCase()), true); }]; };
+        var items = [go(8 * H, '8 hours'), go(7 * D, '1 week'), go(36500 * D, 'Always')];
+        if (isMuted(ph)) items.unshift(['Turn notifications on', function () { setMute(ph, 0); refreshInfoRows(); renderChats(); toast('Notifications are on', true); }]);
+        zsheet('Notifications', items);
+      }
+      else if (id === 'sMedia') {
+        if (acpOn(ph)) return toast('Turn off Advanced chat privacy to change this.');
+        pcSet('mvoff', ph, !pcGet('mvoff', ph)); refreshInfoRows(); toast(pcGet('mvoff', ph) ? 'Photos from this chat won\u2019t download or save by themselves' : 'Media visibility is on', true);
+      }
+      else if (id === 'sKept') openKept();
+      else if (id === 'sLock') {
+        var want = !isLocked(ph);
+        lockAuth().then(function () {
+          pcSet('clock', ph, want); unlockedChats[ph] = 1; refreshInfoRows(); renderChats(); toast(want ? 'Chat locked. It\u2019s now in Locked chats.' : 'Chat unlocked', true);
+        }).catch(lockFail);
+      }
+      else if (id === 'sAdv') {
+        if (acpOn(ph)) { pcSet('acp', ph, false); applyThreadPrivacy(openUser); refreshInfoRows(); return toast('Advanced chat privacy is off', true); }
+        zconfirm('Advanced chat privacy stops this chat from being exported, blocks saving and auto-downloading its photos, and stops copying its messages.', function () { pcSet('acp', ph, true); applyThreadPrivacy(openUser); refreshInfoRows(); toast('Advanced chat privacy is on', true); }, 'Turn on');
+      }
     });
     /* A web app is not allowed to write into the phone's address book directly. The closest thing the phone allows is
        handing it a contact card (.vcf): the phone's Contacts app opens it and the person taps Save once. */
