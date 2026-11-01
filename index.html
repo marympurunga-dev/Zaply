@@ -6030,6 +6030,9 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         '.zpets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.zpet{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1px solid var(--border);border-radius:12px;background:var(--card);color:inherit;font:inherit;font-size:12px;cursor:pointer}' +
         '.zpet span{font-size:30px;line-height:1}.zpet.on{border-color:#128c7e;box-shadow:0 0 0 2px #128c7e inset}.zbizbadge{font-size:12px;font-weight:700;letter-spacing:1.5px;color:#128c7e;margin:6px 0 2px;text-align:center}' +
         '.zdate{display:flex;gap:10px}.zdate input{text-align:center}.zsoc{display:flex;align-items:center;gap:10px;margin:8px 0}.zsoc i{font-style:normal;font-size:24px;width:34px;text-align:center}' +
+        '.zprof .zcard{background:transparent;border:0;border-radius:0;margin:0 0 4px}.zprof .zir{padding:16px 24px;gap:28px}.zprof .zir+.zir{border-top:0}.zprof .zir .zl{font-size:16px;color:var(--text);margin-bottom:3px}' +
+        '.zprof .zir .zv{font-size:15px;color:var(--muted)}.zprof .zir .zv.empty{color:#21c063;font-weight:700;opacity:1;padding:0;text-align:left}.zprof .zir>span:last-child{display:none}.zprof .zcam{color:#0b141a}.zprof .zsec{padding:14px 24px 4px}' +
+        '.zir .zv.empty{padding:0;text-align:left}' +
         '.zcrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}.zcrow b{margin-left:auto;font-weight:400;opacity:.6}';
       document.head.appendChild(st);
     })();
@@ -6181,7 +6184,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     function openDetails() {
       zOpenPage('Profile', function (b) {
         var P = cachedMyProf(), head = mk('div', 'zhead'), list = mk('div');
-        b.appendChild(head); b.appendChild(list);
+        b.classList.add('zprof'); b.appendChild(head); b.appendChild(list);
         var wrap = mk('div', 'zavw'), av = mk('div', 'zav'), cam = mk('button', 'zcam');
         cam.setAttribute('aria-label', 'Change profile photo'); cam.innerHTML = zico('cam'); wrap.appendChild(av); wrap.appendChild(cam); head.appendChild(wrap);
         function myName() { return P.name || (curUser && curUser.name) || nameOf(myPhone) || ''; }
@@ -6229,18 +6232,18 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         function render() {
           list.innerHTML = '';
           var c0 = mk('div', 'zcard'); row(c0, 'brief', 'Account Type', acctType() === 'business' ? 'Business account' : 'Personal account', '', function () { openAcctType(after); }); list.appendChild(c0);
-          var c = mk('div', 'zcard'), D = DFIELDS, ct = countryOf(myPhone);
+          var isBiz = acctType() === 'business', c = mk('div', 'zcard'), D = DFIELDS, ct = countryOf(myPhone);
           row(c, 'person', 'Name', myName(), 'Add name', edit(D.name));
-          row(c, 'at', 'Username', P.username ? '@' + P.username : '', 'Reserve username', edit(D.username));
           row(c, 'info', 'About', P.bio, 'Set About', edit(D.bio));
-          if (ct) row(c, 'pin', 'Country', flag(ct.iso) + '  ' + ct.name, '', null, '', true);
+          row(c, 'at', 'Username', P.username ? '@' + P.username : '', 'Reserve username', edit(D.username));
           row(c, 'phone', 'Phone', myPhone || '', '', function () { phonePage(P); });
+          if (ct) row(c, 'pin', 'Country', flag(ct.iso) + '  ' + ct.name, '', null, '', true);
           row(c, 'mail', 'Email', P.email, 'Add email', function () { emailPage(P, after); }, P.email ? 'Verified' : '');
           row(c, 'cake', 'Birthday', fmtBday(P.birthday), 'Add birthday', edit(D.birthday));
           row(c, 'paw', 'Pet', P.pet ? petIcon(P.pet) + '  ' + P.pet : '', 'Add pet', edit(D.pet));
           row(c, 'link', 'Links', fmtLinks(P.links), 'Add links', edit(D.links));
-          list.appendChild(c);
-          if (acctType() === 'business') {
+          if (!isBiz) list.appendChild(c);
+          if (isBiz) {
             var B = P.biz || {}, cb = mk('div', 'zcard'); cb.appendChild(mk('div', 'zsec', 'Business profile'));
             function br(icon, label, val, empty, key) { row(cb, icon, label, val, empty, function () { bizPage(key, P, after); }); }
             br('brief', 'Business name', B.name, 'Add business name', 'name'); br('at', 'Business username', B.username ? '@' + B.username : '', 'Add business username', 'username');
@@ -6377,14 +6380,15 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       var nm = $('pvName'), badge = $('pvBiz');
       if (!badge && nm) { badge = mk('div', 'zbizbadge', 'BUSINESS ACCOUNT'); badge.id = 'pvBiz'; nm.parentNode.insertBefore(badge, nm); }
       var biz = p.acct === 'business'; if (badge) badge.style.display = biz ? '' : 'none';
-      card.appendChild(profRow('at', p.username ? '@' + p.username : '', 'Username'));
-      card.appendChild(profRow('mail', p.email, 'Email'));
-      card.appendChild(profRow('phone', p.phone_hidden ? 'Hidden number' : phone, 'Phone number'));
-      card.appendChild(profRow('info', p.bio, 'About'));
-      card.appendChild(profRow('cake', fmtBirthday(p.birthday), 'Birthday'));
-      card.appendChild(profRow('paw', p.pet ? petIcon(p.pet) + ' ' + p.pet : '', 'Pet'));
-      card.appendChild(linkRow('link', 'Links', String(p.links || '').split(/\n/).filter(Boolean)));
-      if (biz && p.biz) {
+      if (!(biz && p.biz)) {
+        card.appendChild(profRow('at', p.username ? '@' + p.username : '', 'Username'));
+        card.appendChild(profRow('mail', p.email, 'Email'));
+        card.appendChild(profRow('phone', p.phone_hidden ? 'Hidden number' : phone, 'Phone number'));
+        card.appendChild(profRow('info', p.bio, 'About'));
+        card.appendChild(profRow('cake', fmtBirthday(p.birthday), 'Birthday'));
+        card.appendChild(profRow('paw', p.pet ? petIcon(p.pet) + ' ' + p.pet : '', 'Pet'));
+        card.appendChild(linkRow('link', 'Links', String(p.links || '').split(/\n/).filter(Boolean)));
+      } else {
         var B = p.biz;
         card.appendChild(profRow('info', B.name, 'Business name')); card.appendChild(profRow('at', B.username ? '@' + B.username : '', 'Business username'));
         card.appendChild(profRow('mail', B.email, 'Business email')); card.appendChild(profRow('pin', B.address, 'Business address'));
