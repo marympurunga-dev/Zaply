@@ -123,6 +123,8 @@ function ensureTable() {
       await db().query("ALTER TABLE messages ADD INDEX idx_rd (receiver, delivered_at)").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN photo_url VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN links VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query("ALTER TABLE profiles MODIFY COLUMN links VARCHAR(700) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query("ALTER TABLE profiles ADD COLUMN extra TEXT NULL").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN privacy VARCHAR(1500) NOT NULL DEFAULT ''").catch(() => {});
       /* online / last seen: last_active = last time their app told us it was open, is_online = 0 once they close it */
       await db().query("ALTER TABLE profiles ADD COLUMN last_active TIMESTAMP NULL").catch(() => {});
@@ -190,10 +192,47 @@ async function findUser(phone) {
   return r[0] || null;
 }
 
-const EMPTY_PROFILE = { name: '', username: '', email: '', address: '', bio: '', birthday: '', pet: '', links: '', photo_url: '' };
-const cleanRow = (r) => ({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '', links: r.links || '', photo_url: r.photo_url || '' });
+const EMPTY_PROFILE = { name: '', username: '', email: '', address: '', bio: '', birthday: '', pet: '', links: '', photo_url: '', acct: 'personal', biz: null };
+// the "extra" column holds the account type and the business profile as JSON
+function parseExtra(raw) {
+  let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch (e) { o = {}; }
+  return { acct: o.acct === 'business' ? 'business' : 'personal', biz: o.biz && typeof o.biz === 'object' ? o.biz : null };
+}
+const cleanRow = (r) => Object.assign({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '', links: r.links || '', photo_url: r.photo_url || '' }, parseExtra(r.extra));
 // trims, and cuts to a number of characters (emoji count as one)
 const clip = (v, n) => Array.from(String(v == null ? '' : v).trim()).slice(0, n).join('');
+// a link must look like a web address; "chris.com" becomes "https://chris.com"
+function cleanLink(v, max) {
+  let t = clip(v, max || 200).replace(/\s+/g, '');
+  if (!t) return '';
+  if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) t = 'https://' + t;
+  if (!/^https?:\/\/[^\s\/?#.]+\.[^\s]{2,}$/i.test(t) && !/^https?:\/\/localhost/i.test(t)) return null;
+  return t;
+}
+// "CHRIS" / "chRIS" -> "Chris"; letters (any language) and single spaces only, up to 40 letters
+function cleanName(v) {
+  const t = String(v == null ? '' : v).replace(/[^\p{L}\s]/gu, '').replace(/\s+/g, ' ').trim();
+  return Array.from(t).slice(0, 40).join('').split(' ').map((w) => { const a = Array.from(w.toLowerCase()); return a.length ? a[0].toUpperCase() + a.slice(1).join('') : ''; }).join(' ');
+}
+function cleanBiz(b) {
+  if (b === null) return { biz: null };
+  if (!b || typeof b !== 'object') return { biz: undefined };
+  const out = { name: clip(b.name, 60), username: clip(b.username, 31).replace(/^@/, '').toLowerCase(), email: clip(b.email, 120), address: clip(b.address, 160),
+    link: '', cat: clip(b.cat, 60), catOther: clip(b.catOther, 60), links: [], social: {} };
+  if (out.username && !/^[a-z0-9.]{3,30}$/.test(out.username)) return { error: 'Business username must be 3 to 30 letters, numbers or dots.' };
+  if (out.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(out.email)) return { error: 'That business email doesn’t look right.' };
+  if (b.link) { const l = cleanLink(b.link); if (l === null) return { error: 'That business link doesn’t look right.' }; out.link = l; }
+  for (const raw of (Array.isArray(b.links) ? b.links : []).slice(0, 5)) {
+    if (!String(raw || '').trim()) continue;
+    const l = cleanLink(raw); if (l === null) return { error: 'One of the business links doesn’t look right.' }; out.links.push(l);
+  }
+  const soc = b.social && typeof b.social === 'object' ? b.social : {};
+  for (const k of Object.keys(soc).slice(0, 40)) {
+    if (!/^[a-z0-9_]{2,20}$/.test(k) || !String(soc[k] || '').trim()) continue;
+    const l = cleanLink(soc[k]); if (l === null) return { error: 'One of the social media links doesn’t look right.' }; out.social[k] = l;
+  }
+  return { biz: out };
+}
 function cleanProfile(b) {
   const username = clip(b.username, 31).replace(/^@/, '').toLowerCase();
   if (username && !/^[a-z0-9.]{3,30}$/.test(username)) return { error: 'Username must be 3 to 30 letters, numbers or dots.' };
@@ -205,9 +244,17 @@ function cleanProfile(b) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday) || isNaN(d) || d.toISOString().slice(0, 10) !== birthday || d > new Date() || d.getUTCFullYear() < 1900)
       return { error: 'That birthday isn’t a valid date.' };
   }
-  const name = b.name === undefined ? undefined : clip(b.name, 40);
-  if (name !== undefined && !name) return { error: 'Enter your name.' };
-  return { name, username, email, address: clip(b.address, 120), bio: clip(b.bio, 130), birthday, pet: clip(b.pet, 40), links: clip(b.links, 300) };
+  let name;
+  if (b.name !== undefined) { name = cleanName(b.name); if (!name) return { error: 'Enter your name using letters only.' }; }
+  // up to 3 links, one per line
+  const linkList = [];
+  for (const raw of String(b.links || '').split(/\n/).slice(0, 3)) {
+    if (!raw.trim()) continue;
+    const l = cleanLink(raw); if (l === null) return { error: 'One of the links doesn’t look right.' }; linkList.push(l);
+  }
+  const biz = cleanBiz(b.biz); if (biz.error) return { error: biz.error };
+  const acct = b.acct === undefined ? undefined : (b.acct === 'business' ? 'business' : 'personal');
+  return { name, username, email, address: clip(b.address, 120), bio: clip(b.bio, 114), birthday, pet: clip(b.pet, 40), links: linkList.join('\n'), acct, biz: biz.biz };
 }
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
 const MAX_GROUP = 50;
@@ -651,7 +698,7 @@ module.exports = async (req, res) => {
         if (bs.iBlocked || bs.blockedMe) return res.json({ profile: EMPTY_PROFILE });
       }
       const [r] = await db().query(
-        "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet, links, photo_url FROM profiles WHERE phone = ?", [who]);
+        "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet, links, photo_url, extra FROM profiles WHERE phone = ?", [who]);
       const [nm] = await db().query('SELECT name FROM users WHERE phone = ?', [who]);
       let hide = false;
       if (who !== me) { const [pr] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [who]); try { hide = !!JSON.parse((pr[0] && pr[0].privacy) || '{}').hidePhone; } catch (e) {} }
@@ -661,19 +708,42 @@ module.exports = async (req, res) => {
     if (b.action === 'profile_set') {
       const p = cleanProfile(b);
       if (p.error) return res.status(400).json({ error: p.error });
+      let ex = { acct: 'personal', biz: null };
+      try { const [cur] = await db().query('SELECT extra FROM profiles WHERE phone = ?', [me]); ex = parseExtra(cur && cur[0] && cur[0].extra); } catch (e) {}
+      if (p.acct !== undefined) ex.acct = p.acct;
+      if (p.biz !== undefined) ex.biz = p.biz;
       try {
         await db().query(
-          `INSERT INTO profiles (phone, username, email, address, bio, birthday, pet, links) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `INSERT INTO profiles (phone, username, email, address, bio, birthday, pet, links, extra) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON DUPLICATE KEY UPDATE username = VALUES(username), email = VALUES(email), address = VALUES(address),
-             bio = VALUES(bio), birthday = VALUES(birthday), pet = VALUES(pet), links = VALUES(links)`,
-          [me, p.username || null, p.email, p.address, p.bio, p.birthday || null, p.pet, p.links]);
+             bio = VALUES(bio), birthday = VALUES(birthday), pet = VALUES(pet), links = VALUES(links), extra = VALUES(extra)`,
+          [me, p.username || null, p.email, p.address, p.bio, p.birthday || null, p.pet, p.links, JSON.stringify(ex)]);
         if (p.name) await db().query('UPDATE users SET name = ? WHERE phone = ?', [p.name, me]);
       } catch (e) {
         if (e && e.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'That username is already taken.' });
         throw e;
       }
       const [nm2] = await db().query('SELECT name FROM users WHERE phone = ?', [me]);
-      return res.json({ profile: { name: nm2[0] ? nm2[0].name || '' : '', username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet, links: p.links } });
+      return res.json({ profile: { name: nm2[0] ? nm2[0].name || '' : '', username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet, links: p.links, acct: ex.acct, biz: ex.biz } });
+    }
+
+    // Is a username free? If not, five different names built from what the person typed.
+    if (b.action === 'username_check') {
+      const want = clip(b.username, 31).replace(/^@/, '').toLowerCase();
+      if (!/^[a-z0-9.]{3,30}$/.test(want)) return res.status(400).json({ error: 'Username must be 3 to 30 letters, numbers or dots.' });
+      const taken = async (names) => {
+        const [r] = await db().query('SELECT username, phone FROM profiles WHERE username IN (?)', [names]);
+        return r || [];
+      };
+      const rows = await taken([want]);
+      const mine = rows.some((r) => r.phone === me);
+      if (!rows.length || mine) return res.json({ available: true, username: want, suggestions: [] });
+      const base = want.replace(/\.+$/, '').slice(0, 24), pool = [];
+      const add = (x) => { x = x.slice(0, 30); if (/^[a-z0-9.]{3,30}$/.test(x) && x !== want && !pool.includes(x)) pool.push(x); };
+      [base + '.official', base + '.' + (Math.floor(Math.random() * 90) + 10), base + (Math.floor(Math.random() * 900) + 100), 'the.' + base, base + '.' + new Date().getFullYear() % 100,
+        base + '_', base + '.app', 'real.' + base, base + (Math.floor(Math.random() * 9000) + 1000), base + '.z', 'its.' + base, base + '.hq'].forEach(add);
+      const used = new Set((await taken(pool)).map((r) => r.username));
+      return res.json({ available: false, username: want, suggestions: pool.filter((x) => !used.has(x)).slice(0, 5) });
     }
 
     // Profile pictures of other people (hidden when either side blocked the other).
