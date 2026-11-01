@@ -194,9 +194,23 @@ const { sendCodeEmail } = require('./_mail');
 const { fcmOn, fcmWhy, sendFcm } = require('./_fcm');
 const rt = require('./_realtime');
 const phoneOk = (p) => typeof p === 'string' && /^\+\d{7,15}$/.test(p);
+// Business accounts are shown to other people by their business name; personal accounts by their personal name.
+async function displayNames(phones) {
+  const out = {};
+  if (!phones || !phones.length) return out;
+  const [u] = await db().query('SELECT phone, name FROM users WHERE phone IN (?)', [phones]);
+  u.forEach((x) => { out[x.phone] = x.name; });
+  try {
+    const [p] = await db().query('SELECT phone, extra FROM profiles WHERE phone IN (?) AND extra IS NOT NULL', [phones]);
+    p.forEach((x) => { const e = parseExtra(x.extra); if (e.acct === 'business' && e.biz && e.biz.name) out[x.phone] = e.biz.name; });
+  } catch (e) {}
+  return out;
+}
 async function findUser(phone) {
   const [r] = await db().query('SELECT phone, name FROM users WHERE phone = ?', [phone]);
-  return r[0] || null;
+  if (!r[0]) return null;
+  const n = await displayNames([phone]).catch(() => ({}));
+  return { phone: r[0].phone, name: n[phone] || r[0].name };
 }
 
 const EMPTY_PROFILE = { name: '', username: '', email: '', address: '', bio: '', birthday: '', pet: '', links: '', photo_url: '', acct: 'personal', biz: null };
@@ -416,10 +430,9 @@ module.exports = async (req, res) => {
       const others = last.map((m) => (m.sender === me ? m.receiver : m.sender));
       let names = {}, unames = {};
       if (others.length) {
-        const [u] = await db().query('SELECT phone, name FROM users WHERE phone IN (?)', [others]);
-        u.forEach((x) => { names[x.phone] = x.name; });
-        const [un] = await db().query('SELECT phone, username FROM profiles WHERE phone IN (?) AND username IS NOT NULL', [others]).catch(() => [[]]);
-        un.forEach((x) => { unames[x.phone] = x.username; });
+        names = await displayNames(others);
+        const [un] = await db().query('SELECT phone, username, extra FROM profiles WHERE phone IN (?) AND username IS NOT NULL', [others]).catch(() => [[]]);
+        un.forEach((x) => { if (parseExtra(x.extra).acct !== 'business') unames[x.phone] = x.username; });
       }
       const chats = last.map((m, i) => ({
         phone: others[i], name: names[others[i]] || '', username: unames[others[i]] || '', last: m.body,
@@ -434,8 +447,7 @@ module.exports = async (req, res) => {
       let gnames = {};
       const senders = gs.map((g) => g.sender).filter(Boolean);
       if (senders.length) {
-        const [u2] = await db().query('SELECT phone, name FROM users WHERE phone IN (?)', [senders]);
-        u2.forEach((x) => { gnames[x.phone] = x.name; });
+        gnames = await displayNames(senders);
       }
       gs.forEach((g) => chats.push({
         phone: 'g:' + g.id, name: g.name, group: true, last: g.body || '', mine: g.sender === me,
@@ -449,7 +461,7 @@ module.exports = async (req, res) => {
       if (b.phone === me) return res.status(400).json({ error: "That's your own number." });
       const u = await findUser(b.phone);
       if (!u) return res.status(404).json({ error: "That number isn't on Zanply yet." });
-      try { const [pr] = await db().query('SELECT username FROM profiles WHERE phone = ?', [b.phone]); if (pr && pr[0] && pr[0].username) u.username = pr[0].username; } catch (e) {}
+      try { const [pr] = await db().query('SELECT username, extra FROM profiles WHERE phone = ?', [b.phone]); if (pr && pr[0] && pr[0].username && parseExtra(pr[0].extra).acct !== 'business') u.username = pr[0].username; } catch (e) {}
       return res.json({ user: u });
     }
 
@@ -458,11 +470,11 @@ module.exports = async (req, res) => {
       if (isGroup(b.with)) {
         if (!(await isMember(gid(b.with), me))) return res.status(403).json({ error: 'You are not in this group.' });
         const [gr] = await db().query(
-          `SELECT gm.id, gm.sender, gm.body, gm.created_at, u.name FROM group_messages gm
-           LEFT JOIN users u ON u.phone = gm.sender
+          `SELECT gm.id, gm.sender, gm.body, gm.created_at FROM group_messages gm
            WHERE gm.group_id = ? AND gm.id > ? ORDER BY gm.id ASC LIMIT 200`, [gid(b.with), after]);
+        const gdn = await displayNames([...new Set(gr.map((m) => m.sender))]);
         return res.json({ messages: gr.map((m) => ({
-          id: m.id, mine: m.sender === me, body: m.body, at: m.created_at, from: m.name || m.sender })) });
+          id: m.id, mine: m.sender === me, body: m.body, at: m.created_at, from: gdn[m.sender] || m.sender })) });
       }
       if (!phoneOk(b.with)) return res.status(400).json({ error: 'Bad request.' });
       /* the chat is open on my screen, so what they sent me is read (blue ticks for them) */
@@ -622,8 +634,9 @@ module.exports = async (req, res) => {
       return res.json({ ok: true, n: list.length });
     }
     if (b.action === 'blocklist') {
-      const [r] = await db().query('SELECT b.blocked AS phone, u.name AS name FROM blocks b LEFT JOIN users u ON u.phone = b.blocked WHERE b.blocker = ? ORDER BY b.created_at DESC', [me]);
-      return res.json({ blocked: r.map((x) => ({ phone: x.phone, name: x.name || '' })) });
+      const [r] = await db().query('SELECT b.blocked AS phone FROM blocks b WHERE b.blocker = ? ORDER BY b.created_at DESC', [me]);
+      const bdn = await displayNames(r.map((x) => x.phone));
+      return res.json({ blocked: r.map((x) => ({ phone: x.phone, name: bdn[x.phone] || '' })) });
     }
 
     // Change phone number: code goes to the NEW number (or email), then the account moves over
@@ -712,7 +725,7 @@ module.exports = async (req, res) => {
       const [nm] = await db().query('SELECT name FROM users WHERE phone = ?', [who]);
       let hide = false;
       if (who !== me) { const [pr] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [who]); try { hide = !!JSON.parse((pr[0] && pr[0].privacy) || '{}').hidePhone; } catch (e) {} }
-      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '', phone_hidden: hide }) });
+      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '', display_name: (await displayNames([who]).catch(() => ({})))[who] || (nm[0] ? nm[0].name || '' : ''), phone_hidden: hide }) });
     }
 
     if (b.action === 'profile_set') {
@@ -851,9 +864,9 @@ module.exports = async (req, res) => {
     if (b.action === 'group_info') {
       if (!isGroup(b.group) || !(await isMember(gid(b.group), me))) return res.status(403).json({ error: 'You are not in this group.' });
       const [g] = await db().query('SELECT name, creator FROM chat_groups WHERE id = ?', [gid(b.group)]);
-      const [m] = await db().query(
-        'SELECT gm.phone, u.name FROM group_members gm LEFT JOIN users u ON u.phone = gm.phone WHERE gm.group_id = ?', [gid(b.group)]);
-      return res.json({ name: g[0] ? g[0].name : '', creator: g[0] ? g[0].creator : '', members: m.map((x) => ({ phone: x.phone, name: x.name || '' })) });
+      const [m] = await db().query('SELECT gm.phone FROM group_members gm WHERE gm.group_id = ?', [gid(b.group)]);
+      const mdn = await displayNames(m.map((x) => x.phone));
+      return res.json({ name: g[0] ? g[0].name : '', creator: g[0] ? g[0].creator : '', members: m.map((x) => ({ phone: x.phone, name: mdn[x.phone] || '' })) });
     }
 
     if (b.action === 'group_leave') {
