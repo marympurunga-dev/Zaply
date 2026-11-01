@@ -125,6 +125,13 @@ function ensureTable() {
       await db().query("ALTER TABLE profiles ADD COLUMN links VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles MODIFY COLUMN links VARCHAR(700) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN extra TEXT NULL").catch(() => {});
+      await db().query("ALTER TABLE chat_groups MODIFY COLUMN name VARCHAR(255) NOT NULL").catch(() => {});
+      // channels: one row per channel, one row per subscriber (posts are stored once, never copied per subscriber)
+      await db().query(`CREATE TABLE IF NOT EXISTS channels (
+        id INT AUTO_INCREMENT PRIMARY KEY, owner VARCHAR(20) NOT NULL, name VARCHAR(120) NOT NULL, description VARCHAR(500) NOT NULL DEFAULT '',
+        photo_url VARCHAR(300) NOT NULL DEFAULT '', subscribers INT NOT NULL DEFAULT 1, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_o (owner))`).catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS channel_subs (
+        channel_id INT NOT NULL, phone VARCHAR(20) NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (channel_id, phone), INDEX idx_p (phone))`).catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN privacy VARCHAR(1500) NOT NULL DEFAULT ''").catch(() => {});
       /* online / last seen: last_active = last time their app told us it was open, is_online = 0 once they close it */
       await db().query("ALTER TABLE profiles ADD COLUMN last_active TIMESTAMP NULL").catch(() => {});
@@ -257,7 +264,7 @@ function cleanProfile(b) {
   return { name, username, email, address: clip(b.address, 120), bio: clip(b.bio, 114), birthday, pet: clip(b.pet, 40), links: linkList.join('\n'), acct, biz: biz.biz };
 }
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
-const MAX_GROUP = 50;
+const MAX_GROUP = 10000; // 10,000 members (more with Zanply Premium later)
 const MEDIA_MAX = 10 * 1024 * 1024; // Cloudinary free plan allows 10 MB per raw file
 const isGroup = (x) => typeof x === 'string' && /^g:\d{1,9}$/.test(x);
 const gid = (x) => Number(x.slice(2));
@@ -407,13 +414,15 @@ module.exports = async (req, res) => {
                       GROUP BY IF(sender = ?, receiver, sender))
          ORDER BY id DESC LIMIT 100`, [me, me, me]);
       const others = last.map((m) => (m.sender === me ? m.receiver : m.sender));
-      let names = {};
+      let names = {}, unames = {};
       if (others.length) {
         const [u] = await db().query('SELECT phone, name FROM users WHERE phone IN (?)', [others]);
         u.forEach((x) => { names[x.phone] = x.name; });
+        const [un] = await db().query('SELECT phone, username FROM profiles WHERE phone IN (?) AND username IS NOT NULL', [others]).catch(() => [[]]);
+        un.forEach((x) => { unames[x.phone] = x.username; });
       }
       const chats = last.map((m, i) => ({
-        phone: others[i], name: names[others[i]] || '', last: m.body,
+        phone: others[i], name: names[others[i]] || '', username: unames[others[i]] || '', last: m.body,
         mine: m.sender === me, at: m.created_at,
         st: m.sender === me ? (m.read_at ? 3 : m.delivered_at ? 2 : 1) : 0 }));
       const [gs] = await db().query(
@@ -440,6 +449,7 @@ module.exports = async (req, res) => {
       if (b.phone === me) return res.status(400).json({ error: "That's your own number." });
       const u = await findUser(b.phone);
       if (!u) return res.status(404).json({ error: "That number isn't on Zanply yet." });
+      try { const [pr] = await db().query('SELECT username FROM profiles WHERE phone = ?', [b.phone]); if (pr && pr[0] && pr[0].username) u.username = pr[0].username; } catch (e) {}
       return res.json({ user: u });
     }
 
@@ -779,6 +789,27 @@ module.exports = async (req, res) => {
       return res.json({ photo_url: url });
     }
 
+    if (b.action === 'profile_photo_delete') {
+      await db().query("UPDATE profiles SET photo_url = '' WHERE phone = ?", [me]);
+      return res.json({ photo_url: '' });
+    }
+
+    // Channels: create one, and list the ones I own or follow.
+    if (b.action === 'channel_create') {
+      const name = Array.from(String(b.name || '').trim()).slice(0, 100).join('');
+      if (!name) return res.status(400).json({ error: 'Give the channel a name.' });
+      const description = Array.from(String(b.description || '').trim()).slice(0, 255).join('');
+      const url = String(b.photo_url || '');
+      const photo = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/image/upload/') === 0 ? url : '';
+      const [c] = await db().query('INSERT INTO channels (owner, name, description, photo_url) VALUES (?, ?, ?, ?)', [me, name, description, photo]);
+      await db().query('INSERT INTO channel_subs (channel_id, phone) VALUES (?, ?)', [c.insertId, me]);
+      return res.json({ channel: { id: c.insertId, name, description, photo_url: photo, subscribers: 1 } });
+    }
+    if (b.action === 'channel_list') {
+      const [r] = await db().query('SELECT c.id, c.name, c.description, c.photo_url, c.subscribers, c.owner FROM channels c JOIN channel_subs s ON s.channel_id = c.id WHERE s.phone = ? ORDER BY c.id DESC LIMIT 200', [me]);
+      return res.json({ channels: r.map((x) => ({ id: x.id, name: x.name, description: x.description, photo_url: x.photo_url, subscribers: x.subscribers, mine: x.owner === me })) });
+    }
+
     // Two-step verification PIN (needs an email on the profile, because email + PIN are used to recover chats).
     if (b.action === 'ts_status') {
       const [t] = await db().query('SELECT phone FROM two_step WHERE phone = ?', [me]);
@@ -804,7 +835,7 @@ module.exports = async (req, res) => {
     }
 
     if (b.action === 'group_create') {
-      const name = String(b.name || '').trim().slice(0, 80);
+      const name = Array.from(String(b.name || '').trim()).slice(0, 250).join('');
       if (!name) return res.status(400).json({ error: 'Give the group a name.' });
       const wanted = Array.from(new Set((Array.isArray(b.members) ? b.members : []).filter((p) => phoneOk(p) && p !== me))).slice(0, MAX_GROUP - 1);
       if (!wanted.length) return res.status(400).json({ error: 'Add at least one member.' });
