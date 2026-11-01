@@ -5148,10 +5148,11 @@ ZW|Zimbabwe|263`;
       var u = openUser; if (!u || u.group) return;
       setAv($('pvAv'), u); $('pvName').textContent = shortUser(savedName(u.phone) || u.name || (cp0(u.phone).phone_hidden ? 'Hidden number' : u.phone));
       var cp = {}; try { cp = JSON.parse(localStorage.getItem('zaply_prof_' + u.phone) || '{}') || {}; } catch (e) {}
+      if (!savedName(u.phone) && cp.display_name) $('pvName').textContent = shortUser(cp.display_name);
       renderProfileRows(u.phone, cp); openPage('profileView');
       chatCall('profile_get', { phone: u.phone }).then(function (r) {
         try { localStorage.setItem('zaply_prof_' + u.phone, JSON.stringify(r.profile || {})); } catch (e) {}
-        if (openUser && openUser.phone === u.phone) { renderProfileRows(u.phone, r.profile || {}); if (!u.name && (r.profile || {}).phone_hidden) $('pvName').textContent = 'Hidden number'; }
+        if (openUser && openUser.phone === u.phone) { renderProfileRows(u.phone, r.profile || {}); if (!savedName(u.phone) && (r.profile || {}).display_name) $('pvName').textContent = shortUser(r.profile.display_name); if (!u.name && (r.profile || {}).phone_hidden) $('pvName').textContent = 'Hidden number'; }
       }).catch(function () {});
     }
     /* save everyone's profile on the phone ahead of time so it opens with no loading, even offline */
