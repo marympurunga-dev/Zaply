@@ -787,7 +787,6 @@
 #searchBox{position:relative;margin-bottom:14px}
 #searchBox input{border:1.5px solid var(--border)!important;border-radius:26px!important;background:var(--card)!important;padding:18px 56px 18px 56px!important;margin:0!important}
 #searchBox .si{position:absolute;left:20px;top:50%;transform:translateY(-50%);color:var(--text);pointer-events:none}
-#searchBox .sf{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text);padding:6px 8px}
 #storyStrip{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}#storyStrip.hidden{display:none}
 .st-add{flex:none;width:76px;height:106px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600;line-height:1.2}
 .st-add .plus{width:34px;height:34px;border-radius:50%;border:1.5px dashed var(--muted);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:400}
@@ -1022,7 +1021,42 @@
 #msgs{background:#070b0d url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' fill='none' stroke='rgba%28255%2C255%2C255%2C0.07%29' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M20 40 70 20 52 70 42 50z'/%3E%3Ccircle cx='150' cy='45' r='16'/%3E%3Cpath d='M143 42h1M157 42h1M143 51q7 6 14 0'/%3E%3Cpath d='M40 150c-12-10-16-22-8-28 6-4 12 0 14 4 2-4 8-8 14-4 8 6 4 18-8 28z'/%3E%3Cpath d='M140 130h44a8 8 0 0 1 8 8v22a8 8 0 0 1-8 8h-30l-12 10v-10a8 8 0 0 1-2-8z'/%3E%3C/svg%3E")!important}
 #threadView .th-head #thInfoBtn{width:40px;height:50px;padding:0;display:flex;align-items:center;justify-content:center}
 </style>
+<style id="mockfit7">
+.brand small{display:none!important}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .premium{color:#000!important}}
+:root[data-theme="light"] .premium{color:#000!important}
+.pintag{display:none!important}
+.row.pinned .side::after,.zgs-r.pinned .side::after{content:'\1F4CC';font-size:13px;display:block;text-align:right;line-height:1}
+#selBar{display:none;align-items:center;gap:6px;padding:6px 4px 10px}#selBar.on{display:flex}
+#selBar button{background:none;border:0;color:inherit;width:42px;height:44px;display:flex;align-items:center;justify-content:center;position:relative}
+#selBar svg{width:26px!important;height:26px!important}#selBar b{font-size:22px;margin-left:10px}#selBar .sp{flex:1}
+#selBar button.slash::after{content:'';position:absolute;width:30px;height:2.5px;background:currentColor;transform:rotate(-45deg);border-radius:2px}
+#appView.selmode>header{display:none}
+.swrap{position:relative}
+.swrap.selrow>.row,.swrap.selrow>div:not(.sacts){background:rgba(37,211,102,.20)!important}
+.swrap.selrow::after{content:'\2713';position:absolute;left:52px;top:46px;width:22px;height:22px;border-radius:50%;background:#25d366;color:#04160b;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;border:2px solid #050906;z-index:2}
 
+.st-scroll{display:flex;overflow-x:auto;scrollbar-width:none}.st-scroll::-webkit-scrollbar{display:none}
+</style>
+
+
+<style id="zfix1">
+#comp.comp{padding:14px 10px calc(14px + env(safe-area-inset-bottom,0px))!important}
+#comp .inbox{min-height:70px!important;border-radius:35px!important}
+#comp .inbox textarea{box-sizing:border-box!important;min-height:70px!important;font-size:19px!important;padding-top:24px!important;padding-bottom:24px!important}
+#comp .inbox textarea::placeholder{font-size:19px!important}
+#plusMenu{position:fixed!important;left:0!important;right:0!important;bottom:0!important;min-width:0!important;border-radius:28px 28px 0 0!important;padding:26px 12px calc(26px + env(safe-area-inset-bottom,0px))!important;display:grid!important;grid-template-columns:repeat(3,1fr);gap:22px 4px;background:#10171b!important;border:none!important;border-top:1px solid rgba(255,255,255,.1)!important;z-index:60!important;box-shadow:0 -10px 40px rgba(0,0,0,.6)!important}
+#plusMenu.hidden{display:none!important}
+#plusMenu button{display:flex!important;flex-direction:column!important;align-items:center!important;gap:9px!important;padding:0!important;width:auto!important;background:none!important;font-size:14px!important;text-align:center}
+#plusMenu button svg{width:62px!important;height:62px!important;padding:17px;border-radius:50%;background:rgba(37,211,102,.16);color:#25d366!important;box-sizing:border-box}
+#zdd{position:fixed;top:calc(56px + env(safe-area-inset-top,0px));right:10px;min-width:220px;background:#1b2429;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:6px 0;z-index:95;box-shadow:0 12px 34px rgba(0,0,0,.6)}
+#zdd button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--text,#fff);font-size:17px;padding:14px 20px}
+#zdd button:last-child{color:#ff6b6b}
+#zmbar{position:fixed;z-index:95;display:flex;background:#1b2429;border:1px solid rgba(255,255,255,.12);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.6);padding:4px}
+#zmbar button{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;color:var(--text,#fff);font-size:12px;padding:8px 14px}
+#zmbar button svg{color:#25d366}
+#msgs .zmsel{outline:2px solid rgba(37,211,102,.7);outline-offset:2px}
+</style>
 </head>
 <body>
   <div class="app">
@@ -1172,7 +1206,7 @@
         <div class="hr"><button id="btnPremium" class="premium"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7zm2 13h14v2H5z"/></svg>Premium</button><button id="btnBell" class="bellb" aria-label="Notifications"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></button><button id="btnCam" aria-label="Camera"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" ><rect x="3" y="6.5" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 6.5 9.5 4h5L16 6.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
           <div id="menuBox" class="menubox hidden"><button id="menuNewGroup">New group</button><button id="menuNewChannel">New channel</button><button id="menuLinked">Devices</button><button id="menuReadAll">Read all</button><button id="menuTheme">Theme</button><button id="menuDiag">Check notifications</button><button id="menuSettings">Settings</button><button id="menuSwitch" class="hidden">Switch account &#8963;</button><button id="btnLogout" class="hidden">Log out</button></div></div></div>
       </header>
-      <div class="searchbox" id="searchBox"><svg class="si" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="chatSearch" type="search" placeholder="Search chats, people or messages…" autocomplete="off"><button id="btnSearchFilter" class="sf" aria-label="Filters"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7h9M16 7h5M3 17h5M12 17h9"/><circle cx="14" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button></div>
+      <div class="searchbox" id="searchBox"><svg class="si" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="chatSearch" type="search" placeholder="Search chats, people or messages…" autocomplete="off"></div>
       <div id="storyStrip"></div>
       <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fGroups">Groups</button><button id="fFav">Favorites</button><button id="btnPlusList" class="plusb" aria-label="Create">+</button></nav>
 
@@ -1243,9 +1277,10 @@
       </div>
     </div>
 
-    <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="itl">Contact Info</div><button id="infoMenu" aria-label="More"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></div>
+    <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="itl">Profile info</div><button id="infoMenu" aria-label="More"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></div>
     <div class="sset"><div class="pv-top si-top"><div class="av big" id="inAv"></div><div class="pv-name" id="inName"></div><div class="sub" id="inPhone" style="margin:4px 0 0"></div></div>
-    <div class="acts4"><button id="sCall" class="abtn" aria-label="Call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>Call</span></button><button id="sVideoBtn" class="abtn" aria-label="Video"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Video</span></button><button id="sProfileBtn" class="abtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Profile</span></button><button id="sMoreBtn" class="abtn" aria-label="More"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg><span>More</span></button></div>
+    <div class="acts4"><button id="sMsgBtn" class="abtn" aria-label="Message"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span>Message</span></button><button id="sCall" class="abtn" aria-label="Call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>Call</span></button><button id="sVideoBtn" class="abtn" aria-label="Video"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Video</span></button><button id="sShareBtn" class="abtn" aria-label="Share"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg><span>Share</span></button></div>
+    <button id="sProfileBtn" style="display:none" aria-hidden="true"></button><button id="sMoreBtn" style="display:none" aria-hidden="true"></button>
     <div class="zcard gc"><div class="srow" id="sAbout"><i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span class="rt">About<small id="sAboutS">Available</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
     <div class="zcard" id="inSoc"></div>
     <div class="zcard" id="inMedia"></div>
@@ -1275,9 +1310,9 @@
     <div id="threadView" class="th hidden">
       <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thInfoBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button></div>
       <div id="msgs"></div>
-      <div id="plusMenu" class="plusmenu hidden">
+      <div id="plusMenu" class="plusmenu hidden"><button data-a="files"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm1 7V3.5L19.5 9H15z"/></svg><span>Document</span></button><button data-a="cam"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg><span>Camera</span></button><button data-a="gal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>Gallery</span></button>
         <button data-a="ai"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v3.59l-3.5-3.5a1 1 0 0 0-1.41 0L9 17.18l-2-2-2 2V5h7V3zm-9.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM19 3l.75 1.75L21.5 5.5l-1.75.75L19 8l-.75-1.75L16.5 5.5l1.75-.75L19 3zm-3 4-.5 1.1L14.4 8.6l1.1.5.5 1.1.5-1.1 1.1-.5-1.1-.5L16 7z"/></svg><span>AI images</span></button>
-        <button data-a="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg><span>Location</span></button>
+        <button data-a="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg><span>Location</span></button><button data-a="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg><span>Games</span></button>
       </div>
       <div id="emojiBox" class="emojibox hidden"></div>
       <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedBri" aria-label="Brighten">☀</button><button id="cedRot" aria-label="Crop and rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button id="cedEmo" aria-label="Stickers"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6l8-8z"/><path d="M20 12h-4a2 2 0 0 0-2 2v4"/><path d="M8.5 9.5h.01M14.5 9.5h.01"/></svg></button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div><div id="cedTxtOv" class="hidden"><div class="cto-top"><button id="ctoDone" class="cto-t">Done</button><div style="display:flex;gap:8px"><button id="ctoAl" aria-label="Align"></button><button id="ctoBg" aria-label="Background">A</button></div></div><div class="cto-mid"><textarea id="ctoIn" rows="1" placeholder="Add text" maxlength="120"></textarea></div><div class="cto-bot"><input type="range" id="ctoHue" min="0" max="100" value="0" aria-label="Colour"><div id="ctoFonts"></div></div></div><div id="cedStk" class="hidden"><div class="stk-sheet"><div class="stk-h"></div><div class="stk-tabs"><button data-t="e">&#128578;</button><button data-t="s">Stickers</button></div><div class="stk-body" id="stkBody"></div></div></div><div id="cedCrop" class="hidden"><div id="ccStage"><div id="ccWrap"><canvas id="ccCv"></canvas><div id="ccBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div></div></div><div class="cc-bar"><button id="ccCancel">Cancel</button><button id="ccRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="ccDone">Done</button></div></div></div>
@@ -2769,11 +2804,41 @@ ZW|Zimbabwe|263`;
     function lockOn() { return !!priv().applock && !!localStorage.getItem('zaply_lockid'); }
     function b64u(buf) { var a = new Uint8Array(buf), s = ''; for (var i = 0; i < a.length; i++) s += String.fromCharCode(a[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
     function unb64u(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; var r = atob(s), u = new Uint8Array(r.length); for (var i = 0; i < r.length; i++) u[i] = r.charCodeAt(i); return u; }
+    function bioErr(e) {
+      var n = e && e.name;
+      if (n === 'SecurityError') return 'Fingerprint needs the app opened over https (a secure address), not from a file.';
+      if (n === 'NotSupportedError') return 'This browser or phone doesn\u2019t support fingerprint unlock. Open Zanply in Chrome.';
+      if (n === 'InvalidStateError') return 'This unlock was already set up. Turn it off and on again.';
+      if (n === 'NotAllowedError') return 'Fingerprint was cancelled, or no fingerprint / screen lock is set up in Android Settings.';
+      return (e && e.message) || 'Fingerprint unlock failed.';
+    }
+    function bioRp() { var h = location.hostname; return h && /^[a-z0-9.-]+$/i.test(h) ? { name: 'Zanply', id: h } : { name: 'Zanply' }; }
+    function bioTry(make, uvs) {
+      /* Samsung/Chrome sometimes rejects 'required' straight away; retry once with 'preferred' (still uses the phone fingerprint or screen lock) */
+      var i = 0;
+      function go() { var t0 = Date.now(); return make(uvs[i]).catch(function (e) { if (++i < uvs.length && Date.now() - t0 < 1200 && e && e.name !== 'AbortError') return go(); throw e; }); }
+      return go();
+    }
+    function bioReady() {
+      if (!(window.PublicKeyCredential && navigator.credentials)) return Promise.reject({ name: 'NotSupportedError' });
+      if (window.isSecureContext === false) return Promise.reject({ name: 'SecurityError' });
+      var chk = PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable;
+      return chk ? chk.call(PublicKeyCredential).then(function (ok) { if (!ok) throw { name: 'NotAllowedError' }; }, function () {}) : Promise.resolve();
+    }
     function enableLock() {
-      if (!(window.PublicKeyCredential && navigator.credentials)) return Promise.reject(new Error('Biometric lock is not supported on this phone.'));
-      return navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Zanply' }, user: { id: crypto.getRandomValues(new Uint8Array(16)), name: myPhone || 'user', displayName: 'Zanply' },
-        pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required' }, timeout: 60000 } })
-        .then(function (c) { localStorage.setItem('zaply_lockid', b64u(c.rawId)); });
+      return bioReady().then(function () {
+        return bioTry(function (uv) {
+          return navigator.credentials.create({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rp: bioRp(), user: { id: crypto.getRandomValues(new Uint8Array(16)), name: myPhone || 'user', displayName: 'Zanply' },
+            pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }], attestation: 'none', authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: uv, residentKey: 'discouraged', requireResidentKey: false }, timeout: 120000 } });
+        }, ['required', 'preferred']);
+      }).then(function (c) { localStorage.setItem('zaply_lockid', b64u(c.rawId)); }).catch(function (e) { throw new Error(bioErr(e)); });
+    }
+    function bioGet() {
+      return bioReady().then(function () {
+        return bioTry(function (uv) {
+          return navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), rpId: bioRp().id, allowCredentials: [{ type: 'public-key', id: unb64u(localStorage.getItem('zaply_lockid')), transports: ['internal'] }], userVerification: uv, timeout: 120000 } });
+        }, ['required', 'preferred']);
+      }).catch(function (e) { var er = new Error(bioErr(e)); er.name = (e && e.name) || 'Error'; throw er; });
     }
     var LOCK_OPTS = [['0', 'Immediately'], ['60000', 'After 1 minute'], ['1800000', 'After 30 minutes']];
     function lockDelay() { var v = parseInt(priv().lockAfter, 10); return isNaN(v) ? 0 : v; }
@@ -2782,8 +2847,8 @@ ZW|Zimbabwe|263`;
       if (lockEl || !lockOn()) return;
       lockEl = mk('div', 'zlock'); var t = mk('h2', '', 'Zanply is locked'), bt = mk('button', 'primary', 'Unlock with biometric'); bt.style.maxWidth = '260px'; lockEl.appendChild(t); lockEl.appendChild(bt); document.body.appendChild(lockEl);
       function tryIt() {
-        navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: unb64u(localStorage.getItem('zaply_lockid')) }], userVerification: 'required', timeout: 60000 } })
-          .then(function () { lockEl.remove(); lockEl = null; }).catch(function () {});
+        bioGet()
+          .then(function () { lockEl.remove(); lockEl = null; }).catch(function (e) { if (e && e.name !== 'NotAllowedError') toast(e.message); });
       }
       bt.addEventListener('click', tryIt); setTimeout(tryIt, 300);
     }
@@ -3774,8 +3839,8 @@ ZW|Zimbabwe|263`;
     function openAppLockGate() {
       if (!lockOn()) return openAppLock();
       if (!(window.PublicKeyCredential && navigator.credentials)) return openAppLock();
-      navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: unb64u(localStorage.getItem('zaply_lockid')) }], userVerification: 'required', timeout: 60000 } })
-        .then(function () { openAppLock(); }).catch(function () { toast('Fingerprint check was cancelled'); });
+      bioGet()
+        .then(function () { openAppLock(); }).catch(function (e) { toast((e && e.message) || 'Fingerprint check was cancelled'); });
     }
     function openPrivacy() {
       zOpenPage('Security & privacy', function (b) {
@@ -4285,6 +4350,7 @@ ZW|Zimbabwe|263`;
     }
     /* message ticks: 1 grey = sent, 2 grey = delivered (their app is open), 2 blue = read */
     function tickEl(st) {
+      if (st >= 3 && localStorage.getItem('zaply_rr') === 'off') st = 2;
       var s = document.createElement('span'); s.className = 'tk' + (st >= 3 ? ' r' : '');
       if (!st || st < 1) { s.innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.4V8l2.4 1.5"/></svg>'; return s; }
       s.innerHTML = st >= 2
@@ -4607,9 +4673,10 @@ ZW|Zimbabwe|263`;
     /* Social Media card: always shown, like the design (icons are dimmed when the contact has not added that link) */
     function infoSocialCard(soc, p) {
       var B = (p && p.biz && p.biz.social) || (p && p.social) || {}, hd = mk('div', 'srow');
+      var anySoc = ['whatsapp', 'facebook', 'instagram', 'tiktok'].some(function (k) { return B[k]; }); soc.style.display = anySoc ? '' : 'none'; if (!anySoc) return;
       hd.innerHTML = '<i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span class="rt"><b>Social Media</b></span>';
       soc.appendChild(hd); var sr = mk('div', 'socrow');
-      [['whatsapp', 'WhatsApp', 'ico-wa', '\u260E'], ['facebook', 'Facebook', 'ico-fb', 'f'], ['instagram', 'Instagram', 'ico-ig', '\u25CE'], ['tiktok', 'TikTok', 'ico-tt', '\u266A']].forEach(function (o) {
+      [['whatsapp', 'WhatsApp', 'ico-wa', '\u260E'], ['facebook', 'Facebook', 'ico-fb', 'f'], ['instagram', 'Instagram', 'ico-ig', '\u25CE'], ['tiktok', 'TikTok', 'ico-tt', '\u266A']].filter(function (o) { return B[o[0]]; }).forEach(function (o) {
         var u = B[o[0]] ? String(B[o[0]]) : '', a = mk('a', 'soc' + (u ? '' : ' off'));
         if (u) { if (!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); a.href = u; a.target = '_blank'; a.rel = 'noopener'; }
         else a.addEventListener('click', function (e) { e.preventDefault(); toast(o[1] + ' not added'); });
@@ -4622,7 +4689,7 @@ ZW|Zimbabwe|263`;
       infoSocialCard(soc, p);
       if (!p || p.acct !== 'business') return;
       var B = p.biz || {}, sl = SOCIALS.filter(function (o) { return B.social && B.social[o[0]]; });
-      if (sl.length) {
+      if (sl.length && !soc.children.length) {
         var hd = mk('div', 'srow'); hd.innerHTML = '<i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span class="rt"><b>Social Media</b></span>';
         soc.appendChild(hd); var sr = mk('div', 'socrow');
         sl.forEach(function (o) { var u = String(B.social[o[0]]); if (!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); var a = mk('a', 'soc'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.appendChild(mk('span', 'sic', o[1])); a.appendChild(mk('span', '', o[2].split(' ')[0])); sr.appendChild(a); });
@@ -5297,6 +5364,8 @@ ZW|Zimbabwe|263`;
       else if (a === 'files') $('fileAny').click();
       else if (a === 'ai') openAi();
       else if (a === 'play') openGames();
+      else if (a === 'cam') $('btnCamera').click();
+      else if (a === 'gal') $('btnGallery').click();
     });
     document.addEventListener('click', function (e) { if (!e.target.closest('#btnPlus,#plusMenu,#emojiBox,#btnEmoji')) { $('plusMenu').classList.add('hidden'); $('emojiBox').classList.add('hidden'); } });
     function closeCreate() { $('createView').classList.add('hidden'); }
@@ -5334,7 +5403,25 @@ ZW|Zimbabwe|263`;
       chatCall('blockstate', { with: openUser.phone }).then(function (r) { curBlocked = !!r.blocked; setBlockedUI(); }).catch(function () {});
     };
     $('thInfo').removeEventListener('click', oi); $('thInfoBtn').removeEventListener('click', oi);
-    $('thInfo').addEventListener('click', function () { openInfo(); }); $('thInfoBtn').addEventListener('click', function () { openInfo(); });
+    $('thInfo').addEventListener('click', function () { openInfo(); });
+    (function () {
+      function closeDd() { var d = document.getElementById('zdd'); if (d) d.remove(); }
+      document.addEventListener('click', closeDd);
+      $('thInfoBtn').addEventListener('click', function (e) {
+        e.stopPropagation(); if (document.getElementById('zdd')) return closeDd();
+        if (!openUser) return; if (openUser.group) return openInfo();
+        var ph = openUser.phone, fn = (openUser.name || ph || '').split(' ')[0];
+        $('sBlockT').textContent = (curBlocked ? 'Unblock ' : 'Block ') + fn;
+        var items = [['View profile', function () { openInfo(); }],
+          [isMuted(ph) ? 'Unmute notifications' : 'Mute notifications', function () { $('sNotif').click(); }],
+          [isLocked(ph) ? 'Unlock chat' : 'Lock chat', function () { $('sLock').click(); }],
+          [curBlocked ? 'Unblock' : 'Block', function () { $('sBlock').click(); }],
+          ['Report', function () { $('sReport').click(); }]];
+        var d = mk('div', ''); d.id = 'zdd';
+        items.forEach(function (it) { var b = mk('button', '', it[0]); b.addEventListener('click', function (ev) { ev.stopPropagation(); closeDd(); it[1](); }); d.appendChild(b); });
+        document.body.appendChild(d);
+      });
+    })();
     $('infoView').addEventListener('click', function (e) {
       if (!openUser) return; var id = (e.target.closest('[id]') || {}).id, rw = e.target.closest('.srow'); if (rw) id = rw.id;
       if (id === 'sCall') { closeOv(); setTimeout(function () { startCall(false); }, 200); }
@@ -5360,7 +5447,9 @@ ZW|Zimbabwe|263`;
     });
     Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.addEventListener('change', function () { try { localStorage.setItem('zaply_dis_' + openUser.phone, r.value); } catch (e) {} }); });
     $('disLearn').addEventListener('click', function (e) { e.preventDefault(); toast('Messages in this chat disappear after the time you choose.'); });
-    $('rrToggle').addEventListener('change', function () { try { localStorage.setItem('zaply_rr', this.checked ? 'on' : 'off'); } catch (e) {} });
+    $('rrToggle').addEventListener('change', function () { try { localStorage.setItem('zaply_rr', this.checked ? 'on' : 'off'); } catch (e) {}
+      try { thCache.forEach(function (m) { if (m && m.mine && m.st) { var el = document.querySelector('#msgs .bub[data-id="' + m.id + '"] small .tk'); if (el) el.replaceWith(tickEl(m.st)); } }); } catch (e) {}
+      toast(this.checked ? 'Read receipts are on' : 'Read receipts are off. You also won\u2019t see blue ticks.', true); });
     $('rpSend').addEventListener('click', function () {
       var tx = $('rpText').value.trim(); if (!tx) return toast('Please write what you want to report');
       this.disabled = true; var b = this;
@@ -5407,9 +5496,9 @@ ZW|Zimbabwe|263`;
     function lockAuth() {
       if (!(window.PublicKeyCredential && navigator.credentials)) return Promise.reject(new Error('Chat lock needs your phone\u2019s fingerprint, face or screen lock, which isn\u2019t available here.'));
       if (!localStorage.getItem('zaply_lockid')) return enableLock();
-      return navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: unb64u(localStorage.getItem('zaply_lockid')) }], userVerification: 'required', timeout: 60000 } });
+      return bioGet();
     }
-    function lockFail(e) { toast((e && e.name !== 'NotAllowedError' && e.message) || 'Could not unlock. Try again.'); }
+    function lockFail(e) { toast((e && e.message) || 'Could not unlock. Try again.'); }
     function applyThreadPrivacy(u) { $('msgs').classList.toggle('acp', !!(u && acpOn(u.phone))); }
     var _ot = openThread;
     openThread = function (u) {
@@ -5435,6 +5524,20 @@ ZW|Zimbabwe|263`;
       });
     }
     /* kept messages: press and hold a message */
+    function closeMsgBar() { var b = document.getElementById('zmbar'); if (b) b.remove(); var x = document.querySelector('#msgs .zmsel'); if (x) x.classList.remove('zmsel'); }
+    function msgBar(el) {
+      closeMsgBar(); var id = +el.getAttribute('data-id'), ph = openWith, m = thCache.filter(function (x) { return x && x.id === id; })[0]; if (!m || !ph) return;
+      var map = keptMap(ph), on = !!map[id], txt = (typeof m.body === 'string' && m.body.indexOf('__') !== 0) ? m.body : '';
+      var bar = mk('div', ''); bar.id = 'zmbar';
+      function add(label, ic, fn) { var b = mk('button', ''); b.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="' + ic + '"/></svg><span>' + label + '</span>'; b.addEventListener('click', function (e) { e.stopPropagation(); closeMsgBar(); fn(); }); bar.appendChild(b); }
+      if (txt && !acpOn(ph)) add('Copy', 'M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z', function () { try { navigator.clipboard.writeText(txt).then(function () { toast('Copied', true); }, function () { toast('Could not copy'); }); } catch (e) { toast('Could not copy'); } });
+      add(on ? 'Unkeep' : 'Keep', 'M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z', function () { map = keptMap(ph); if (on) delete map[id]; else map[id] = { body: m.body, at: m.at, mine: !!m.mine }; lsSet('zaply_kept_' + ph, map); el.classList.toggle('kept', !on); toast(on ? 'Removed from kept messages' : 'Message kept. It won\u2019t disappear.', true); });
+      if (txt && !acpOn(ph) && navigator.share) add('Share', 'M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z', function () { navigator.share({ text: txt }).catch(function () {}); });
+      el.classList.add('zmsel'); document.body.appendChild(bar);
+      var r = el.getBoundingClientRect(), w = bar.offsetWidth, top = r.top - bar.offsetHeight - 8; if (top < 70) top = Math.min(r.bottom + 8, window.innerHeight - bar.offsetHeight - 10);
+      bar.style.top = top + 'px'; bar.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + 'px';
+      setTimeout(function () { document.addEventListener('touchstart', closeMsgBar, { once: true, passive: true }); document.addEventListener('mousedown', closeMsgBar, { once: true }); $('msgs').addEventListener('scroll', closeMsgBar, { once: true }); }, 350);
+    }
     function keepSheet(el) {
       var id = +el.getAttribute('data-id'), ph = openWith, m = thCache.filter(function (x) { return x && x.id === id; })[0]; if (!m || !ph) return;
       var map = keptMap(ph), on = !!map[id];
@@ -5448,9 +5551,9 @@ ZW|Zimbabwe|263`;
       function bub(e) { return e.target.closest && e.target.closest('.bub[data-id]'); }
       box.addEventListener('touchstart', function (e) { armed = null; var b = bub(e); if (!b) return; var t = e.touches[0]; sx = t.clientX; sy = t.clientY; clearTimeout(tm); tm = setTimeout(function () { armed = b; if (navigator.vibrate) { try { navigator.vibrate(15); } catch (x) {} } }, 550); }, { passive: true });
       box.addEventListener('touchmove', function (e) { var t = e.touches[0]; if (Math.abs(t.clientX - sx) > 8 || Math.abs(t.clientY - sy) > 8) { clearTimeout(tm); armed = null; } }, { passive: true });
-      box.addEventListener('touchend', function (e) { clearTimeout(tm); if (armed) { e.preventDefault(); var b = armed; armed = null; keepSheet(b); } });
+      box.addEventListener('touchend', function (e) { clearTimeout(tm); if (armed) { e.preventDefault(); var b = armed; armed = null; msgBar(b); } });
       box.addEventListener('touchcancel', function () { clearTimeout(tm); armed = null; });
-      box.addEventListener('contextmenu', function (e) { var b = bub(e); if (b) { e.preventDefault(); keepSheet(b); } });
+      box.addEventListener('contextmenu', function (e) { var b = bub(e); if (b) { e.preventDefault(); msgBar(b); } });
       box.addEventListener('copy', function (e) { if (openWith && acpOn(openWith)) e.preventDefault(); });
     })();
     function openKept() {
@@ -5494,6 +5597,8 @@ ZW|Zimbabwe|263`;
       box.onclick = openMediaGrid;
     }
     $('sMoreBtn').addEventListener('click', function () { $('infoMenu').click(); });
+    $('sMsgBtn').addEventListener('click', function () { $('infoBack').click(); });
+    $('sShareBtn').addEventListener('click', function () { $('sShare').click(); });
     function refreshInfoRows() {
       if (!openUser || openUser.group) return; var ph = openUser.phone;
       $('sAddC').style.display = savedName(ph) ? 'none' : '';
@@ -5505,9 +5610,9 @@ ZW|Zimbabwe|263`;
       $('sKeptS').textContent = String(Object.keys(keptMap(ph)).length);
       var dv = localStorage.getItem('zaply_dis_' + ph) || 'off', de = document.querySelector('input[name="dis"][value="' + dv + '"]');
       $('sDisapS').textContent = dv === 'off' ? 'Off' : ((de && de.parentNode && de.parentNode.textContent.trim()) || dv);
-      var bio = ((cp0(ph) || {}).bio || '').trim(); $('sAboutS').textContent = bio || 'Available';
+      var bio = ((cp0(ph) || {}).bio || '').trim(); $('sAboutS').textContent = bio; $('sAbout').parentNode.style.display = bio ? '' : 'none';
       renderInfoMedia();
-      var nl = infoLinks().length; $('sLinksS').textContent = nl ? nl + (nl === 1 ? ' link' : ' links') : 'No links';
+      var nl = infoLinks().length; $('sLinksS').textContent = nl ? nl + (nl === 1 ? ' link' : ' links') : 'No links'; $('sLinks').style.display = nl ? '' : 'none';
       $('inAv').classList.toggle('onl', !!(typeof ONL !== 'undefined' && ONL && ONL[ph]));
     }
     var _oi2 = openInfo; openInfo = function () { _oi2.apply(this, arguments); try { refreshInfoRows(); } catch (e) {} };
@@ -5590,10 +5695,76 @@ ZW|Zimbabwe|263`;
     $('btnPremium').addEventListener('click', function () { toast('Zanply Premium is coming soon'); });
     $('tabAi').addEventListener('click', function () { zOpenPage('Zanply AI', function (b) { zempty(b, 'Zanply AI is coming soon.'); }); });
     $('tabExplore').addEventListener('click', function () { zOpenPage('Explore', function (b) { zempty(b, 'Explore is coming soon.'); }); });
-    $('btnSearchFilter').addEventListener('click', function () {
-      zsheet('Show', [['All chats', function () { $('fAll').click(); }], ['Unread', function () { $('fUnread').click(); }], ['Groups', function () { $('fGroups').click(); }], ['Favorites', function () { $('fFav').click(); }]]);
-    });
     try { updateCounts(); renderStories(); } catch (e) {}
+
+    /* ===== v2 chat list: long-press selection bar (replaces swipe buttons), pinned mark, stories only for status, starred tab ===== */
+    var selMap = {};
+    function selList() { return Object.keys(selMap).map(function (k) { return selMap[k]; }); }
+    function selOn() { return Object.keys(selMap).length > 0; }
+    var IC = {
+      back: 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z',
+      pin: SV_PIN(), trash: 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
+      mute: 'M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM2.1 3.5 3.5 2.1 21.9 20.5l-1.4 1.4-2.6-2.6H4v-1l2-2v-5c0-1.7.7-3.2 1.9-4.3L2.1 3.5zM18 16.2V11c0-3.1-1.6-5.6-4.5-6.3V4a1.5 1.5 0 0 0-3 0v.7c-.4.1-.8.3-1.2.5L18 16.2z',
+      arch: 'M20.5 6.1 19.1 4.4c-.3-.3-.7-.4-1.1-.4H6c-.4 0-.8.1-1.1.4L3.5 6.1C3.2 6.5 3 6.9 3 7.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7.5c0-.6-.2-1-.5-1.4zM12 17.5 6.5 12H10v-2h4v2h3.5L12 17.5zM5.2 6l.8-1h12l.8 1H5.2z',
+      dots: 'M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z'
+    };
+    function SV_PIN() { return 'M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z'; }
+    function ib(id, path, label) { return '<button id="' + id + '" aria-label="' + label + '"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="' + path + '"/></svg></button>'; }
+    (function buildSelBar() {
+      var bar = mk('div', ''); bar.id = 'selBar';
+      bar.innerHTML = ib('selBack', IC.back, 'Back') + '<b id="selN">1</b><span class="sp"></span>' + ib('selPin', IC.pin, 'Pin') + ib('selDel', IC.trash, 'Delete') + ib('selMute', IC.mute, 'Mute') + ib('selArch', IC.arch, 'Archive') + ib('selMore', IC.dots, 'More');
+      var h = $('appView').querySelector('header'); h.parentNode.insertBefore(bar, h);
+    })();
+    function selPaint() {
+      var on = selOn(); $('appView').classList.toggle('selmode', on); $('selBar').classList.toggle('on', on); $('selN').textContent = selList().length;
+      Array.prototype.forEach.call(document.querySelectorAll('#chatList .swrap'), function (w) { w.classList.toggle('selrow', !!selMap[w.getAttribute('data-ph')]); });
+      var l = selList(), allPinned = l.length && l.every(function (c) { return pinsGet().indexOf(c.phone) > -1; });
+      $('selPin').classList.toggle('slash', !!allPinned);
+      var allMuted = l.length && l.every(function (c) { return isMuted(c.phone); }); $('selMute').classList.toggle('slash', false); $('selMute').title = allMuted ? 'Unmute' : 'Mute';
+    }
+    function selClear() { selMap = {}; selPaint(); }
+    function selToggle(c) { if (selMap[c.phone]) delete selMap[c.phone]; else selMap[c.phone] = c; selPaint(); }
+    swipeWrap = function (r, c) { var w = mk('div', 'swrap'); w.setAttribute('data-ph', c.phone); if (selMap[c.phone]) w.classList.add('selrow'); w.appendChild(r); return w; };
+    attachLong = function (r, c) {
+      var tm = 0, sx = 0, sy = 0;
+      function fire() { r._lp = true; if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} } if (!selMap[c.phone]) selToggle(c); }
+      r.addEventListener('touchstart', function (e) { r._lp = false; var t = e.touches[0]; sx = t.clientX; sy = t.clientY; clearTimeout(tm); tm = setTimeout(fire, 450); }, { passive: true });
+      r.addEventListener('touchmove', function (e) { var t = e.touches[0]; if (Math.abs(t.clientX - sx) > 8 || Math.abs(t.clientY - sy) > 8) clearTimeout(tm); }, { passive: true });
+      ['touchend', 'touchcancel'].forEach(function (n) { r.addEventListener(n, function () { clearTimeout(tm); }, { passive: true }); });
+      r.addEventListener('contextmenu', function (e) { e.preventDefault(); clearTimeout(tm); fire(); });
+      r.addEventListener('click', function (e) { if (r._lp) { e.stopImmediatePropagation(); e.preventDefault(); r._lp = false; return; } if (selOn()) { e.stopImmediatePropagation(); e.preventDefault(); selToggle(c); } }, true);
+    };
+    $('selBack').addEventListener('click', selClear);
+    $('selPin').addEventListener('click', function () { var l = selList(), a = pinsGet(), allP = l.every(function (c) { return a.indexOf(c.phone) > -1; }); l.slice().reverse().forEach(function (c) { var i = a.indexOf(c.phone); if (allP) { if (i > -1) a.splice(i, 1); } else if (i < 0) a.unshift(c.phone); }); lsSet('zaply_pins', a); selClear(); renderChats(); toast(allP ? 'Unpinned' : 'Pinned', true); });
+    $('selDel').addEventListener('click', function () { var l = selList(); zconfirm('Delete ' + (l.length > 1 ? l.length + ' chats' : 'this chat') + ' from this phone? ' + (l.length > 1 ? 'They come' : 'It comes') + ' back if a new message arrives.', function () { var m = lsGet('zaply_hidden', {}); l.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_hidden', m); selClear(); renderChats(); toast('Deleted from this phone', true); }, 'Delete'); });
+    $('selMute').addEventListener('click', function () { var l = selList(), allM = l.every(function (c) { return isMuted(c.phone); }); if (allM) { l.forEach(function (c) { setMute(c.phone, 0); }); selClear(); renderChats(); toast('Notifications on', true); } else if (l.length === 1) { var c0 = l[0]; selClear(); muteChoose(c0); } else { l.forEach(function (c) { setMute(c.phone, -1); }); selClear(); renderChats(); toast('Muted', true); } });
+    $('selArch').addEventListener('click', function () { var l = selList(); l.forEach(function (c) { setArchived(c.phone, !isArchived(c)); }); selClear(); renderChats(); toast('Archived', true); });
+    $('selMore').addEventListener('click', function () {
+      var l = selList(), one = l.length === 1 ? l[0] : null, allUn = l.every(isUnread), items = [];
+      items.push([allUn ? 'Mark as read' : 'Mark as unread', function () { l.forEach(function (c) { if (allUn) markSeen(c.phone); else { try { localStorage.setItem('zaply_unread_' + c.phone, '1'); } catch (e) {} } }); selClear(); renderChats(); }]);
+      items.push(['Select all', function () { Array.prototype.forEach.call(document.querySelectorAll('#chatList .swrap'), function (w) { var ph = w.getAttribute('data-ph'); var c = allChats.filter(function (x) { return x.phone === ph; })[0]; if (c) selMap[ph] = c; }); selPaint(); }]);
+      items.push(['Lock chat', function () { l.forEach(function (c) { pcSet('clock', c.phone, true); unlockedChats[c.phone] = 0; }); selClear(); renderChats(); toast('Chat locked. It\u2019s now in Locked chats.', true); }]);
+      var allF = l.every(function (c) { return favs().indexOf(c.phone) > -1; });
+      items.push([allF ? 'Remove from favourites' : 'Add to favourites', function () { var a = favs(); l.forEach(function (c) { var i = a.indexOf(c.phone); if (allF) { if (i > -1) a.splice(i, 1); } else if (i < 0) a.push(c.phone); }); lsSet('zaply_favs', a); selClear(); renderChats(); }]);
+      items.push(['Clear chat', function () { zconfirm('Clear all messages in ' + (l.length > 1 ? 'these chats' : 'this chat') + ' on this phone?', function () { var m = lsGet('zaply_cleared', {}); l.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_cleared', m); selClear(); renderChats(); toast('Chat cleared', true); }, 'Clear'); }]);
+      if (one && !one.group) items.push(['Block', function () { zconfirm('Block ' + (one.name || one.phone) + '?', function () { chatCall('block', { phone: one.phone }).then(function () { selClear(); renderChats(); toast('Blocked', true); }).catch(function () { toast('Could not block'); }); }, 'Block'); }]);
+      if (one && one.group) { items.push(['Group info', function () { selClear(); openThread({ phone: one.phone, name: one.name, group: true }); }]); items.push(['Exit group', function () { zconfirm('Exit this group?', function () { chatCall('group_leave', { phone: one.phone }).then(function () { selClear(); renderChats(); toast('You left the group', true); }).catch(function () { toast('Could not leave'); }); }, 'Exit'); }]); }
+      zsheet(l.length + ' selected', items);
+    });
+    /* cleared chats: hide messages older than the clear time */
+    var _am2 = addMsg; addMsg = function (m) { try { if (openUser && m) { var t = (lsGet('zaply_cleared', {}) || {})[openUser.phone]; var at = new Date(m.at || m.created_at || 0).getTime(); if (t && at && at <= t) return null; } } catch (e) {} return _am2(m); };
+    /* stories: only people who posted a status, "Add story" scrolls with them, arrow only when more than 4 */
+    renderStories = function () {
+      var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
+      var sc = mk('div', 'st-scroll'); box.appendChild(sc);
+      var add = mk('button', 'st-add'); add.innerHTML = '<span class="plus">+</span><span>Add<br>Story</span>'; add.addEventListener('click', function () { showTab('status'); }); sc.appendChild(add);
+      var users = lsGet('zaply_status_users', []); users = Array.isArray(users) ? users : [];
+      users.forEach(function (c) { var it = mk('button', 'st-it'), ring = mk('span', 'st-ring'); ring.appendChild(avatar(c)); it.appendChild(ring); it.appendChild(mk('span', 'st-n', shortUser(labelOf(c)).split(' ')[0])); sc.appendChild(it); });
+      if (users.length > 4) { var nx = mk('button', 'st-next', '\u203A'); nx.addEventListener('click', function () { sc.scrollBy({ left: 220, behavior: 'smooth' }); }); box.appendChild(nx); }
+    };
+    /* bottom bar: Status tab becomes Starred messages */
+    (function () { var t = $('tabStatus'); if (!t) return; var n = t.cloneNode(false); n.id = 'tabStatus'; n.innerHTML = '<span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></span><span class="nl">Starred</span>'; t.parentNode.replaceChild(n, t); n.addEventListener('click', function () { openKept(); }); })();
+    try { renderChats(); } catch (e) {}
 
     /* ================= chat screen look: date pills + call card ================= */
     function dayLabel(d) {
