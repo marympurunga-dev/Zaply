@@ -5216,7 +5216,7 @@ ZW|Zimbabwe|263`;
       var r = e.target.closest('.row'); if (!r) return; var a = r.getAttribute('data-a');
       if (a === 'new') { closeOv(); setTimeout(function () { $('btnNew').click(); }, 60); } else if (a === 'group') openGroupCreate(); else toast('Channels and communities are coming soon');
     });
-    ['Chats', 'Status', 'Notifications', 'Calls'].forEach(function (n) { $('tab' + n).addEventListener('click', function () { showTab(n.toLowerCase()); }); });
+    ['Chats', 'Status', 'Notifications', 'Calls'].forEach(function (n) { var tb = $('tab' + n); if (tb) tb.addEventListener('click', function () { showTab(n.toLowerCase()); }); });
 
     function contacts() { try { return JSON.parse(localStorage.getItem('zaply_contacts') || '{}'); } catch (e) { return {}; } }
     var csT = 0;
