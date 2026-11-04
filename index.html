@@ -947,6 +947,28 @@
 .soc .sic{width:68px;height:68px;border-radius:50%;background:#10171b;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:34px}
 .mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:2px 0 14px}.mgrid .mt{aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#10171b;border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600}.mgrid img{width:100%;height:100%;object-fit:cover}
 </style>
+<style id="mockfit2">
+#inAv{width:min(40vw,150px)!important;height:min(40vw,150px)!important;font-size:56px!important;margin-top:18px!important}
+#infoView::before{background:radial-gradient(circle at 17% 30%,#eef2f8 0 13px,rgba(190,205,230,.35) 16px,transparent 34px),linear-gradient(180deg,#0b1a3a 0%,#0a2036 45%,#04101c 78%,#000 100%)!important}
+#inName{font-size:30px!important}#inPhone{font-size:18px!important}
+#infoView .cbtn{width:72px!important;height:72px!important}
+#comp #btnGallery{display:none!important}.zcard .rt{font-size:18px!important}.zcard .rt small{font-size:15px!important}
+#comp .inbox{min-width:0;flex:1 1 auto}
+#comp .inbox textarea{min-width:0;font-size:16px}
+#comp .inbox textarea::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+<style id="mockfit">
+.tabs4#filterNav{overflow:visible;gap:6px!important}
+#filterNav button{padding:7px 5px!important;font-size:13px!important;gap:4px!important}#filterNav{gap:4px!important;margin-bottom:8px!important}
+#filterNav button svg{width:16px;height:16px}
+#filterNav .cnt2{min-width:20px;height:20px;line-height:20px;font-size:11px;border-radius:10px;padding:0 4px}
+.brand{flex:1 1 auto;min-width:0}.brand h1{font-size:25px!important}.brand small{font-size:11px!important;overflow:hidden;text-overflow:ellipsis}
+.premium{padding:7px 9px!important;font-size:13px!important;flex:none}
+#storyStrip{margin-bottom:12px}
+#msgs{background:#070b0d url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' fill='none' stroke='rgba%28255%2C255%2C255%2C0.07%29' stroke-width='2' stroke-linejoin='round'%3E%3Cpath d='M20 40 70 20 52 70 42 50z'/%3E%3Ccircle cx='150' cy='45' r='16'/%3E%3Cpath d='M143 42h1M157 42h1M143 51q7 6 14 0'/%3E%3Cpath d='M40 150c-12-10-16-22-8-28 6-4 12 0 14 4 2-4 8-8 14-4 8 6 4 18-8 28z'/%3E%3Cpath d='M140 130h44a8 8 0 0 1 8 8v22a8 8 0 0 1-8 8h-30l-12 10v-10a8 8 0 0 1-2-8z'/%3E%3C/svg%3E")!important}
+#threadView .th-head #thInfoBtn{width:40px;height:50px;padding:0;display:flex;align-items:center;justify-content:center}
+</style>
+
 </head>
 <body>
   <div class="app">
@@ -1098,7 +1120,7 @@
       </header>
       <div class="searchbox" id="searchBox"><svg class="si" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="chatSearch" type="search" placeholder="Search chats, people or messages…" autocomplete="off"><button id="btnSearchFilter" class="sf" aria-label="Filters"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7h9M16 7h5M3 17h5M12 17h9"/><circle cx="14" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button></div>
       <div id="storyStrip"></div>
-      <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button><button id="btnPlusList" class="plusb" aria-label="Create">+</button></nav>
+      <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fGroups">Groups</button><button id="fFav">Favorites</button><button id="btnPlusList" class="plusb" aria-label="Create">+</button></nav>
 
       <div id="paneChats">
         <button class="fab hidden" id="btnNotif" style="background:transparent;color:var(--text);border-color:var(--border)">🔔 Turn on notifications</button>
@@ -1197,7 +1219,7 @@
     <div id="profileView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button></div><div class="pv"><div class="pv-top"><div class="av big" id="pvAv"></div><div class="pv-name" id="pvName"></div></div><div class="pv-card" id="pvCard"></div></div></div>
     <div id="createView" class="th hidden"><div class="th-head"><button id="crBack" aria-label="Back">←</button><b>Create</b></div><div style="padding:12px"><div class="row" data-a="new"><div class="av" style="background:#21c063">💬</div><div class="mid"><b>New chat</b><span>Message someone by phone number</span></div></div><div class="row" data-a="group"><div class="av" style="background:#3b82f6">👥</div><div class="mid"><b>Create group</b><span>Chat with many people</span></div></div><div class="row" data-a="channel"><div class="av" style="background:#8b5cf6">📢</div><div class="mid"><b>Create channel</b><span>Broadcast to followers</span></div></div><div class="row" data-a="community"><div class="av" style="background:#f59e0b">🏘</div><div class="mid"><b>Create community</b><span>Bring groups together</span></div></div></div></div>
     <div id="threadView" class="th hidden">
-      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thInfoBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button></div>
+      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thInfoBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button></div>
       <div id="msgs"></div>
       <div id="plusMenu" class="plusmenu hidden">
         <button data-a="ai"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v3.59l-3.5-3.5a1 1 0 0 0-1.41 0L9 17.18l-2-2-2 2V5h7V3zm-9.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM19 3l.75 1.75L21.5 5.5l-1.75.75L19 8l-.75-1.75L16.5 5.5l1.75-.75L19 3zm-3 4-.5 1.1L14.4 8.6l1.1.5.5 1.1.5-1.1 1.1-.5-1.1-.5L16 7z"/></svg><span>AI images</span></button>
