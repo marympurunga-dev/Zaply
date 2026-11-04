@@ -775,6 +775,178 @@
     .fcol.on{border-color:var(--text);box-shadow:inset 0 0 0 3px var(--card)}
     .fcol.none{display:flex;align-items:center;justify-content:center;border-color:var(--border)}
   </style>
+
+<style id="newlook">
+#appView::before{content:'';position:fixed;top:0;left:0;right:0;height:280px;background:radial-gradient(ellipse at 85% -15%,rgba(37,211,102,.30),transparent 62%);pointer-events:none;z-index:0}
+#appView header{margin:4px 0 14px;align-items:center}
+.brand{display:flex;align-items:center;gap:8px;min-width:0}.brand svg{width:42px;height:42px;flex:none}.brand h1{font-size:28px!important;line-height:1.05;margin:0}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:2px;white-space:nowrap}#appView header{flex-wrap:nowrap;gap:6px}#appView .hr{flex:none}
+.premium{display:flex;align-items:center;gap:6px;border:1.5px solid #8a6a1f;background:rgba(138,106,31,.18);color:#fff;border-radius:999px;padding:8px 11px;font-size:14px;font-weight:600}.premium svg{width:18px;height:18px}.premium svg{color:#f5b32a}
+.bellb{width:44px;height:44px;border-radius:50%;border:none;background:var(--card);color:var(--text);padding:0;margin-left:6px;display:flex;align-items:center;justify-content:center}
+#btnCam{display:none}
+#appView .hr{gap:0}
+#searchBox{position:relative;margin-bottom:14px}
+#searchBox input{border:1.5px solid var(--border)!important;border-radius:26px!important;background:var(--card)!important;padding:18px 56px 18px 56px!important;margin:0!important}
+#searchBox .si{position:absolute;left:20px;top:50%;transform:translateY(-50%);color:var(--text);pointer-events:none}
+#searchBox .sf{position:absolute;right:12px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text);padding:6px 8px}
+#storyStrip{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}#storyStrip.hidden{display:none}
+.st-add{flex:none;width:76px;height:106px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600;line-height:1.2}
+.st-add .plus{width:34px;height:34px;border-radius:50%;border:1.5px dashed var(--muted);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:400}
+.st-scroll{flex:1;display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;min-width:0}.st-scroll::-webkit-scrollbar{display:none}
+.st-it{flex:none;width:74px;border:none;background:transparent;padding:0;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:6px}
+.st-ring{width:74px;height:74px;border-radius:50%;border:3px solid #25d366;padding:3px;display:block;box-shadow:0 0 12px rgba(37,211,102,.45)}.st-ring .av{width:100%!important;height:100%!important}
+.st-n{font-size:15px;max-width:74px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-next{flex:none;align-self:center;width:46px;height:46px;border-radius:50%;border:1.5px solid #1e7d46;background:rgba(37,211,102,.08);color:var(--text);font-size:26px;padding:0;line-height:1}
+#filterNav{gap:10px!important;margin-bottom:14px}
+#filterNav button{display:flex;align-items:center;gap:8px;border-radius:999px!important;border:1.5px solid var(--border)!important;background:var(--card)!important;color:var(--text)!important;padding:13px 18px!important;font-size:16px!important;font-weight:600}
+#filterNav button svg{color:#25d366;flex:none}
+#filterNav button.active{background:rgba(37,211,102,.14)!important;border-color:#25d366!important;box-shadow:0 0 14px rgba(37,211,102,.35)}
+#filterNav .plusb{display:none!important}
+.cnt2{font-style:normal;min-width:26px;height:26px;border-radius:13px;background:#e8eef0;color:#06140c;font-size:14px;font-weight:700;line-height:26px;text-align:center;padding:0 6px}
+#filterNav button:not(.active) .cnt2{background:var(--border);color:var(--text)}
+.swrap{position:relative;margin-bottom:12px}
+.swrap .row{position:relative;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:14px 16px;margin:0;gap:16px;transition:transform .2s}
+.swrap .row .av{width:66px;height:66px}
+.swrap .row .mid b{font-size:21px;font-weight:700}.swrap .row .mid span{font-size:17px}
+.swrap .row time{font-size:17px}.swrap .row.unread time{color:#25d366;font-weight:600}
+.swrap .row .side{align-self:stretch;justify-content:space-between;align-items:flex-end;padding:2px 0}
+.swrap .row .star{display:none}
+.swrap .row .ubn{min-width:30px;height:30px;border-radius:15px;line-height:30px;font-size:15px}
+.mbell{color:var(--muted);display:flex}
+.row.pinned{border-color:#25d366!important;box-shadow:0 0 20px rgba(37,211,102,.35),inset 0 0 18px rgba(37,211,102,.08);background:linear-gradient(135deg,rgba(37,211,102,.10),var(--card))!important}
+.pintag{position:absolute;top:-1px;left:96px;background:var(--bg,#0b141a);border:1px solid #25d366;border-top:none;border-radius:0 0 14px 14px;color:#25d366;font-size:15px;font-weight:600;padding:3px 12px}
+.sacts{position:absolute;right:0;top:0;bottom:0;width:252px;display:flex;gap:2px;border-radius:24px;overflow:hidden}
+.sacts button{flex:1;border:none;border-radius:0;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:15px;font-weight:600;padding:0}
+.sa-more{background:#232b30}.sa-pin{background:#1fa95b}.sa-del{background:#e5393b}
+.fabr{border-radius:50%!important;width:68px!important;height:68px!important;right:16px!important;bottom:calc(112px + env(safe-area-inset-bottom,0px))!important;background:#1fa95b!important;box-shadow:0 0 22px rgba(37,211,102,.55);border:2px solid #3dff8c!important}
+#paneChats{padding-bottom:130px}
+#bottomNav{left:12px!important;right:12px!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;border:1.5px solid #1e7d46!important;border-radius:32px;background:rgba(6,18,12,.92)!important;box-shadow:0 0 22px rgba(37,211,102,.25);padding:6px 6px;align-items:center}
+#bottomNav button{padding:4px 0 2px!important;font-size:15px!important;color:var(--muted)!important}
+#bottomNav button.active{color:var(--text)!important}
+#bottomNav .ni{width:76px;height:44px;border-radius:22px;flex-direction:column}
+#bottomNav button.active .ni{background:rgba(37,211,102,.20)!important;color:#25d366!important;box-shadow:0 0 14px rgba(37,211,102,.35) inset}
+#bottomNav .aib{flex:none;width:84px}.aic{display:flex;width:68px;height:68px;border-radius:50%;border:2.5px solid #25d366;color:#25d366;font-weight:800;font-size:26px;align-items:center;justify-content:center;margin-top:-30px;background:#06120c;box-shadow:0 0 22px rgba(37,211,102,.6)}
+</style>
+
+<style id="threadlook">
+#threadView{background:#030806}
+#threadView .th-head{background:radial-gradient(ellipse at 78% -40%,rgba(37,211,102,.35),transparent 60%),linear-gradient(#07140d,#040a07);border-bottom:1.5px solid rgba(37,211,102,.55);box-shadow:0 2px 18px rgba(37,211,102,.25);padding-top:calc(12px + env(safe-area-inset-top,0px));padding-bottom:12px}
+#threadView .th-head #thBack{color:#fff}
+#threadView .th-head .av{width:54px;height:54px;margin:0 8px 0 2px;position:relative;box-shadow:0 0 0 2px #0d5a31,0 0 12px rgba(37,211,102,.5);overflow:visible}
+#threadView .th-head:has(#thPhone.pon) #thAv::after{content:'';position:absolute;right:0;bottom:0;width:15px;height:15px;border-radius:50%;background:#25d366;border:2.5px solid #07140d}
+.thinfo b{font-size:21px;font-weight:700}
+.thinfo small{display:block;font-size:15px}
+#thPhone.pon{color:#25d366}#thPhone.pon::before{content:'';display:inline-block;width:10px;height:10px;border-radius:50%;background:#25d366;margin-right:6px}
+#threadView .th-head #thAudio,#threadView .th-head #thVideo{order:2;width:50px;height:50px;border-radius:50%;padding:0!important;margin-left:8px;display:flex;align-items:center;justify-content:center;color:#fff;background:radial-gradient(circle at 50% 30%,#14703f,#06301c)!important;border:1.5px solid rgba(61,255,140,.6)!important;box-shadow:0 0 14px rgba(37,211,102,.45)}
+#threadView .th-head #thAudio{order:2}#threadView .th-head #thVideo{order:3}#threadView .th-head #thInfoBtn{order:4;color:#fff}
+#msgs{background:radial-gradient(ellipse at 75% 28%,rgba(20,140,70,.38),transparent 55%),radial-gradient(ellipse at 60% 80%,rgba(37,211,102,.20),transparent 50%),#020504;gap:8px;padding:14px 14px}
+.dpill{align-self:center;padding:8px 22px;border-radius:999px;border:1.5px solid rgba(37,211,102,.6);background:rgba(7,20,13,.88);color:#fff;font-size:16px;box-shadow:0 0 14px rgba(37,211,102,.35);margin:2px 0 6px}
+.bub{border-radius:24px 24px 24px 8px;background:linear-gradient(145deg,rgba(40,48,52,.95),rgba(16,21,24,.95))!important;border:1px solid rgba(255,255,255,.08)!important;box-shadow:0 0 0 1px rgba(37,211,102,.10),0 4px 14px rgba(0,0,0,.4);color:#fff!important;padding:10px 18px}
+.bub.mine{border-radius:24px 24px 8px 24px;background:linear-gradient(135deg,#0b5f33,#16a255)!important;border:1px solid rgba(61,255,140,.6)!important;box-shadow:0 0 16px rgba(37,211,102,.4)}
+.bub:not(.media):not(.loc):not(.game):not(.stk):not(.callb){display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px 16px}
+.bub:not(.media):not(.loc):not(.game):not(.stk):not(.callb) small{margin:0 0 3px auto;opacity:.75;font-size:14px;display:flex;align-items:center;gap:5px}
+.bub .gfrom{flex-basis:100%}
+.bub.media,.bub.loc,.bub.game{padding:5px;border-radius:26px;border:1.5px solid rgba(61,255,140,.6)!important;box-shadow:0 0 16px rgba(37,211,102,.35);overflow:hidden}
+.bub.media small,.bub.loc small{padding:2px 10px 4px}
+.tk.r{color:#3cc8ff}.bub.mine .tk{color:#bfe9d0}.bub.mine .tk.r{color:#3cc8ff}
+.bub.callb{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:28px;border:1.5px solid rgba(61,255,140,.55)!important;min-width:250px}
+.bub.callb .cic{width:50px;height:50px;border-radius:50%;background:#1b2428;display:flex;align-items:center;justify-content:center;flex:none;color:#fff}
+.bub.callb .ctx{flex:1;min-width:0}.bub.callb .ctx b{display:block;font-size:20px}.bub.callb .ctx small{display:block;text-align:left;font-size:16px;opacity:.8;margin:0}
+.bub.callb .cgo{width:54px;height:54px;border-radius:50%;border:none;padding:0;background:radial-gradient(#2fe27a,#0d9b4a);color:#04150b;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 0 14px rgba(37,211,102,.55)}
+/* message bar */
+#comp.comp{background:linear-gradient(#07140d,#040a07);border-top:1.5px solid rgba(37,211,102,.55);box-shadow:0 -4px 22px rgba(37,211,102,.25);border-radius:32px 32px 0 0;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));gap:6px}
+#comp .cl{display:contents}
+#comp.typing #btnPlus,#comp.typing #btnCamera,#comp.typing #btnGallery{display:none}
+#comp .inbox{order:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:30px;min-height:58px;align-items:center}
+#comp .inbox #btnEmoji{order:-1;color:#fff;margin-left:6px}
+#comp .inbox textarea{padding-left:6px}
+#comp #btnPlus{order:2}#comp #btnCamera{order:3}#comp #btnGallery{order:4}
+#comp .ghost{color:#e8f5ee}
+#comp #btnLike{display:none!important}
+#comp #btnMic,#comp #btnSendMsg{order:5;width:62px;height:62px;border-radius:50%;padding:0;border:1.5px solid #5dffa5;background:radial-gradient(circle at 50% 30%,#2fe27a,#0d9b4a)!important;color:#04150b;box-shadow:0 0 20px rgba(37,211,102,.6);display:flex;align-items:center;justify-content:center;flex:none}
+#comp #btnMic svg,#comp #btnSendMsg svg{width:30px;height:30px}
+#comp.hastext #btnMic{display:none}
+#comp:not(.hastext) #btnSendMsg{display:none}
+</style>
+
+<style id="infolook">
+#infoView{background:radial-gradient(ellipse at 15% 8%,rgba(20,160,80,.45),transparent 45%),radial-gradient(ellipse at 100% 30%,rgba(37,211,102,.22),transparent 45%),#020604}
+#infoView .th-head{background:transparent!important;border:none!important;box-shadow:none!important;justify-content:space-between;position:relative;padding-top:calc(14px + env(safe-area-inset-top,0px))}
+#infoView .th-head button{width:50px;height:50px;border-radius:50%!important;border:1.5px solid rgba(61,255,140,.7)!important;background:rgba(6,24,15,.8)!important;color:#fff!important;padding:0!important;display:flex;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(37,211,102,.45)}
+.itl{position:absolute;left:0;right:0;text-align:center;font-size:22px;font-weight:700;pointer-events:none}
+#infoView .si-top{text-align:center;margin-top:6px}
+#inAv{width:172px!important;height:172px!important;border-radius:50%;border:4px solid #25d366;padding:7px;box-sizing:border-box;box-shadow:0 0 22px rgba(37,211,102,.65),inset 0 0 14px rgba(37,211,102,.3);margin:0 auto;position:relative;font-size:64px}
+#inAv img{border-radius:50%}
+#inAv.onl::after{content:'';position:absolute;right:8px;bottom:12px;width:30px;height:30px;border-radius:50%;background:#25d366;border:4px solid #03140a}
+#inName{font-size:36px;font-weight:700;margin-top:16px}
+#inPhone{font-size:22px;color:var(--muted)}
+#infoView .acts{flex-direction:row!important;justify-content:space-around;align-items:flex-start;margin:20px 0 18px}
+#infoView .cbtn{width:86px;height:86px;border-radius:50%;border:3px solid #25d366;background:radial-gradient(circle at 50% 30%,#0f4a2c,#04140b);color:#fff;box-shadow:0 0 18px rgba(37,211,102,.55);display:flex;align-items:center;justify-content:center;padding:0}
+#infoView .act{font-size:20px;font-weight:600;gap:10px}
+.zcard{border-radius:28px;border:1.5px solid rgba(37,211,102,.55);background:linear-gradient(160deg,rgba(14,40,28,.92),rgba(5,16,11,.92));box-shadow:0 0 20px rgba(37,211,102,.22);padding:4px 18px;margin:16px 0}
+.zcard:empty{display:none}
+.zcard .srow,.zcard .prow{padding:14px 0;border-bottom:1px solid rgba(255,255,255,.09);gap:14px}
+.zcard .srow:last-child,.zcard .prow:last-child{border-bottom:none}
+.zcard .srow i{background:transparent;width:44px;height:44px;color:#fff}
+.zcard .srow i.g{color:#1fe06f}
+.zcard .rt{font-size:21px;font-weight:600;color:#fff}.zcard .rt small{font-size:17px;font-weight:400;color:var(--muted)}
+.zcard .chev{margin-left:auto;color:#fff;flex:none}
+.zcard.bizc{border-color:#1fe06f;background:linear-gradient(160deg,rgba(18,70,40,.75),rgba(5,22,13,.92))}
+.zcard.bizc .prow b{font-size:21px;color:#fff}.zcard.bizc .prow small{font-size:17px}
+.zcard.red{border-color:rgba(255,75,87,.65);background:linear-gradient(160deg,rgba(90,16,24,.75),rgba(24,6,9,.92));box-shadow:0 0 18px rgba(255,60,70,.22)}
+.zcard.red .rt,.zcard.red i{color:#ff4b57}
+.zcard.red2 .rt,.zcard.red2 i{color:#ff8a92}
+.zcard .zsw2{background:#3a4a42}.zcard .zsw2.on{background:#16c05a}
+</style>
+
+<style id="calm">
+#appView::before{display:none}
+.premium{border-color:#5b4a1e;background:transparent}
+#filterNav button{box-shadow:none!important}
+#filterNav button.active{background:rgba(37,211,102,.14)!important;border-color:rgba(37,211,102,.5)!important}
+.st-ring{box-shadow:none!important}.st-next{border-color:var(--border)!important;background:var(--card)!important}
+.row.pinned{box-shadow:none!important;border-color:rgba(37,211,102,.4)!important;background:var(--card)!important}.pintag{border-color:rgba(37,211,102,.4)}
+.fabr{box-shadow:0 4px 14px rgba(0,0,0,.45)!important;border:none!important;background:#1fa95b!important}
+#bottomNav{box-shadow:none!important;border:1px solid var(--border)!important;background:var(--card)!important}
+#bottomNav button.active .ni{box-shadow:none!important;background:rgba(37,211,102,.18)!important}
+.aic{box-shadow:none!important;border-width:2px;background:var(--card)}
+#threadView{background:#070b0d}
+#threadView .th-head{background:#0f1519!important;border-bottom:1px solid var(--border)!important;box-shadow:none!important}
+#threadView .th-head .av{box-shadow:none!important}
+#threadView .th-head #thAudio,#threadView .th-head #thVideo{box-shadow:none!important;background:rgba(255,255,255,.07)!important;border:none!important}
+#msgs{background:#070b0d!important}
+.dpill{border:1px solid var(--border);box-shadow:none;background:rgba(255,255,255,.06)}
+.bub{box-shadow:none!important;border:1px solid rgba(255,255,255,.06)!important;background:#1a2227!important}
+.bub.mine{background:#0f5f38!important;border-color:transparent!important}
+.bub.media,.bub.loc,.bub.game,.bub.callb{border:1px solid rgba(255,255,255,.10)!important;box-shadow:none!important}
+.bub.callb .cgo{box-shadow:none}
+#comp.comp{background:#0f1519;border-top:1px solid var(--border);box-shadow:none;border-radius:0}
+#comp .inbox{border-color:rgba(255,255,255,.10)}
+#comp #btnMic,#comp #btnSendMsg{box-shadow:none;border:none;background:#1fa95b!important}
+#infoView{background:#000}
+#infoView::before{content:'';position:absolute;left:0;right:0;top:0;height:400px;background:radial-gradient(circle at 24% 16%,#e3e8f2 0 18px,#9ea9c2 22px,transparent 44px),linear-gradient(180deg,#0b1a3a 0%,#0a2036 45%,#04101c 78%,#000 100%);pointer-events:none}
+#infoView>*{position:relative;z-index:1}
+#infoView .th-head{background:transparent!important;border:none!important;box-shadow:none!important}
+#infoView .th-head button{width:auto;height:auto;border:none!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:8px 10px!important}
+.itl{position:static!important;flex:1;text-align:left!important;font-size:26px!important;font-weight:700;padding-left:10px}
+#inAv{width:236px!important;height:236px!important;border:4px solid rgba(150,205,190,.9)!important;box-shadow:none!important;padding:5px!important;font-size:80px!important}
+#inAv.onl::after{width:28px!important;height:28px!important;right:18px!important;bottom:20px!important;border-color:#031008!important}
+#inName{font-size:40px!important}#inPhone{font-size:26px!important;color:#d4dbe0!important}
+.acts4{display:flex;gap:10px;margin:20px 0 14px}
+.abtn{flex:1;min-width:0;height:108px;border-radius:30px;border:1px solid rgba(255,255,255,.10);background:linear-gradient(#11181c,#080c0e);color:#fff;font-size:20px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:0}
+.abtn svg{color:#4be39b}
+.zcard{border:1px solid rgba(255,255,255,.10)!important;box-shadow:none!important;background:linear-gradient(160deg,#0f1519,#080b0d)!important;border-radius:28px}
+.zcard.gc{border-color:rgba(37,211,102,.45)!important;background:linear-gradient(160deg,rgba(20,72,46,.45),rgba(7,22,15,.9))!important}
+.zcard.red{border-color:rgba(255,75,87,.6)!important;background:linear-gradient(160deg,rgba(90,16,24,.7),rgba(24,6,9,.92))!important}
+.zcard .rt{font-weight:500!important;font-size:22px!important}.zcard .rt small{font-size:17px!important}
+.zcard .srow i.g{color:#1fe06f}
+.zcard .val{color:var(--muted);font-size:19px;margin-right:8px;flex:none}.zcard .chev{margin-left:0!important}
+.zcard.gc .prow b,.zcard.gc .rt{font-weight:600!important}
+.zcard.pill .srow{justify-content:center;padding:18px 0;border:none}.zcard.pill .rt{flex:none;font-weight:700!important}
+.zcard .zsw2{background:#3a4a42}.zcard .zsw2.on{background:#16c05a}
+.socrow{display:flex;justify-content:space-around;padding:6px 0 14px}.soc{display:flex;flex-direction:column;align-items:center;gap:8px;color:#fff;text-decoration:none;font-size:17px}
+.soc .sic{width:68px;height:68px;border-radius:50%;background:#10171b;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:34px}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:2px 0 14px}.mgrid .mt{aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#10171b;border:1px solid rgba(255,255,255,.10);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600}.mgrid img{width:100%;height:100%;object-fit:cover}
+</style>
 </head>
 <body>
   <div class="app">
@@ -920,11 +1092,12 @@
     <!-- MAIN APP -->
     <div id="appView" class="hidden">
       <header>
-        <h1>Zanply</h1>
-        <div class="hr"><button id="btnCam" aria-label="Camera"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" ><rect x="3" y="6.5" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 6.5 9.5 4h5L16 6.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
+        <div class="brand"><svg viewBox="0 0 64 64" width="52" height="52"><defs><linearGradient id="zg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#45ff93"/><stop offset="1" stop-color="#0a9a4a"/></linearGradient></defs><path d="M6 8h50v11L24 43h32v13H6V45l32-24H6z" fill="url(#zg)"/></svg><div><h1>Zanply</h1><small>Chat • Connect • Belong</small></div></div>
+        <div class="hr"><button id="btnPremium" class="premium"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7zm2 13h14v2H5z"/></svg>Premium</button><button id="btnBell" class="bellb" aria-label="Notifications"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></button><button id="btnCam" aria-label="Camera"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" ><rect x="3" y="6.5" width="18" height="13" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 6.5 9.5 4h5L16 6.5" fill="none" stroke="currentColor" stroke-width="2"/></svg></button><div class="menuwrap"><button id="menuBtn" aria-label="Menu">⋮</button>
           <div id="menuBox" class="menubox hidden"><button id="menuNewGroup">New group</button><button id="menuNewChannel">New channel</button><button id="menuLinked">Devices</button><button id="menuReadAll">Read all</button><button id="menuTheme">Theme</button><button id="menuDiag">Check notifications</button><button id="menuSettings">Settings</button><button id="menuSwitch" class="hidden">Switch account &#8963;</button><button id="btnLogout" class="hidden">Log out</button></div></div></div>
       </header>
-      <div class="searchbox" id="searchBox"><input id="chatSearch" type="search" placeholder="Search chats" autocomplete="off"></div>
+      <div class="searchbox" id="searchBox"><svg class="si" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="chatSearch" type="search" placeholder="Search chats, people or messages…" autocomplete="off"><button id="btnSearchFilter" class="sf" aria-label="Filters"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 7h9M16 7h5M3 17h5M12 17h9"/><circle cx="14" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button></div>
+      <div id="storyStrip"></div>
       <nav class="tabs4" id="filterNav"><button id="fAll" class="active">All</button><button id="fUnread">Unread</button><button id="fFav">Favourites</button><button id="fGroups">Groups</button><button id="btnPlusList" class="plusb" aria-label="Create">+</button></nav>
 
       <div id="paneChats">
@@ -947,8 +1120,9 @@
       <nav id="bottomNav">
         <button id="tabChats" class="active"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span class="bd hidden" id="navBadge"></span></span><span class="nl">Chats</span></button>
         <button id="tabStatus"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3"/></svg></span><span class="nl">Status</span></button>
-        <button id="tabNotifications"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></span><span class="nl">Notifications</span></button>
+        <button id="tabAi" class="aib" aria-label="Zanply AI"><span class="aic">AI</span></button>
         <button id="tabCalls"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></span><span class="nl">Calls</span></button>
+        <button id="tabExplore"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 13.5 13.5 8.5 15.5 10.5 10.5z" fill="currentColor"/></svg></span><span class="nl">Explore</span></button>
       </nav>
       <div id="paneStatus" class="hidden"><div class="empty">Status is coming soon.</div></div>
       <div id="paneNotifications" class="hidden"><div class="empty">No notifications yet.</div></div>
@@ -993,23 +1167,17 @@
       </div>
     </div>
 
-    <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button></div>
-    <div class="sset"><div class="pv-top si-top"><div class="av big" id="inAv"></div><div class="pv-name" id="inName"></div><div class="sub" id="inPhone" style="margin:4px 0 0"></div></div><div class="acts"><div class="act"><button id="sCall" class="cbtn" aria-label="Call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><span>Call</span></div><div class="act"><button id="sVideoBtn" class="cbtn" aria-label="Video Chat"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><span>Video Chat</span></div><div class="act"><button id="sProfileBtn" class="cbtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></button><span>Profile</span></div></div>
-    <div class="srow" id="sAddC"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></i><span class="rt">Add to contacts</span></div>
-    <div id="inBiz" style="padding:0"></div>
-    <div class="srow" id="sNotif"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></i><span class="rt">Notifications<small id="sNotifS">On</small></span></div>
-    <div class="srow" id="sMedia"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></i><span class="rt">Media visibility<small id="sMediaS">On</small></span></div>
-    <div class="srow" id="sKept"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15-5-2.18L7 18V5h10v13z"/></svg></i><span class="rt">Kept messages</span></div>
-    <div class="srow" id="sEnc"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span>Verify end-to-end encryption</span></div>
-    <div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></i><span>Disappearing messages</span></div>
-    <div class="srow" id="sLock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span class="rt">Chat lock<small id="sLockS">Lock and hide this chat on this device.</small></span><b class="zsw2" id="sLockSw"></b></div>
-    <div class="srow" id="sAdv"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></i><span class="rt">Advanced chat privacy<small id="sAdvS">Off</small></span></div>
-    <div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></i><span>Read receipts</span></div>
-    <div class="srow" id="sUnread"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></i><span>Mark as unread</span></div>
-    <div class="srow" id="sShare"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span>Share contact</span></div>
-    <div class="srow" id="sGroup"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></i><span  id="sGroupT">Create group</span></div>
-    <div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg></i><span  id="sBlockT">Block</span></div>
-    <div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></i><span>Report</span></div></div></div>
+    <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="itl">Contact Info</div><button id="infoMenu" aria-label="More"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></div>
+    <div class="sset"><div class="pv-top si-top"><div class="av big" id="inAv"></div><div class="pv-name" id="inName"></div><div class="sub" id="inPhone" style="margin:4px 0 0"></div></div>
+    <div class="acts4"><button id="sCall" class="abtn" aria-label="Call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>Call</span></button><button id="sVideoBtn" class="abtn" aria-label="Video"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Video</span></button><button id="sProfileBtn" class="abtn" aria-label="Profile"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Profile</span></button><button id="sMoreBtn" class="abtn" aria-label="More"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg><span>More</span></button></div>
+    <div class="zcard gc"><div class="srow" id="sAbout"><i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span class="rt">About<small id="sAboutS">Available</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
+    <div class="zcard" id="inSoc"></div>
+    <div class="zcard" id="inMedia"></div>
+    <div class="zcard gc" id="inBiz"></div>
+    <div class="zcard"><div class="srow" id="sNotif"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></i><span class="rt">Notifications</span><span class="val" id="sNotifS">On</span><b class="zsw2" id="sNotifSw"></b></div><div class="srow" id="sMedia"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></i><span class="rt">Media visibility</span><span class="val" id="sMediaS">On</span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div><div class="srow" id="sKept"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2zm0 15-5-2.18L7 18V5h10v13z"/></svg></i><span class="rt">Kept messages</span><span class="val" id="sKeptS">0</span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div><div class="srow" id="sDisap"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></i><span class="rt">Disappearing messages</span><span class="val" id="sDisapS">Off</span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div><div class="srow" id="sEnc"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span class="rt">Encryption<small id="sEncS">Messages and calls are end-to-end encrypted</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
+    <div class="zcard"><div class="srow" id="sAddC"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></i><span class="rt">Add to contacts</span></div><div class="srow" id="sLinks"><i class=""><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></i><span class="rt">Shared links<small id="sLinksS">No links</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div><div class="srow" id="sLock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></i><span class="rt">Chat lock<small id="sLockS">Lock and hide this chat on this device.</small></span><b class="zsw2" id="sLockSw"></b></div><div class="srow" id="sAdv"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></i><span class="rt">Advanced chat privacy<small id="sAdvS">Off</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div><div class="srow" id="sRead"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg></i><span class="rt">Read receipts</span></div><div class="srow" id="sUnread"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg></i><span class="rt">Mark as unread</span></div><div class="srow" id="sShare"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span class="rt">Share contact</span></div><div class="srow" id="sGroup"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></i><span class="rt"><span id="sGroupT">Create group</span></span></div></div>
+    <div class="zcard red pill"><div class="srow" id="sBlock"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/></svg></i><span class="rt"><span id="sBlockT">Block contact</span></span></div></div>
+    <div class="zcard red2 pill"><div class="srow" id="sReport"><i><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" ><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></i><span class="rt">Report</span></div></div></div></div>
     <div id="blockSheet" class="bsh hidden"><div class="bsh-box">
       <h3 id="bshTitle">Block</h3>
       <div class="bsh-i"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h9.3A6.9 6.9 0 0 1 13 18c0-1.3.36-2.5.98-3.55C13.2 14.15 12.6 14 12 14z"/><path d="M18 14a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm-2.5 4a2.5 2.5 0 0 1 4-2l-3.5 3.5a2.5 2.5 0 0 1-.5-1.5zm2.5 2.5c-.55 0-1.05-.18-1.5-.5l3.5-3.5c.32.45.5.95.5 1.5a2.5 2.5 0 0 1-2.5 2.5z"/></svg><div><b>Prevents unwanted contact</b><span>They won't be able to call or message you outside groups.</span></div></div>
@@ -1048,7 +1216,7 @@
           <button id="btnGallery" class="ic ghost" aria-label="Photos"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></button>
           <button id="btnMic" class="ic ghost" aria-label="Voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button>
         </div>
-        <div class="inbox"><textarea id="msgInput" rows="1" placeholder="Message" autocomplete="off" enterkeyhint="enter"></textarea><button id="btnEmoji" class="ic ghost" aria-label="Emoji"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-3.5 7a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM12 18c-2.33 0-4.31-1.46-5.11-3.5h10.22C16.31 16.54 14.33 18 12 18z"/></svg></button></div>
+        <div class="inbox"><textarea id="msgInput" rows="1" placeholder="Type a message..." autocomplete="off" enterkeyhint="enter"></textarea><button id="btnEmoji" class="ic ghost" aria-label="Emoji"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-3.5 7a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM12 18c-2.33 0-4.31-1.46-5.11-3.5h10.22C16.31 16.54 14.33 18 12 18z"/></svg></button></div>
         <button id="btnLike" class="ic ghost" aria-label="Send a thumbs up"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg></button>
         <button id="btnSendMsg" class="ic send" aria-label="Send"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" ><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
       </div>
@@ -2818,7 +2986,8 @@ ZW|Zimbabwe|263`;
       r.addEventListener('click', function (e) { if (r._lp) { e.stopImmediatePropagation(); e.preventDefault(); r._lp = false; } }, true);
     }
     function chatActions(c) {
-      var arch = isArchived(c), un = isUnread(c), fv = favs().indexOf(c.phone) > -1, items = [];
+      var arch = isArchived(c), un = isUnread(c), fv = favs().indexOf(c.phone) > -1, items = [], pn = pinsGet().indexOf(c.phone) > -1;
+      items.push([pn ? 'Unpin chat' : 'Pin chat', function () { togglePin(c.phone); }]);
       items.push([arch ? 'Unarchive' : 'Archive', function () { setArchived(c.phone, !arch); renderChats(); toast(arch ? 'Chat unarchived' : 'Chat archived', true); }]);
       items.push([un ? 'Mark as read' : 'Mark as unread', function () { if (un) markSeen(c.phone); else { try { localStorage.setItem('zaply_unread_' + c.phone, '1'); } catch (e) {} } renderChats(); }]);
       items.push([fv ? 'Remove from favourites' : 'Add to favourites', function () { var a = favs(), i = a.indexOf(c.phone); if (i > -1) a.splice(i, 1); else a.push(c.phone); lsSet('zaply_favs', a); renderChats(); }]);
@@ -3888,9 +4057,9 @@ ZW|Zimbabwe|263`;
       updateCounts(); try { archiveSweep(); } catch (e) {}
       allChats.forEach(function (c) { var s = savedName(c.phone); if (s) c.name = s; if (!c.mine && isCallMsg(c.last)) ringFor(c.last, c.at, c); });
       var q = ($('chatSearch').value || '').toLowerCase().trim(), fv = favs();
-      var base = withPending(allChats).filter(function (c) { if (isLocked(c.phone)) return false; return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1; });
+      var base = withPending(allChats).filter(function (c) { if (isLocked(c.phone)) return false; return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1 || (typeof c.last === 'string' && c.last.indexOf(E2E.PREFIX) !== 0 && c.last.toLowerCase().indexOf(q) > -1); });
       var shown = base.filter(function (c) {
-        if (isArchived(c)) return false;
+        if (isArchived(c) || isHidden(c)) return false;
         if (/^f:/.test(filt)) return inFolder(filt.slice(2), c);
         return filt === 'all' ? true : filt === 'unread' ? isUnread(c) : filt === 'fav' ? fv.indexOf(c.phone) > -1 : filt === 'groups' ? !!c.group : false;
       });
@@ -3902,11 +4071,11 @@ ZW|Zimbabwe|263`;
       function row(c, withChat) {
         var r = mk('div', 'row'), un = withChat && isUnread(c), isFav = fv.indexOf(c.phone) > -1;
         if (un) r.classList.add('unread');
+        if (withChat && pinsGet().indexOf(c.phone) > -1) { r.classList.add('pinned'); r.appendChild(mk('span', 'pintag', '\uD83D\uDCCC Pinned')); }
         if (withChat && isMuted(c.phone)) r.classList.add('muted');
         r.appendChild(avatar(c));
         var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', shortUser(labelOf(c))));
         if (withChat) { try { folderTags(c).forEach(function (t) { mid.lastChild.appendChild(t); }); } catch (e) {} }
-        if (withChat && isMuted(c.phone)) mid.lastChild.appendChild(mk('span', 'mutei', '\uD83D\uDD07'));
         var pv = mk('span', '', withChat ? ((c.mine && !(!c.group && !isCallMsg(c.last))) ? 'You: ' : (!c.mine && c.group && c.from ? c.from + ': ' : '')) + previewOf(c.last) : c.phone);
         if (withChat && c.mine && !c.group && !isCallMsg(c.last)) { var tkl = tickEl(c.st === 0 ? 0 : (c.st || 1)); tkl.classList.add('lt'); pv.insertBefore(tkl, pv.firstChild); }
         mid.appendChild(pv);
@@ -3922,13 +4091,15 @@ ZW|Zimbabwe|263`;
             try { localStorage.setItem('zaply_favs', JSON.stringify(a)); } catch (x) {}
             renderChats();
           });
-          side.appendChild(st); r.appendChild(side);
+          side.appendChild(st); if (isMuted(c.phone)) { var mb = mk('span', 'mbell'); mb.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zM2.1 3.5 3.5 2.1 21.9 20.5l-1.4 1.4-2.6-2.6H4v-1l2-2v-5c0-1.4.4-2.7 1.1-3.7L2.1 3.5zM18 11v4.6L8.4 6A5.7 5.7 0 0 1 10.5 4.7V4c0-.8.7-1.5 1.5-1.5s1.5.7 1.5 1.5v.7C16.4 5.4 18 7.9 18 11z"/></svg>'; side.appendChild(mb); }
+          r.appendChild(side);
         }
         r.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name, group: !!c.group }); });
         if (withChat) attachLong(r, c);
         return r;
       }
-      shown.forEach(function (c) { box.appendChild(row(c, true)); });
+      var pins = pinsGet(); shown.sort(function (x, y) { return (pins.indexOf(y.phone) > -1) - (pins.indexOf(x.phone) > -1); });
+      shown.forEach(function (c) { box.appendChild(swipeWrap(row(c, true), c)); });
       try { archRow(box); } catch (e) {}
       try { lockedRow(box); } catch (e) {}
       base.filter(function (c) { return !c.group; }).forEach(function (c) { cb.appendChild(row(c, false)); });
@@ -4358,16 +4529,18 @@ ZW|Zimbabwe|263`;
     function closeInfo() { $('infoView').classList.add('hidden'); }
     /* business accounts: social links and the "Business Account" notice live on this page (next to Call / Video / Profile / Save), not in the profile */
     function renderInfoBiz(phone, p) {
-      var box = $('inBiz'); if (!box) return; box.innerHTML = '';
+      var box = $('inBiz'), soc = $('inSoc'); if (!box) return; box.innerHTML = ''; soc.innerHTML = '';
       if (!p || p.acct !== 'business') return;
-      var B = p.biz || {};
-      SOCIALS.filter(function (o) { return B.social && B.social[o[0]]; }).forEach(function (o) {
-        var url = B.social[o[0]], handle = String(url).replace(/^https?:\/\/(www\.)?/i, '').replace(/[?#].*$/, '').replace(/\/+$/, '').split('/').pop() || url;
-        var r = mk('div', 'prow'), ic = mk('span', '', o[1]); ic.style.cssText = 'flex:none;width:24px;text-align:center;font-size:22px;line-height:1.2';
-        var bx = mk('div'), bb = mk('b'); bb.appendChild(blueLink(url, handle)); bx.appendChild(bb); bx.appendChild(mk('small', '', o[2]));
-        r.appendChild(ic); r.appendChild(bx); box.appendChild(r);
-      });
-      box.appendChild(profRow('info', 'Business Account', 'This account uses Zanply Business'));
+      var B = p.biz || {}, sl = SOCIALS.filter(function (o) { return B.social && B.social[o[0]]; });
+      if (sl.length) {
+        var hd = mk('div', 'srow'); hd.innerHTML = '<i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span class="rt"><b>Social Media</b></span>';
+        soc.appendChild(hd); var sr = mk('div', 'socrow');
+        sl.forEach(function (o) { var u = String(B.social[o[0]]); if (!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); var a = mk('a', 'soc'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.appendChild(mk('span', 'sic', o[1])); a.appendChild(mk('span', '', o[2].split(' ')[0])); sr.appendChild(a); });
+        soc.appendChild(sr);
+      }
+      if (!PIC.store) PIC.store = ZI.store;
+      var br = profRow('store', 'Business Account', 'This account uses Zanply Business'); br.insertAdjacentHTML('beforeend', '<svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>');
+      br.style.cursor = 'pointer'; br.addEventListener('click', function () { $('sProfileBtn').click(); }); box.appendChild(br);
     }
     function openInfo() {
       if (!openUser) return; pushOv(closeInfo);
@@ -5204,6 +5377,33 @@ ZW|Zimbabwe|263`;
       });
     }
     /* contact page rows */
+    function infoLinks() { var out = []; (thCache || []).forEach(function (m) { if (m && typeof m.body === 'string' && m.body.indexOf('__') !== 0) (m.body.match(/https?:\/\/[^\s]+/g) || []).forEach(function (u) { if (out.indexOf(u) < 0) out.push(u); }); }); return out; }
+    function openLinks() {
+      zOpenPage('Shared links', function (b) {
+        var l = infoLinks(); if (!l.length) return zempty(b, 'No links shared in this chat yet.');
+        l.forEach(function (u) { var r = mk('div', 'row'); r.style.padding = '14px 16px'; var mid = mk('div', 'mid'); mid.appendChild(blueLink(u, u)); r.appendChild(mid); b.appendChild(r); });
+      });
+    }
+    $('infoMenu').addEventListener('click', function () { zsheet('Contact', [['Share contact', function () { $('sShare').click(); }], ['Report', function () { $('sReport').click(); }], [$('sBlockT').textContent, function () { $('sBlock').click(); }]]); });
+    function mediaStats() { var ph = 0, vd = 0; (thCache || []).forEach(function (m) { if (m && typeof m.body === 'string' && m.body.indexOf('__media__') === 0) { var t = parseTail(m.body, 9); if (!t) return; if (t.k === 'image') ph++; else if (t.k === 'video') vd++; } }); return { ph: ph, vd: vd }; }
+    function mediaImgs() { return Array.prototype.slice.call(document.querySelectorAll('#msgs .bub.media img')).filter(function (i) { return i.src; }); }
+    function openMediaGrid() {
+      zOpenPage('Shared media', function (b) {
+        var im = mediaImgs(); if (!im.length) return zempty(b, 'No photos loaded in this chat yet.');
+        var g = mk('div', 'mgrid'); g.style.padding = '12px'; im.forEach(function (i) { var t = mk('div', 'mt'), c = document.createElement('img'); c.src = i.src; t.appendChild(c); t.addEventListener('click', function () { openViewer(i.src, 'photo'); }); g.appendChild(t); }); b.appendChild(g);
+      });
+    }
+    function renderInfoMedia() {
+      var box = $('inMedia'); if (!box) return; box.innerHTML = ''; var s = mediaStats(); if (!s.ph && !s.vd) return;
+      var hd = mk('div', 'srow'); hd.innerHTML = '<i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></i>';
+      var parts = []; if (s.ph) parts.push(s.ph + (s.ph === 1 ? ' photo' : ' photos')); if (s.vd) parts.push(s.vd + (s.vd === 1 ? ' video' : ' videos'));
+      var rt = mk('span', 'rt'); rt.appendChild(mk('b', '', 'Shared Media')); rt.appendChild(mk('small', '', parts.join(', '))); hd.appendChild(rt);
+      hd.insertAdjacentHTML('beforeend', '<svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>'); box.appendChild(hd);
+      var im = mediaImgs(), total = s.ph + s.vd;
+      if (im.length) { var g = mk('div', 'mgrid'); im.slice(0, total > 4 ? 3 : 4).forEach(function (i) { var t = mk('div', 'mt'), c = document.createElement('img'); c.src = i.src; t.appendChild(c); g.appendChild(t); }); if (total > 4) g.appendChild(mk('div', 'mt', '+' + (total - 3))); box.appendChild(g); }
+      box.onclick = openMediaGrid;
+    }
+    $('sMoreBtn').addEventListener('click', function () { $('infoMenu').click(); });
     function refreshInfoRows() {
       if (!openUser || openUser.group) return; var ph = openUser.phone;
       $('sAddC').style.display = savedName(ph) ? 'none' : '';
@@ -5211,16 +5411,26 @@ ZW|Zimbabwe|263`;
       $('sMediaS').textContent = mediaOff(ph) ? 'Off' : 'On';
       $('sLockSw').classList.toggle('on', isLocked(ph));
       $('sAdvS').textContent = acpOn(ph) ? 'On' : 'Off';
+      $('sNotifSw').classList.toggle('on', !isMuted(ph));
+      $('sKeptS').textContent = String(Object.keys(keptMap(ph)).length);
+      var dv = localStorage.getItem('zaply_dis_' + ph) || 'off', de = document.querySelector('input[name="dis"][value="' + dv + '"]');
+      $('sDisapS').textContent = dv === 'off' ? 'Off' : ((de && de.parentNode && de.parentNode.textContent.trim()) || dv);
+      var bio = ((cp0(ph) || {}).bio || '').trim(); $('sAboutS').textContent = bio || 'Available';
+      renderInfoMedia();
+      var nl = infoLinks().length; $('sLinksS').textContent = nl ? nl + (nl === 1 ? ' link' : ' links') : 'No links';
+      $('inAv').classList.toggle('onl', !!(typeof ONL !== 'undefined' && ONL && ONL[ph]));
     }
     var _oi2 = openInfo; openInfo = function () { _oi2.apply(this, arguments); try { refreshInfoRows(); } catch (e) {} };
     $('infoView').addEventListener('click', function (e) {
       var rw = e.target.closest('.srow'); if (!rw || !openUser || openUser.group) return; var ph = openUser.phone, id = rw.id;
-      if (id === 'sAddC') openSave();
+      if (id === 'sAbout') $('sProfileBtn').click();
+      else if (id === 'sLinks') openLinks();
+      else if (id === 'sAddC') openSave();
       else if (id === 'sNotif') {
         var H = 3600000, D = 24 * H;
         var go = function (ms, label) { return [label, function () { setMute(ph, Date.now() + ms); refreshInfoRows(); renderChats(); toast('Muted ' + (ms > 3650 * D ? 'always' : 'for ' + label.toLowerCase()), true); }]; };
         var items = [go(8 * H, '8 hours'), go(7 * D, '1 week'), go(36500 * D, 'Always')];
-        if (isMuted(ph)) items.unshift(['Turn notifications on', function () { setMute(ph, 0); refreshInfoRows(); renderChats(); toast('Notifications are on', true); }]);
+        if (isMuted(ph)) { setMute(ph, 0); refreshInfoRows(); renderChats(); return toast('Notifications are on', true); }
         zsheet('Notifications', items);
       }
       else if (id === 'sMedia') {
@@ -5239,6 +5449,84 @@ ZW|Zimbabwe|263`;
         zconfirm('Advanced chat privacy stops this chat from being exported, blocks saving and auto-downloading its photos, and stops copying its messages.', function () { pcSet('acp', ph, true); applyThreadPrivacy(openUser); refreshInfoRows(); toast('Advanced chat privacy is on', true); }, 'Turn on');
       }
     });
+
+    /* ================= new chat-list look: pins, swipe actions, stories strip, filter chips, bottom bar ================= */
+    function pinsGet() { var a = lsGet('zaply_pins', []); return Array.isArray(a) ? a : []; }
+    function togglePin(ph) { var a = pinsGet(), i = a.indexOf(ph); if (i > -1) a.splice(i, 1); else a.unshift(ph); lsSet('zaply_pins', a); renderChats(); toast(i > -1 ? 'Chat unpinned' : 'Chat pinned', true); }
+    function isHidden(c) { var m = lsGet('zaply_hidden', {}), t = m[c.phone]; return !!t && (new Date(c.at).getTime() || 0) <= t; }
+    function hideChat(c) { var m = lsGet('zaply_hidden', {}); m[c.phone] = Date.now(); lsSet('zaply_hidden', m); renderChats(); toast('Chat deleted from this phone', true); }
+    var SV = {
+      dots: '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+      pin: '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>',
+      trash: '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>'
+    };
+    function swipeWrap(r, c) {
+      var w = mk('div', 'swrap'), a = mk('div', 'sacts'), pinned = pinsGet().indexOf(c.phone) > -1, W = 252, sx = 0, sy = 0, dx = 0, drag = false, open = false;
+      function close() { r.style.transform = ''; open = false; }
+      function btn(cls, label, svg, fn) { var b = mk('button', cls); b.innerHTML = svg + '<span>' + label + '</span>'; b.addEventListener('click', function (e) { e.stopPropagation(); close(); fn(); }); return b; }
+      a.appendChild(btn('sa-more', 'More', SV.dots, function () { chatActions(c); }));
+      a.appendChild(btn('sa-pin', pinned ? 'Unpin' : 'Pin', SV.pin, function () { togglePin(c.phone); }));
+      a.appendChild(btn('sa-del', 'Delete', SV.trash, function () { zconfirm('Delete this chat from this phone? It comes back if a new message arrives.', function () { hideChat(c); }, 'Delete'); }));
+      w.appendChild(a); w.appendChild(r);
+      r.addEventListener('touchstart', function (e) { var t = e.touches[0]; sx = t.clientX; sy = t.clientY; dx = 0; drag = false; r.style.transition = 'none'; }, { passive: true });
+      r.addEventListener('touchmove', function (e) { var t = e.touches[0], mx = t.clientX - sx, my = t.clientY - sy; if (!drag) { if (Math.abs(mx) > 10 && Math.abs(mx) > Math.abs(my) * 1.5) drag = true; else return; } dx = Math.max(-W, Math.min(0, (open ? -W : 0) + mx)); r.style.transform = 'translateX(' + dx + 'px)'; }, { passive: true });
+      ['touchend', 'touchcancel'].forEach(function (n) { r.addEventListener(n, function () { r.style.transition = ''; if (!drag) return; open = dx < -W / 2; r.style.transform = open ? 'translateX(' + (-W) + 'px)' : ''; drag = false; }, { passive: true }); });
+      r.addEventListener('click', function (e) { if (open) { e.stopImmediatePropagation(); e.preventDefault(); close(); } }, true);
+      return w;
+    }
+    function chipHtml(path, text, n) { return '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="' + path + '"/></svg><span>' + text + '</span>' + (n ? '<em class="cnt2">' + n + '</em>' : ''); }
+    var _uc = updateCounts;
+    updateCounts = function () {
+      _uc();
+      var vis = allChats.filter(function (c) { return !isArchived(c) && !isLocked(c.phone) && !isHidden(c); }), un = vis.filter(isUnread).length;
+      $('fAll').innerHTML = chipHtml('M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z', 'All Chats', vis.length);
+      $('fUnread').innerHTML = chipHtml('M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z', 'Unread', un);
+      $('fGroups').innerHTML = chipHtml('M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z', 'Groups', 0);
+      $('fFav').innerHTML = chipHtml('M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z', 'Favorites', 0);
+    };
+    function renderStories() {
+      var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
+      var add = mk('button', 'st-add'); add.innerHTML = '<span class="plus">+</span><span>Add<br>Story</span>'; add.addEventListener('click', function () { showTab('status'); }); box.appendChild(add);
+      var sc = mk('div', 'st-scroll'); box.appendChild(sc);
+      allChats.filter(function (c) { return !isArchived(c) && !isLocked(c.phone) && !isHidden(c); }).slice(0, 10).forEach(function (c) {
+        var it = mk('button', 'st-it'), ring = mk('span', 'st-ring'); ring.appendChild(avatar(c)); it.appendChild(ring); it.appendChild(mk('span', 'st-n', shortUser(labelOf(c)).split(' ')[0]));
+        it.addEventListener('click', function () { openThread({ phone: c.phone, name: c.name, group: !!c.group }); }); sc.appendChild(it);
+      });
+      var nx = mk('button', 'st-next', '\u203A'); nx.addEventListener('click', function () { sc.scrollBy({ left: 220, behavior: 'smooth' }); }); box.appendChild(nx);
+    }
+    var _rc = renderChats; renderChats = function () { _rc(); try { renderStories(); } catch (e) {} };
+    var _st2 = showTab; showTab = function (t) { _st2(t); $('storyStrip').classList.toggle('hidden', t !== 'chats'); };
+    $('btnBell').addEventListener('click', function () { showTab('notifications'); });
+    $('btnPremium').addEventListener('click', function () { toast('Zanply Premium is coming soon'); });
+    $('tabAi').addEventListener('click', function () { zOpenPage('Zanply AI', function (b) { zempty(b, 'Zanply AI is coming soon.'); }); });
+    $('tabExplore').addEventListener('click', function () { zOpenPage('Explore', function (b) { zempty(b, 'Explore is coming soon.'); }); });
+    $('btnSearchFilter').addEventListener('click', function () {
+      zsheet('Show', [['All chats', function () { $('fAll').click(); }], ['Unread', function () { $('fUnread').click(); }], ['Groups', function () { $('fGroups').click(); }], ['Favorites', function () { $('fFav').click(); }]]);
+    });
+    try { updateCounts(); renderStories(); } catch (e) {}
+
+    /* ================= chat screen look: date pills + call card ================= */
+    function dayLabel(d) {
+      var n = new Date(), y = new Date(Date.now() - 864e5), f = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      return d.toDateString() === n.toDateString() ? 'Today, ' + f : d.toDateString() === y.toDateString() ? 'Yesterday, ' + f : f;
+    }
+    var _am = addMsg;
+    addMsg = function (m) {
+      var box = $('msgs'), pv = box.querySelectorAll('.bub[data-at]'); pv = pv[pv.length - 1];
+      var r = _am(m); if (!r) return r;
+      var nb = box.lastElementChild; if (!nb || !nb.classList.contains('bub')) return r;
+      var d = new Date(+nb.getAttribute('data-at')), pd = pv ? new Date(+pv.getAttribute('data-at')) : null;
+      if (!pd || d.toDateString() !== pd.toDateString()) box.insertBefore(mk('div', 'dpill', dayLabel(d)), nb);
+      if (/^\uD83D\uDCDE Call/.test(nb.textContent)) {
+        var sm = nb.querySelector('small'); nb.classList.add('callb'); nb.innerHTML = '';
+        var ic = mk('span', 'cic'); ic.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>';
+        var tx = mk('div', 'ctx'); tx.appendChild(mk('b', '', 'Call')); if (sm) tx.appendChild(sm);
+        var go = mk('button', 'cgo'); go.setAttribute('aria-label', 'Call back'); go.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>';
+        go.addEventListener('click', function (e) { e.stopPropagation(); $('thAudio').click(); });
+        nb.appendChild(ic); nb.appendChild(tx); nb.appendChild(go);
+      }
+      return r;
+    };
     /* A web app is not allowed to write into the phone's address book directly. The closest thing the phone allows is
        handing it a contact card (.vcf): the phone's Contacts app opens it and the person taps Save once. */
     function addToPhoneContacts(first, last, tel) {
