@@ -1291,10 +1291,27 @@ html.islight .abtn{background:#fff!important;color:#111b21;border:1px solid #e1e
 html.islight .soc,html.islight .sic{color:#111b21}
 html.islight .mgrid .mt{background:#e9edef}
 html.islight #inCover{background-color:#e9edef}
-/* smaller Add Story button */
-.st-add{width:54px!important;height:78px!important;border-radius:16px!important;gap:6px!important}
-.st-add .plus{width:26px!important;height:26px!important;font-size:19px!important;border-width:1.3px}
-.st-add span:last-child{font-size:11.5px!important}
+/* Add status: small profile picture with a + badge, no text */
+.st-add{width:50px!important;height:50px!important;min-width:0!important;border-radius:50%!important;border:none!important;background:transparent!important;padding:0!important;gap:0!important;position:relative;overflow:visible!important;margin-top:5px}
+.st-add .av{width:50px!important;height:50px!important;font-size:20px!important}
+.st-add .st-plus{position:absolute;right:-3px;bottom:-3px;width:20px;height:20px;border-radius:50%;background:#21c063;color:#fff;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;line-height:1}
+/* Contact profile page: smaller, and readable in light mode */
+#infoView::before{height:270px!important}
+#inAv{width:104px!important;height:104px!important;font-size:42px!important;margin-top:6px!important;padding:4px!important}
+#inAv.onl::after{width:20px!important;height:20px!important;right:6px!important;bottom:8px!important}
+#inName{font-size:24px!important;margin-top:10px!important}
+#inPhone{font-size:15px!important}
+#infoView .itl{font-size:20px!important}
+.acts4{margin:16px 0 12px!important}
+.abtn{height:84px!important;border-radius:24px!important;font-size:15px!important;gap:8px!important}
+.abtn svg{width:24px!important;height:24px!important}
+html.islight #infoView::before{background:linear-gradient(180deg,#d9f3e5 0%,#e8f6ee 55%,#f0f2f5 100%)!important}
+html.islight #infoView #inAv{border-color:#25d366!important}
+/* action buttons: small white pills with outline icons */
+.acts4{gap:8px!important}
+.abtn{height:66px!important;border-radius:20px!important;font-size:13px!important;font-weight:600!important;gap:6px!important}
+.abtn svg{color:inherit!important;width:22px!important;height:22px!important}
+.abtn svg{fill:none!important}
 </style>
 </head>
 <body>
@@ -1518,7 +1535,7 @@ html.islight #inCover{background-color:#e9edef}
 
     <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="itl">Profile info</div><button id="infoMenu" aria-label="More" style="display:none"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></div>
     <div class="sset"><div id="inCover" class="hidden"></div><div class="pv-top si-top"><div class="av big" id="inAv"></div><div class="pv-name" id="inName"></div><div class="sub" id="inPhone" style="margin:4px 0 0"></div></div>
-    <div class="acts4"><button id="sMsgBtn" class="abtn" style="display:none" aria-hidden="true"></button><button id="sVideoBtn" class="abtn" aria-label="Video call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Video call</span></button><button id="sCall" class="abtn" aria-label="Voice call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>Voice call</span></button><button id="sFwdBtn" class="abtn" aria-label="Forward"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg><span>Forward</span></button><button id="sShareBtn" class="abtn" aria-label="Share"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg><span>Share</span></button></div>
+    <div class="acts4"><button id="sMsgBtn" class="abtn" style="display:none" aria-hidden="true"></button><button id="sVideoBtn" class="abtn" aria-label="Video call"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="M15.5 10.5l5-3v9l-5-3"/></svg><span>Video</span></button><button id="sCall" class="abtn" aria-label="Voice call"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Call</span></button><button id="sFwdBtn" class="abtn" aria-label="Forward"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg><span>Forward</span></button><button id="sShareBtn" class="abtn" aria-label="Share"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg><span>Share</span></button></div>
     <button id="sProfileBtn" style="display:none" aria-hidden="true"></button><button id="sMoreBtn" style="display:none" aria-hidden="true"></button>
     <div class="zcard gc"><div class="srow" id="sAbout"><i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span class="rt">About<small id="sAboutS">Available</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
     <div class="zcard" id="inLinksCard"><div class="srow" id="sLinks"><i class=""><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></i><span class="rt">Shared links<small id="sLinksS">No links</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
@@ -5796,14 +5813,25 @@ ZW|Zimbabwe|263`;
       box.addEventListener('copy', function (e) { if (openWith && acpOn(openWith)) e.preventDefault(); });
     })();
     function openKept() {
-      var ph = openUser.phone;
-      zOpenPage('Kept messages', function (b) {
-        var map = keptMap(ph), ids = Object.keys(map).sort(function (x, y) { return new Date(map[y].at) - new Date(map[x].at); });
-        if (!ids.length) return zempty(b, 'No kept messages. Press and hold a message in the chat to keep it, so it stays even when disappearing messages is on.');
-        ids.forEach(function (id) {
-          var k = map[id], r = mk('div', 'row'); r.style.padding = '12px 16px'; var mid = mk('div', 'mid');
-          mid.appendChild(mk('b', '', k.mine ? 'You' : shortUser(labelOf(openUser)))); mid.appendChild(mk('span', '', previewOf(k.body))); r.appendChild(mid); r.appendChild(mk('time', '', new Date(k.at).toLocaleDateString()));
-          r.addEventListener('click', function () { zsheet('Kept message', [['Remove from kept messages', function () { var mm = keptMap(ph); delete mm[id]; lsSet('zaply_kept_' + ph, mm); r.remove(); if (!b.querySelector('.row')) zempty(b, 'No kept messages.'); }]]); });
+      zOpenPage('Starred messages', function (b) {
+        var items = [];
+        try {
+          for (var i = 0; i < localStorage.length; i++) {
+            var key = localStorage.key(i);
+            if (!key || key.indexOf('zaply_kept_') !== 0) continue;
+            var ph = key.slice('zaply_kept_'.length), map = lsGet(key, {}) || {};
+            Object.keys(map).forEach(function (id) { var k = map[id]; if (k) items.push({ ph: ph, id: id, k: k }); });
+          }
+        } catch (e) {}
+        items.sort(function (x, y) { return new Date(y.k.at) - new Date(x.k.at); });
+        if (!items.length) return zempty(b, 'No starred messages. Press and hold a message in a chat to star it.');
+        items.forEach(function (it) {
+          var k = it.k, r = mk('div', 'row'); r.style.padding = '12px 16px'; var mid = mk('div', 'mid');
+          var who = '';
+          try { who = (openUser && openUser.phone === it.ph) ? labelOf(openUser) : labelOf((allChats || []).filter(function (x) { return x.phone === it.ph; })[0] || { phone: it.ph }); } catch (e) { who = it.ph; }
+          mid.appendChild(mk('b', '', (k.mine ? 'You' : shortUser(who)) + (k.mine && who ? ' \u2192 ' + shortUser(who) : '')));
+          mid.appendChild(mk('span', '', previewOf(k.body))); r.appendChild(mid); r.appendChild(mk('time', '', new Date(k.at).toLocaleDateString()));
+          r.addEventListener('click', function () { zsheet('Starred message', [['Remove from starred', function () { var mm = keptMap(it.ph); delete mm[it.id]; lsSet('zaply_kept_' + it.ph, mm); r.remove(); if (!b.querySelector('.row')) zempty(b, 'No starred messages.'); }]]); });
           b.appendChild(r);
         });
       });
@@ -5920,7 +5948,7 @@ ZW|Zimbabwe|263`;
     };
     function renderStories() {
       var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
-      var add = mk('button', 'st-add'); add.innerHTML = '<span class="plus">+</span><span>Add<br>Story</span>'; add.addEventListener('click', function () { showTab('status'); }); box.appendChild(add);
+      var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(avatar({ phone: myPhone, name: (typeof curUser !== 'undefined' && curUser && (curUser.name || curUser.username)) || myPhone || 'Me' })); add.appendChild(mk('span', 'st-plus', '+')); add.addEventListener('click', function () { showTab('status'); }); box.appendChild(add);
       var sc = mk('div', 'st-scroll'); box.appendChild(sc);
       allChats.filter(function (c) { return !isArchived(c) && !isLocked(c.phone) && !isHidden(c); }).slice(0, 10).forEach(function (c) {
         var it = mk('button', 'st-it'), ring = mk('span', 'st-ring'); ring.appendChild(avatar(c)); it.appendChild(ring); it.appendChild(mk('span', 'st-n', shortUser(labelOf(c)).split(' ')[0]));
@@ -6000,7 +6028,7 @@ ZW|Zimbabwe|263`;
     renderStories = function () {
       var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
       var sc = mk('div', 'st-scroll'); box.appendChild(sc);
-      var add = mk('button', 'st-add'); add.innerHTML = '<span class="plus">+</span><span>Add<br>Story</span>'; add.addEventListener('click', function () { showTab('status'); }); sc.appendChild(add);
+      var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(avatar({ phone: myPhone, name: (typeof curUser !== 'undefined' && curUser && (curUser.name || curUser.username)) || myPhone || 'Me' })); add.appendChild(mk('span', 'st-plus', '+')); add.addEventListener('click', function () { showTab('status'); }); sc.appendChild(add);
       var users = lsGet('zaply_status_users', []); users = Array.isArray(users) ? users : [];
       users.forEach(function (c) { var it = mk('button', 'st-it'), ring = mk('span', 'st-ring'); ring.appendChild(avatar(c)); it.appendChild(ring); it.appendChild(mk('span', 'st-n', shortUser(labelOf(c)).split(' ')[0])); sc.appendChild(it); });
       if (users.length > 5) { var nx = mk('button', 'st-next', '\u203A'); nx.addEventListener('click', function () { sc.scrollBy({ left: 220, behavior: 'smooth' }); }); box.appendChild(nx); }
@@ -7359,8 +7387,8 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       });
       document.body.appendChild(bg);
     }
-    function openCamera(onFile) {
-      var stream = null, face = 'user';
+    function openCamera(onFile, startFace) {
+      var stream = null, face = startFace || 'user';
       function stop() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } }
       zOpenPage('Camera', function (b) {
         b.style.cssText += ';display:flex;flex-direction:column;background:#000';
@@ -7387,6 +7415,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         start();
       }, stop);
     }
+    window.zOpenCamera = openCamera;
     function openAiPic(onFile) {
       zOpenPage('AI image', function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
@@ -7870,13 +7899,22 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   var _oa = openAppearance; openAppearance = function () { window.__cw = null; return _oa.apply(this, arguments); };
 
   /* ---------- composer: camera sheet (Gallery / Camera / Files), + menu only AI image + Location ---------- */
+  /* live camera: opens the in-app viewfinder instead of the phone's file picker */
+  function chatCamera() {
+    if (!(window.zOpenCamera && navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { $('fileCam').click(); return; }
+    camChat = openWith;
+    window.zOpenCamera(function (f) {
+      try { var dt = new DataTransfer(); dt.items.add(f); $('fileCam').files = dt.files; $('fileCam').dispatchEvent(new Event('change')); }
+      catch (e) { toast('Could not use the photo'); }
+    }, 'environment');
+  }
   Array.prototype.forEach.call($('plusMenu').querySelectorAll('button'), function (b) { var a = b.getAttribute('data-a'); if (a !== 'ai' && a !== 'loc') b.remove(); });
   $('btnCamera').addEventListener('click', function (e) {
     e.stopImmediatePropagation(); if (!openWith) return; camChat = openWith; $('plusMenu').classList.add('hidden');
     sheet(function (d, close) {
       var pill = mk('div', 'v3pill');
       [['Gallery', P.img, 'fileImg'], ['Camera', P.cam, 'fileCam'], ['Files', P.file, 'fileAny']].forEach(function (x) {
-        var b = mk('button'); b.innerHTML = ico(x[1]) + '<span>' + x[0] + '</span>'; b.addEventListener('click', function () { close(); camChat = openWith; $(x[2]).click(); }); pill.appendChild(b);
+        var b = mk('button'); b.innerHTML = ico(x[1]) + '<span>' + x[0] + '</span>'; b.addEventListener('click', function () { close(); camChat = openWith; if (x[2] === 'fileCam') chatCamera(); else $(x[2]).click(); }); pill.appendChild(b);
       }); d.appendChild(pill);
     });
   }, true);
@@ -7890,7 +7928,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         var b = mk('button'); b.innerHTML = '<span class="atic" style="background:' + color + '">' + icon + '</span><span class="atl">' + label + '</span>';
         b.addEventListener('click', function () { close(); camChat = openWith; fn(); }); g.appendChild(b);
       }
-      add('Camera', ico(P.cam), '#ef5a3c', function () { $('fileCam').click(); });
+      add('Camera', ico(P.cam), '#ef5a3c', function () { chatCamera(); });
       add('Gallery', ico(P.img), '#7b5cf0', function () { $('fileImg').click(); });
       add('Files', ico(P.file), '#2f8cf0', function () { $('fileAny').click(); });
       add('Location', PIN, '#1fa855', function () { var src = $('plusMenu').querySelector('button[data-a="loc"]'); if (src) src.click(); });
