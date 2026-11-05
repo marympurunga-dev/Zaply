@@ -1312,6 +1312,10 @@ html.islight #infoView #inAv{border-color:#25d366!important}
 .abtn{height:66px!important;border-radius:20px!important;font-size:13px!important;font-weight:600!important;gap:6px!important}
 .abtn svg{color:inherit!important;width:22px!important;height:22px!important}
 .abtn svg{fill:none!important}
+/* chat filter chips (All, Unread, Groups, Channels, Favorites): small */
+#filterNav{gap:6px!important;margin-bottom:8px!important}
+#filterNav button{padding:4px 11px!important;font-size:12px!important;font-weight:600!important;gap:4px!important;line-height:1.2!important;min-height:0!important;height:auto!important;border-width:1px!important}
+#filterNav .cnt2{min-width:16px!important;height:16px!important;line-height:16px!important;font-size:10px!important;padding:0 4px!important;border-radius:8px!important}
 </style>
 </head>
 <body>
@@ -5948,7 +5952,7 @@ ZW|Zimbabwe|263`;
     };
     function renderStories() {
       var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
-      var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(avatar({ phone: myPhone, name: (typeof curUser !== 'undefined' && curUser && (curUser.name || curUser.username)) || myPhone || 'Me' })); add.appendChild(mk('span', 'st-plus', '+')); add.addEventListener('click', function () { showTab('status'); }); box.appendChild(add);
+      var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })); add.appendChild(mk('span', 'st-plus', '+')); add.addEventListener('click', function () { showTab('status'); }); box.appendChild(add);
       var sc = mk('div', 'st-scroll'); box.appendChild(sc);
       allChats.filter(function (c) { return !isArchived(c) && !isLocked(c.phone) && !isHidden(c); }).slice(0, 10).forEach(function (c) {
         var it = mk('button', 'st-it'), ring = mk('span', 'st-ring'); ring.appendChild(avatar(c)); it.appendChild(ring); it.appendChild(mk('span', 'st-n', shortUser(labelOf(c)).split(' ')[0]));
@@ -6024,11 +6028,20 @@ ZW|Zimbabwe|263`;
     });
     /* cleared chats: hide messages older than the clear time */
     var _am2 = addMsg; addMsg = function (m) { try { if (openUser && m) { var t = (lsGet('zaply_cleared', {}) || {})[openUser.phone]; var at = new Date(m.at || m.created_at || 0).getTime(); if (t && at && at <= t) return null; } } catch (e) {} return _am2(m); };
+    /* my small avatar for Add status: profile photo, or the first letter of my name (never a "+" from a phone number) */
+    window.zMyStoryAv = function () {
+      var P = {}; try { P = JSON.parse(localStorage.getItem('zaply_myprof') || 'null') || {}; } catch (e) {}
+      var raw = String(P.name || P.display_name || (typeof curUser !== 'undefined' && curUser && (curUser.name || curUser.username)) || P.username || '').trim();
+      var nm = /^[\d\s+()\-]*$/.test(raw) ? '' : raw.replace(/^[^A-Za-z0-9\u00C0-\uFFFF]+/, '');
+      var a = avatar({ phone: myPhone, name: nm || 'Me' });
+      try { if (P.photo_url && !(PH && PH[myPhone])) { a.style.backgroundImage = 'url("' + P.photo_url + '")'; a.style.backgroundSize = 'cover'; a.style.backgroundPosition = 'center'; a.textContent = ''; } } catch (e) {}
+      return a;
+    };
     /* stories: only people who posted a status, "Add story" scrolls with them, arrow only when more than 4 */
     renderStories = function () {
       var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
       var sc = mk('div', 'st-scroll'); box.appendChild(sc);
-      var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(avatar({ phone: myPhone, name: (typeof curUser !== 'undefined' && curUser && (curUser.name || curUser.username)) || myPhone || 'Me' })); add.appendChild(mk('span', 'st-plus', '+')); add.addEventListener('click', function () { showTab('status'); }); sc.appendChild(add);
+      var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })); add.appendChild(mk('span', 'st-plus', '+')); add.addEventListener('click', function () { showTab('status'); }); sc.appendChild(add);
       var users = lsGet('zaply_status_users', []); users = Array.isArray(users) ? users : [];
       users.forEach(function (c) { var it = mk('button', 'st-it'), ring = mk('span', 'st-ring'); ring.appendChild(avatar(c)); it.appendChild(ring); it.appendChild(mk('span', 'st-n', shortUser(labelOf(c)).split(' ')[0])); sc.appendChild(it); });
       if (users.length > 5) { var nx = mk('button', 'st-next', '\u203A'); nx.addEventListener('click', function () { sc.scrollBy({ left: 220, behavior: 'smooth' }); }); box.appendChild(nx); }
@@ -7859,7 +7872,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     var old = document.getElementById('zdd'); if (old) return old.remove();
     if (!openUser) return;
     var u = openUser, ph = u.phone, items = [];
-    function more() { var it = [['Report', function () { if (u.group) return toast('Open a member profile to report'); openPageSafe('reportView'); }], [curBlocked ? 'Unblock' : 'Block', function () { if (u.group) return toast('Blocking is for one-to-one chats'); openInfo(); setTimeout(function () { $('sBlock').click(); }, 150); }], ['Clear chat', clearOpenChat]]; if (u.group) it.shift(), it.shift(); zsheet('More', it); }
+    function moreItems() { var it = [['Report', function () { if (u.group) return toast('Open a member profile to report'); openPageSafe('reportView'); }], [curBlocked ? 'Unblock' : 'Block', function () { if (u.group) return toast('Blocking is for one-to-one chats'); openInfo(); setTimeout(function () { $('sBlock').click(); }, 150); }], ['Clear chat', clearOpenChat]]; if (u.group) it.shift(), it.shift(); return it; }
     function openPageSafe(id) { $('rpText').value = ''; openPage(id); }
     function muteToggle() {
       if (isMuted(ph)) { setMute(ph, 0); renderChats(); return toast('Notifications on', true); }
@@ -7879,10 +7892,18 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         [isMuted(ph) ? 'Unmute notifications' : 'Mute notifications', muteToggle],
         ['Disappearing messages', function () { var v = 'off'; try { v = localStorage.getItem('zaply_dis_' + ph) || 'off'; } catch (e) {} Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.checked = r.value === v; }); openPage('disapView'); }],
         ['Chat theme', function () { window.__cw = ph; openWallpaper(); }, 'sep'],
-        ['More', more, 'more']];
+        ['More', moreItems, 'more']];
     }
     var d = mk('div', ''); d.id = 'zdd';
-    items.forEach(function (it) { var b = mk('button', it[2] || '', it[0]); b.addEventListener('click', function (ev) { ev.stopPropagation(); d.remove(); it[1](); }); d.appendChild(b); });
+    function fill(list) {
+      d.innerHTML = '';
+      list.forEach(function (it) {
+        var b = mk('button', it[2] || '', it[0]);
+        b.addEventListener('click', function (ev) { ev.stopPropagation(); if (it[2] === 'more') { fill(it[1]()); return; } d.remove(); it[1](); });
+        d.appendChild(b);
+      });
+    }
+    fill(items);
     document.body.appendChild(d);
     try { var hd = document.querySelector('#threadView .th-head'); if (hd) d.style.top = Math.max(0, hd.getBoundingClientRect().bottom - 8) + 'px'; } catch (e) {}
   }, true);
