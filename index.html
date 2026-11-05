@@ -1494,7 +1494,7 @@ html.islight #infoView #inAv{border-color:#25d366!important}
         <button id="tabCalls"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></span><span class="nl">Calls</span></button>
         <button id="tabExplore"><span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5 13.5 13.5 8.5 15.5 10.5 10.5z" fill="currentColor"/></svg></span><span class="nl">Explore</span></button>
       </nav>
-      <div id="paneStatus" class="hidden"><div class="empty">Status is coming soon.</div></div>
+      <div id="paneStatus" class="hidden"><div class="empty">Loading…</div></div>
       <div id="paneNotifications" class="hidden"><div class="empty">No notifications yet.</div></div>
       <div id="paneCalls" class="hidden">
         <nav class="tabs4" id="callFilter"><button id="cfAll" class="active">All</button><button id="cfMissed">Missed</button></nav>
@@ -8135,6 +8135,258 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
 })();
 
   </script>
+<style>
+#paneStatus{padding:4px 0 96px}
+.zst-sec{font-size:13px;color:var(--muted);font-weight:600;margin:16px 16px 6px}
+.zst-row{display:flex;align-items:center;gap:14px;width:100%;padding:10px 16px;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.zst-avw{position:relative;flex:none;width:52px;height:52px}
+.zst-avw .av{width:52px;height:52px;font-size:20px}
+.zst-avw i{position:absolute;right:-3px;bottom:-3px;width:20px;height:20px;border-radius:50%;background:#21c063;color:#fff;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font:700 15px/1 system-ui;font-style:normal}
+.zst-ring{flex:none;width:56px;height:56px;border-radius:50%;border:2.5px solid #21c063;padding:3px;display:block}
+.zst-ring.seen,.st-ring.seen{border-color:#8a949c;filter:grayscale(.4);opacity:.8}
+.zst-ring .av{width:100%;height:100%}
+.zst-txt{flex:1;min-width:0}
+.zst-txt b{display:block;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zst-txt small{color:var(--muted);font-size:13px}
+.zst-acts{display:flex;gap:10px}
+.zst-ic{width:42px;height:42px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);color:var(--text)}
+.zst-msg{margin:28px 24px;text-align:center;color:var(--muted);font-size:14px}
+.zst-msg button{margin-top:12px}
+.zst-ov{position:fixed;inset:0;z-index:70;background:#000;color:#fff;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);user-select:none;-webkit-user-select:none}
+.zst-bars{display:flex;gap:4px;padding:10px 10px 6px}
+.zst-bars i{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden}
+.zst-bars b{display:block;height:100%;width:0;background:#fff}
+.zst-bars i.done b{width:100%}
+.zst-bars i.cur b{animation:zstfill linear forwards}
+@keyframes zstfill{from{width:0}to{width:100%}}
+.zst-hd{display:flex;align-items:center;gap:10px;padding:4px 12px 8px}
+.zst-hd .av{width:38px;height:38px;font-size:16px;flex:none}
+.zst-hd div{flex:1;min-width:0}
+.zst-hd b{display:block;font-size:15px}.zst-hd small{opacity:.75;font-size:12px}
+.zst-hd button,.zst-ft button,.zst-top button{background:transparent;border:none;color:#fff;padding:8px;border-radius:50%;display:flex;align-items:center;gap:6px;font:inherit;font-size:14px}
+.zst-body{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.zst-body.t{padding:24px;text-align:center;font-size:28px;font-weight:600;line-height:1.3;word-break:break-word;white-space:pre-wrap}
+.zst-body img{max-width:100%;max-height:100%;object-fit:contain}
+.zst-cap{position:absolute;left:0;right:0;bottom:0;padding:14px 18px;background:linear-gradient(transparent,rgba(0,0,0,.65));text-align:center;font-size:16px;word-break:break-word}
+.zst-ft{display:flex;align-items:center;justify-content:center;gap:18px;min-height:54px;padding:6px 12px}
+.zst-ft button.on svg{fill:#ff4d6d}
+.zst-top{display:flex;align-items:center;justify-content:space-between;padding:8px 10px}
+.zst-cmp textarea{width:100%;height:100%;background:transparent;border:none;color:#fff;font:inherit;font-size:28px;font-weight:600;text-align:center;resize:none;outline:none;padding:20px 0;line-height:1.3}
+.zst-cmp .zst-body.t{align-items:stretch}
+.zst-bot{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.zst-bot input{flex:1;margin:0;background:rgba(255,255,255,.14);border:none;border-radius:999px;color:#fff;font-size:16px;padding:12px 16px}
+.zst-send{width:52px;height:52px;border-radius:50%;border:none;background:#21c063;color:#06140c;display:flex;align-items:center;justify-content:center;flex:none;padding:0}
+.zst-send:disabled{opacity:.5}
+</style>
+<script>
+(function () {
+  var BG = ['#128c7e', '#6a1b9a', '#c2185b', '#ef6c00', '#1565c0', '#37474f', '#2e7d32', '#b71c1c'];
+  var IC = {
+    pen: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z',
+    cam: 'M9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z',
+    x: 'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+    heart: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
+    eye: 'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z',
+    trash: 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
+    send: 'M2.01 21 23 12 2.01 3 2 10l15 2-15 2z',
+    pal: 'M12 3a9 9 0 000 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c2.8 0 5-2.2 5-5 0-4.4-4-7.4-10.4-7.4z'
+  };
+  function ico(p, s, fill) { return '<svg viewBox="0 0 24 24" width="' + (s || 24) + '" height="' + (s || 24) + '" fill="' + (fill || 'currentColor') + '"><path d="' + p + '"/></svg>'; }
+  function ibtn(cls, p, label, s) { var b = mk('button', cls); b.setAttribute('aria-label', label); b.innerHTML = ico(p, s); return b; }
+
+  var S = { owner: '', mine: [], users: [], loaded: false, busy: false, err: '', t: 0 };
+  var seenMap = lsGet('zaply_status_seen', {}); if (!seenMap || typeof seenMap !== 'object') seenMap = {};
+
+  function tms(x) { var n = typeof x === 'number' ? x : /^\d+$/.test(String(x)) ? +x : Date.parse(x); return n && n < 1e12 ? n * 1000 : (n || 0); }
+  function ago(t) { var m = Math.max(0, Math.round((Date.now() - t) / 60000)); if (m < 1) return 'Just now'; if (m < 60) return m + ' min ago'; var h = Math.round(m / 60); return h < 24 ? h + ' h ago' : 'Yesterday'; }
+  function okUrl(u) { return typeof u === 'string' && /^https:\/\//i.test(u); }
+  function nameFor(u) { var sv = ''; try { sv = savedName(u.phone); } catch (e) {} return sv || u.name || u.phone || ''; }
+
+  /* turn the server list into my statuses + one entry per contact */
+  function norm(r) {
+    var arr = Array.isArray(r) ? r : ((r && (r.statuses || r.items || r.list)) || []), now = Date.now(), by = {}, mine = [];
+    arr.forEach(function (x) {
+      var at = tms(x.at || x.created_at), ex = tms(x.expires || x.expires_at) || at + 864e5;
+      if (!x || !x.id || !at || ex <= now) return;
+      var it = { id: x.id, phone: String(x.phone || x.user || ''), name: x.name || '', type: x.type === 'image' ? 'image' : 'text', text: String(x.text || ''), url: okUrl(x.url) ? x.url : '',
+        bg: /^#[0-9a-f]{6}$/i.test(x.bg || '') ? x.bg : BG[0], at: at, likes: +x.likes || 0, liked: !!x.liked, views: +x.views || 0, seen: !!x.seen || !!seenMap[x.id] };
+      if (it.type === 'image' && !it.url) return;
+      if (x.mine || (myPhone && it.phone === myPhone)) { it.mine = true; mine.push(it); }
+      else (by[it.phone] = by[it.phone] || { phone: it.phone, name: it.name, items: [] }).items.push(it);
+    });
+    mine.sort(function (a, b) { return a.at - b.at; });
+    var us = Object.keys(by).map(function (k) {
+      var u = by[k]; u.items.sort(function (a, b) { return a.at - b.at; });
+      u.unseen = u.items.some(function (i) { return !i.seen; }); u.last = u.items[u.items.length - 1].at; return u;
+    });
+    us.sort(function (a, b) { return (b.unseen - a.unseen) || (b.last - a.last); });
+    S.mine = mine; S.users = us;
+  }
+
+  function load(force) {
+    if (!getToken() || !myPhone) return Promise.resolve();
+    if (S.owner && S.owner !== myPhone) { S.mine = []; S.users = []; S.loaded = false; S.t = 0; S.owner = ''; }
+    if (S.busy || (!force && Date.now() - S.t < 20000)) return Promise.resolve();
+    S.busy = true; paint();
+    return chatCall('status_list', {}).then(function (r) { norm(r); S.err = ''; S.t = Date.now(); S.owner = myPhone; S.loaded = true; })
+      .catch(function (e) { S.err = (e && e.message) || 'Could not load status updates.'; })
+      .then(function () { S.busy = false; try { renderStories(); } catch (e) {} paint(); });
+  }
+
+  /* ---------- Status tab ---------- */
+  function paint() {
+    var p = $('paneStatus'); if (!p) return; p.innerHTML = '';
+    var row = mk('div', 'zst-row'), w = mk('span', 'zst-avw'), tx = mk('div', 'zst-txt'), ac = mk('div', 'zst-acts'), last = S.mine[S.mine.length - 1];
+    w.appendChild(window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })); w.appendChild(mk('i', '', '+'));
+    tx.appendChild(mk('b', '', 'My status'));
+    tx.appendChild(mk('small', '', last ? S.mine.length + (S.mine.length > 1 ? ' updates' : ' update') + ' \u00B7 ' + ago(last.at) : 'Tap to add a status update'));
+    var bt = ibtn('zst-ic', IC.pen, 'Text status'), bc = ibtn('zst-ic', IC.cam, 'Photo status');
+    bt.addEventListener('click', function (e) { e.stopPropagation(); composer('text'); });
+    bc.addEventListener('click', function (e) { e.stopPropagation(); pickPhoto(); });
+    ac.appendChild(bt); ac.appendChild(bc); row.appendChild(w); row.appendChild(tx); row.appendChild(ac);
+    row.addEventListener('click', function () { if (S.mine.length) viewer([{ phone: myPhone, name: 'My status', items: S.mine, mine: true }], 0); else pickPhoto(); });
+    p.appendChild(row);
+    p.appendChild(mk('div', 'zst-sec', 'Recent updates'));
+    if (!S.loaded && S.busy) p.appendChild(mk('div', 'zst-msg', 'Loading\u2026'));
+    else if (!S.loaded && S.err) { var m = mk('div', 'zst-msg', S.err), rt = mk('button', '', 'Try again'); rt.addEventListener('click', function () { load(true); }); m.appendChild(mk('br')); m.appendChild(rt); p.appendChild(m); }
+    else if (!S.users.length) p.appendChild(mk('div', 'zst-msg', 'No updates from your contacts yet.'));
+    S.users.forEach(function (u, idx) {
+      var r = mk('div', 'zst-row'), ring = mk('span', 'zst-ring' + (u.unseen ? '' : ' seen')), t = mk('div', 'zst-txt');
+      ring.appendChild(avatar({ phone: u.phone, name: nameFor(u) })); t.appendChild(mk('b', '', nameFor(u))); t.appendChild(mk('small', '', ago(u.last)));
+      r.appendChild(ring); r.appendChild(t); r.addEventListener('click', function () { viewer(S.users, idx); }); p.appendChild(r);
+    });
+  }
+
+  /* photo picker -> composer */
+  function pickPhoto() {
+    var f = document.createElement('input'); f.type = 'file'; f.accept = 'image/*';
+    f.addEventListener('change', function () { var file = f.files && f.files[0]; if (file) composer('image', file); });
+    f.click();
+  }
+
+  /* ---------- composer (text or photo) ---------- */
+  function composer(kind, file) {
+    var el = mk('div', 'zst-ov zst-cmp'), top = mk('div', 'zst-top'), body = mk('div', 'zst-body'), bot = mk('div', 'zst-bot');
+    var bg = Math.floor(Math.random() * BG.length), blob = null, busy = false, field, url = '';
+    var cl = ibtn('', IC.x, 'Close', 28); cl.addEventListener('click', closeOv); top.appendChild(cl);
+    var send = mk('button', 'zst-send'); send.innerHTML = ico(IC.send, 24); send.setAttribute('aria-label', 'Post status');
+    if (kind === 'text') {
+      body.classList.add('t'); body.style.background = BG[bg];
+      field = document.createElement('textarea'); field.maxLength = 400; field.placeholder = 'Type a status'; body.appendChild(field);
+      var pb = ibtn('', IC.pal, 'Change color', 26); pb.addEventListener('click', function () { bg = (bg + 1) % BG.length; body.style.background = BG[bg]; }); top.appendChild(pb);
+      bot.style.justifyContent = 'flex-end';
+    } else {
+      var img = document.createElement('img'); body.appendChild(img);
+      field = document.createElement('input'); field.type = 'text'; field.maxLength = 200; field.placeholder = 'Add a caption\u2026'; bot.appendChild(field);
+      send.disabled = true;
+      prepImage(file, 1080, 0.8).then(function (r) { blob = r.blob; url = URL.createObjectURL(blob); img.src = url; send.disabled = false; })
+        .catch(function () { toast('Could not read that photo'); closeOv(); });
+    }
+    bot.appendChild(send); el.appendChild(top); el.appendChild(body); el.appendChild(bot); document.body.appendChild(el);
+    pushOv(function () { el.remove(); if (url) URL.revokeObjectURL(url); });
+    if (kind === 'text') setTimeout(function () { field.focus(); }, 150);
+    send.addEventListener('click', function () {
+      if (busy) return; var text = field.value.trim();
+      if (kind === 'text' && !text) return toast('Write something first');
+      busy = true; send.disabled = true;
+      var p = kind === 'text' ? chatCall('status_post', { type: 'text', text: text, bg: BG[bg] })
+        : chatCall('status_sign', {}).then(function (sg) {
+          var fd = new FormData(); fd.append('file', blob); fd.append('api_key', sg.api_key); fd.append('timestamp', sg.timestamp); fd.append('signature', sg.signature); fd.append('public_id', sg.public_id);
+          if (sg.folder) fd.append('folder', sg.folder);
+          return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/image/upload', { method: 'POST', body: fd }).then(function (r) { return r.json(); });
+        }).then(function (j) { if (!j || !j.secure_url) throw new Error('Upload failed. Try again.'); return chatCall('status_post', { type: 'image', url: j.secure_url, text: text }); });
+      p.then(function () { closeOv(); toast('Status posted', true); return load(true); })
+        .catch(function (e) { busy = false; send.disabled = false; toast((e && e.message) || 'Could not post your status. Try again.'); });
+    });
+  }
+
+  /* ---------- viewer ---------- */
+  function viewer(users, ui) {
+    var el = mk('div', 'zst-ov'), u = users[ui], i = 0, timer = null, started = 0, left = 0, hold = null, held = false, paused = false;
+    if (!u || !u.items.length) return;
+    if (!u.mine) { var f = u.items.findIndex(function (x) { return !x.seen; }); i = f > -1 ? f : 0; }
+    var bars = mk('div', 'zst-bars'), hd = mk('div', 'zst-hd'), body = mk('div', 'zst-body'), ft = mk('div', 'zst-ft');
+    el.appendChild(bars); el.appendChild(hd); el.appendChild(body); el.appendChild(ft); document.body.appendChild(el);
+    pushOv(function () { clearTimeout(timer); clearTimeout(hold); el.remove(); try { renderStories(); paint(); } catch (e) {} });
+
+    function curBar() { return bars.children[i] && bars.children[i].firstChild; }
+    function run(ms) { clearTimeout(timer); started = Date.now(); left = ms; timer = setTimeout(next, ms); }
+    function pause() { if (paused) return; paused = true; clearTimeout(timer); left -= Date.now() - started; var b = curBar(); if (b) b.style.animationPlayState = 'paused'; }
+    function resume() { if (!paused) return; paused = false; var b = curBar(); if (b) b.style.animationPlayState = 'running'; run(Math.max(200, left)); }
+    function next() {
+      if (i < u.items.length - 1) { i++; show(); }
+      else if (!u.mine && users[ui + 1]) { ui++; u = users[ui]; var f2 = u.items.findIndex(function (x) { return !x.seen; }); i = f2 > -1 ? f2 : 0; show(); }
+      else closeOv();
+    }
+    function prev() { if (i > 0) i--; show(); }
+    function foot() {
+      var it = u.items[i]; ft.innerHTML = '';
+      if (u.mine) {
+        var v = mk('button'); v.innerHTML = ico(IC.eye, 22) + '<span>' + it.views + '</span>'; ft.appendChild(v);
+        var l = mk('button'); l.innerHTML = ico(IC.heart, 22) + '<span>' + it.likes + '</span>'; ft.appendChild(l);
+        var d = ibtn('', IC.trash, 'Delete status', 24);
+        d.addEventListener('click', function () {
+          pause();
+          zconfirm('Delete this status update?', function () {
+            chatCall('status_delete', { id: it.id }).then(function () {
+              u.items.splice(i, 1); S.mine = u.items; toast('Status deleted', true);
+              if (!u.items.length) closeOv(); else { if (i >= u.items.length) i = u.items.length - 1; show(); }
+            }).catch(function (e) { toast((e && e.message) || 'Could not delete. Try again.'); resume(); });
+          }, 'Delete');
+          var cancel = document.querySelector('.zpop button:not(.primary)'); if (cancel) cancel.addEventListener('click', resume);
+        });
+        ft.appendChild(d);
+      } else {
+        var lk = ibtn(it.liked ? 'on' : '', IC.heart, 'Like', 30);
+        lk.addEventListener('click', function (e) {
+          e.stopPropagation(); var on = !it.liked; it.liked = on; it.likes += on ? 1 : -1; foot();
+          chatCall('status_like', { id: it.id, on: on }).catch(function (er) { it.liked = !on; it.likes += on ? -1 : 1; foot(); toast((er && er.message) || 'Could not send your like.'); });
+        });
+        ft.appendChild(lk);
+      }
+    }
+    function show() {
+      var it = u.items[i]; paused = false;
+      bars.innerHTML = ''; u.items.forEach(function (x, k) { var s = mk('i', k < i ? 'done' : k === i ? 'cur' : ''), b = mk('b'); if (k === i) b.style.animationDuration = '5s'; s.appendChild(b); bars.appendChild(s); });
+      hd.innerHTML = ''; var av = avatar(u.mine ? { phone: myPhone, name: 'Me' } : { phone: u.phone, name: nameFor(u) }); if (u.mine && window.zMyStoryAv) av = window.zMyStoryAv();
+      var nm = mk('div'); nm.appendChild(mk('b', '', u.mine ? 'My status' : nameFor(u))); nm.appendChild(mk('small', '', ago(it.at)));
+      var cx = ibtn('', IC.x, 'Close', 26); cx.addEventListener('click', closeOv); hd.appendChild(av); hd.appendChild(nm); hd.appendChild(cx);
+      body.innerHTML = ''; body.className = 'zst-body'; body.style.background = '';
+      if (it.type === 'image') { var im = document.createElement('img'); im.src = it.url; im.alt = ''; body.appendChild(im); if (it.text) body.appendChild(mk('div', 'zst-cap', it.text)); }
+      else { body.classList.add('t'); body.style.background = it.bg; body.textContent = it.text; }
+      foot();
+      if (!u.mine && !it.seen) { it.seen = true; seenMap[it.id] = 1; var ks = Object.keys(seenMap); if (ks.length > 500) delete seenMap[ks[0]]; lsSet('zaply_status_seen', seenMap); u.unseen = u.items.some(function (x) { return !x.seen; }); chatCall('status_view', { id: it.id }).catch(function () {}); }
+      run(5000);
+    }
+    body.addEventListener('pointerdown', function () { held = false; hold = setTimeout(function () { held = true; pause(); }, 250); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (n) { body.addEventListener(n, function () { clearTimeout(hold); if (held) resume(); }); });
+    body.addEventListener('click', function (e) { if (held) { held = false; return; } var r = body.getBoundingClientRect(); if (e.clientX - r.left < r.width * 0.3) prev(); else next(); });
+    show();
+  }
+
+  /* ---------- stories strip on the chat list: now driven by the server ---------- */
+  renderStories = function () {
+    var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
+    var sc = mk('div', 'st-scroll'); box.appendChild(sc);
+    var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })); add.appendChild(mk('span', 'st-plus', '+'));
+    add.addEventListener('click', function () { showTab('status'); }); sc.appendChild(add);
+    S.users.forEach(function (u, idx) {
+      var c = { phone: u.phone, name: nameFor(u) }, it = mk('button', 'st-it'), ring = mk('span', 'st-ring' + (u.unseen ? '' : ' seen'));
+      ring.appendChild(avatar(c)); it.appendChild(ring); it.appendChild(mk('span', 'st-n', shortUser(labelOf(c)).split(' ')[0]));
+      it.addEventListener('click', function () { viewer(S.users, idx); }); sc.appendChild(it);
+    });
+    if (S.users.length > 5) { var nx = mk('button', 'st-next', '\u203A'); nx.addEventListener('click', function () { sc.scrollBy({ left: 220, behavior: 'smooth' }); }); box.appendChild(nx); }
+  };
+
+  var _show = showTab;
+  showTab = function (t) { _show(t); if (t === 'status') { paint(); load(true); } else if (t === 'chats') load(false); };
+
+  var boot = setInterval(function () { if (getToken() && myPhone) { clearInterval(boot); load(true); } }, 800);
+  setInterval(function () { if (!document.hidden && getToken() && myPhone) load(true); }, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) load(false); });
+  try { if (curTab === 'status') paint(); } catch (e) {}
+})();
+</script>
 <div id="fbCaptcha"></div>
 </body>
 </html>
