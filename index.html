@@ -9,7 +9,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
   <title>Zanply</title>
-  <script>try{var __t=localStorage.getItem('zaply_apptheme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);}catch(e){}</script>
+  <script>try{var __t=localStorage.getItem('zaply_apptheme');if(__t==='light'||__t==='dark')document.documentElement.setAttribute('data-theme',__t);var __d=__t==='dark'||(__t!=='light'&&!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches));document.documentElement.classList.add(__d?'isdark':'islight');}catch(e){}</script>
   <style>
     :root {
       --bg: #f6f7fb; --card: #ffffff; --text: #1a1d29; --muted: #6b7280;
@@ -1139,6 +1139,163 @@ html,body{overflow-x:hidden}
 #appView #selBar button.slash::after{width:27px}
 
 </style>
+<style id="walook">
+/* ===== WhatsApp-style chat page ===== */
+#threadView{background:#0b1115!important}
+/* header */
+#threadView .th-head{background:#0e1519!important;border:0!important;box-shadow:none!important;min-height:64px;align-items:center;gap:0!important;padding:calc(8px + env(safe-area-inset-top,0px)) 4px 8px 2px!important}
+#threadView .th-head #thBack{color:#fff!important;padding:8px 2px 8px 6px!important}
+#threadView .th-head .av{width:42px!important;height:42px!important;font-size:18px!important;margin:0 12px 0 4px!important;border-radius:50%!important;box-shadow:none!important}
+#threadView .th-head:has(#thPhone.pon) #thAv::after{display:none!important}
+#threadView .th-head .thinfo{flex:1;min-width:0}
+#threadView #thName{color:#fff!important;font-size:21px!important;font-weight:500!important}
+#threadView #thPhone{color:#8696a0!important;font-size:13px!important}
+#threadView #thPhone.pon::before{display:none}
+#threadView .th-head #thVideo,#threadView .th-head #thAudio,#threadView .th-head #thInfoBtn{width:44px!important;height:44px!important;border-radius:0!important;padding:0!important;margin:0!important;display:flex;align-items:center;justify-content:center;background:transparent!important;border:0!important;box-shadow:none!important;color:#fff!important}
+#threadView .th-head #thVideo{order:2}#threadView .th-head #thAudio{order:3}#threadView .th-head #thInfoBtn{order:4}
+/* wallpaper */
+#msgs{background-color:#0b1115!important;gap:3px!important;padding:10px 10px!important}
+#msgs:not([style*="background"]){background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' fill='none' stroke='rgba(255,255,255,0.055)' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 40 70 20 54 66 44 48z'/%3E%3Ccircle cx='150' cy='38' r='15'/%3E%3Cpath d='M144 35h1M156 35h1M144 43q6 5 12 0'/%3E%3Cpath d='M214 52c-10-8-14-18-7-23 5-3 9 0 11 3 2-3 6-6 11-3 7 5 3 15-7 23z' transform='translate(-12 0)'/%3E%3Cpath d='M30 120h40a7 7 0 0 1 7 7v18a7 7 0 0 1-7 7H50l-10 9v-9a7 7 0 0 1-10-7z'/%3E%3Cpath d='M120 100l6 12 13 2-9 9 2 13-12-6-12 6 2-13-9-9 13-2z'/%3E%3Crect x='180' y='108' width='40' height='30' rx='6'/%3E%3Ccircle cx='200' cy='123' r='8'/%3E%3Cpath d='M40 210V186l24-5v24'/%3E%3Ccircle cx='34' cy='210' r='6'/%3E%3Ccircle cx='58' cy='205' r='6'/%3E%3Cpath d='M120 190c8 0 14 5 14 12s-6 12-14 12-14-5-14-12 6-12 14-12z'/%3E%3Cpath d='M114 202q6 6 12 0'/%3E%3Cpath d='M190 180h8l4 10-5 3a20 20 0 0 0 10 10l3-5 10 4v8a5 5 0 0 1-5 5 38 38 0 0 1-34-34 5 5 0 0 1 5-5z' transform='translate(0 8) scale(.9)'/%3E%3C/svg%3E")!important;background-size:260px 260px!important}
+/* bubbles */
+#msgs .bub{background:#1f2a30!important;border:0!important;box-shadow:none!important;border-radius:12px!important;color:#fff!important;font-weight:600;padding:7px 10px 6px 12px!important;max-width:82%;gap:0 14px!important}
+#msgs .bub:not(.mine){border-top-left-radius:3px!important}
+#msgs .bub.mine{background:#124d38!important;border-top-right-radius:3px!important;border-top-left-radius:12px!important}
+#msgs .bub.media,#msgs .bub.loc,#msgs .bub.game,#msgs .bub.callb{padding:4px!important}
+#msgs .bub.callb{padding:12px 14px!important}
+#msgs .bub.stk{background:transparent!important}
+#msgs .bub small{font-size:12px!important;font-weight:400!important;color:rgba(255,255,255,.6)!important;opacity:1!important}
+#msgs .bub.mine small{color:rgba(255,255,255,.65)!important}
+#msgs .bub.shit{outline:1px solid rgba(255,213,74,.45)}
+#msgs .bub.scur{outline:2px solid #ffd54a}
+/* date pills */
+#msgs .dpill{align-self:center;padding:5px 14px!important;border-radius:10px!important;border:0!important;background:#1d282e!important;color:#9fb0ba!important;font-size:14px!important;font-weight:500;box-shadow:none!important;margin:10px 0 6px!important}
+/* composer: one full-width pill, smiley left, paperclip + round mic inside on the right */
+#comp.comp{background:#0b1115!important;border:0!important;box-shadow:none!important;border-radius:0!important;gap:6px!important;align-items:center;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))!important}
+#comp .inbox{flex:1 1 auto!important;width:auto;min-width:0;background:#1c262b!important;border:0!important;border-radius:28px!important;min-height:52px!important;padding-right:100px!important;align-items:center}
+#comp.typing .inbox{padding-right:52px!important}
+#comp .inbox textarea{box-sizing:border-box!important;min-height:52px!important;padding:15px 4px!important;font-size:19px!important;font-weight:600;line-height:22px!important;color:#fff}
+#comp .inbox textarea::placeholder{color:#8a98a0!important;font-size:19px!important;font-weight:600}
+#comp .inbox #btnEmoji{color:#a8b4bb!important;margin-left:8px}
+#comp #btnCamera,#comp #btnGallery{display:none!important}
+#comp #btnPlus{width:44px!important;height:44px!important;padding:0!important;display:flex;align-items:center;justify-content:center;color:#a8b4bb!important;position:relative;z-index:1;margin-left:-105px!important}
+#comp.typing #btnPlus{display:none!important}
+#comp #btnMic,#comp #btnSendMsg{width:42px!important;height:42px!important;min-width:42px;border-radius:50%!important;border:0!important;box-shadow:none!important;background:#1fa855!important;color:#06140c!important;position:relative;z-index:1;margin-left:-4px!important}
+#comp.typing #btnMic,#comp.typing #btnSendMsg{margin-left:-53px!important}
+#comp #btnMic svg,#comp #btnSendMsg svg{width:22px!important;height:22px!important}
+/* profile info: text was dark on dark */
+#infoView .itl,#infoView #inName{color:#fff!important}
+#infoView .zsoc2 .bt b,#infoView .prow b{color:#fff!important}
+#infoView .zsoc2 .bt small,#infoView .prow small{color:#9fb0ba!important}
+#infoView .zsoc2 a:first-child{padding-top:10px}
+/* search bar */
+#csBar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#0e1519;border-bottom:1px solid rgba(255,255,255,.06)}
+#csBar input{flex:1;min-width:0;margin:0!important;padding:9px 14px!important;font-size:16px!important;border-radius:20px!important;background:#1c262b!important;border:0!important;color:#fff!important}
+#csBar span{color:#9fb0ba;font-size:13px;min-width:34px;text-align:center}
+#csBar button{border:0;background:none;color:#fff;padding:8px;font-size:14px;border-radius:0}
+/* three-dot menu */
+#zdd{right:8px!important;left:auto!important;min-width:min(56vw,250px)!important;max-width:calc(100vw - 16px);background:#182126!important;border:0!important;border-radius:14px!important;padding:6px 0!important;box-shadow:0 10px 30px rgba(0,0,0,.55)!important}
+#zdd button{display:block;width:100%;text-align:left;background:none!important;border:0!important;border-radius:0!important;color:#fff!important;font-size:17px!important;font-weight:600!important;padding:14px 22px!important}
+#zdd button.sep{border-bottom:1px solid rgba(255,255,255,.12)!important;margin-bottom:4px}
+#zdd button.more{display:flex!important;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.12)!important;margin-top:4px}
+#zdd button.sep + button.more{border-top:0!important;margin-top:0}
+#zdd button.more::after{content:'';border-left:7px solid #aeb8be;border-top:6px solid transparent;border-bottom:6px solid transparent}
+
+/* attach sheet (paperclip) */
+.v3sheet>div.attsheet{background:#182126;color:#fff;border-radius:22px 22px 0 0;padding:10px 12px calc(20px + env(safe-area-inset-bottom,0px))}
+.attsheet .ath{width:40px;height:5px;border-radius:3px;background:rgba(255,255,255,.22);margin:0 auto 16px}
+.attsheet .attgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.attsheet .attgrid button{display:flex;flex-direction:column;align-items:center;gap:8px;background:none;border:0;border-radius:14px;color:#fff;padding:8px 2px}
+.attsheet .atic{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
+.attsheet .atic svg{width:28px;height:28px}
+.attsheet .atl{font-size:14px;font-weight:600}
+</style>
+<style id="themefix">
+/* ===== Light theme: used when Light is selected, or System default on a light phone ===== */
+html.islight body{background:#f0f2f5}
+/* welcome, sign-in, country list, loaders */
+html.islight .welcome,html.islight .auth,html.islight .cv{background:#fff!important;color:#111b21!important}
+html.islight .w-terms{color:#667781}
+html.islight .w-lang select{color:#111b21}
+html.islight .w-lang svg{color:#111b21;fill:currentColor}
+html.islight .auth h2{color:#3b4a54}
+html.islight .auth .sub,html.islight .auth .hint{color:#667781}
+html.islight .auth input,html.islight .cv-head input,html.islight .country-btn,html.islight .otp-box{color:#111b21!important}
+html.islight .cv-head{border-bottom-color:#e1e5e8}
+html.islight .cv-head svg{fill:#54656f}
+html.islight .auth .primary:disabled{background:#e9edef;border-color:#e9edef;color:#9aa3ab}
+html.islight .ld-box,html.islight .cf-box,html.islight .vs-panel{background:#fff;color:#111b21;box-shadow:0 8px 28px rgba(0,0,0,.15)}
+/* chat page */
+html.islight #threadView{background:#efeae2!important}
+html.islight #threadView .th-head{background:#f7f8fa!important;border-bottom:1px solid #e1e5e8!important}
+html.islight #threadView .th-head #thBack,html.islight #threadView .th-head #thVideo,html.islight #threadView .th-head #thAudio,html.islight #threadView .th-head #thInfoBtn{color:#54656f!important}
+html.islight #threadView #thName{color:#111b21!important}
+html.islight #threadView #thPhone{color:#667781!important}
+html.islight #msgs{background-color:#efeae2!important}
+html.islight #msgs:not([style*="background"]){background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260' fill='none' stroke='rgba(0,0,0,0.07)' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 40 70 20 54 66 44 48z'/%3E%3Ccircle cx='150' cy='38' r='15'/%3E%3Cpath d='M144 35h1M156 35h1M144 43q6 5 12 0'/%3E%3Cpath d='M214 52c-10-8-14-18-7-23 5-3 9 0 11 3 2-3 6-6 11-3 7 5 3 15-7 23z' transform='translate(-12 0)'/%3E%3Cpath d='M30 120h40a7 7 0 0 1 7 7v18a7 7 0 0 1-7 7H50l-10 9v-9a7 7 0 0 1-10-7z'/%3E%3Cpath d='M120 100l6 12 13 2-9 9 2 13-12-6-12 6 2-13-9-9 13-2z'/%3E%3Crect x='180' y='108' width='40' height='30' rx='6'/%3E%3Ccircle cx='200' cy='123' r='8'/%3E%3Cpath d='M40 210V186l24-5v24'/%3E%3Ccircle cx='34' cy='210' r='6'/%3E%3Ccircle cx='58' cy='205' r='6'/%3E%3Cpath d='M120 190c8 0 14 5 14 12s-6 12-14 12-14-5-14-12 6-12 14-12z'/%3E%3Cpath d='M114 202q6 6 12 0'/%3E%3Cpath d='M190 180h8l4 10-5 3a20 20 0 0 0 10 10l3-5 10 4v8a5 5 0 0 1-5 5 38 38 0 0 1-34-34 5 5 0 0 1 5-5z' transform='translate(0 8) scale(.9)'/%3E%3C/svg%3E")!important}
+html.islight #msgs .bub{background:#fff!important;color:#111b21!important;box-shadow:0 1px 1px rgba(11,20,26,.13)!important}
+html.islight #msgs .bub.mine{background:#d9fdd3!important}
+html.islight #msgs .bub.stk{background:transparent!important;box-shadow:none!important}
+html.islight #msgs .bub small,html.islight #msgs .bub.mine small{color:rgba(17,27,33,.55)!important}
+html.islight #msgs .tk,html.islight #msgs .bub.mine .tk{color:#8696a0}
+html.islight #msgs .tk.r,html.islight #msgs .bub.mine .tk.r{color:#34b7f1}
+html.islight #msgs .bub.callb .cic{background:#e9edef;color:#111b21}
+html.islight #msgs .dpill{background:#fff!important;color:#54656f!important;box-shadow:0 1px 1px rgba(11,20,26,.12)!important}
+html.islight #comp.comp{background:#efeae2!important}
+html.islight #comp .inbox{background:#fff!important;box-shadow:0 1px 1px rgba(11,20,26,.1)}
+html.islight #comp .inbox textarea{color:#111b21!important}
+html.islight #comp .inbox textarea::placeholder{color:#667781!important}
+html.islight #comp .inbox #btnEmoji,html.islight #comp #btnPlus,html.islight #comp .ghost{color:#54656f!important}
+html.islight #comp #btnMic,html.islight #comp #btnSendMsg{color:#fff!important}
+html.islight #csBar{background:#f7f8fa;border-bottom-color:#e1e5e8}
+html.islight #csBar input{background:#fff!important;color:#111b21!important}
+html.islight #csBar button,html.islight #csBar span{color:#54656f}
+/* menus and sheets */
+html.islight #zdd,html.islight #msMenu,html.islight #zmbar,html.islight #plusMenu{background:#fff!important;color:#111b21!important;border:0!important;box-shadow:0 8px 28px rgba(0,0,0,.2)!important}
+html.islight #zdd button,html.islight #msMenu button,html.islight #plusMenu button{color:#111b21!important}
+html.islight #zdd button.sep,html.islight #zdd button.more{border-color:rgba(0,0,0,.1)!important}
+html.islight #zdd button.more::after{border-left-color:#667781}
+html.islight #msBar{background:#fff;color:#111b21;box-shadow:0 1px 0 #e1e5e8}
+html.islight .v3sheet>div.attsheet{background:#fff;color:#111b21}
+html.islight .attsheet .attgrid button{color:#111b21}
+html.islight .attsheet .ath{background:rgba(0,0,0,.2)}
+html.islight .bsh-box{background:#fff;color:#111b21}
+html.islight .bsh-b:not(.blue){background:#f0f2f5;color:#111b21}
+html.islight .bsh-i svg{color:#54656f}
+html.islight .blockbar,html.islight .blockbar button{color:#b42318}
+html.islight .blockbar{background:#fdecec}
+html.islight .v3pin{background:#fff;color:#111b21}
+html.islight .v3pin button:not(.primary){color:#111b21!important;border-color:#c5cdd2!important}
+html.islight .v3pin input{color:#111b21}
+/* lists, tabs, switches */
+html.islight .searchbox input{background:#f0f2f5;color:#111b21}
+html.islight .tabs4 button.active:not(.fold){background:#d9fdd3;border-color:#d9fdd3;color:#0b5f33}
+html.islight #bottomNav button.active .ni{background:#d9fdd3!important;color:#0b5f33!important}
+html.islight .sa-more{background:#8696a0}
+html.islight .pintag{background:#fff}
+html.islight .zcard .zsw2:not(.on){background:#c5cdd2}
+/* profile info page */
+html.islight #infoView{background:#f0f2f5!important}
+html.islight #infoView .th-head{background:transparent!important}
+html.islight #infoView .th-head button{color:#111b21!important}
+html.islight #infoView .itl,html.islight #infoView #inName{color:#111b21!important}
+html.islight #infoView #inPhone{color:#54656f!important}
+html.islight #infoView .zcard{background:#fff!important;border:1px solid #e1e5e8!important}
+html.islight #infoView .zcard .rt,html.islight #infoView .zcard .chev{color:#111b21}
+html.islight #infoView .zcard:not(.redlist) .srow i{color:#54656f}
+html.islight #infoView .zcard .srow i.g{color:#1fa855}
+html.islight #infoView .zsoc2 .bt b,html.islight #infoView .prow b,html.islight #infoView .zcard.bizc .prow b{color:#111b21!important}
+html.islight #infoView .zsoc2 .bt small,html.islight #infoView .prow small{color:#667781!important}
+html.islight #infoView .zsoc2 a{border-bottom-color:#e1e5e8}
+html.islight #infoView .prow{border-bottom-color:#e1e5e8}
+html.islight .abtn{background:#fff!important;color:#111b21;border:1px solid #e1e5e8}
+html.islight .soc,html.islight .sic{color:#111b21}
+html.islight .mgrid .mt{background:#e9edef}
+html.islight #inCover{background-color:#e9edef}
+/* smaller Add Story button */
+.st-add{width:54px!important;height:78px!important;border-radius:16px!important;gap:6px!important}
+.st-add .plus{width:26px!important;height:26px!important;font-size:19px!important;border-width:1.3px}
+.st-add span:last-child{font-size:11.5px!important}
+</style>
 </head>
 <body>
   <div class="app">
@@ -1361,7 +1518,7 @@ html,body{overflow-x:hidden}
 
     <div id="infoView" class="th hidden"><div class="th-head"><button id="infoBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="itl">Profile info</div><button id="infoMenu" aria-label="More" style="display:none"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg></button></div>
     <div class="sset"><div id="inCover" class="hidden"></div><div class="pv-top si-top"><div class="av big" id="inAv"></div><div class="pv-name" id="inName"></div><div class="sub" id="inPhone" style="margin:4px 0 0"></div></div>
-    <div class="acts4"><button id="sMsgBtn" class="abtn" style="display:none" aria-hidden="true"></button><button id="sVideoBtn" class="abtn" aria-label="Video call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Video call</span></button><button id="sCall" class="abtn" aria-label="Voice call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>Voice call</span></button><button id="sFwdBtn" class="abtn" aria-label="Forward"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M12 8V4l8 8-8 8v-4H4V8z"/></svg><span>Forward</span></button><button id="sShareBtn" class="abtn" aria-label="Share"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg><span>Share</span></button></div>
+    <div class="acts4"><button id="sMsgBtn" class="abtn" style="display:none" aria-hidden="true"></button><button id="sVideoBtn" class="abtn" aria-label="Video call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg><span>Video call</span></button><button id="sCall" class="abtn" aria-label="Voice call"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>Voice call</span></button><button id="sFwdBtn" class="abtn" aria-label="Forward"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg><span>Forward</span></button><button id="sShareBtn" class="abtn" aria-label="Share"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg><span>Share</span></button></div>
     <button id="sProfileBtn" style="display:none" aria-hidden="true"></button><button id="sMoreBtn" style="display:none" aria-hidden="true"></button>
     <div class="zcard gc"><div class="srow" id="sAbout"><i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span class="rt">About<small id="sAboutS">Available</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
     <div class="zcard" id="inLinksCard"><div class="srow" id="sLinks"><i class=""><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></i><span class="rt">Shared links<small id="sLinksS">No links</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
@@ -1390,7 +1547,7 @@ html,body{overflow-x:hidden}
     <div id="profileView" class="th hidden"><div class="th-head"><button class="pgback" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button></div><div class="pv"><div class="pv-top"><div class="av big" id="pvAv"></div><div class="pv-name" id="pvName"></div></div><div class="pv-card" id="pvCard"></div></div></div>
     <div id="createView" class="th hidden"><div class="th-head"><button id="crBack" aria-label="Back">←</button><b>Create</b></div><div style="padding:12px"><div class="row" data-a="new"><div class="av" style="background:#21c063">💬</div><div class="mid"><b>New chat</b><span>Message someone by phone number</span></div></div><div class="row" data-a="group"><div class="av" style="background:#3b82f6">👥</div><div class="mid"><b>Create group</b><span>Chat with many people</span></div></div><div class="row" data-a="channel"><div class="av" style="background:#8b5cf6">📢</div><div class="mid"><b>Create channel</b><span>Broadcast to followers</span></div></div><div class="row" data-a="community"><div class="av" style="background:#f59e0b">🏘</div><div class="mid"><b>Create community</b><span>Bring groups together</span></div></div></div></div>
     <div id="threadView" class="th hidden">
-      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></button><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg></button><button id="thInfoBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button></div>
+      <div class="th-head"><button id="thBack" aria-label="Back"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" ><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button><div class="av" id="thAv"></div><div class="thinfo" id="thInfo"><b id="thName"></b><small id="thPhone"></small></div><button id="thVideo" aria-label="Video call"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="12.5" height="12" rx="2.5"/><path d="M15 10.5 21 7v10l-6-3.5"/></svg></button><button id="thAudio" aria-label="Audio call"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3.5l1.6 4-2 1.3a11 11 0 0 0 5.6 5.6l1.3-2 4 1.6V18a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></button><button id="thInfoBtn" aria-label="Settings"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg></button></div>
       <div id="msgs"></div>
       <div id="plusMenu" class="plusmenu hidden"><button data-a="files"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm1 7V3.5L19.5 9H15z"/></svg><span>Document</span></button><button data-a="cam"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 3 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg><span>Camera</span></button><button data-a="gal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><span>Gallery</span></button>
         <button data-a="ai"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v3.59l-3.5-3.5a1 1 0 0 0-1.41 0L9 17.18l-2-2-2 2V5h7V3zm-9.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM19 3l.75 1.75L21.5 5.5l-1.75.75L19 8l-.75-1.75L16.5 5.5l1.75-.75L19 3zm-3 4-.5 1.1L14.4 8.6l1.1.5.5 1.1.5-1.1 1.1-.5-1.1-.5L16 7z"/></svg><span>AI images</span></button>
@@ -1404,12 +1561,12 @@ html,body{overflow-x:hidden}
       <div class="comp" id="comp">
         <button id="btnExpand" class="ic ghost" aria-label="Show more options"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></button>
         <div class="cl" id="compLeft">
-          <button id="btnPlus" class="ic ghost" aria-label="More"><svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg></button>
-          <button id="btnCamera" class="ic ghost" aria-label="Camera"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M9 3 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/></svg></button>
+          <button id="btnPlus" class="ic ghost" aria-label="More"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 7v9.5a4.5 4.5 0 0 1-9 0V6.5a3 3 0 0 1 6 0V16a1.5 1.5 0 0 1-3 0V8"/></svg></button>
+          <button id="btnCamera" class="ic ghost" aria-label="Camera"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5h3.2L8.2 6h7.6l1.5 2.5h3.2V19h-17z"/><circle cx="12" cy="13.2" r="3.6"/></svg></button>
           <button id="btnGallery" class="ic ghost" aria-label="Photos"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></button>
           <button id="btnMic" class="ic ghost" aria-label="Voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" ><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></button>
         </div>
-        <div class="inbox"><textarea id="msgInput" rows="1" placeholder="Type a message..." autocomplete="off" enterkeyhint="enter"></textarea><button id="btnEmoji" class="ic ghost" aria-label="Emoji"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-3.5 7a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm7 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zM12 18c-2.33 0-4.31-1.46-5.11-3.5h10.22C16.31 16.54 14.33 18 12 18z"/></svg></button></div>
+        <div class="inbox"><textarea id="msgInput" rows="1" placeholder="Message" autocomplete="off" enterkeyhint="enter"></textarea><button id="btnEmoji" class="ic ghost" aria-label="Emoji"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M8.5 14.5q3.5 3.5 7 0"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="2.6"/></svg></button></div>
         <button id="btnLike" class="ic ghost" aria-label="Send a thumbs up"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg></button>
         <button id="btnSendMsg" class="ic send" aria-label="Send"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" ><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
       </div>
@@ -3109,7 +3266,7 @@ ZW|Zimbabwe|263`;
     function applyAppTheme() {
       var t = appThemePref(), h = document.documentElement;
       if (t === 'system') h.removeAttribute('data-theme'); else h.setAttribute('data-theme', t);
-      h.classList.toggle('isdark', isDarkNow());
+      h.classList.toggle('isdark', isDarkNow()); h.classList.toggle('islight', !isDarkNow());
       try { var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', isDarkNow() ? '#0b1014' : '#f6f7fb'); } catch (e) {}
       try { applyTheme(); } catch (e) {}
     }
@@ -5490,7 +5647,7 @@ ZW|Zimbabwe|263`;
       function closeDd() { var d = document.getElementById('zdd'); if (d) d.remove(); }
       document.addEventListener('click', closeDd);
       $('thInfoBtn').addEventListener('click', function (e) {
-        e.stopPropagation(); if (document.getElementById('zdd')) return closeDd();
+        return; e.stopPropagation(); if (document.getElementById('zdd')) return closeDd();
         if (!openUser) return; if (openUser.group) return openInfo();
         var ph = openUser.phone, fn = (openUser.name || ph || '').split(' ')[0];
         $('sBlockT').textContent = (curBlocked ? 'Unblock ' : 'Block ') + fn;
@@ -5821,7 +5978,8 @@ ZW|Zimbabwe|263`;
     $('selDel').addEventListener('click', function () { var l = selList(); zconfirm('Delete ' + (l.length > 1 ? l.length + ' chats' : 'this chat') + ' from this phone? ' + (l.length > 1 ? 'They come' : 'It comes') + ' back if a new message arrives.', function () { var m = lsGet('zaply_hidden', {}); l.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_hidden', m); selClear(); renderChats(); toast('Deleted from this phone', true); }, 'Delete'); });
     $('selMute').addEventListener('click', function () { var l = selList(), allM = l.every(function (c) { return isMuted(c.phone); }); if (allM) { l.forEach(function (c) { setMute(c.phone, 0); }); selClear(); renderChats(); toast('Notifications on', true); } else if (l.length === 1) { var c0 = l[0]; selClear(); muteChoose(c0); } else { l.forEach(function (c) { setMute(c.phone, -1); }); selClear(); renderChats(); toast('Muted', true); } });
     $('selArch').addEventListener('click', function () { var l = selList(); l.forEach(function (c) { setArchived(c.phone, !isArchived(c)); }); selClear(); renderChats(); toast('Archived', true); });
-    $('selMore').addEventListener('click', function () {
+    $('selMore').addEventListener('click', function (e) {
+      e.stopPropagation(); var odd = document.getElementById('zdd'); if (odd) { odd.remove(); return; }
       var l = selList(), one = l.length === 1 ? l[0] : null, allUn = l.every(isUnread), items = [];
       items.push([allUn ? 'Mark as read' : 'Mark as unread', function () { l.forEach(function (c) { if (allUn) markSeen(c.phone); else { try { localStorage.setItem('zaply_unread_' + c.phone, '1'); } catch (e) {} } }); selClear(); renderChats(); }]);
       items.push(['Select all', function () { Array.prototype.forEach.call(document.querySelectorAll('#chatList .swrap'), function (w) { var ph = w.getAttribute('data-ph'); var c = allChats.filter(function (x) { return x.phone === ph; })[0]; if (c) selMap[ph] = c; }); selPaint(); }]);
@@ -5831,7 +5989,10 @@ ZW|Zimbabwe|263`;
       items.push(['Clear chat', function () { zconfirm('Clear all messages in ' + (l.length > 1 ? 'these chats' : 'this chat') + ' on this phone?', function () { var m = lsGet('zaply_cleared', {}); l.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_cleared', m); selClear(); renderChats(); toast('Chat cleared', true); }, 'Clear'); }]);
       if (one && !one.group) items.push(['Block', function () { zconfirm('Block ' + (one.name || one.phone) + '?', function () { chatCall('block', { phone: one.phone }).then(function () { selClear(); renderChats(); toast('Blocked', true); }).catch(function () { toast('Could not block'); }); }, 'Block'); }]);
       if (one && one.group) { items.push(['Group info', function () { selClear(); openThread({ phone: one.phone, name: one.name, group: true }); }]); items.push(['Exit group', function () { zconfirm('Exit this group?', function () { chatCall('group_leave', { phone: one.phone }).then(function () { selClear(); renderChats(); toast('You left the group', true); }).catch(function () { toast('Could not leave'); }); }, 'Exit'); }]); }
-      zsheet(l.length + ' selected', items);
+      var d = mk('div', ''); d.id = 'zdd';
+      items.forEach(function (it) { var b = mk('button', '', it[0]); b.addEventListener('click', function (ev) { ev.stopPropagation(); d.remove(); it[1](); }); d.appendChild(b); });
+      document.body.appendChild(d);
+      try { var bar = $('selBar'); if (bar) d.style.top = Math.max(0, bar.getBoundingClientRect().bottom - 8) + 'px'; } catch (x) {}
     });
     /* cleared chats: hide messages older than the clear time */
     var _am2 = addMsg; addMsg = function (m) { try { if (openUser && m) { var t = (lsGet('zaply_cleared', {}) || {})[openUser.phone]; var at = new Date(m.at || m.created_at || 0).getTime(); if (t && at && at <= t) return null; } } catch (e) {} return _am2(m); };
@@ -5850,7 +6011,7 @@ ZW|Zimbabwe|263`;
 
     /* ================= chat screen look: date pills + call card ================= */
     function dayLabel(d) {
-      var n = new Date(), y = new Date(Date.now() - 864e5), f = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      var n = new Date(), y = new Date(Date.now() - 864e5), f = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
       return d.toDateString() === n.toDateString() ? 'Today, ' + f : d.toDateString() === y.toDateString() ? 'Yesterday, ' + f : f;
     }
     var _am = addMsg;
@@ -7478,7 +7639,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     reply: 'M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z',
     star: 'M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z',
     del: 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
-    fwd: 'M12 8V4l8 8-8 8v-4H4V8z',
+    fwd: 'M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z',
     dots: 'M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z',
     img: 'M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z',
     cam: 'M9 3 7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
@@ -7640,6 +7801,30 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     var _rv = openPage; 
   })();
   document.addEventListener('click', function (e) { var d = document.getElementById('zdd'); if (d && !e.target.closest('#zdd')) d.remove(); });
+  /* ---------- search inside a chat (three-dot menu > Search) ---------- */
+  var chatSearch = function () {
+    var old = document.getElementById('csBar'); if (old) { old.querySelector('input').focus(); return; }
+    var bar = mk('div', ''); bar.id = 'csBar';
+    var inp = document.createElement('input'); inp.type = 'search'; inp.placeholder = 'Search'; inp.autocomplete = 'off';
+    var cnt = mk('span', '', ''), up = mk('button', '', '\u25B2'), dn = mk('button', '', '\u25BC'), x = mk('button', '', '\u2715');
+    up.setAttribute('aria-label', 'Previous'); dn.setAttribute('aria-label', 'Next'); x.setAttribute('aria-label', 'Close search');
+    bar.appendChild(inp); bar.appendChild(cnt); bar.appendChild(up); bar.appendChild(dn); bar.appendChild(x);
+    $('threadView').insertBefore(bar, $('msgs'));
+    var hits = [], cur = -1;
+    function clearHl() { Array.prototype.forEach.call(document.querySelectorAll('#msgs .bub.shit,#msgs .bub.scur'), function (b) { b.classList.remove('shit', 'scur'); }); }
+    function txt(b) { var c = b.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('small,.gfrom'), function (n) { n.remove(); }); return (c.textContent || '').toLowerCase(); }
+    function go(n) { if (!hits.length) return; if (cur > -1) hits[cur].classList.remove('scur'); cur = (n + hits.length) % hits.length; hits[cur].classList.add('scur'); hits[cur].scrollIntoView({ block: 'center', behavior: 'smooth' }); cnt.textContent = (cur + 1) + '/' + hits.length; }
+    function run() {
+      clearHl(); hits = []; cur = -1; var q = inp.value.trim().toLowerCase();
+      if (q) Array.prototype.forEach.call(document.querySelectorAll('#msgs .bub'), function (b) { if (txt(b).indexOf(q) > -1) { hits.push(b); b.classList.add('shit'); } });
+      if (hits.length) go(hits.length - 1); else cnt.textContent = q ? '0' : '';
+    }
+    inp.addEventListener('input', run);
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(cur - 1); } });
+    up.addEventListener('click', function () { go(cur - 1); }); dn.addEventListener('click', function () { go(cur + 1); });
+    x.addEventListener('click', function () { clearHl(); bar.remove(); });
+    setTimeout(function () { inp.focus(); }, 50);
+  };
   $('thInfoBtn').addEventListener('click', function (e) {
     e.stopImmediatePropagation(); e.stopPropagation();
     var old = document.getElementById('zdd'); if (old) return old.remove();
@@ -7657,14 +7842,20 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       if (!isChan(u)) items.push(['Exit group', function () { zconfirm('Exit this group?', function () { chatCall('group_leave', { group: ph }).then(function () { closeOv(); setTimeout(closeOv, 80); toast('You left the group', true); setTimeout(loadChats, 300); }).catch(function () { toast('Could not leave'); }); }, 'Exit'); }]);
       items.push(['Clear chat', clearOpenChat]);
     } else {
-      items = [['New group', function () { openNewGroup(ph); }], ['View contact', function () { openSave(); }],
-        ['Media, links and docs', function () { zsheet('Media, links and docs', [['Media', openMediaGrid], ['Links', openLinks], ['Docs', openDocs]]); }],
+      var isSaved = false; try { isSaved = !!savedName(ph); } catch (e) {}
+      items = [['New group', function () { openNewGroup(ph); }, 'sep'],
+        [isSaved ? 'View contact' : 'Add to contacts', function () { openSave(); }],
+        ['Search', function () { chatSearch(); }],
+        ['Media, links, and docs', function () { zsheet('Media, links and docs', [['Media', openMediaGrid], ['Links', openLinks], ['Docs', openDocs]]); }],
         [isMuted(ph) ? 'Unmute notifications' : 'Mute notifications', muteToggle],
-        ['Chat theme', function () { window.__cw = ph; openWallpaper(); }], ['More \u203A', more]];
+        ['Disappearing messages', function () { var v = 'off'; try { v = localStorage.getItem('zaply_dis_' + ph) || 'off'; } catch (e) {} Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.checked = r.value === v; }); openPage('disapView'); }],
+        ['Chat theme', function () { window.__cw = ph; openWallpaper(); }, 'sep'],
+        ['More', more, 'more']];
     }
     var d = mk('div', ''); d.id = 'zdd';
-    items.forEach(function (it) { var b = mk('button', '', it[0]); b.addEventListener('click', function (ev) { ev.stopPropagation(); d.remove(); it[1](); }); d.appendChild(b); });
+    items.forEach(function (it) { var b = mk('button', it[2] || '', it[0]); b.addEventListener('click', function (ev) { ev.stopPropagation(); d.remove(); it[1](); }); d.appendChild(b); });
     document.body.appendChild(d);
+    try { var hd = document.querySelector('#threadView .th-head'); if (hd) d.style.top = Math.max(0, hd.getBoundingClientRect().bottom - 8) + 'px'; } catch (e) {}
   }, true);
   /* per-chat wallpaper */
   var _at = applyTheme;
@@ -7687,6 +7878,23 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       [['Gallery', P.img, 'fileImg'], ['Camera', P.cam, 'fileCam'], ['Files', P.file, 'fileAny']].forEach(function (x) {
         var b = mk('button'); b.innerHTML = ico(x[1]) + '<span>' + x[0] + '</span>'; b.addEventListener('click', function () { close(); camChat = openWith; $(x[2]).click(); }); pill.appendChild(b);
       }); d.appendChild(pill);
+    });
+  }, true);
+  $('btnPlus').addEventListener('click', function (e) {
+    e.stopImmediatePropagation(); if (!openWith) return; camChat = openWith; $('plusMenu').classList.add('hidden'); $('emojiBox').classList.add('hidden');
+    var PIN = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>';
+    sheet(function (d, close) {
+      d.className = 'attsheet'; d.appendChild(mk('div', 'ath'));
+      var g = mk('div', 'attgrid');
+      function add(label, icon, color, fn) {
+        var b = mk('button'); b.innerHTML = '<span class="atic" style="background:' + color + '">' + icon + '</span><span class="atl">' + label + '</span>';
+        b.addEventListener('click', function () { close(); camChat = openWith; fn(); }); g.appendChild(b);
+      }
+      add('Camera', ico(P.cam), '#ef5a3c', function () { $('fileCam').click(); });
+      add('Gallery', ico(P.img), '#7b5cf0', function () { $('fileImg').click(); });
+      add('Files', ico(P.file), '#2f8cf0', function () { $('fileAny').click(); });
+      add('Location', PIN, '#1fa855', function () { var src = $('plusMenu').querySelector('button[data-a="loc"]'); if (src) src.click(); });
+      d.appendChild(g);
     });
   }, true);
 
@@ -7756,7 +7964,6 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     Object.keys(B).forEach(function (k) { var c = KEYMAP[k.toLowerCase()], v = String(B[k] || '').trim(); if (c && v && !found[c]) { found[c] = v; order.push(c); } });
     String((p && p.links) || '').split(/[\s,]+/).forEach(function (u) { if (!/^(https?:\/\/)?[\w.-]+\.\w{2,}/i.test(u)) return; HOSTS.forEach(function (h) { if (h[2].test(u) && !found[h[0]]) { found[h[0]] = u; order.push(h[0]); } }); });
     soc.style.display = order.length ? '' : 'none'; if (!order.length) return;
-    var hd = mk('div', 'srow'); hd.innerHTML = '<i class="g">' + ico(P.more, 26) + '</i><span class="rt"><b>Social media</b></span>'; soc.appendChild(hd);
     var list = mk('div', 'zsoc2');
     order.forEach(function (c) {
       var u = found[c], href = /^https?:\/\//i.test(u) ? u : (/\./.test(u) ? 'https://' + u.replace(/^\/+/, '') : '#');
@@ -7824,7 +8031,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   pinBar.addEventListener('click', function () { var pm = lsGet('zaply_pm_' + openWith, null); var el = pm && document.querySelector('#msgs .bub[data-id="' + pm.id + '"]'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
   var _am3 = addMsg;
   addMsg = function (m) { try { if (m && m.id && openWith && (lsGet('zaply_del_' + openWith, {}) || {})[m.id]) { if (m.id > lastId) lastId = m.id; return false; } } catch (e) {} return _am3(m); };
-  var _ct = closeThread; closeThread = function () { msClear(); replyTo = null; replyBar.classList.remove('on'); return _ct.apply(this, arguments); };
+  var _ct = closeThread; closeThread = function () { var __cs = document.getElementById('csBar'); if (__cs) __cs.remove(); msClear(); replyTo = null; replyBar.classList.remove('on'); return _ct.apply(this, arguments); };
 
   /* ---------- Biometric / app lock that also works on phones without browser fingerprint support ---------- */
   function hashPin(pin) { return crypto.subtle.digest('SHA-256', new TextEncoder().encode('zanply-lock:' + pin)).then(function (b) { return b64u(b); }); }
