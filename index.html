@@ -1316,6 +1316,58 @@ html.islight #infoView #inAv{border-color:#25d366!important}
 #filterNav{gap:6px!important;margin-bottom:8px!important}
 #filterNav button{padding:4px 11px!important;font-size:12px!important;font-weight:600!important;gap:4px!important;line-height:1.2!important;min-height:0!important;height:auto!important;border-width:1px!important}
 #filterNav .cnt2{min-width:16px!important;height:16px!important;line-height:16px!important;font-size:10px!important;padding:0 4px!important;border-radius:8px!important}
+/* slimmer chat search bar */
+#searchBox{margin-bottom:8px!important}
+#searchBox input{padding:9px 16px 9px 42px!important;font-size:15px!important;border-radius:20px!important;height:40px!important;border-width:1px!important}
+#searchBox .si{left:14px!important;width:19px!important;height:19px!important}
+/* locked chats */
+.zlk-btn{border:1px solid var(--border);background:transparent;color:var(--accent,#21c063);border-radius:16px;padding:6px 12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
+/* media bubbles (voice, view once, photo/video, retry) */
+#msgs .bub.media{overflow:visible!important}
+.mfwd{position:absolute;top:50%;margin-top:-18px;width:36px;height:36px;border-radius:50%;border:none;background:rgba(18,26,30,.78);color:#d5dde0;display:flex;align-items:center;justify-content:center;padding:0;cursor:pointer}
+.bub.media.mine .mfwd{left:-46px}.bub.media:not(.mine) .mfwd{right:-46px}
+.mimg,.mvx{overflow:hidden}
+#msgs .bub.media.ovt small{position:absolute!important;right:12px;bottom:10px;margin:0!important;background:rgba(0,0,0,.45);color:#fff!important;border-radius:10px;padding:1px 7px!important;line-height:1.5}
+.mvx{position:relative;width:min(250px,66vw);border-radius:14px;background:#10181c;cursor:pointer}
+.mvx video{width:100%;height:100%;object-fit:cover;display:block}
+.mvx.playing{aspect-ratio:auto!important}.mvx.playing video{max-height:62vh;object-fit:contain;background:#000}
+.mvposter{position:absolute;inset:0;pointer-events:none}
+.mvpl{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;border:none;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;padding:0}
+.mvi{position:absolute;left:8px;bottom:8px;display:flex;align-items:center;gap:5px;color:#fff;font-size:12px;background:rgba(0,0,0,.45);border-radius:12px;padding:2px 8px}
+.maud{display:grid!important;align-items:center;column-gap:10px;min-width:240px;padding:6px 8px 0!important}
+.maud.mine{grid-template-columns:46px 32px 1fr;grid-template-areas:"av play bar" ". dur dur"}
+.maud.rx{grid-template-columns:32px 1fr 46px;grid-template-areas:"play bar av" "dur dur ."}
+.maud .mav{grid-area:av;position:relative;width:44px;height:44px}
+.maud .mav .av{width:44px!important;height:44px!important;font-size:18px!important}
+.maud .mmic{position:absolute;bottom:-3px;color:#25d366;display:flex;background:inherit}
+.maud.mine .mmic{right:-5px}.maud.rx .mmic{left:-5px}
+.maud .mplay{grid-area:play;background:transparent!important;color:#c9d2d6;font-size:20px;width:32px;height:32px}
+.maud .mbar{grid-area:bar;position:relative;height:26px;background:none!important;overflow:visible!important;display:flex;align-items:center;border-radius:0}
+.maud .wv{display:flex;align-items:center;gap:2px;width:100%;height:26px}
+.maud .wv i{display:block;width:3px;flex:none;border-radius:2px;background:currentColor;opacity:.4;height:8px}
+.maud .kn{position:absolute;left:0;top:50%;width:13px!important;height:13px!important;margin:-6px 0 0 0;border-radius:50%;background:#25d366!important;transition:left .15s linear}
+.maud .mdur{grid-area:dur;text-align:left!important;min-width:0!important;margin-top:-2px}
+.mvo{padding:10px 16px 6px 10px!important;gap:10px!important;font-size:17px}
+.mvo .vi{color:#25d366;display:flex}
+.mvo:disabled{opacity:1!important}
+.bub.pending .mretry{display:none}
+.bub.pending.failed .mretry{display:block;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;background:rgba(0,0,0,.72);color:#fff;border:1px solid rgba(255,255,255,.5);border-radius:18px;padding:7px 20px;font-size:14px;font-weight:600}
+.bub.pending.failed.vo .mretry{position:static;transform:none;margin:4px 8px 6px;display:inline-block}
+/* business info on the contact page */
+.zbio{padding:14px 16px}.zbio small{display:block;color:var(--muted);font-size:12.5px;margin-bottom:4px}.zbio .bt{font-size:16px;line-height:1.4;font-weight:600}
+.zbrow{display:flex;align-items:center;gap:16px;padding:12px 16px;text-decoration:none;color:inherit;border-top:1px solid var(--border)}
+.zbrow .bi{flex:none;display:flex;color:#21c063}
+.zbrow .bt{display:flex;flex-direction:column;min-width:0}.zbrow .bt b{font-weight:600;font-size:16px;word-break:break-word}.zbrow .bt small{color:var(--muted);font-size:12.5px;margin-top:2px}
+.zbrow.g .bt b{color:#21c063}
+/* share sheet people */
+.zshh{padding:10px 18px 4px;color:var(--muted);font-size:13px;font-weight:600}
+.zshp{display:flex;gap:14px;overflow-x:auto;padding:6px 16px 18px}
+.zshp button{flex:none;width:64px;background:none;border:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;padding:0}
+.zshp .av{width:52px!important;height:52px!important;font-size:20px!important}
+.zshall{width:52px;height:52px;border-radius:50%;background:#3b4a54;display:flex;align-items:center;justify-content:center;color:#fff}
+/* settings footer / app info */
+.zver{text-align:center;color:var(--muted);font-size:13px;padding:22px 0 30px}
+.zlogo{width:84px;height:84px;margin:0 auto;border-radius:22px;background:linear-gradient(135deg,#25d366,#128c4a);color:#fff;font-size:46px;font-weight:800;display:flex;align-items:center;justify-content:center}
 </style>
 </head>
 <body>
@@ -3572,7 +3624,7 @@ ZW|Zimbabwe|263`;
           file.value = '';
         });
         zrows(b, [['image', 'Choose from gallery', function () { file.click(); }], ['colorize', 'Set a colour', openWallColors], ['sparkle', 'Create with AI', openWallAI]]);
-        var grid = mk('div', 'zwg'), cur = lsGet('zaply_wall', null);
+        var grid = mk('div', 'zwg'), cur = lsGet(window.__cw ? 'zaply_cwall_' + window.__cw : 'zaply_wall', null);
         var io = window.IntersectionObserver ? new IntersectionObserver(function (es) {
           es.forEach(function (e) { if (!e.isIntersecting) return; io.unobserve(e.target); wallThumb(e.target); });
         }, { rootMargin: '300px' }) : null;
@@ -3587,11 +3639,11 @@ ZW|Zimbabwe|263`;
           grid.appendChild(x); if (io) io.observe(x); else x._w = w;
         });
         b.appendChild(grid);
-      });
+      }, function () { window.__cw = null; });
     }
     function openWallColors() {
       zOpenPage('Set a colour', function (b) {
-        var g = mk('div', 'zwc'), cur = lsGet('zaply_wall', null);
+        var g = mk('div', 'zwc'), cur = lsGet(window.__cw ? 'zaply_cwall_' + window.__cw : 'zaply_wall', null);
         WCOLORS.forEach(function (c) {
           var x = mk('button', 'zwci' + (cur && cur.css === c ? ' on' : '')); x.style.background = c; x.setAttribute('aria-label', 'Colour ' + c); x.innerHTML = '<span class="zwk">' + zico('check') + '</span>';
           x.addEventListener('click', function () { if (setWall({ css: c, k: 'color' })) { g.querySelectorAll('.on').forEach(function (y) { y.classList.remove('on'); }); x.classList.add('on'); toast('Wallpaper set', true); } }); g.appendChild(x);
@@ -4187,6 +4239,53 @@ ZW|Zimbabwe|263`;
         }); send.classList.add('hidden'); w.appendChild(send);
       });
     }
+    var APP_VERSION = '1.0.0', FEEDBACK_EMAIL = 'admin@zaply.app';
+    function openHelpCentre() {
+      zOpenPage('Help centre', function (b) {
+        var l = mk('div'); b.appendChild(l);
+        zrow2(l, 'faq', 'Zanply FAQ', 'Answers to common questions', openFaq);
+        zrow2(l, 'bulb', 'Zanply features', 'What you can do with Zanply', openFeatures);
+        zrow2(l, 'ask', 'Contact us', 'Ask a question by email', askQuestion);
+        zrow2(l, 'chat', 'Send feedback', 'Tell us what to improve', openFeedback);
+      });
+    }
+    function openFeedback() {
+      zOpenPage('Send feedback', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        w.appendChild(mk('div', 'sub', 'Tell us what you like or what we should improve. Your note opens in your email app so you can send it to us.'));
+        var ta = mk('textarea', 'zin'); ta.rows = 7; ta.maxLength = 1500; ta.placeholder = 'Write your feedback here'; ta.style.marginTop = '12px'; w.appendChild(ta);
+        w.appendChild(pBtn('Send feedback', function () {
+          var t = ta.value.trim(); if (!t) return toast('Write your feedback first');
+          var ph = ''; try { ph = (lsGet('zaply_user', {}) || {}).phone || ''; } catch (e) {}
+          var body = t + '\n\n---\nZanply ' + APP_VERSION + (ph ? '\nNumber: ' + ph : '') + '\n' + navigator.userAgent;
+          toast('Opening your email app\u2026', true); window.location.href = 'mailto:' + FEEDBACK_EMAIL + '?subject=' + encodeURIComponent('Zanply feedback') + '&body=' + encodeURIComponent(body);
+        }));
+      });
+    }
+    function openTerms() {
+      zOpenPage('Terms and privacy policy', function (b) {
+        var l = mk('div'); b.appendChild(l);
+        zrow2(l, 'shield', 'Terms of service', 'Rules for using Zanply', function () {
+          textPage('Terms of service', [['Using Zanply', 'You must be old enough to use messaging apps in your country and you must give a real phone number. You are responsible for what you send.'],
+            ['Respect others', 'Do not spam, harass, threaten or scam anyone. Do not share illegal content or content that sexualises or harms children. We may suspend accounts that break these rules.'],
+            ['Your content', 'You keep the rights to your photos, videos and messages. You allow Zanply to store and deliver them so your chats work.'],
+            ['Premium and payments', 'Paid features are optional. Prices are shown before you pay and can change with notice.'],
+            ['Changes', 'We may update these terms. If you keep using Zanply after an update, you accept the new terms.']]);
+        });
+        zrow2(l, 'shield', 'Privacy policy', 'How we handle your data', openPolicy);
+      });
+    }
+    function openAppInfo() {
+      zOpenPage('App info', function (b) {
+        var w = mk('div'); w.style.cssText = 'padding:28px 20px;text-align:center'; b.appendChild(w);
+        var lg = mk('div', 'zlogo', 'Z'); w.appendChild(lg); var nm = mk('h2', '', 'Zanply'); nm.style.margin = '14px 0 2px'; w.appendChild(nm);
+        w.appendChild(mk('div', 'sub', 'Version ' + APP_VERSION));
+        var about = mk('div', 'sub', 'Zanply is a private messenger for chats, calls, groups, statuses and business accounts, with end-to-end encrypted one-to-one messages.'); about.style.cssText = 'margin:18px auto 0;max-width:420px;line-height:1.5'; w.appendChild(about);
+        var l = mk('div'); l.style.marginTop = '22px'; w.appendChild(l); l.style.textAlign = 'left';
+        zrow2(l, 'faq', 'Zanply FAQ', '', openFaq); zrow2(l, 'bulb', 'Zanply features', '', openFeatures); zrow2(l, 'shield', 'Terms and privacy policy', '', openTerms);
+        var rf = pBtn('Refresh app', function () { try { location.reload(); } catch (e) {} }, true); rf.style.marginTop = '18px'; w.appendChild(rf);
+      });
+    }
     function bizSet() { return lsGet('zaply_biz', { name: '', cat: '', addr: '', hours: '', greet: false, away: false, awayText: '' }); }
     function openSettings() {
       zOpenPage('Settings', function (b) {
@@ -4215,10 +4314,11 @@ ZW|Zimbabwe|263`;
         var vr = zrow2(list, 'verified', 'Verification badge', 'Get the blue verified badge', openVerification); vr.querySelector('svg').style.color = VERIFIED_BLUE;
         zrow2(list, 'store', 'Zanply Business', 'Business profile and auto replies', openBusiness);
         var hh = mk('div', 'zsec', 'Help'); hh.style.color = '#3b9cf5'; hh.setAttribute('data-hdr', '1'); list.appendChild(hh);
-        zrow2(list, 'ask', 'Ask a Question', '', askQuestion);
-        zrow2(list, 'faq', 'Zanply FAQ', '', openFaq);
-        zrow2(list, 'bulb', 'Zanply Features', '', openFeatures);
-        zrow2(list, 'shield', 'Privacy Policy', '', openPolicy);
+        zrow2(list, 'faq', 'Help centre', 'Questions, features and contact us', openHelpCentre);
+        zrow2(list, 'chat', 'Send feedback', 'Tell us what to improve', openFeedback);
+        zrow2(list, 'shield', 'Terms and privacy policy', '', openTerms);
+        zrow2(list, 'bulb', 'App info', 'About Zanply', openAppInfo);
+        list.appendChild(mk('div', 'zver', 'Zanply \u00b7 Version ' + APP_VERSION));
         bs.addEventListener('click', function () { sbox.classList.toggle('hidden'); if (!sbox.classList.contains('hidden')) sin.focus(); else { sin.value = ''; sin.dispatchEvent(new Event('input')); } });
         be.addEventListener('click', openDetails);
         sin.addEventListener('input', function () {
@@ -4257,7 +4357,7 @@ ZW|Zimbabwe|263`;
     function wallThumb(el) { var w = el._w; if (!w) return; if (w.own) { wallProbe(w.f, 30000).then(function (s) { el.style.background = 'url("' + s + '") center/cover no-repeat'; }).catch(function () {}); return; } wallProbe(w.f, 8000).then(function (s) { el.style.background = 'url("' + s + '") center/cover no-repeat'; }).catch(function () { WQ.push(el); wallPump(); }); }
     function wallFromBlob(blob, k) {
       function enc(side, q) { return prepImage(blob, side, q).then(function (r) { return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(fr.result); }; fr.onerror = rej; fr.readAsDataURL(r.blob); }); }).then(function (u) { return { css: 'url("' + u + '") center/cover no-repeat', k: k }; }); }
-      return enc(1280, 0.72).then(function (w) { if (lsSet('zaply_wall', w)) { applyTheme(); return true; } return enc(720, 0.55).then(function (w2) { return setWall(w2); }); });
+      return enc(1280, 0.72).then(function (w) { if (lsSet(window.__cw ? 'zaply_cwall_' + window.__cw : 'zaply_wall', w)) { applyTheme(); return true; } return enc(720, 0.55).then(function (w2) { return setWall(w2); }); });
     }
 
     /* ---------- Connection used for auto-download ---------- */
@@ -4817,7 +4917,7 @@ ZW|Zimbabwe|263`;
     function saveThread(ph) { try { localStorage.setItem('zaply_th_' + ph, JSON.stringify(thCache.filter(function (x) { return !msgExpired(x, ph); }).slice(-200))); } catch (e) {} }
     function loadCachedThread(ph) {
       var c = []; try { c = JSON.parse(localStorage.getItem('zaply_th_' + ph) || '[]'); } catch (e) {}
-      c.forEach(addMsg); outbox().filter(function (x) { return x.to === ph; }).forEach(pendBubble);
+      c.forEach(addMsg); outbox().filter(function (x) { return x.to === ph; }).forEach(pendBubble); mout().filter(function (x) { return x.to === ph; }).forEach(function (it) { moGet(it.t).then(function (bl) { if (bl) pendMediaBubble(it, bl); }).catch(function () {}); });
       $('msgs').scrollTop = $('msgs').scrollHeight;
     }
     function outbox() { try { return JSON.parse(localStorage.getItem('zaply_out') || '[]'); } catch (e) { return []; } }
@@ -4944,20 +5044,40 @@ ZW|Zimbabwe|263`;
       });
       soc.appendChild(sr);
     }
+    var BIZ_IC = {
+      mail: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4.2-8 5-8-5V6l8 5 8-5v2.2z"/></svg>',
+      pin: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>',
+      planet: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5.2"/><path d="M3.2 15.4C2 13.2 5.6 9 11.4 6.6M20.8 8.6c1.2 2.2-2.4 6.4-8.2 8.8"/></svg>',
+      link: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"/></svg>',
+      clock: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm.5 5v5.2l4.3 2.5-.8 1.3L11 13V7h1.5z"/></svg>',
+      at: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>'
+    };
+    function bizHref(u) { u = String(u || '').trim(); return /^(https?:|mailto:|tel:)/i.test(u) ? u : 'https://' + u.replace(/^\/+/, ''); }
+    function bizRow(icon, text, label, href) {
+      var r = href ? mk('a', 'zbrow g') : mk('div', 'zbrow'); if (href) { r.href = href; if (!/^mailto:/i.test(href)) { r.target = '_blank'; r.rel = 'noopener noreferrer'; } }
+      r.innerHTML = '<span class="bi">' + BIZ_IC[icon] + '</span><span class="bt"><b></b><small></small></span>';
+      r.querySelector('b').textContent = text; r.querySelector('small').textContent = label; return r;
+    }
     function renderInfoBiz(phone, p) {
-      var box = $('inBiz'), soc = $('inSoc'); if (!box) return; box.innerHTML = ''; soc.innerHTML = '';
+      var box = $('inBiz'), soc = $('inSoc'); if (!box) return; box.innerHTML = ''; box.style.display = 'none'; soc.innerHTML = '';
+      var bio = $('inBio'), det = $('inBizD');
+      if (!bio) { bio = mk('div', 'zcard'); bio.id = 'inBio'; var anchor = document.querySelector('#infoView .acts4'); var after = $('sProfileBtn') || anchor; after.parentNode.insertBefore(bio, after.nextSibling); }
+      if (!det) { det = mk('div', 'zcard'); det.id = 'inBizD'; soc.parentNode.insertBefore(det, soc.nextSibling); }
+      bio.innerHTML = ''; det.innerHTML = ''; bio.style.display = 'none'; det.style.display = 'none';
       infoSocialCard(soc, p);
       if (!p || p.acct !== 'business') return;
-      var B = p.biz || {}, sl = SOCIALS.filter(function (o) { return B.social && B.social[o[0]]; });
-      if (sl.length && !soc.children.length) {
-        var hd = mk('div', 'srow'); hd.innerHTML = '<i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></i><span class="rt"><b>Social Media</b></span>';
-        soc.appendChild(hd); var sr = mk('div', 'socrow');
-        sl.forEach(function (o) { var u = String(B.social[o[0]]); if (!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, ''); var a = mk('a', 'soc'); a.href = u; a.target = '_blank'; a.rel = 'noopener'; a.appendChild(mk('span', 'sic', o[1])); a.appendChild(mk('span', '', o[2].split(' ')[0])); sr.appendChild(a); });
-        soc.appendChild(sr);
-      }
-      if (!PIC.store) PIC.store = ZI.store;
-      var br = profRow('store', 'Business Account', 'This account uses Zanply Business'); br.insertAdjacentHTML('beforeend', '<svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>');
-      br.style.cursor = 'pointer'; br.addEventListener('click', function () { $('sProfileBtn').click(); }); box.appendChild(br);
+      var B = p.biz || {}, cat = B.cat === 'Other' && B.catOther ? B.catOther : (B.cat || '');
+      if (cat) { bio.style.display = ''; var bb = mk('div', 'zbio'); bb.appendChild(mk('small', '', 'What does the business do')); bb.appendChild(mk('div', 'bt', cat)); bio.appendChild(bb); }
+      var rows = [], links = (B.links || []).filter(Boolean);
+      if (B.email) rows.push(bizRow('mail', B.email, 'Business email', 'mailto:' + B.email));
+      if (B.address) rows.push(bizRow('pin', B.address, 'Address', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(B.address)));
+      if (B.link) rows.push(bizRow('planet', String(B.link).replace(/^https?:\/\/(www\.)?/i, ''), 'Business link', bizHref(B.link)));
+      links.forEach(function (u) { rows.push(bizRow('link', String(u).replace(/^https?:\/\/(www\.)?/i, ''), 'Other link', bizHref(u))); });
+      var days = Array.isArray(B.days) ? B.days : [], hrs = B.hours || ((B.from || B.to) ? (B.from || '') + ' \u2013 ' + (B.to || '') : '');
+      if (days.length || hrs) rows.push(bizRow('clock', [days.length ? days.join(', ') : '', hrs].filter(Boolean).join(' \u00b7 '), 'Opening hours', ''));
+      if (B.username) rows.push(bizRow('at', '@' + B.username, 'Business username', ''));
+      if (rows.length) { det.style.display = ''; det.appendChild(mk('div', 'zsec', 'Business account')); rows.forEach(function (r) { det.appendChild(r); }); }
+      else { det.style.display = ''; det.appendChild(mk('div', 'zsec', 'Business account')); }
     }
     function openInfo() {
       if (!openUser) return; pushOv(closeInfo);
@@ -5011,32 +5131,76 @@ ZW|Zimbabwe|263`;
 
     /* sending a file: scramble it on this phone (one-to-one chats), upload it, then send a small message that points to it */
     var mediaCache = {}, mediaUrl = {};
+    /* photos, videos, voice notes and files wait in a queue when you are offline (like unsent messages), with a Retry button */
+    var moDbP = null;
+    function moDb() { return moDbP || (moDbP = new Promise(function (res, rej) { var r = indexedDB.open('zanply_mout', 1); r.onupgradeneeded = function () { r.result.createObjectStore('b'); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { rej(r.error); }; })); }
+    function moTx(mode, fn) { return moDb().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction('b', mode), q = fn(t.objectStore('b')); t.oncomplete = function () { res(q && q.result); }; t.onerror = t.onabort = function () { rej(t.error); }; }); }); }
+    function moPut(t, blob) { return moTx('readwrite', function (st) { return st.put(blob, t); }); }
+    function moGet(t) { return moTx('readonly', function (st) { return st.get(t); }); }
+    function moDel(t) { return moTx('readwrite', function (st) { return st.delete(t); }); }
+    function mout() { try { return JSON.parse(localStorage.getItem('zaply_mout') || '[]') || []; } catch (e) { return []; } }
+    function setMout(a) { try { localStorage.setItem('zaply_mout', JSON.stringify(a)); } catch (e) {} }
+    function pendMediaBubble(it, blob) {
+      if (document.querySelector('#msgs .bub[data-t="' + it.t + '"]')) return;
+      var pid = 'p_' + it.t; mediaCache[pid] = Promise.resolve(new Blob([blob], { type: (it.meta && it.meta.m) || blob.type }));
+      var el = renderMedia({ body: '__media__' + JSON.stringify(Object.assign({ id: pid, k: it.kind }, it.meta)), mine: true });
+      el.classList.add('pending'); el.setAttribute('data-t', it.t);
+      var sm = mk('small', '', hhmm(parseInt(it.t, 10) || Date.now())); sm.appendChild(tickEl(0)); el.appendChild(sm);
+      var rb = mk('button', 'mretry', 'Retry'); rb.addEventListener('click', function (e) { e.stopPropagation(); retryMedia(it.t); }); el.appendChild(rb);
+      el.classList.toggle('failed', it.st === 'f');
+      $('msgs').appendChild(el); $('msgs').scrollTop = $('msgs').scrollHeight;
+    }
+    function paintPending() {
+      var a = mout(); Array.prototype.forEach.call(document.querySelectorAll('#msgs .bub.pending[data-t]'), function (el) { var it = a.filter(function (x) { return x.t === el.getAttribute('data-t'); })[0]; if (it) el.classList.toggle('failed', it.st === 'f'); });
+    }
+    function dropMedia(it) { setMout(mout().filter(function (x) { return x.t !== it.t; })); moDel(it.t).catch(function () {}); var el = document.querySelector('#msgs .bub[data-t="' + it.t + '"]'); if (el) el.remove(); }
+    function retryMedia(t) {
+      var a = mout(); a.forEach(function (x) { if (x.t === t) x.st = 'p'; }); setMout(a); paintPending();
+      if (navigator.onLine === false) toast('No internet. It will send when you are back online.'); flushMedia();
+    }
+    function uploadMedia(chat, blob) {
+      var group = isGroupId(chat);
+      return blob.arrayBuffer().then(function (ab) { var u8 = new Uint8Array(ab); return group ? u8 : E2E.encryptBytes(chat, u8); }).then(function (out) {
+        return chatCall('media_sign', { to: chat, size: out.length }).then(function (sg) {
+          var fd = new FormData(); fd.append('file', new Blob([out]));
+          fd.append('api_key', sg.api_key); fd.append('timestamp', sg.timestamp); fd.append('signature', sg.signature); fd.append('public_id', sg.public_id); fd.append('type', sg.type);
+          return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/raw/upload', { method: 'POST', body: fd }).then(function (up) { if (!up.ok) throw new Error('Upload failed. Try again.'); return { id: sg.id }; });
+        });
+      });
+    }
+    var mflush = false;
+    function flushMedia() {
+      if (mflush || navigator.onLine === false) return;
+      var it = mout().filter(function (x) { return x.st !== 'f'; })[0]; if (!it) return;
+      mflush = true;
+      moGet(it.t).then(function (blob) {
+        if (!blob) { var e0 = new Error('gone'); e0.gone = 1; throw e0; }
+        return uploadMedia(it.to, blob).then(function (r) { return { r: r, blob: blob }; });
+      }).then(function (x) {
+        mediaCache[x.r.id] = Promise.resolve(new Blob([x.blob], { type: (it.meta && it.meta.m) || x.blob.type }));
+        var group = isGroupId(it.to); dropMedia(it);
+        queueMsg(it.to, '__media__' + JSON.stringify(Object.assign({ id: x.r.id, c: 1, k: it.kind, e: group ? 0 : 1 }, it.meta)));
+        mflush = false; flushMedia();
+      }).catch(function (e) {
+        mflush = false;
+        if (e && e.gone) { dropMedia(it); return flushMedia(); }
+        if (e && e.blocked) { curBlocked = true; setBlockedUI(); dropMedia(it); return toast((e && e.message) || 'You blocked this contact.'); }
+        var a = mout(); a.forEach(function (y) { if (y.t === it.t) y.st = 'f'; }); setMout(a); paintPending();
+        toast('Could not send. Tap Retry.'); flushMedia();
+      });
+    }
+    window.addEventListener('online', function () { var a = mout(); a.forEach(function (x) { if (x.st === 'f') x.st = 'p'; }); setMout(a); paintPending(); flushMedia(); });
+    setInterval(flushMedia, 6000);
     function sendMedia(chat, kind, blob, meta) {
       if (!chat) return Promise.resolve();
       if (blob.size > MEDIA_MAX) { toast('That file is too big. The limit is 10 MB.'); return Promise.resolve(); }
-      var group = isGroupId(chat);
-      toast('Sending\u2026');
-      return blob.arrayBuffer().then(function (ab) {
-        var u8 = new Uint8Array(ab);
-        return group ? u8 : E2E.encryptBytes(chat, u8);
-      }).then(function (out) {
-        return chatCall('media_sign', { to: chat, size: out.length }).then(function (sg) {
-          var fd = new FormData();
-          fd.append('file', new Blob([out]));
-          fd.append('api_key', sg.api_key); fd.append('timestamp', sg.timestamp); fd.append('signature', sg.signature);
-          fd.append('public_id', sg.public_id); fd.append('type', sg.type);
-          return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/raw/upload', { method: 'POST', body: fd }).then(function (up) {
-            if (!up.ok) throw new Error('Upload failed. Try again.');
-            return { id: sg.id };
-          });
-        });
-      }).then(function (r) {
-        mediaCache[r.id] = Promise.resolve(new Blob([blob], { type: meta.m || blob.type }));
-        queueMsg(chat, '__media__' + JSON.stringify(Object.assign({ id: r.id, c: 1, k: kind, e: group ? 0 : 1 }, meta)));
-      }).catch(function (e) {
-        if (e && e.blocked) { curBlocked = true; setBlockedUI(); }
-        toast((e && e.message) || 'Could not send. Check your connection.');
-      });
+      var it = { t: Date.now() + '_' + Math.random().toString(36).slice(2), to: chat, kind: kind, meta: meta || {}, st: 'p' };
+      return moPut(it.t, blob).then(function () {
+        var a = mout(); a.push(it); setMout(a);
+        if (openWith === chat) pendMediaBubble(it, blob);
+        if (navigator.onLine === false) toast('You are offline. It will send when you are back online.');
+        flushMedia();
+      }).catch(function () { toast('Could not prepare this file to send.'); });
     }
     function mediaBlob(meta, chat) {
       var p = mediaCache[meta.id]; if (p) return p;
@@ -5085,12 +5249,21 @@ ZW|Zimbabwe|263`;
       fs.reduce(function (p, f) { return p.then(function () { return sendPhoto(chat, f); }); }, Promise.resolve());
     }
     var cedQ = [];
+    function videoInfo(f) {
+      return new Promise(function (res) {
+        var v = document.createElement('video'), u = URL.createObjectURL(f), done = false;
+        function fin(o) { if (done) return; done = true; try { URL.revokeObjectURL(u); } catch (e) {} res(o); }
+        v.preload = 'metadata'; v.muted = true; v.setAttribute('playsinline', '');
+        v.onloadedmetadata = function () { fin({ d: v.duration, w: v.videoWidth, h: v.videoHeight }); };
+        v.onerror = function () { fin(null); }; setTimeout(function () { fin(null); }, 4000); v.src = u;
+      });
+    }
     function isVidF(f) { return /^video\//.test(f.type || '') || /\.(mp4|mov|3gp|webm|mkv|m4v)$/i.test(f.name || ''); }
     $('fileImg').addEventListener('change', function () {
       var inp = this, fs = Array.prototype.slice.call(inp.files || [], 0, 5), chat = openWith || camChat;
       if (!fs.length) return; if (!chat) { inp.value = ''; return; }
       var vids = fs.filter(isVidF), imgs = fs.filter(function (f) { return !isVidF(f); });
-      vids.reduce(function (p, v) { return p.then(function () { return sendMedia(chat, 'video', v, { m: v.type || 'video/mp4', n: v.name || 'video.mp4', s: v.size }); }); }, Promise.resolve());
+      vids.reduce(function (p, v) { return p.then(function () { return videoInfo(v).then(function (vi) { var mt = { m: v.type || 'video/mp4', n: v.name || 'video.mp4', s: v.size }; if (vi) { if (vi.d) mt.d = Math.round(vi.d); if (vi.w) { mt.w = vi.w; mt.h = vi.h; } } return sendMedia(chat, 'video', v, mt); }); }); }, Promise.resolve());
       if (!imgs.length) { inp.value = ''; return; }
       var first = imgs.shift(); openEditor(first, chat, function () { inp.value = ''; }); cedQ = imgs;
     });
@@ -5358,25 +5531,49 @@ ZW|Zimbabwe|263`;
     $('vwClose').addEventListener('click', closeOv);
     var curAudio = null, curBtn = null;
     function stopAudio() { if (curAudio) { try { curAudio.pause(); } catch (e) {} curAudio = null; } if (curBtn) { curBtn.textContent = '\u25b6'; curBtn = null; } }
+    var FWD_SVG = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>';
+    var ONE_SVG = '<svg viewBox="0 0 24 24" width="28" height="28"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2.6 3.1" stroke-linecap="round"/><text x="12" y="16.6" text-anchor="middle" font-size="12.5" font-weight="700" fill="currentColor" font-family="sans-serif">1</text></svg>';
+    var MIC_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>';
+    var PLAY_SVG = '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+    var VID_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/></svg>';
+    var DLD_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg>';
+    function waveBars(seed) {
+      var h = 7, i; seed = String(seed || 'x'); for (i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+      var w = mk('div', 'wv'); for (i = 0; i < 34; i++) { h = (h * 1664525 + 1013904223) >>> 0; var bar = mk('i'); bar.style.height = (4 + (h >>> 24) % 18) + 'px'; w.appendChild(bar); } return w;
+    }
     function renderMedia(m) {
       var meta = parseTail(m.body, 9), chat = openWith, b = mk('div', 'bub media' + (m.mine ? ' mine' : ''));
       if (!meta) { b.textContent = '\ud83d\udcce Attachment'; return b; }
+      function addFwd() {
+        if (meta.vo || (m.mine && String(meta.id || '').indexOf('p_') === 0)) return;
+        var fb = mk('button', 'mfwd'); fb.setAttribute('aria-label', 'Forward'); fb.innerHTML = FWD_SVG; b.appendChild(fb);
+        fb.addEventListener('click', function (e) {
+          e.stopPropagation();
+          openForward(function (ph) {
+            mediaBlob(meta, chat).then(function (bl) { var mt = Object.assign({}, meta); ['id', 'c', 'e', 'vo'].forEach(function (k) { delete mt[k]; }); return sendMedia(ph, meta.k, new Blob([bl], { type: meta.m || '' }), mt); }).catch(function () { toast('Could not forward that'); });
+          });
+        });
+      }
       if (meta.k === 'image' && meta.vo) {
+        b.classList.add('vo');
         var vk = 'zaply_vo_' + meta.id, vdone = false; try { vdone = !!localStorage.getItem(vk); } catch (e) {}
-        var vb = mk('button', 'mvo', vdone ? '\u2713 Opened' : (m.mine ? '\ud83d\udcf7 Photo \u00b7 View once' : '\ud83d\udcf7 Tap to view once'));
+        var vb = mk('button', 'mvo');
+        function vlabel(t) { vb.innerHTML = '<span class="vi">' + ONE_SVG + '</span><b></b>'; vb.lastChild.textContent = t; }
+        vlabel(vdone ? 'Opened' : 'Photo');
         vb.disabled = !!(m.mine || vdone); b.appendChild(vb);
         vb.addEventListener('click', function () {
-          vb.disabled = true; vb.textContent = 'Opening\u2026';
+          vb.disabled = true; vlabel('Opening\u2026');
           mediaObjUrl(meta, chat).then(function (url) {
             try { localStorage.setItem(vk, '1'); } catch (e) {}
-            vb.textContent = '\u2713 Opened'; openViewer(url, meta.n);
+            vlabel('Opened'); openViewer(url, meta.n);
             delete mediaCache[meta.id]; delete mediaUrl[meta.id];
-          }).catch(function () { vb.disabled = false; vb.textContent = '\ud83d\udcf7 Tap to retry'; });
+          }).catch(function () { vb.disabled = false; vlabel('Tap to retry'); });
         });
         return b;
       }
       if (meta.k === 'image') {
         var box = mk('div', 'mimg'), img = document.createElement('img');
+        if (!meta.t) b.classList.add('ovt');
         box.style.aspectRatio = (meta.w || 4) + ' / ' + (meta.h || 3); img.alt = 'Photo'; box.appendChild(img); b.appendChild(box); if (meta.t) b.appendChild(mk('div', 'mcap', meta.t));
         var load = function () {
           box.classList.remove('err'); box.textContent = ''; box.appendChild(img);
@@ -5386,21 +5583,34 @@ ZW|Zimbabwe|263`;
           }).catch(function () { box.classList.add('err'); box.textContent = 'Couldn\u2019t load the photo. Tap to try again.'; box.onclick = load; });
         };
         if (m.mine || autoDl('photos')) load(); else { box.classList.add('err'); box.textContent = 'Tap to download photo'; box.onclick = load; }
+        addFwd();
       } else if (meta.k === 'video') {
-        var vbx = mk('div', 'mvid'), vbt = mk('button', 'mvidb'); vbt.innerHTML = '<span class="mvp">\u25b6</span><span>Video' + (meta.s ? ' \u00b7 ' + fmtSize(meta.s) : '') + '</span>';
-        vbx.appendChild(vbt); b.appendChild(vbx);
-        if (!m.mine && autoDl('video')) mediaBlob(meta, chat).catch(function () {});
-        vbt.addEventListener('click', function () {
-          vbt.disabled = true; vbt.lastChild.textContent = 'Loading\u2026';
+        b.classList.add('ovt');
+        var vx = mk('div', 'mvx'), ar = (meta.w && meta.h) ? Math.min(Math.max(meta.w / meta.h, 0.56), 1.78) : 0.5625;
+        vx.style.aspectRatio = String(ar); var vinfo = mk('div', 'mvi'), vpl = mk('button', 'mvpl'); vpl.setAttribute('aria-label', 'Play'); vpl.innerHTML = PLAY_SVG;
+        vx.appendChild(vpl); vx.appendChild(vinfo); b.appendChild(vx);
+        var got = !!m.mine || !!mediaCache[meta.id];
+        function paintInfo() { vinfo.innerHTML = got ? VID_SVG + '<span>' + (meta.d ? fmtDur(meta.d) : 'Video') + '</span>' : DLD_SVG + '<span>' + (meta.s ? fmtSize(meta.s) : 'Download') + '</span>'; }
+        function poster(url) { if (vx.querySelector('video')) return; var pv = document.createElement('video'); pv.className = 'mvposter'; pv.preload = 'metadata'; pv.muted = true; pv.setAttribute('playsinline', ''); pv.src = url + '#t=0.4'; vx.insertBefore(pv, vx.firstChild); }
+        paintInfo();
+        if (got) mediaObjUrl(meta, chat).then(poster).catch(function () {});
+        else if (autoDl('video')) mediaBlob(meta, chat).then(function () { got = true; paintInfo(); return mediaObjUrl(meta, chat).then(poster); }).catch(function () {});
+        vx.addEventListener('click', function () {
+          if (vx.querySelector('.mvplay')) return;
+          vpl.disabled = true; vinfo.innerHTML = '<span>Loading\u2026</span>';
           mediaObjUrl(meta, chat).then(function (url) {
-            var v = document.createElement('video'); v.setAttribute('playsinline', ''); v.controls = true; v.src = url;
-            vbx.innerHTML = ''; vbx.appendChild(v); v.play().catch(function () {});
-          }).catch(function () { vbt.disabled = false; vbt.lastChild.textContent = 'Tap to retry'; });
+            got = true; var v = document.createElement('video'); v.className = 'mvplay'; v.setAttribute('playsinline', ''); v.controls = true; v.src = url;
+            vx.innerHTML = ''; vx.classList.add('playing'); vx.appendChild(v); v.play().catch(function () {});
+          }).catch(function () { vpl.disabled = false; paintInfo(); toast('Could not load the video. Check your internet.'); });
         });
+        addFwd();
       } else if (meta.k === 'audio') {
-        var row = mk('div', 'maud'), btn = mk('button', 'mplay', '\u25b6'), bar = mk('div', 'mbar'), fill = mk('i'), dur = mk('span', 'mdur', fmtDur(meta.d));
+        var row = mk('div', 'maud ' + (m.mine ? 'mine' : 'rx')), btn = mk('button', 'mplay', '\u25b6'), bar = mk('div', 'mbar'), kn = mk('i', 'kn'), dur = mk('span', 'mdur', fmtDur(meta.d));
+        var av = mk('div', 'mav'), who = m.mine ? (window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })) : avatar(openUser || { phone: chat, name: chat });
+        av.appendChild(who); var mc = mk('span', 'mmic'); mc.innerHTML = MIC_SVG; av.appendChild(mc);
+        bar.appendChild(waveBars(meta.id || m.id)); bar.appendChild(kn);
         if (!m.mine && autoDl('audio')) mediaBlob(meta, chat).catch(function () {});
-        bar.appendChild(fill); row.appendChild(btn); row.appendChild(bar); row.appendChild(dur); b.appendChild(row);
+        row.appendChild(av); row.appendChild(btn); row.appendChild(bar); row.appendChild(dur); b.appendChild(row);
         btn.addEventListener('click', function () {
           if (curAudio && curAudio._id === meta.id) { if (curAudio.paused) curAudio.play(); else curAudio.pause(); return; }
           stopAudio(); btn.textContent = '\u2026';
@@ -5408,8 +5618,8 @@ ZW|Zimbabwe|263`;
             var a = new Audio(url); a._id = meta.id; curAudio = a; curBtn = btn;
             a.addEventListener('play', function () { btn.textContent = '\u23f8'; });
             a.addEventListener('pause', function () { if (!a.ended) btn.textContent = '\u25b6'; });
-            a.addEventListener('timeupdate', function () { fill.style.width = Math.min(100, a.currentTime / (meta.d || a.duration || 1) * 100) + '%'; dur.textContent = fmtDur(a.currentTime); });
-            a.addEventListener('ended', function () { btn.textContent = '\u25b6'; fill.style.width = '0'; dur.textContent = fmtDur(meta.d); });
+            a.addEventListener('timeupdate', function () { kn.style.left = Math.min(100, a.currentTime / (meta.d || a.duration || 1) * 100) + '%'; dur.textContent = fmtDur(a.currentTime); });
+            a.addEventListener('ended', function () { btn.textContent = '\u25b6'; kn.style.left = '0'; dur.textContent = fmtDur(meta.d); });
             return a.play();
           }).catch(function () { btn.textContent = '\u25b6'; toast('Could not play this voice message'); });
         });
@@ -5418,7 +5628,7 @@ ZW|Zimbabwe|263`;
         ic.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg>';
         tx.appendChild(mk('b', '', meta.n || 'File')); tx.appendChild(mk('span', 'fs', meta.s ? fmtSize(meta.s) : 'Tap to download'));
         f.appendChild(ic); f.appendChild(tx); b.appendChild(f);
-        if (!m.mine && autoDl(meta.k === 'video' ? 'video' : 'docs')) mediaBlob(meta, chat).catch(function () {});
+        if (!m.mine && autoDl('docs')) mediaBlob(meta, chat).catch(function () {});
         f.addEventListener('click', function () {
           toast('Opening\u2026');
           mediaObjUrl(meta, chat).then(function (url) {
@@ -5784,7 +5994,7 @@ ZW|Zimbabwe|263`;
     };
     function lockedRow(box) {
       var n = allChats.filter(function (c) { return isLocked(c.phone); }).length; if (!n || filt !== 'all' || ($('chatSearch').value || '').trim()) return;
-      var r = mk('div', 'row archrow'), ic = mk('div', 'av'); ic.style.background = 'transparent'; ic.style.color = 'var(--muted)'; ic.textContent = '\uD83D\uDD12';
+      var r = mk('div', 'row archrow'), ic = mk('div', 'av'); ic.style.background = 'transparent'; ic.style.color = 'var(--muted)'; ic.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5" fill="currentColor" fill-opacity=".15"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none"/></svg>';
       var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', 'Locked chats')); r.appendChild(ic); r.appendChild(mid); r.appendChild(mk('time', '', String(n)));
       r.addEventListener('click', function () { lockAuth().then(openLocked).catch(lockFail); }); box.insertBefore(r, box.firstChild);
     }
@@ -5796,6 +6006,8 @@ ZW|Zimbabwe|263`;
         list.forEach(function (c) {
           var r = mk('div', 'row'); r.style.padding = '12px 16px'; r.appendChild(avatar(c));
           var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', shortUser(labelOf(c)))); mid.appendChild(mk('span', '', previewOf(c.last))); r.appendChild(mid);
+          var ub = mk('button', 'zlk-btn'); ub.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 7.6-1.7"/></svg>Unlock'; r.appendChild(ub);
+          ub.addEventListener('click', function (e) { e.stopPropagation(); zconfirm('Unlock this chat? It will move back to your normal chat list.', function () { pcSet('clock', c.phone, false); unlockedChats[c.phone] = 1; r.remove(); renderChats(); if (!b.querySelector('.row')) zempty(b, 'No locked chats. Turn on Chat lock in a contact\u2019s info.'); toast('Chat unlocked', true); }, 'Unlock'); });
           r.addEventListener('click', function () { closeOv(); openThread({ phone: c.phone, name: c.name, group: !!c.group }); }); b.appendChild(r);
         });
       });
@@ -5980,7 +6192,7 @@ ZW|Zimbabwe|263`;
     var _rc = renderChats; renderChats = function () { _rc(); try { renderStories(); } catch (e) {} };
     var _st2 = showTab; showTab = function (t) { _st2(t); $('storyStrip').classList.toggle('hidden', t !== 'chats'); };
     $('btnBell').addEventListener('click', function () { showTab('notifications'); });
-    $('btnPremium').addEventListener('click', function () { toast('Zanply Premium is coming soon'); });
+    $('btnPremium').addEventListener('click', function () { try { showTab('settings'); } catch (e) {} setTimeout(openPremium, 60); });
     $('tabAi').addEventListener('click', function () { zOpenPage('Zanply AI', function (b) { zempty(b, 'Zanply AI is coming soon.'); }); });
     $('tabExplore').addEventListener('click', function () { zOpenPage('Explore', function (b) { zempty(b, 'Explore is coming soon.'); }); });
     try { updateCounts(); renderStories(); } catch (e) {}
@@ -7791,7 +8003,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         if (!list.children.length) list.appendChild(mk('div', 'empty', 'No chats to forward to.'));
       }
       q.addEventListener('input', paint); paint();
-      go.addEventListener('click', function () { var ks = Object.keys(sel); if (!ks.length) return toast('Select at least one chat'); ks.forEach(function (ph) { queueMsg(ph, text); }); toast('Forwarded to ' + ks.length + (ks.length === 1 ? ' chat' : ' chats'), true); closeOv(); try { loadChats(); } catch (e) {} });
+      go.addEventListener('click', function () { var ks = Object.keys(sel); if (!ks.length) return toast('Select at least one chat'); ks.forEach(function (ph) { if (typeof text === 'function') text(ph); else queueMsg(ph, text); }); toast('Forwarded to ' + ks.length + (ks.length === 1 ? ' chat' : ' chats'), true); closeOv(); try { loadChats(); } catch (e) {} });
     });
   };
   var BR = {
@@ -7827,6 +8039,17 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         b.addEventListener('click', function () { close(); a[2](); }); g.appendChild(b);
       });
       d.appendChild(g);
+      var people = (allChats || []).filter(function (c) { return c && !isArchived(c) && !isLocked(c.phone) && !isChan(c); }).slice(0, 12);
+      if (people.length) {
+        d.appendChild(mk('div', 'zshh', 'People you chat with'));
+        var pr = mk('div', 'zshp');
+        people.forEach(function (c) {
+          var b = mk('button', ''); b.appendChild(avatar(c)); b.appendChild(mk('span', '', shortUser(labelOf(c)).split(' ')[0]));
+          b.addEventListener('click', function () { close(); queueMsg(c.phone, full); toast('Shared with ' + shortUser(labelOf(c)), true); try { loadChats(); } catch (e) {} }); pr.appendChild(b);
+        });
+        var all = mk('button', ''); all.innerHTML = '<span class="zshall">' + ico(P.more) + '</span><span>All chats</span>'; all.addEventListener('click', function () { close(); setTimeout(function () { openForward(full); }, 60); }); pr.appendChild(all);
+        d.appendChild(pr);
+      }
     });
   };
 
@@ -7889,7 +8112,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     var old = document.getElementById('zdd'); if (old) return old.remove();
     if (!openUser) return;
     var u = openUser, ph = u.phone, items = [];
-    function moreItems() { var it = [['Report', function () { if (u.group) return toast('Open a member profile to report'); openPageSafe('reportView'); }], [curBlocked ? 'Unblock' : 'Block', function () { if (u.group) return toast('Blocking is for one-to-one chats'); openInfo(); setTimeout(function () { $('sBlock').click(); }, 150); }], ['Clear chat', clearOpenChat]]; if (u.group) it.shift(), it.shift(); return it; }
+    function moreItems() { var it = [['Report', function () { if (u.group) return toast('Open a member profile to report'); openPageSafe('reportView'); }], [curBlocked ? 'Unblock' : 'Block', function () { if (u.group) return toast('Blocking is for one-to-one chats'); $('sBlock').click(); }], ['Clear chat', clearOpenChat]]; if (u.group) it.shift(), it.shift(); return it; }
     function openPageSafe(id) { $('rpText').value = ''; openPage(id); }
     function muteToggle() {
       if (isMuted(ph)) { setMute(ph, 0); renderChats(); return toast('Notifications on', true); }
