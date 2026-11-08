@@ -1036,7 +1036,7 @@
 .swrap.selrow>.row,.swrap.selrow>div:not(.sacts){background:rgba(37,211,102,.20)!important}
 .swrap.selrow::after{content:'\2713';position:absolute;left:52px;top:46px;width:22px;height:22px;border-radius:50%;background:#25d366;color:#04160b;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;border:2px solid #050906;z-index:2}
 
-.st-scroll{display:flex;overflow-x:auto;scrollbar-width:none;padding:6px;margin:-6px}.st-scroll::-webkit-scrollbar{display:none}
+.st-scroll{display:flex;overflow-x:auto;scrollbar-width:none}.st-scroll::-webkit-scrollbar{display:none}
 </style>
 
 
@@ -1208,16 +1208,6 @@ html,body{overflow-x:hidden}
 .attsheet .atic{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
 .attsheet .atic svg{width:28px;height:28px}
 .attsheet .atl{font-size:14px;font-weight:600}
-.attsheet.tg .tggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
-.attsheet.tg .tggrid button{aspect-ratio:1/1;border:0;border-radius:16px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px}
-.attsheet.tg .tggrid svg{width:36px;height:36px}
-.attsheet.tg .tgcam{background:#0b0f12}.attsheet.tg .tgph{background:linear-gradient(135deg,#7b5cf0,#3b82f6)}.attsheet.tg .tgvid{background:linear-gradient(135deg,#ef5a3c,#f59e0b)}
-.attsheet.tg .tghint{font-size:13px;opacity:.65;text-align:center;margin:2px 8px 14px}
-.attsheet.tg .tgbar{display:flex;justify-content:space-around;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:36px;padding:8px 6px}
-.attsheet.tg .tgbar button{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;color:inherit;font-weight:600;font-size:14px;padding:8px 22px;border-radius:28px}
-.attsheet.tg .tgbar button svg{width:28px;height:28px}
-.attsheet.tg .tgbar button.on{background:rgba(37,211,102,.16);color:#25d366}
-html.islight .attsheet.tg .tgbar{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.08)}
 </style>
 <style id="themefix">
 /* ===== Light theme: used when Light is selected, or System default on a light phone ===== */
@@ -1307,8 +1297,8 @@ html.islight #inCover{background-color:#e9edef}
 .st-add .st-plus{position:absolute;right:-3px;bottom:-3px;width:20px;height:20px;border-radius:50%;background:#21c063;color:#fff;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;line-height:1}
 /* Contact profile page: smaller, and readable in light mode */
 #infoView::before{height:270px!important}
-#inAv{width:136px!important;height:136px!important;font-size:54px!important;margin-top:10px!important;padding:4px!important}
-#inAv.onl::after{width:24px!important;height:24px!important;right:8px!important;bottom:10px!important}
+#inAv{width:104px!important;height:104px!important;font-size:42px!important;margin-top:6px!important;padding:4px!important}
+#inAv.onl::after{width:20px!important;height:20px!important;right:6px!important;bottom:8px!important}
 #inName{font-size:24px!important;margin-top:10px!important}
 #inPhone{font-size:15px!important}
 #infoView .itl{font-size:20px!important}
@@ -1316,8 +1306,6 @@ html.islight #inCover{background-color:#e9edef}
 .abtn{height:84px!important;border-radius:24px!important;font-size:15px!important;gap:8px!important}
 .abtn svg{width:24px!important;height:24px!important}
 html.islight #infoView::before{background:linear-gradient(180deg,#d9f3e5 0%,#e8f6ee 55%,#f0f2f5 100%)!important}
-/* dark theme: no night-sky / moon header, the profile page uses the normal app background */
-html:not(.islight) #infoView::before{display:none!important}
 html.islight #infoView #inAv{border-color:#25d366!important}
 /* action buttons: small white pills with outline icons */
 .acts4{gap:8px!important}
@@ -1657,7 +1645,7 @@ html.islight #infoView #inAv{border-color:#25d366!important}
         <button data-a="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg><span>Location</span></button><button data-a="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg><span>Games</span></button>
       </div>
       <div id="emojiBox" class="emojibox hidden"></div>
-      <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedBri" aria-label="Brighten">☀</button><button id="cedRot" aria-label="Crop and rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button id="cedEmo" aria-label="Stickers"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6l8-8z"/><path d="M20 12h-4a2 2 0 0 0-2 2v4"/><path d="M8.5 9.5h.01M14.5 9.5h.01"/></svg></button><button id="cedArrow" aria-label="Arrow"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5M19 5h-8M19 5v8"/></svg></button><button id="cedMusic" aria-label="Music" style="display:none"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div><div id="cedTxtOv" class="hidden"><div class="cto-top"><button id="ctoDone" class="cto-t">Done</button><div style="display:flex;gap:8px"><button id="ctoAl" aria-label="Align"></button><button id="ctoBg" aria-label="Background">A</button></div></div><div class="cto-mid"><textarea id="ctoIn" rows="1" placeholder="Add text" maxlength="120"></textarea></div><div class="cto-bot"><input type="range" id="ctoHue" min="0" max="100" value="0" aria-label="Colour"><div id="ctoFonts"></div></div></div><div id="cedStk" class="hidden"><div class="stk-sheet"><div class="stk-h"></div><div class="stk-tabs"><button data-t="e">&#128578;</button><button data-t="s">Stickers</button></div><div class="stk-body" id="stkBody"></div></div></div><div id="cedCrop" class="hidden"><div id="ccStage"><div id="ccWrap"><canvas id="ccCv"></canvas><div id="ccBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div></div></div><div class="cc-bar"><button id="ccCancel">Cancel</button><button id="ccRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="ccDone">Done</button></div></div></div>
+      <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedBri" aria-label="Brighten">☀</button><button id="cedRot" aria-label="Crop and rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button id="cedEmo" aria-label="Stickers"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6l8-8z"/><path d="M20 12h-4a2 2 0 0 0-2 2v4"/><path d="M8.5 9.5h.01M14.5 9.5h.01"/></svg></button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div><div id="cedTxtOv" class="hidden"><div class="cto-top"><button id="ctoDone" class="cto-t">Done</button><div style="display:flex;gap:8px"><button id="ctoAl" aria-label="Align"></button><button id="ctoBg" aria-label="Background">A</button></div></div><div class="cto-mid"><textarea id="ctoIn" rows="1" placeholder="Add text" maxlength="120"></textarea></div><div class="cto-bot"><input type="range" id="ctoHue" min="0" max="100" value="0" aria-label="Colour"><div id="ctoFonts"></div></div></div><div id="cedStk" class="hidden"><div class="stk-sheet"><div class="stk-h"></div><div class="stk-tabs"><button data-t="e">&#128578;</button><button data-t="s">Stickers</button></div><div class="stk-body" id="stkBody"></div></div></div><div id="cedCrop" class="hidden"><div id="ccStage"><div id="ccWrap"><canvas id="ccCv"></canvas><div id="ccBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div></div></div><div class="cc-bar"><button id="ccCancel">Cancel</button><button id="ccRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="ccDone">Done</button></div></div></div>
       <input id="fileImg" type="file" accept="image/*,video/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden><input id="fileAudio" type="file" hidden>
       <div id="recBar" class="recbar hidden"><button id="recCancel" aria-label="Cancel recording"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button><span class="recdot"></span><span id="recT">0:00</span><span style="flex:1;opacity:.7;font-size:13px">Recording&hellip;</span><button id="recSend" aria-label="Send voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
       <div id="blockBar" class="blockbar hidden"><span id="blockBarT"></span><button id="blockBarBtn">Unblock</button></div>
@@ -3714,7 +3702,7 @@ ZW|Zimbabwe|263`;
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
     }
     function applyIcon() {
-      var i = lsGet('zaply_icon', null); if (i == null) return; if (i > 0 && window.__premKnown && !premOn()) i = 0; var u = iconUri(i);
+      var i = lsGet('zaply_icon', null); if (i == null) return; var u = iconUri(i);
       ['icon', 'apple-touch-icon'].forEach(function (r) { var l = document.querySelector('link[rel="' + r + '"]'); if (l) { l.removeAttribute('type'); l.href = u; } });
     }
     function openAppIcons() {
@@ -3724,8 +3712,7 @@ ZW|Zimbabwe|263`;
         ICONS.forEach(function (c, i) {
           var x = mk('button'); x.setAttribute('aria-label', c[0]); x.style.cssText = 'width:84px;height:84px;border-radius:22px;border:' + (i === cur ? '3px solid #fff' : '3px solid transparent') + ';padding:0;background:url("' + iconUri(i) + '") center/cover;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.35)';
           if (i === cur) x.innerHTML = '<span style="position:absolute;right:-6px;bottom:-6px;width:24px;height:24px;border-radius:12px;background:#222;color:#fff;font-size:14px;line-height:24px">\u2713</span>';
-          if (i > 0 && !premOn()) { var lk = mk('span', '', '\uD83D\uDD12'); lk.style.cssText = 'position:absolute;right:-6px;bottom:-6px;width:24px;height:24px;border-radius:12px;background:#222;font-size:12px;line-height:24px'; x.appendChild(lk); }
-          x.addEventListener('click', function () { if (i > 0 && !premOn()) { toast('Premium App Icons need Zanply Premium'); closeOv(); setTimeout(openPremium, 200); return; } lsSet('zaply_icon', i); applyIcon(); toast(c[0] + ' icon set', true); closeOv(); setTimeout(openAppIcons, 80); });
+          x.addEventListener('click', function () { lsSet('zaply_icon', i); applyIcon(); toast(c[0] + ' icon set', true); closeOv(); setTimeout(openAppIcons, 80); });
           g.appendChild(x);
         });
         b.appendChild(mk('div', 'zfoot', 'The icon changes in the app and in browser tabs now. On the Play Store and Galaxy Store build it also changes the launcher icon.'));
@@ -3750,10 +3737,10 @@ ZW|Zimbabwe|263`;
     function openAppearance() {
       zOpenPage('Appearance', function (b) {
         zrows(b, [['palette', 'Default chat theme', openThemes]]);
-        b.appendChild(mk('div', 'zsep')); var h = mk('div', 'zsec'); h.innerHTML = '<span style="color:#21c063">\u25c6</span> Zanply Premium'; b.appendChild(h);
+        b.appendChild(mk('div', 'zsep')); var h = mk('div', 'zsec'); h.innerHTML = '<span style="color:#21c063">\u25c6</span> Zanply Plus'; b.appendChild(h);
         zrows(b, [['smile', 'App icon', openAppIcons], ['palette', 'App theme', openAppColors]]);
-        var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Premium to unlock exclusive app icons and more. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
-        f.querySelector('a').addEventListener('click', function (e) { e.preventDefault(); openPremium(); }); b.appendChild(f);
+        var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Plus to change your app icon, theme and more. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
+        f.querySelector('a').addEventListener('click', function (e) { e.preventDefault(); soon('Zanply Plus')(); }); b.appendChild(f);
       });
     }
     function openThemes() {
@@ -4325,7 +4312,7 @@ ZW|Zimbabwe|263`;
         var bs = mk('button'), be = mk('button'); bs.innerHTML = zico('search'); be.innerHTML = zico('edit'); bs.setAttribute('aria-label', 'Search settings'); be.setAttribute('aria-label', 'Edit profile'); hd.appendChild(bs); hd.appendChild(be);
         var head = mk('div', 'zhead'), av = mk('div', 'zav'); av.style.width = av.style.height = '116px'; av.style.fontSize = '48px'; av.textContent = nm.charAt(0).toUpperCase(); if (u.phone || myPhone) usePhoto(av, u.phone || myPhone);
         av.style.cursor = 'pointer'; av.addEventListener('click', openDetails); head.appendChild(av);
-        var nr = mk('div', 'znm'), nb0 = mk('b', '', nm); nr.appendChild(nb0); try { window.zDecoApply(nb0, myPhone); } catch (e) {} if (getAccts().length > 1) { var ch = mk('button', 'zchev'); ch.innerHTML = zico('chev'); ch.setAttribute('aria-label', 'Switch account'); ch.addEventListener('click', function () { $('menuSwitch').click(); }); nr.appendChild(ch); }
+        var nr = mk('div', 'znm'); nr.appendChild(mk('b', '', nm)); if (getAccts().length > 1) { var ch = mk('button', 'zchev'); ch.innerHTML = zico('chev'); ch.setAttribute('aria-label', 'Switch account'); ch.addEventListener('click', function () { $('menuSwitch').click(); }); nr.appendChild(ch); }
         head.appendChild(nr); var ph = mk('div', 'sub', u.phone || myPhone || ''); ph.style.margin = '2px 0 0'; head.appendChild(ph); b.appendChild(head);
         var sbox = mk('div', 'zsrch hidden'), sin = zin('Search settings', 'search', 40); sbox.appendChild(sin); b.appendChild(sbox);
         var list = mk('div'); b.appendChild(list);
@@ -4341,7 +4328,7 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'globe', 'App language', langName(), openLanguage);
         zrow2(list, 'invite', 'Invite a friend', 'Share Zanply with your contacts', invite);
         list.appendChild(mk('div', 'zsep'));
-        zrow2(list, 'diamond', 'Zanply Premium', 'Go beyond with exclusive features', openPremium);
+        zrow2(list, 'diamond', 'Zanply Premium', 'More statuses, big files, double limits', openPremium);
         var vr = zrow2(list, 'verified', 'Verification badge', 'Get the blue verified badge', openVerification); vr.querySelector('svg').style.color = VERIFIED_BLUE;
         zrow2(list, 'store', 'Zanply Business', 'Business profile and auto replies', openBusiness);
         var hh = mk('div', 'zsec', 'Help'); hh.style.color = '#3b9cf5'; hh.setAttribute('data-hdr', '1'); list.appendChild(hh);
@@ -4402,67 +4389,40 @@ ZW|Zimbabwe|263`;
     }
 
     /* ---------- Zanply Premium (matches the design screenshots) ---------- */
-    var PREM_FEATS = [
-      ['M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-2 14.5v-9l7 4.5-7 4.5z', 'Stories (Status)', 'Post up to 13 Status per day.', '#f59e0b', 'Stories (Status) lets you share photos, videos, voice notes and text that disappear after 24 hours.', 'Open the Status tab and tap the camera button. Premium raises your daily limit so you can keep sharing all day.', 'Share more moments with your contacts without waiting for tomorrow.', 'Share only 2 Status per day', 'Post up to 13 Status per day'],
-      ['M12 2 1 7l11 5 9-4.09V17h2V7L12 2zM3.5 12.5v4L12 21l8.5-4.5v-4L12 17l-8.5-4.5z', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups.', '#f0793c', 'Higher limits for the Channels and Groups you create.', 'Once you subscribe, the app lets you create more Channels and Groups right away. Nothing else to set up.', 'Run more communities, teams and families from one account.', 'Create 2 Channels and 2 Groups', 'Create up to 10+ Channels and 10+ Groups'],
-      ['M12 3a9 9 0 0 0 0 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A4.6 4.6 0 0 0 22 10c0-3.9-4.5-7-10-7zM6.5 12a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#d04f90', 'Choose how your name looks and pick from exclusive colours for your profile.', 'Open your profile, choose a name style and a colour. Others see it on your profile and in chats.', 'Stand out and make your profile feel like yours.', 'Standard name and profile', 'Name styles and exclusive colours'],
-      ['M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z', 'Zanply Verification Badge', 'Get the blue badge that shows your account is real.', '#2f8cf0', 'A blue badge next to your name. It cannot be obtained for free, only with Zanply Premium.', 'Subscribe and the badge appears next to your name. It stays while your Premium is active.', 'It proves the account is real, protects against fake accounts, builds trust and makes your account look professional and official.', 'No blue badge', 'Blue verification badge'],
-      ['M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z', 'Premium App Icons', 'Unlock exclusive app icons.', '#6485ee', 'Exclusive Zanply app icons for your home screen.', 'Go to Appearance > App Icons and choose any Premium icon.', 'Make Zanply match your style.', 'Default app icon only', 'Exclusive app icons in Appearance > App Icons'],
-      ['M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4L12 2z', 'Unlimited AI Usage', 'No daily limit on AI.', '#9c5cc7', 'Use the Zanply AI assistant as much as you like.', 'Open AI from the menu and keep chatting. Premium removes the usage limit.', 'Write, translate, learn and create without hitting a limit.', 'AI usage is limited', 'Unlimited AI usage'],
-      ['M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z', 'Wallpaper for Both Sides', 'Your wallpaper shows for the other person too.', '#aa58bb', 'The wallpaper you set is also shown to the person you chat with.', 'Set a wallpaper in a chat. If you are Premium, the other person sees it in your chat with them. Example: if User A subscribes and sets a wallpaper, User B sees it in User A\u2019s chat only, unless User B changes it.', 'Make a chat feel shared and personal for both of you.', 'Wallpaper shows only on your phone', 'Wallpaper shows on both phones']
-    ];
-    var PREM_PLANS = { monthly: { label: 'Monthly', usd: 3.99, per: 'month' }, six: { label: '6 Months', usd: 19.99, per: '6 months' }, annual: { label: 'Annual', usd: 29.99, per: 'year', best: true } };
-    /* approximate local price: calling code -> [currency, units per US dollar] */
-    var PREM_CUR = { '254': ['KES', 129], '255': ['TZS', 2600], '256': ['UGX', 3700], '250': ['RWF', 1400], '257': ['BIF', 2900], '251': ['ETB', 120], '234': ['NGN', 1550], '233': ['GHS', 15], '27': ['ZAR', 18], '20': ['EGP', 49], '260': ['ZMW', 27], '265': ['MWK', 1700], '243': ['CDF', 2800], '212': ['MAD', 10], '216': ['TND', 3.1], '213': ['DZD', 135], '237': ['XAF', 610], '225': ['XOF', 610], '221': ['XOF', 610], '91': ['INR', 84], '92': ['PKR', 280], '880': ['BDT', 120], '62': ['IDR', 16000], '63': ['PHP', 58], '55': ['BRL', 5.7], '52': ['MXN', 18], '44': ['GBP', 0.78], '49': ['EUR', 0.92], '33': ['EUR', 0.92], '39': ['EUR', 0.92], '34': ['EUR', 0.92], '31': ['EUR', 0.92], '32': ['EUR', 0.92], '43': ['EUR', 0.92], '351': ['EUR', 0.92], '353': ['EUR', 0.92], '971': ['AED', 3.67], '966': ['SAR', 3.75], '61': ['AUD', 1.55], '81': ['JPY', 150] };
-    function premPrice(usd) {
-      var cc = String(myPhone || '').replace(/\D/g, ''), r = null; [3, 2, 1].some(function (n) { var x = PREM_CUR[cc.slice(0, n)]; if (x) { r = x; return true; } return false; });
-      r = r || ['USD', 1]; var big = r[1] >= 100, v = usd * r[1]; v = big ? Math.round(v / 5) * 5 : Math.round(v * 100) / 100;
-      try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: r[0], maximumFractionDigits: big ? 0 : 2 }).format(v); } catch (e) { return '$' + usd; }
-    }
-    function startPremiumCheckout(plan) {
-      chatCall('premium_activate', { plan: plan }).then(function (r) { lsSet('zaply_premium', r); toast('Welcome to Zanply Premium', true); closeOv(); setTimeout(openPremium, 250); }).catch(function (e) { toast((e && e.message) || 'Payments are being connected. No charge was made.'); });
-    }
+    var PREM_FEATS = [['\u25b6', 'Stories', 'Unlimited posting, priority order, stealth mode, permanent view history and more.', '#f59e0b'], ['\ud83d\udcc4', 'Unlimited Cloud Storage', '4 GB per each document, unlimited storage for your chats and media overall.', '#f97316'], ['\u00d72', 'Doubled Limits', 'Up to 1000 channels, 30 folders, 10 pins, 20 public links, 4 accounts and more.', '#f0793c'], ['\ud83c\udfea', 'Zanply Business', 'Upgrade your account with business features such as location, opening hours and quick replies.', '#ef6b4f'],
+      ['\ud83d\udc63', 'Last Seen Times', 'View the last seen and read times of others even if you hide yours.', '#ee6459'], ['\ud83c\udf99', 'Voice-to-Text Conversion', 'Ability to read the transcript of any incoming voice message.', '#e9605f'], ['\u26a1', 'Faster Download Speed', 'No more limits on the speed with which media and documents are downloaded.', '#e55a69'], ['\ud83c\udf10', 'Real-Time Translation', 'Real-time translation of chats and channels into other languages.', '#df5575'],
+      ['\ud83d\ude00', 'Animated Emoji', 'Include animated emoji from different packs in any message you send.', '#d95282'], ['\u270b', 'Emoji Statuses', 'Choose from thousands of emoji to display current activity next to your name.', '#d04f90'], ['\ud83c\udff7', 'Tags in Saved Messages', 'Organize your Saved Messages with tags for quicker access.', '#c64f9f'], ['\ud83c\udfa8', 'Name and Profile Colors', 'Choose a color and logo for your profile and replies to your messages.', '#b954ae'],
+      ['\ud83d\uddbc', 'Wallpaper for Both Sides', 'Set custom wallpapers for you and your chat partner.', '#aa58bb'], ['\u2605', 'Profile Badge', 'An exclusive badge next to your name showing that you subscribe to Zanply Premium.', '#9c5cc7'], ['$', 'Paid Messages', 'Charge a fee for messages from non-contacts or new senders.', '#8f60d0'], ['\ud83d\udd75', 'Disable Sharing', 'Prevent forwarding, saving and copying content in private chats.', '#8564d6'],
+      ['\ud83d\udcac', 'Advanced Chat Management', 'Tools to set the default folder, auto-archive and hide new chats from non-contacts.', '#7b68dc'], ['\ud83d\udeab', 'No Ads', 'No more ads in public channels where Zanply sometimes shows ads.', '#6f78e6'], ['\ud83d\udd37', 'Premium App Icons', 'Choose from a selection of Zanply app icons for your homescreen.', '#6485ee'], ['\u2764', 'Infinite Reactions', 'React with thousands of emoji \u2014 using multiple reactions per message.', '#5a90f2']];
+    var PREM_PLANS = { annual: { label: 'Annual', price: '$28.99/year', per: '$2.41/month', cta: 'Subscribe for $28.99 per year' }, monthly: { label: 'Monthly', price: '$3.99/month', per: '$3.99/month', cta: 'Subscribe for $3.99 per month' } };
+    function startPremiumCheckout(plan) { toast('Payments are being connected. No charge was made.'); }
     function openPremium() {
       zOpenPage('Zanply Premium', function (b) {
-        var pg = b.parentNode; pg.classList.add('zprem'); var plan = 'annual', st = lsGet('zaply_premium', null) || {};
-        var hero = mk('div', 'zpm-hero'); hero.innerHTML = starSvg(84) + '<h2></h2><p></p>';
-        hero.querySelector('h2').textContent = 'Zanply Premium'; hero.querySelector('p').textContent = 'Go beyond with dozens of exclusive features by subscribing to Zanply Premium.'; b.appendChild(hero);
-        var info = mk('div', 'zfoot'), plans = mk('div', 'zpm-plans'), cta = mk('button', 'zpm-cta'), list = mk('div', 'zpm-list'), foot = mk('div', 'zfoot');
-        function line() {
-          info.textContent = ''; if (!st.active) return;
-          info.appendChild(mk('div', '', 'Premium is active until ' + new Date(st.until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + '.'));
-          var t = mk('button', 'link', 'Auto-renewal: ' + (st.renew ? 'ON (tap to turn off)' : 'OFF (tap to turn on)'));
-          t.addEventListener('click', function () { chatCall('premium_renew', { renew: !st.renew }).then(function (r) { st = r; lsSet('zaply_premium', r); line(); }).catch(function () { toast('Could not change auto-renewal'); }); });
-          info.appendChild(t);
-        }
-        function draw() {
+        var pg = b.parentNode; pg.classList.add('zprem'); var ttl = pg.querySelector('.zpg-h span'); ttl.textContent = '';
+        var plan = 'annual';
+        var hero = mk('div', 'zpm-hero');
+        hero.innerHTML = '<svg width="190" height="150" viewBox="0 0 190 150"><defs><linearGradient id="zpmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c8cff"/><stop offset=".55" stop-color="#b65cf5"/><stop offset="1" stop-color="#ff6fd0"/></linearGradient></defs><path d="M95 12l17 38 41 5-31 28 9 41-36-21-36 21 9-41-31-28 41-5z" fill="url(#zpmg)" stroke="url(#zpmg)" stroke-width="10" stroke-linejoin="round"/><g fill="#8fa2ff" opacity=".7"><circle cx="30" cy="30" r="2"/><circle cx="160" cy="24" r="2.5"/><circle cx="20" cy="95" r="2"/><circle cx="172" cy="100" r="2"/><circle cx="60" cy="10" r="1.5"/></g></svg><h2></h2><p></p>';
+        hero.querySelector('h2').textContent = 'Zanply Premium'; hero.querySelector('p').textContent = 'Go beyond the limits and unlock dozens of exclusive features by subscribing to Zanply Premium.'; b.appendChild(hero);
+        var plans = mk('div', 'zpm-plans'), cta = mk('button', 'zpm-cta', PREM_PLANS.annual.cta);
+        function drawPlans() {
           plans.textContent = '';
-          ['monthly', 'six', 'annual'].forEach(function (k) {
+          ['annual', 'monthly'].forEach(function (k) {
             var P = PREM_PLANS[k], x = mk('button', 'zpm-plan' + (plan === k ? ' on' : '')), nm = mk('div', 'nm');
             x.innerHTML = '<span class="rd">' + (plan === k ? zico('check') : '') + '</span>';
-            nm.innerHTML = '<b></b>' + (P.best ? '<span class="badge">Most Popular \u2022 Best Value</span>' : '') + '<div></div>'; nm.querySelector('b').textContent = P.label; nm.querySelector('div').textContent = premPrice(P.usd) + ' / ' + P.per;
-            x.appendChild(nm); x.addEventListener('click', function () { plan = k; draw(); }); plans.appendChild(x);
-          });
-          cta.textContent = (st.active ? 'Extend \u2022 ' : 'Subscribe \u2022 ') + premPrice(PREM_PLANS[plan].usd) + ' / ' + PREM_PLANS[plan].per;
-        }
-        function detail(f) {
-          zOpenPage(f[1], function (c) {
-            c.parentNode.classList.add('zprem'); var w = mk('div', 'zpm-hero'); w.innerHTML = '<span class="ic" style="display:inline-flex;width:84px;height:84px;border-radius:24px;align-items:center;justify-content:center;color:#fff"><svg viewBox="0 0 24 24" width="46" height="46" fill="currentColor"><path d=""/></svg></span><h2></h2><p></p>';
-            w.querySelector('.ic').style.background = f[3]; w.querySelector('path').setAttribute('d', f[0]); w.querySelector('h2').textContent = f[1]; w.querySelector('p').textContent = f[4]; c.appendChild(w); try { c.appendChild(window.zDemo(f[1])); } catch (e) {}
-            [['How it works', f[5]], ['Why it is useful', f[6]], ['Without Premium', f[7]], ['With Premium', f[8]]].forEach(function (x) { var q = mk('div', 'zfoot'); q.style.paddingBottom = '4px'; var h = mk('b', '', x[0]); h.style.display = 'block'; h.style.color = 'var(--text)'; q.appendChild(h); q.appendChild(document.createTextNode(x[1])); c.appendChild(q); });
-            var sb = mk('button', 'zpm-cta', 'Subscribe \u2022 ' + premPrice(PREM_PLANS[plan].usd) + ' / ' + PREM_PLANS[plan].per); sb.addEventListener('click', function () { startPremiumCheckout(plan); }); c.appendChild(sb); try { window.zFeatAction(f, c); } catch (e) {}
-            c.appendChild(mk('div', 'zfoot', 'You can cancel anytime. You can turn auto-renewal ON or OFF.'));
+            if (k === 'annual') { nm.innerHTML = '<b>Annual</b><span class="badge">\u221239%</span><div><s>$47.88</s> ' + P.price + '</div>'; } else nm.innerHTML = '<b>Monthly</b>';
+            x.appendChild(nm); x.appendChild(mk('span', '', P.per)); x.addEventListener('click', function () { plan = k; cta.textContent = P.cta; drawPlans(); }); plans.appendChild(x);
           });
         }
+        drawPlans(); b.appendChild(plans);
+        var list = mk('div', 'zpm-list');
         PREM_FEATS.forEach(function (f) {
-          var r = mk('button', 'zpm-f'); r.innerHTML = '<span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d=""/></svg></span><span class="tx"><b></b><small></small></span><span class="ch">\u203a</span>';
-          r.querySelector('.ic').style.background = f[3]; r.querySelector('.ic').style.color = '#fff'; r.querySelector('path').setAttribute('d', f[0]); r.querySelector('b').textContent = f[1]; r.querySelector('small').textContent = f[2];
-          r.addEventListener('click', function () { detail(f); }); list.appendChild(r);
+          var r = mk('button', 'zpm-f'); r.innerHTML = '<span class="ic"></span><span class="tx"><b></b><small></small></span><span class="ch">\u203a</span>';
+          var ic = r.querySelector('.ic'); ic.textContent = f[0]; ic.style.background = f[3]; r.querySelector('b').textContent = f[1]; r.querySelector('small').textContent = f[2];
+          r.addEventListener('click', function () { zOpenPage(f[1], function (c) { c.parentNode.classList.add('zprem'); var w = mk('div', 'zpm-hero'); w.innerHTML = '<div style="font-size:64px"></div><h2></h2><p></p>'; w.firstChild.textContent = f[0]; w.querySelector('h2').textContent = f[1]; w.querySelector('p').textContent = f[2]; c.appendChild(w); var s = mk('button', 'zpm-cta', PREM_PLANS[plan].cta); s.addEventListener('click', function () { startPremiumCheckout(plan); }); c.appendChild(s); }); });
+          list.appendChild(r);
         });
-        foot.textContent = 'You can cancel anytime. You can turn auto-renewal ON or OFF. Prices are shown in your local currency and are approximate.';
-        cta.addEventListener('click', function () { startPremiumCheckout(plan); });
-        b.appendChild(info); b.appendChild(plans); b.appendChild(cta); b.appendChild(list); b.appendChild(foot); line(); draw();
-        chatCall('premium_get', {}).then(function (r) { st = r; lsSet('zaply_premium', r); line(); draw(); }).catch(function () {});
+        b.appendChild(list); cta.addEventListener('click', function () { startPremiumCheckout(plan); }); b.appendChild(cta);
+        b.addEventListener('scroll', function () { ttl.textContent = b.scrollTop > 150 ? 'Zanply Premium' : ''; }, { passive: true });
       });
     }
     function starsBal() { return lsGet('zaply_stars', 0); }
@@ -4663,26 +4623,15 @@ ZW|Zimbabwe|263`;
       try { lockedRow(box); } catch (e) {}
       base.filter(function (c) { return !c.group; }).forEach(function (c) { cb.appendChild(row(c, false)); });
     }
-    /* If the server's list leaves out a one-to-one chat we already had (a slow or partial answer), keep it for up to 2 answers so the row does not vanish and come back */
+    /* If the server's list leaves out a one-to-one chat we already had (a slow or partial answer), keep it for up to 20 answers so the row does not vanish */
     var chatMiss = {};
-    /* true when a chat that should be on screen (All Chats, no search) has no row in the list */
-    function listOutOfSync() {
-      try {
-        if (filt !== 'all' || ($('chatSearch').value || '').trim()) return false;
-        var box = $('chatList'); if (!box) return false;
-        return allChats.some(function (c) {
-          if (!c || !c.phone || isLocked(c.phone) || isArchived(c) || isHidden(c)) return false;
-          return !box.querySelector('.swrap[data-ph="' + String(c.phone).replace(/"/g, '') + '"]');
-        });
-      } catch (e) { return false; }
-    }
     function keepMissing(chats) {
       var have = {}, added = false; chats.forEach(function (c) { have[c.phone] = 1; delete chatMiss[c.phone]; });
       (allChats || []).forEach(function (o) {
         if (!o || o.group || have[o.phone]) return;
         chatMiss[o.phone] = (chatMiss[o.phone] || 0) + 1;
         try { if (window.zLog) window.zLog('Server list left out ' + (o.name || o.phone) + ' (miss ' + chatMiss[o.phone] + ')', true); } catch (e) {}
-        if (chatMiss[o.phone] <= 20) { chats.push(o); added = true; try { console.warn('Zanply: chat list answer missed', o.phone); } catch (e) {} }
+        if (chatMiss[o.phone] <= 20) { chats.push(o); added = true; }
       });
       if (added) chats.sort(function (a, b) { return (new Date(b.at).getTime() || 0) - (new Date(a.at).getTime() || 0); });
       return chats;
@@ -4703,7 +4652,7 @@ ZW|Zimbabwe|263`;
         try { bizAuto(chats); } catch (e) {}
         try { countUnread(); } catch (e) {}
         try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
-        if (sig !== chatSig || wasErr || listOutOfSync()) { chatSig = sig; renderChats(); } else updateCounts();
+        if (sig !== chatSig || wasErr) { chatSig = sig; renderChats(); } else updateCounts();
       }).catch(function (e) { loadErr = e && e.status ? 'Server error (' + e.status + ')' : 'Can\u2019t reach the server'; renderChats(); });
     }
     /* Zanply Business: greeting message and away message are sent automatically (while the app is open on this phone) */
@@ -4903,9 +4852,8 @@ ZW|Zimbabwe|263`;
        The server sends a tiny "something changed" signal; the app then fetches the real data exactly as before.
        If real-time is not connected the old polling keeps working, just a little slower to react. */
     var RT = (function () {
-      var rt = null, selfCh = null, inboxCh = null, chErr = '', watched = {}, want = {}, authBusy = false, authAgain = false, chatsT = 0, retryT = 0;
-      /* real-time only counts as working when the connection is up AND my inbox channel is attached; otherwise the fast 1-second refresh keeps running */
-      function up() { return !!(rt && rt.connection && rt.connection.state === 'connected' && inboxCh && inboxCh.state === 'attached'); }
+      var rt = null, selfCh = null, watched = {}, want = {}, authBusy = false, authAgain = false, chatsT = 0, retryT = 0;
+      function up() { return !!(rt && rt.connection && rt.connection.state === 'connected'); }
       function watchList() { return Object.keys(want).slice(-40); }
       function refreshChats() { clearTimeout(chatsT); chatsT = setTimeout(function () { try { loadChats(); } catch (e) {} }, 120); }
       function onInbox(m) {
@@ -4956,8 +4904,7 @@ ZW|Zimbabwe|263`;
       function info() {
         var st = rt ? rt.connection.state : (window.Ably ? 'not started' : 'library not loaded' + (window.__ablyFail ? ' (blocked: ' + window.__ablyFail.trim() + ')' : ''));
         var er = rt && rt.connection.errorReason ? (rt.connection.errorReason.message || String(rt.connection.errorReason)) : '';
-        if (rt && inboxCh) st += ' \u2022 inbox channel: ' + inboxCh.state;
-        return { lib: !!window.Ably, state: st, error: authErr || chErr || er };
+        return { lib: !!window.Ably, state: st, error: authErr || er };
       }
       function start(phone) {
         if (rt) return;
@@ -4968,14 +4915,7 @@ ZW|Zimbabwe|263`;
             chatCall('ably_auth', { watch: watchList() }).then(function (r) { authErr = ''; cb(null, r.token); }, function (e) { authErr = 'token request failed: ' + ((e && e.message) || e); cb(e, null); });
           }
         });
-        inboxCh = rt.channels.get('u:' + phone); inboxCh.subscribe(onInbox);
-        inboxCh.on(function (c) {
-          if (c.current === 'attached') { chErr = ''; try { if (openWith) fetchMsgs(); loadChats(); } catch (e) {} }
-          else if (c.current === 'failed' || c.current === 'suspended') {
-            chErr = 'inbox channel ' + c.current + (c.reason && c.reason.message ? ': ' + c.reason.message : '');
-            if (c.current === 'failed') setTimeout(function () { try { inboxCh.attach(); } catch (e) {} }, 8000);
-          }
-        });
+        rt.channels.get('u:' + phone).subscribe(onInbox);
         selfCh = rt.channels.get('p:' + phone);
         rt.connection.on('connected', function () {
           enter(); watchList().forEach(attach);
@@ -5020,7 +4960,7 @@ ZW|Zimbabwe|263`;
     setInterval(function () {
       if ($('appView').classList.contains('hidden') || document.hidden) return;
       pollN++;
-      if (RT.up() && pollN % 5 !== 0) return;
+      if (RT.up() && pollN % 15 !== 0) return;
       if (openWith) fetchMsgs(); else if (!$('paneChats').classList.contains('hidden') && pollN % 2 === 0) loadChats();
     }, 1000);
     document.addEventListener('visibilitychange', function () { if (!document.hidden && !$('appView').classList.contains('hidden')) { if (openWith) fetchMsgs(); else loadChats(); } });
@@ -5401,15 +5341,13 @@ ZW|Zimbabwe|263`;
       });
     }
     function isVidF(f) { return /^video\//.test(f.type || '') || /\.(mp4|mov|3gp|webm|mkv|m4v)$/i.test(f.name || ''); }
-    /* Android can restart the app while the gallery is open; remember the pick so we can tell the user instead of failing silently */
-    $('fileImg').addEventListener('click', function () { try { localStorage.setItem('zaply_pickwait_img', String(Date.now())); } catch (e) {} });
-    (function () { try { var w = +localStorage.getItem('zaply_pickwait_img'); if (w) { localStorage.removeItem('zaply_pickwait_img'); if (Date.now() - w < 300000) setTimeout(function () { toast('Android restarted Zanply while you were choosing the photo or video. Please try again.', false, 6000); }, 1500); } } catch (e) {} })();
     $('fileImg').addEventListener('change', function () {
       var inp = this, fs = Array.prototype.slice.call(inp.files || [], 0, 5), chat = openWith || camChat;
-      try { localStorage.removeItem('zaply_pickwait_img'); } catch (e) {}
-      if (!fs.length) return; if (!chat) { inp.value = ''; toast('Open the chat again and choose the photo or video again.'); return; }
-      toast('Opening ' + (fs.length > 1 ? fs.length + ' files' : (isVidF(fs[0]) ? 'video' : 'photo')) + '\u2026');
-      var first = fs.shift(); cedQ = fs; (isVidF(first) ? openVideoEditor : openEditor)(first, chat, function () { inp.value = ''; });
+      if (!fs.length) return; if (!chat) { inp.value = ''; return; }
+      var vids = fs.filter(isVidF), imgs = fs.filter(function (f) { return !isVidF(f); });
+      vids.reduce(function (p, v) { return p.then(function () { return videoInfo(v).then(function (vi) { var mt = { m: v.type || 'video/mp4', n: v.name || 'video.mp4', s: v.size }; if (vi) { if (vi.d) mt.d = Math.round(vi.d); if (vi.w) { mt.w = vi.w; mt.h = vi.h; } } return sendMedia(chat, 'video', v, mt); }); }); }, Promise.resolve());
+      if (!imgs.length) { inp.value = ''; return; }
+      var first = imgs.shift(); openEditor(first, chat, function () { inp.value = ''; }); cedQ = imgs;
     });
     var camChat = null;
     $('fileCam').addEventListener('change', function () {
@@ -5426,15 +5364,13 @@ ZW|Zimbabwe|263`;
 
     /* photo editor: shown after the camera takes a picture */
     var ced = { chat: null, src: null, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
-    function cedVidReset() { var v = $('cedVid'); if (v) { try { v.pause(); URL.revokeObjectURL(v.src); } catch (e) {} v.remove(); } $('cedWrap').style.display = ''; var tb = document.querySelector('#camEd .ced-top > div'); if (tb) tb.style.display = 'flex'; if (ced) ced.video = null; }
-    function cedClose() { try { if (window.zLog) window.zLog('Editor closed (overlays ' + (typeof overlays !== 'undefined' ? overlays.length : '?') + ', popSkip ' + (typeof popSkip !== 'undefined' ? popSkip : '?') + ') via ' + String(new Error().stack || '').split('\n').slice(2, 5).map(function (l) { return l.trim().replace(/\(.*[\/]/, '('); }).join(' < ')); } catch (e) {} cedVidReset(); $('camEd').classList.add('hidden'); ced.src = null; $('cedItems').innerHTML = ''; cedQ = []; }
+    function cedClose() { $('camEd').classList.add('hidden'); ced.src = null; $('cedItems').innerHTML = ''; cedQ = []; }
     function cedTool(m) {
       ced.mode = ced.mode === m ? '' : m;
       $('cedT_draw').classList.toggle('on', ced.mode === 'draw'); $('cedDraw').classList.toggle('on', ced.mode === 'draw');
       $('cedInk').style.pointerEvents = ced.mode === 'draw' ? 'auto' : 'none';
     }
     function cedLayout() {
-      if (!ced.src) return;
       var sc = Math.min(1, 1600 / Math.max(ced.src.width, ced.src.height)), w = Math.round(ced.src.width * sc), h = Math.round(ced.src.height * sc);
       [$('cedBase'), $('cedInk')].forEach(function (c) { c.width = w; c.height = h; c.style.width = '100%'; c.style.height = '100%'; });
       var st = document.querySelector('.ced-stage'), f = Math.min(st.clientWidth / w, st.clientHeight / h), wrap = $('cedWrap');
@@ -5527,18 +5463,7 @@ ZW|Zimbabwe|263`;
       } catch (e) { return false; }
     }
     var cedBri = 0;
-    function openVideoEditor(file, chat, done) {
-      cedVidReset(); if (done) done();
-      ced = { chat: chat, src: null, video: file, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
-      $('cedVO').classList.remove('on'); $('cedCap').value = ''; $('cedSend').disabled = false; $('cedTo').textContent = chat === '__status__' ? 'Status (Contacts)' : (nameOf(chat) || chat); $('cedVO').style.display = chat === '__status__' ? 'none' : ''; $('cedMusic').style.display = 'none';
-      ['cedTxtOv', 'cedStk', 'cedCrop'].forEach(function (i) { $(i).classList.add('hidden'); });
-      var v = document.createElement('video'); v.id = 'cedVid'; v.src = URL.createObjectURL(file); v.controls = true; v.setAttribute('playsinline', ''); v.style.cssText = 'max-width:100%;max-height:100%;margin:auto;display:block;border-radius:8px;background:#000';
-      $('cedWrap').style.display = 'none'; document.querySelector('#camEd .ced-stage').appendChild(v);
-      var tb = document.querySelector('#camEd .ced-top > div'); if (tb) tb.style.display = 'none';
-      pushOv(cedClose); $('camEd').classList.remove('hidden');
-    }
     function openEditor(file, chat, done) {
-      cedVidReset();
       function build(bm, side) {
         var sc = Math.min(1, side / Math.max(bm.width, bm.height)), c = document.createElement('canvas');
         c.width = Math.max(1, Math.round(bm.width * sc)); c.height = Math.max(1, Math.round(bm.height * sc));
@@ -5552,11 +5477,10 @@ ZW|Zimbabwe|263`;
         ced = { chat: chat, src: c, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
         cedBri = 0; $('cedBase').style.filter = 'none'; $('cedBase').removeAttribute('data-f'); $('cedBri').classList.remove('on');
         $('cedHD').classList.remove('on'); $('cedVO').classList.remove('on'); $('cedCap').value = ''; $('cedItems').innerHTML = ''; $('cedSend').disabled = false;
-        $('cedTo').textContent = chat === '__status__' ? 'Status (Contacts)' : (nameOf(chat) || chat); $('cedVO').style.display = chat === '__status__' ? 'none' : ''; $('cedMusic').style.display = chat === '__status__' ? '' : 'none'; $('cedMusic').classList.remove('on'); cedTool(''); ['cedTxtOv','cedStk','cedCrop'].forEach(function (i) { $(i).classList.add('hidden'); }); pushOv(cedClose); $('camEd').classList.remove('hidden'); cedLayout();
+        $('cedTo').textContent = chat === '__status__' ? 'Status (Contacts)' : (nameOf(chat) || chat); $('cedVO').style.display = chat === '__status__' ? 'none' : ''; cedTool(''); ['cedTxtOv','cedStk','cedCrop'].forEach(function (i) { $(i).classList.add('hidden'); }); pushOv(cedClose); $('camEd').classList.remove('hidden'); cedLayout();
       }).catch(function () { if (done) done(); toast('Could not open that photo. Try again.'); });
     }
     window.zOpenEditor = openEditor;
-    window.zOpenVideoEditor = openVideoEditor;
     $('cedX').addEventListener('click', closeOv);
     $('cedHD').addEventListener('click', function () { ced.hd = !ced.hd; this.classList.toggle('on', ced.hd); toast(ced.hd ? 'HD quality on' : 'Standard quality'); });
     $('cedBri').addEventListener('click', function () {
@@ -5609,11 +5533,6 @@ ZW|Zimbabwe|263`;
       $('stkBody').innerHTML = h;
     }
     $('cedEmo').addEventListener('click', function () { cedTool(''); stkTab('e'); $('cedStk').classList.remove('hidden'); });
-    $('cedArrow').addEventListener('click', function () { if (ced.video) return; cedTool(''); cedAdd({ k: 's', s: 'arrow', w: 0.4 }); });
-    $('cedMusic').addEventListener('click', function () {
-      if (!window.zStatusMusicPick) return toast('Music is not ready. Try again.');
-      window.zStatusMusicPick(function (file, name) { ced.music = { file: file, name: name }; $('cedMusic').classList.add('on'); toast('Music added: ' + name, true); });
-    });
     $('cedStk').addEventListener('click', function (e) {
       if (e.target === this) { this.classList.add('hidden'); return; }
       var t = e.target.closest('[data-t]'), em = e.target.closest('[data-e]'), sh = e.target.closest('[data-sh]'), ct = e.target.closest('[data-ct]');
@@ -5676,22 +5595,11 @@ ZW|Zimbabwe|263`;
     });
     $('cedSend').addEventListener('click', function () {
       var btn = this, chat = ced.chat, cap = $('cedCap').value.trim(), vo = ced.vo; btn.disabled = true;
-      if (ced.video && chat === '__status__') { window.zStatusPublishVideo(ced.video, cap).then(function () { btn.disabled = false; }); return; }
-      if (ced.video) {
-        var vf = ced.video, rest0 = cedQ.slice();
-        videoInfo(vf).then(function (vi) {
-          var mt = { m: vf.type || 'video/mp4', n: vf.name || 'video.mp4', s: vf.size }; if (vi) { if (vi.d) mt.d = Math.round(vi.d); if (vi.w) { mt.w = vi.w; mt.h = vi.h; } } if (cap) mt.t = cap; if (vo) mt.vo = 1;
-          closeOv(); cedQ = rest0;
-          if (rest0.length) setTimeout(function () { var nf = cedQ.shift(); if (nf) (isVidF(nf) ? openVideoEditor : openEditor)(nf, chat); }, 400);
-          return sendMedia(chat, 'video', vf, mt);
-        }).catch(function () { btn.disabled = false; toast('Could not send the video'); });
-        return;
-      }
-      if (chat === '__status__') { cedBuild().then(function (r) { return window.zStatusPublishImage(r.blob, cap, ced.music); }).then(function () { btn.disabled = false; }, function (e) { btn.disabled = false; toast((e && e.message) || 'Could not add your status. Try again.'); }); return; }
+      if (chat === '__status__') { cedBuild().then(function (r) { return window.zStatusPublishImage(r.blob, cap); }).then(function () { btn.disabled = false; }, function (e) { btn.disabled = false; toast((e && e.message) || 'Could not add your status. Try again.'); }); return; }
       cedBuild().then(function (r) {
         var meta = { m: 'image/jpeg', w: r.w, h: r.h, n: 'photo.jpg' }; if (cap) meta.t = cap; if (vo) meta.vo = 1;
         var rest = cedQ.slice(); closeOv(); cedQ = rest;
-        if (rest.length) setTimeout(function () { var nf = cedQ.shift(); if (nf) (isVidF(nf) ? openVideoEditor : openEditor)(nf, chat); }, 400);
+        if (rest.length) setTimeout(function () { var nf = cedQ.shift(); if (nf) openEditor(nf, chat); }, 400);
         return sendMedia(chat, 'image', r.blob, meta);
       }).catch(function () { btn.disabled = false; toast('Could not send the photo'); });
     });
@@ -5849,90 +5757,19 @@ ZW|Zimbabwe|263`;
     function renderLoc(m) {
       var l = parseTail(m.body, 7), b = mk('div', 'bub loc' + (m.mine ? ' mine' : ''));
       if (!l || isNaN(+l.lat) || isNaN(+l.lng)) { b.textContent = '\ud83d\udccd Location'; return b; }
-      var lv = l.live && l.exp ? String(l.live).slice(0, 24) : '', ended = !!lv && Date.now() > +l.exp;
-      b.appendChild(mk('div', 'gtitle', lv ? (ended ? '\ud83d\udccd Live location ended' : '\ud83d\udce1 Live location') : l.label ? '\ud83c\udfe0 ' + String(l.label).slice(0, 30) : '\ud83d\udccd Location'));
+      b.appendChild(mk('div', 'gtitle', '\ud83d\udccd Location'));
       b.appendChild(mk('div', 'locs', (+l.lat).toFixed(5) + ', ' + (+l.lng).toFixed(5)));
-      if (lv) { b.setAttribute('data-live', lv); if (!ended) { var ud = new Date(+l.exp); b.appendChild(mk('div', 'locs', 'Sharing until ' + ('0' + ud.getHours()).slice(-2) + ':' + ('0' + ud.getMinutes()).slice(-2))); } }
-      var o = mk('button', 'locb', ended ? 'Last known place' : 'Open in Maps');
+      var o = mk('button', 'locb', 'Open in Maps');
       o.addEventListener('click', function () { window.open('https://www.google.com/maps?q=' + (+l.lat) + ',' + (+l.lng), '_blank', 'noopener'); });
-      b.appendChild(o);
-      /* a live location keeps one card: newer updates replace the older ones */
-      if (lv) setTimeout(function () { var par = b.parentNode; if (!par) return; Array.prototype.forEach.call(par.querySelectorAll('.bub.loc[data-live="' + lv + '"]'), function (x) { if (x !== b && (x.compareDocumentPosition(b) & 4)) x.remove(); }); }, 0);
-      return b;
-    }
-    /* ask for location permission with a clear reason first, then the phone shows its own permission box */
-    function locPerm(cb) {
-      if (!navigator.geolocation) return toast('Location is not available on this phone');
-      if (!(navigator.permissions && navigator.permissions.query)) return cb();
-      navigator.permissions.query({ name: 'geolocation' }).then(function (r) {
-        if (r.state === 'granted') return cb();
-        if (r.state === 'denied') return toast('Location is turned off for Zanply. Turn it on in your phone settings, then try again.');
-        zconfirm('Zanply needs your location so you can share where you are in this chat. You choose what to share and for how long, and you can stop anytime.', cb, 'Continue');
-      }).catch(function () { cb(); });
-    }
-    function getPos(ok) {
-      locPerm(function () {
-        toast('Getting your location\u2026');
-        navigator.geolocation.getCurrentPosition(function (p) { ok({ lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6) }); },
-          function (e) { toast(e && e.code === 1 ? 'Allow location access for Zanply in your phone settings to share where you are' : 'Could not get your location. Turn on GPS and try again.'); }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
-      });
-    }
-    var liveW = null;
-    function stopLive(silent) {
-      if (!liveW) return; try { navigator.geolocation.clearWatch(liveW.id); } catch (e) {} clearTimeout(liveW.t); if (liveW.bar) liveW.bar.remove(); liveW = null;
-      if (!silent) toast('Stopped sharing live location', true);
-    }
-    function startLive(chat, ms) {
-      stopLive(true);
-      locPerm(function () {
-        var lid = 'L' + Date.now().toString(36), exp = Date.now() + ms, last = null, sent = 0;
-        function dist(a, b) { var r = Math.PI / 180, x = Math.sin((b.lat - a.lat) * r / 2), y = Math.sin((b.lng - a.lng) * r / 2); return 12742000 * Math.asin(Math.sqrt(x * x + Math.cos(a.lat * r) * Math.cos(b.lat * r) * y * y)); }
-        function post(pt) { sent = Date.now(); last = pt; queueMsg(chat, '__loc__' + JSON.stringify({ lat: pt.lat, lng: pt.lng, live: lid, exp: exp })); }
-        toast('Getting your location\u2026');
-        var wid = navigator.geolocation.watchPosition(function (p) {
-          var pt = { lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6) };
-          if (!last) post(pt); else if (Date.now() - sent > 45000 && dist(last, pt) > 25) post(pt);
-        }, function (e) { stopLive(true); toast(e && e.code === 1 ? 'Location is turned off for Zanply. Turn it on in your phone settings.' : 'Could not get your location. Turn on GPS and try again.'); }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
-        var bar = mk('div', ''); bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:60;display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top,0px)) 14px 8px;background:#21c063;color:#06140c;font-size:14px;font-weight:600';
-        var tx = mk('span', '', '\ud83d\udce1 Sharing your live location'); tx.style.flex = '1'; var sb = mk('button', '', 'Stop'); sb.style.cssText = 'border:0;border-radius:14px;padding:6px 14px;background:#06140c;color:#fff;font-weight:700';
-        sb.addEventListener('click', function () { stopLive(); }); bar.appendChild(tx); bar.appendChild(sb); document.body.appendChild(bar);
-        liveW = { id: wid, t: setTimeout(function () { stopLive(); }, ms), bar: bar };
-      });
-    }
-    /* home address: search an address on the map, or use the GPS */
-    function homeSearch(chat) {
-      zOpenPage('Home address', function (b) {
-        var inp = mk('input'); inp.type = 'search'; inp.placeholder = 'Search your home address'; inp.style.cssText = 'width:calc(100% - 32px);margin:12px 16px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:16px;box-sizing:border-box';
-        var gps = mk('button', 'link', 'Use where I am now (GPS)'); gps.style.cssText = 'display:block;margin:0 16px 8px';
-        var res = mk('div', ''); b.appendChild(inp); b.appendChild(gps); b.appendChild(res);
-        function useHome(pt) { lsSet('zaply_home', pt); closeOv(); toast('Home address saved', true); queueMsg(chat, '__loc__' + JSON.stringify({ lat: pt.lat, lng: pt.lng, label: 'Home' })); }
-        gps.addEventListener('click', function () { getPos(useHome); });
-        var tm = 0;
-        inp.addEventListener('input', function () {
-          clearTimeout(tm); tm = setTimeout(function () {
-            var q = inp.value.trim(); if (q.length < 3) { res.innerHTML = ''; return; } res.innerHTML = ''; res.appendChild(mk('div', 'zempty', 'Searching\u2026'));
-            fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&q=' + encodeURIComponent(q)).then(function (r) { return r.json(); }).then(function (L) {
-              res.innerHTML = ''; if (!L.length) return res.appendChild(mk('div', 'zempty', 'No places found'));
-              L.forEach(function (x) { var r = mk('div', 'row'); r.style.padding = '12px 16px'; var mid = mk('div', 'mid'); mid.appendChild(mk('b', '', String(x.display_name || '').split(',').slice(0, 2).join(','))); mid.appendChild(mk('span', '', String(x.display_name || ''))); r.appendChild(mid); r.addEventListener('click', function () { useHome({ lat: +(+x.lat).toFixed(6), lng: +(+x.lon).toFixed(6) }); }); res.appendChild(r); });
-            }).catch(function () { res.innerHTML = ''; res.appendChild(mk('div', 'zempty', 'Could not search. Check your internet and try again.')); });
-          }, 500);
-        });
-        setTimeout(function () { try { inp.focus(); } catch (e) {} }, 300);
-      });
+      b.appendChild(o); return b;
     }
     function sendLocation() {
       var chat = openWith; if (!chat) return;
-      var home = lsGet('zaply_home', null), items = [
-        ['Live location', function () { zsheet('Share live location for', [['15 minutes', function () { startLive(chat, 15 * 60000); }], ['1 hour', function () { startLive(chat, 3600000); }], ['8 hours', function () { startLive(chat, 8 * 3600000); }]]); }],
-        ['Current location', function () { getPos(function (pt) { queueMsg(chat, '__loc__' + JSON.stringify(pt)); }); }],
-        [home ? 'Home address' : 'Home address (search or GPS)', function () {
-          if (home) { queueMsg(chat, '__loc__' + JSON.stringify({ lat: home.lat, lng: home.lng, label: 'Home' })); return; }
-          homeSearch(chat);
-        }]
-      ];
-      if (home) items.push(['Change home address\u2026', function () { homeSearch(chat); }]);
-      if (liveW) items.unshift(['Stop sharing live location', function () { stopLive(); }]);
-      zsheet('Share location', items);
+      if (!navigator.geolocation) return toast('Location is not available on this phone');
+      toast('Getting your location\u2026');
+      navigator.geolocation.getCurrentPosition(function (p) {
+        queueMsg(chat, '__loc__' + JSON.stringify({ lat: +p.coords.latitude.toFixed(6), lng: +p.coords.longitude.toFixed(6) }));
+      }, function (e) { toast(e && e.code === 1 ? 'Allow location access to share where you are' : 'Could not get your location'); }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 });
     }
 
     /* games: Tic-Tac-Toe, played through the chat itself. Each move is a message; only the newest board is shown. */
@@ -6002,13 +5839,12 @@ ZW|Zimbabwe|263`;
     });
     $('aiGo').addEventListener('click', function () {
       var pr = $('aiPrompt').value.trim(); if (!pr) return toast('Describe the image first');
-      if (!premOn() && dayKey('zaply_aiday') >= 5) { zconfirm('You used your 5 free AI images for today. Zanply Premium gives you unlimited AI usage.', function () { closeOv(); setTimeout(openPremium, 200); }, 'See Premium'); return; }
       var full = aiStyle ? pr + ', ' + aiStyle : pr;
       var ctl = window.AbortController ? new AbortController() : null, t = ctl ? setTimeout(function () { ctl.abort(); }, 60000) : 0, go = $('aiGo');
       go.disabled = true; go.textContent = 'Creating\u2026'; $('aiPrev').classList.add('hidden'); $('aiLoad').classList.remove('hidden'); aiBlob = null;
       fetch('https://image.pollinations.ai/prompt/' + encodeURIComponent(full) + '?width=768&height=768&nologo=true&seed=' + Math.floor(Math.random() * 1e6), ctl ? { signal: ctl.signal } : {})
         .then(function (r) { if (!r.ok) throw new Error('bad'); return r.blob(); })
-        .then(function (b) { if (!/^image\//.test(b.type)) throw new Error('bad'); if (!premOn()) dayBump('zaply_aiday'); aiBlob = b; $('aiImg').src = URL.createObjectURL(b); $('aiPrev').classList.remove('hidden'); })
+        .then(function (b) { if (!/^image\//.test(b.type)) throw new Error('bad'); aiBlob = b; $('aiImg').src = URL.createObjectURL(b); $('aiPrev').classList.remove('hidden'); })
         .catch(function () { toast('Couldn\u2019t create the image. Try again in a moment.'); })
         .then(function () { clearTimeout(t); $('aiLoad').classList.add('hidden'); go.disabled = false; go.textContent = aiBlob ? 'Try again' : 'Create image'; });
     });
@@ -6435,7 +6271,7 @@ ZW|Zimbabwe|263`;
       });
       var nx = mk('button', 'st-next', '\u203A'); nx.addEventListener('click', function () { sc.scrollBy({ left: 220, behavior: 'smooth' }); }); box.appendChild(nx);
     }
-    var _rc = renderChats; renderChats = function () { _rc(); try { renderStories(); } catch (e) {} };
+    var _rc = renderChats; renderChats = function () { try { _rc(); } catch (e) { chatSig = null; try { console.error(e); if (window.zDiag) window.zDiag('Chat list error: ' + ((e && e.message) || e)); } catch (x) {} } try { renderStories(); } catch (e) {} };
     var _st2 = showTab; showTab = function (t) { _st2(t); $('storyStrip').classList.toggle('hidden', t !== 'chats'); };
     $('btnBell').addEventListener('click', function () { showTab('notifications'); });
     $('btnPremium').addEventListener('click', function () { try { showTab('settings'); } catch (e) {} setTimeout(openPremium, 60); });
@@ -6465,13 +6301,8 @@ ZW|Zimbabwe|263`;
       var on = selOn(); $('appView').classList.toggle('selmode', on); $('selBar').classList.toggle('on', on); $('selN').textContent = selList().length;
       Array.prototype.forEach.call(document.querySelectorAll('#chatList .swrap'), function (w) { w.classList.toggle('selrow', !!selMap[w.getAttribute('data-ph')]); });
       var l = selList(), allPinned = l.length && l.every(function (c) { return pinsGet().indexOf(c.phone) > -1; });
-      $('selPin').classList.remove('slash'); $('selPin').setAttribute('aria-label', allPinned ? 'Unpin' : 'Pin');
-      $('selPin').innerHTML = allPinned
-        ? '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><defs><mask id="zpinMask" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/><path d="M6.5 6.5l11 11" stroke="#000" stroke-width="4.4" stroke-linecap="round"/></mask></defs><path mask="url(#zpinMask)" d="' + IC.pin + '"/><path d="M6.5 6.5l11 11" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/></svg>'
-        : '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="' + IC.pin + '"/></svg>';
-      $('selDel').style.display = l.some(function (c) { return c.group; }) ? 'none' : '';
-      var allMuted = l.length && l.every(function (c) { return isMuted(c.phone); }); $('selMute').classList.toggle('slash', false); $('selMute').title = allMuted ? 'Unmute' : 'Mute'; $('selMute').setAttribute('aria-label', allMuted ? 'Unmute' : 'Mute');
-      $('selMute').innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="' + (allMuted ? 'M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z' : IC.mute) + '"/></svg>';
+      $('selPin').classList.toggle('slash', !!allPinned);
+      var allMuted = l.length && l.every(function (c) { return isMuted(c.phone); }); $('selMute').classList.toggle('slash', false); $('selMute').title = allMuted ? 'Unmute' : 'Mute';
     }
     function selClear() { selMap = {}; selPaint(); }
     function selToggle(c) { if (selMap[c.phone]) delete selMap[c.phone]; else selMap[c.phone] = c; selPaint(); }
@@ -6488,36 +6319,26 @@ ZW|Zimbabwe|263`;
     $('selBack').addEventListener('click', selClear);
     $('selPin').addEventListener('click', function () { var l = selList(), a = pinsGet(), allP = l.every(function (c) { return a.indexOf(c.phone) > -1; }); l.slice().reverse().forEach(function (c) { var i = a.indexOf(c.phone); if (allP) { if (i > -1) a.splice(i, 1); } else if (i < 0) a.unshift(c.phone); }); lsSet('zaply_pins', a); selClear(); renderChats(); toast(allP ? 'Unpinned' : 'Pinned', true); });
     $('selDel').addEventListener('click', function () { var l = selList(); zconfirm('Delete ' + (l.length > 1 ? l.length + ' chats' : 'this chat') + ' from this phone? ' + (l.length > 1 ? 'They come' : 'It comes') + ' back if a new message arrives.', function () { var m = lsGet('zaply_hidden', {}); l.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_hidden', m); selClear(); renderChats(); toast('Deleted from this phone', true); }, 'Delete'); });
-    $('selMute').addEventListener('click', function () { var l = selList(), allM = l.every(function (c) { return isMuted(c.phone); }); if (allM) { l.forEach(function (c) { setMute(c.phone, 0); }); selClear(); renderChats(); toast('Notifications on', true); } else if (l.length === 1) { var c0 = l[0]; selClear(); muteChoose(c0); } else { l.forEach(function (c) { setMute(c.phone, Date.now() + 36500 * 864e5); }); selClear(); renderChats(); toast('Muted', true); } });
+    $('selMute').addEventListener('click', function () { var l = selList(), allM = l.every(function (c) { return isMuted(c.phone); }); if (allM) { l.forEach(function (c) { setMute(c.phone, 0); }); selClear(); renderChats(); toast('Notifications on', true); } else if (l.length === 1) { var c0 = l[0]; selClear(); muteChoose(c0); } else { l.forEach(function (c) { setMute(c.phone, -1); }); selClear(); renderChats(); toast('Muted', true); } });
     $('selArch').addEventListener('click', function () { var l = selList(); l.forEach(function (c) { setArchived(c.phone, !isArchived(c)); }); selClear(); renderChats(); toast('Archived', true); });
     $('selMore').addEventListener('click', function (e) {
       e.stopPropagation(); var odd = document.getElementById('zdd'); if (odd) { odd.remove(); return; }
       var l = selList(), one = l.length === 1 ? l[0] : null, allUn = l.every(isUnread), items = [];
       items.push([allUn ? 'Mark as read' : 'Mark as unread', function () { l.forEach(function (c) { if (allUn) markSeen(c.phone); else { try { localStorage.setItem('zaply_unread_' + c.phone, '1'); } catch (e) {} } }); selClear(); renderChats(); }]);
-      var allW = Array.prototype.slice.call(document.querySelectorAll('#chatList .swrap')), allSel = allW.length > 0 && allW.every(function (w) { return !!selMap[w.getAttribute('data-ph')]; });
-      items.push([allSel ? 'Unselect all' : 'Select all', function () { if (allSel) { selClear(); return; } allW.forEach(function (w) { var ph = w.getAttribute('data-ph'); var c = allChats.filter(function (x) { return x.phone === ph; })[0]; if (c) selMap[ph] = c; }); selPaint(); }]);
+      items.push(['Select all', function () { Array.prototype.forEach.call(document.querySelectorAll('#chatList .swrap'), function (w) { var ph = w.getAttribute('data-ph'); var c = allChats.filter(function (x) { return x.phone === ph; })[0]; if (c) selMap[ph] = c; }); selPaint(); }]);
       items.push(['Lock chat', function () { l.forEach(function (c) { pcSet('clock', c.phone, true); unlockedChats[c.phone] = 0; }); selClear(); renderChats(); toast('Chat locked. It\u2019s now in Locked chats.', true); }]);
       var allF = l.every(function (c) { return favs().indexOf(c.phone) > -1; });
       items.push([allF ? 'Remove from favourites' : 'Add to favourites', function () { var a = favs(); l.forEach(function (c) { var i = a.indexOf(c.phone); if (allF) { if (i > -1) a.splice(i, 1); } else if (i < 0) a.push(c.phone); }); lsSet('zaply_favs', a); selClear(); renderChats(); }]);
       items.push(['Clear chat', function () { zconfirm('Clear all messages in ' + (l.length > 1 ? 'these chats' : 'this chat') + ' on this phone?', function () { var m = lsGet('zaply_cleared', {}); l.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_cleared', m); selClear(); renderChats(); toast('Chat cleared', true); }, 'Clear'); }]);
       if (one && !one.group) items.push(['Block', function () { zconfirm('Block ' + (one.name || one.phone) + '?', function () { chatCall('block', { phone: one.phone }).then(function () { selClear(); renderChats(); toast('Blocked', true); }).catch(function () { toast('Could not block'); }); }, 'Block'); }]);
-      if (one && one.group) { items.push(['Group info', function () { selClear(); openThread({ phone: one.phone, name: one.name, group: true }); }]); items.push(['Exit group', function () { zconfirm('Exit this group?', function () { chatCall('group_leave', { group: one.phone }).then(function () { selClear(); renderChats(); toast('You left the group', true); }).catch(function () { toast('Could not leave'); }); }, 'Exit'); }]); }
-      if (one && window.isChan && window.isChan(one)) {
-        var cph = one.phone, lc = (lsGet('zaply_channels', {}) || {})[cph], cm = (lsGet('zaply_cmed', {}) || {})[cph] || 0, hasMed = false;
-        var isOwn = lc ? lc.owner === myPhone : (one.owner === myPhone || one.admin === myPhone || !!one.is_owner || !!one.is_admin);
-        items = items.filter(function (it) { return /^(Mark as|Select all|Unselect all)/.test(it[0]); });
-        try { hasMed = (JSON.parse(localStorage.getItem('zaply_th_' + cph) || '[]') || []).some(function (x) { return x && typeof x.body === 'string' && x.body.indexOf('__media__') === 0 && (new Date(x.at || x.created_at || 0).getTime() || 0) > cm; }); } catch (e) {}
-        if (hasMed) items.push(['Clear Media Files', function () { zconfirm('Remove all photos, videos, voice notes and files from this channel on this phone?', function () { var mm = lsGet('zaply_cmed', {}); mm[cph] = Date.now(); lsSet('zaply_cmed', mm); try { localStorage.setItem('zaply_th_' + cph, JSON.stringify((JSON.parse(localStorage.getItem('zaply_th_' + cph) || '[]') || []).filter(function (x) { return !(x && typeof x.body === 'string' && x.body.indexOf('__media__') === 0); }))); } catch (e) {} selClear(); renderChats(); toast('Media files cleared', true); }, 'Clear'); }]);
-        items.push(['Channel info', function () { selClear(); openThread({ phone: cph, name: one.name, group: true, channel: true }); setTimeout(function () { try { openInfo(); } catch (e) {} }, 350); }]);
-        if (!isOwn) items.push(['Unfollow', function () { zconfirm('Unfollow ' + (one.name || 'this channel') + '?', function () { var cs = lsGet('zaply_channels', {}) || {}; delete cs[cph]; lsSet('zaply_channels', cs); var hm = lsGet('zaply_hidden', {}); hm[cph] = Date.now(); lsSet('zaply_hidden', hm); chatCall('channel_unfollow', { channel: String(cph).replace(/^c:/, '') }).catch(function () {}); selClear(); renderChats(); toast('Unfollowed', true); }, 'Unfollow'); }]);
-      }
+      if (one && one.group) { items.push(['Group info', function () { selClear(); openThread({ phone: one.phone, name: one.name, group: true }); }]); items.push(['Exit group', function () { zconfirm('Exit this group?', function () { chatCall('group_leave', { phone: one.phone }).then(function () { selClear(); renderChats(); toast('You left the group', true); }).catch(function () { toast('Could not leave'); }); }, 'Exit'); }]); }
       var d = mk('div', ''); d.id = 'zdd';
       items.forEach(function (it) { var b = mk('button', '', it[0]); b.addEventListener('click', function (ev) { ev.stopPropagation(); d.remove(); it[1](); }); d.appendChild(b); });
       document.body.appendChild(d);
       try { var bar = $('selBar'); if (bar) d.style.top = Math.max(0, bar.getBoundingClientRect().bottom - 8) + 'px'; } catch (x) {}
     });
     /* cleared chats: hide messages older than the clear time */
-    var _am2 = addMsg; addMsg = function (m) { try { if (openUser && m) { var t = (lsGet('zaply_cleared', {}) || {})[openUser.phone]; var at = new Date(m.at || m.created_at || 0).getTime(); if (t && at && at <= t) return null; var tmd = (lsGet('zaply_cmed', {}) || {})[openUser.phone]; if (tmd && at && at <= tmd && typeof m.body === 'string' && m.body.indexOf('__media__') === 0) return null; } } catch (e) {} return _am2(m); };
+    var _am2 = addMsg; addMsg = function (m) { try { if (openUser && m) { var t = (lsGet('zaply_cleared', {}) || {})[openUser.phone]; var at = new Date(m.at || m.created_at || 0).getTime(); if (t && at && at <= t) return null; } } catch (e) {} return _am2(m); };
     /* my small avatar for Add status: profile photo, or the first letter of my name (never a "+" from a phone number) */
     window.zMyStoryAv = function () {
       var P = {}; try { P = JSON.parse(localStorage.getItem('zaply_myprof') || 'null') || {}; } catch (e) {}
@@ -6537,132 +6358,13 @@ ZW|Zimbabwe|263`;
       if (users.length > 5) { var nx = mk('button', 'st-next', '\u203A'); nx.addEventListener('click', function () { sc.scrollBy({ left: 220, behavior: 'smooth' }); }); box.appendChild(nx); }
     };
     /* bottom bar: Status tab becomes Starred messages */
-    (function () { var t = $('tabStatus'); if (!t) return; var n = t.cloneNode(false); n.id = 'tabStatus'; n.innerHTML = '<span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></span><span class="nl">Wallet <small style="color:#25d366;font-weight:700;font-size:10px">Soon</small></span>'; t.parentNode.replaceChild(n, t); n.addEventListener('click', function () { toast('Wallet is coming soon', true); }); })();
+    (function () { var t = $('tabStatus'); if (!t) return; var n = t.cloneNode(false); n.id = 'tabStatus'; n.innerHTML = '<span class="ni"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></span><span class="nl">Starred</span>'; t.parentNode.replaceChild(n, t); n.addEventListener('click', function () { openKept(); }); })();
     try { renderChats(); } catch (e) {}
-
-    /* ================= Zanply Premium: the features really take effect ================= */
-    function premOn() { var st = lsGet('zaply_premium', null); return !!(st && st.active && (!st.until || new Date(st.until).getTime() > Date.now())); }
-    window.zPremOn = premOn;
-    function refreshPrem() {
-      try { if (!getToken()) return; } catch (e) { return; }
-      chatCall('premium_get', {}).then(function (r) { lsSet('zaply_premium', r); window.__premKnown = true; try { applyIcon(); } catch (e) {} try { decoAll(); } catch (e) {} }).catch(function () {});
-    }
-    setTimeout(refreshPrem, 2500);
-    setTimeout(function () {
-      var st = document.createElement('style');
-      st.textContent = '.vb::after{content:"";display:inline-block;width:1.05em;height:1.05em;margin-left:.3em;vertical-align:-.17em;background:url("data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#1877F2" d="' + ZI.verified + '"/></svg>') + '") center/contain no-repeat;-webkit-text-fill-color:initial}'
-        + '.zn-bold{font-weight:800!important}.zn-italic{font-style:italic!important}.zn-serif{font-family:Georgia,"Times New Roman",serif!important}.zn-script{font-family:"Brush Script MT","Segoe Script",cursive!important}.zn-mono{font-family:"Courier New",monospace!important}'
-        + '.zn-grad{background:linear-gradient(90deg,var(--zc1,#21c063),#2f8cf0);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent!important}'
-        + '@keyframes zdPop{0%,100%{transform:scale(.55);opacity:.25}50%{transform:scale(1);opacity:1}}@keyframes zdGrow{0%{width:6%}70%,100%{width:var(--w)}}@keyframes zdCyc{0%,100%{opacity:0;transform:translateY(6px)}20%,80%{opacity:1;transform:none}}'
-        + '@keyframes zdSpin{to{transform:rotate(360deg)}}@keyframes zdFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}'
-        + '.zdm{margin:14px auto 4px;width:min(300px,86%);height:150px;border-radius:18px;background:linear-gradient(135deg,#0f2a1e,#12202b);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;color:#fff;font:600 15px system-ui,sans-serif}'
-        + '.zdm .cap{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:11px;font-weight:500;opacity:.8}.zdm i{display:block}';
-      document.head.appendChild(st);
-    }, 0);
-    /* short looping demo clip for each Premium feature */
-    window.zDemo = function (title) {
-      var d = mk('div', 'zdm'), h = '', cap = '';
-      if (title === 'Stories (Status)') { for (var k = 0; k < 13; k++) h += '<i style="width:30px;height:30px;border-radius:50%;border:3px solid #21c063;margin:2px;animation:zdPop 2.4s ' + (k * 0.15) + 's infinite"></i>'; d.style.flexWrap = 'wrap'; d.style.padding = '10px 26px'; cap = 'Free: 2 per day  \u2192  Premium: up to 13'; }
-      else if (title === 'Doubled Limits') { h = '<div style="width:80%;line-height:2.1">Channels<div style="height:9px;border-radius:5px;background:rgba(255,255,255,.15)"><i style="height:9px;border-radius:5px;background:#f0793c;--w:100%;animation:zdGrow 3s infinite"></i></div>Groups<div style="height:9px;border-radius:5px;background:rgba(255,255,255,.15)"><i style="height:9px;border-radius:5px;background:#21c063;--w:100%;animation:zdGrow 3s .3s infinite"></i></div></div>'; cap = 'Free: 2 + 2  \u2192  Premium: 10+ each'; }
-      else if (title === 'Names and Profile Colours') { h = '<div style="position:relative;width:160px;height:40px"><b style="position:absolute;inset:0;text-align:center;font-size:28px;color:#f59e0b;font-style:italic;animation:zdCyc 4.5s infinite">Amina</b><b style="position:absolute;inset:0;text-align:center;font-size:28px;color:#ec4899;font-family:Georgia,serif;animation:zdCyc 4.5s 1.5s infinite">Amina</b><b style="position:absolute;inset:0;text-align:center;font-size:28px;color:#38bdf8;font-family:monospace;animation:zdCyc 4.5s 3s infinite">Amina</b></div>'; cap = 'Pick a name style and an exclusive colour'; }
-      else if (title === 'Zanply Verification Badge') { h = '<b style="font-size:28px">Amina</b><svg viewBox="0 0 24 24" width="30" height="30" style="animation:zdPop 2.2s infinite"><path fill="#1877F2" d="' + ZI.verified + '"/></svg>'; cap = 'The blue badge shows your account is real'; }
-      else if (title === 'Premium App Icons') { for (var q = 0; q < 3; q++) h += '<i style="width:54px;height:54px;border-radius:15px;background:url(\'' + iconUri(q) + '\') center/cover;animation:zdFloat 2.4s ' + (q * 0.4) + 's infinite;box-shadow:0 3px 10px rgba(0,0,0,.4)"></i>'; cap = 'Appearance > App Icons'; }
-      else if (title === 'Unlimited AI Usage') { h = '<b style="font-size:54px;color:#c58bff;animation:zdPop 2.4s infinite">\u221E</b>'; cap = 'Create and chat with AI without a daily limit'; }
-      else if (title === 'Wallpaper for Both Sides') { for (var w = 0; w < 2; w++) h += '<i style="width:62px;height:104px;border-radius:12px;background:linear-gradient(160deg,#7b5cf0,#21c063);border:3px solid #1d282e;position:relative;animation:zdFloat 2.6s ' + (w * 0.5) + 's infinite"><i style="position:absolute;left:8px;right:14px;bottom:12px;height:14px;border-radius:7px;background:rgba(255,255,255,.85)"></i></i>'; cap = 'You set it. They see it too'; }
-      d.innerHTML = h + '<span class="cap">' + cap + '</span>'; d.setAttribute('aria-hidden', 'true'); return d;
-    };
-    /* verified badge, name style and colour next to names */
-    var decoMem = lsGet('zaply_deco', {}) || {};
-    function decoFetch(phones) {
-      phones = phones.filter(function (p) { return /^\+\d{7,15}$/.test(p) && p !== myPhone && (!decoMem[p] || Date.now() - decoMem[p].t > 600000); }).slice(0, 100);
-      if (!phones.length) return Promise.resolve();
-      return chatCall('premium_bulk', { phones: phones }).then(function (r) {
-        var m = (r && r.premium) || {};
-        phones.forEach(function (p) { decoMem[p] = { t: Date.now(), v: m[p] ? 1 : 0, s: m[p] ? m[p].s || '' : '', c: m[p] ? m[p].c || '' : '' }; });
-        lsSet('zaply_deco', decoMem);
-      }).catch(function () {});
-    }
-    function decoApply(el, ph) {
-      if (!el) return;
-      el.classList.remove('vb', 'zn-bold', 'zn-italic', 'zn-serif', 'zn-script', 'zn-mono', 'zn-grad'); el.style.removeProperty('color'); el.style.removeProperty('--zc1');
-      if (!ph) return;
-      var d = ph === myPhone ? (premOn() ? { v: 1, s: lsGet('zaply_nstyle', ''), c: lsGet('zaply_ncolor', '') } : null) : decoMem[ph];
-      if (!d || !d.v) return;
-      el.classList.add('vb'); if (d.s) el.classList.add('zn-' + d.s);
-      if (d.c) { if (d.s === 'grad') el.style.setProperty('--zc1', d.c); else el.style.setProperty('color', d.c, 'important'); }
-    }
-    window.zDecoApply = decoApply;
-    function decoList() {
-      var ws = Array.prototype.slice.call(document.querySelectorAll('#chatList .swrap')), phs = [];
-      function paint() { ws.forEach(function (w) { var ph = w.getAttribute('data-ph'); decoApply(w.querySelector('.mid b'), ph && ph.charAt(0) === '+' ? ph : null); }); }
-      paint(); ws.forEach(function (w) { var ph = w.getAttribute('data-ph'); if (ph && ph.charAt(0) === '+') phs.push(ph); });
-      decoFetch(phs).then(paint);
-    }
-    function decoThread() {
-      var el = $('thName'); if (!el) return;
-      var ph = openUser && !openUser.group && openUser.phone && openUser.phone.charAt(0) === '+' ? openUser.phone : null;
-      decoApply(el, ph); if (ph) decoFetch([ph]).then(function () { if (openUser && openUser.phone === ph) decoApply(el, ph); });
-    }
-    function decoAll() { decoList(); decoThread(); }
-    var _rcDeco = renderChats; renderChats = function () { _rcDeco(); try { decoList(); } catch (e) {} };
-    var _rcSafe = renderChats, rcErrAt = 0;
-    renderChats = function () {
-      try { return _rcSafe.apply(this, arguments); }
-      catch (e) { chatSig = null; try { console.error(e); } catch (x) {} if (Date.now() - rcErrAt > 15000) { rcErrAt = Date.now(); try { toast('Chat list error: ' + ((e && e.message) || e), false, 8000); } catch (x) {} } }
-    };
-    try { new MutationObserver(function () { try { decoThread(); } catch (e) {} }).observe($('thName'), { childList: true, characterData: true, subtree: true }); } catch (e) {}
-    function openNameStyle() {
-      zOpenPage('Name style and colours', function (b) {
-        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
-        if (!premOn()) {
-          w.appendChild(mk('div', 'sub', 'Name styles and exclusive profile colours are part of Zanply Premium.'));
-          var go = mk('button', 'zpm-cta', 'See Zanply Premium'); go.addEventListener('click', function () { closeOv(); setTimeout(openPremium, 200); }); w.appendChild(go); return;
-        }
-        var u = lsGet('zaply_user', {}) || {}, P = cachedMyProf(), nm = P.name || u.name || u.phone || 'You', st = lsGet('zaply_nstyle', ''), co = lsGet('zaply_ncolor', '');
-        var pv = mk('div', '', nm); pv.style.cssText = 'text-align:center;font-size:28px;padding:20px 0;font-weight:600'; w.appendChild(pv);
-        function paintPv() { pv.className = 'vb' + (st ? ' zn-' + st : ''); pv.style.removeProperty('color'); pv.style.removeProperty('--zc1'); if (co) { if (st === 'grad') pv.style.setProperty('--zc1', co); else pv.style.setProperty('color', co, 'important'); } }
-        var sl = mk('div', 'zsec', 'Name style'); w.appendChild(sl); var sr = mk('div'); sr.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 16px'; w.appendChild(sr);
-        var cl = mk('div', 'zsec', 'Profile colour'); w.appendChild(cl); var cr = mk('div'); cr.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 20px'; w.appendChild(cr);
-        function drawS() { sr.innerHTML = ''; [['', 'Standard'], ['bold', 'Bold'], ['italic', 'Italic'], ['serif', 'Serif'], ['script', 'Script'], ['mono', 'Mono'], ['grad', 'Gradient']].forEach(function (x) { var c = mk('button', '', x[1]); c.style.cssText = 'border-radius:16px;padding:8px 14px;font-size:14px;border:2px solid ' + (st === x[0] ? '#21c063' : 'transparent') + ';background:rgba(128,128,128,.16);color:var(--text)'; c.addEventListener('click', function () { st = x[0]; drawS(); paintPv(); }); sr.appendChild(c); }); }
-        function drawC() { cr.innerHTML = ''; ['', '#21c063', '#2f8cf0', '#8b5cf6', '#ec4899', '#f59e0b', '#ef4444', '#14b8a6', '#f97316', '#eab308', '#38bdf8', '#e879f9'].forEach(function (x) { var c = mk('button'); c.setAttribute('aria-label', x || 'Default'); c.style.cssText = 'width:38px;height:38px;border-radius:19px;padding:0;border:3px solid ' + (co === x ? '#fff' : 'transparent') + ';background:' + (x || 'conic-gradient(#888,#ccc,#888)') + ';box-shadow:0 1px 5px rgba(0,0,0,.3)'; c.addEventListener('click', function () { co = x; drawC(); paintPv(); }); cr.appendChild(c); }); }
-        drawS(); drawC(); paintPv();
-        var sv = mk('button', 'zpm-cta', 'Save'); sv.addEventListener('click', function () {
-          sv.disabled = true;
-          chatCall('profile_style_set', { pstyle: st, pcolor: co }).then(function () { lsSet('zaply_nstyle', st); lsSet('zaply_ncolor', co); toast('Saved', true); closeOv(); }).catch(function (e) { sv.disabled = false; toast((e && e.message) || 'Could not save. Try again.'); });
-        }); w.appendChild(sv);
-      });
-    }
-    /* extra buttons on the Premium feature pages once the person is subscribed */
-    window.zFeatAction = function (f, c) {
-      if (!premOn()) return;
-      var t = f[1], act = null;
-      if (t === 'Names and Profile Colours') act = ['Choose name style and colours', openNameStyle];
-      else if (t === 'Premium App Icons') act = ['Open App Icons', openAppIcons];
-      else if (t === 'Wallpaper for Both Sides') act = ['How to set a wallpaper', function () { toast('Open a chat, tap the menu, then Chat theme.'); }];
-      else if (t === 'Zanply Verification Badge') act = ['See my badge', openVerification];
-      if (!act) return;
-      var bt = mk('button', 'zpm-cta', act[0]); bt.style.marginTop = '10px'; bt.addEventListener('click', function () { var fn = act[1]; closeOv(); setTimeout(fn, 200); }); c.appendChild(bt);
-    };
-    /* wallpaper for both sides: share it when Premium, and show the other person's wallpaper unless I chose my own */
-    window.zShareWall = function (ph, w) {
-      if (!premOn() || !ph || ph.charAt(0) !== '+') return;
-      if (w && w.css && w.css.length > 190000) return toast('This photo wallpaper stays on your phone only. Preset wallpapers are shared.');
-      chatCall('wall_set', { to: ph, css: w && w.css ? w.css : '', k: (w && w.k) || '' }).catch(function (e) { if (e && e.message) toast(e.message); });
-    };
-    function fetchPeerWall(ph) {
-      if (!ph || ph.charAt(0) !== '+') return;
-      chatCall('wall_get', { peer: ph }).then(function (r) {
-        var cur = lsGet('zaply_pwall_' + ph, null), n = r && r.wall;
-        if (n && n.css) { if (!cur || cur.css !== n.css) { lsSet('zaply_pwall_' + ph, n); if (openWith === ph) applyTheme(); } }
-        else if (cur) { try { localStorage.removeItem('zaply_pwall_' + ph); } catch (e) {} if (openWith === ph) applyTheme(); }
-      }).catch(function () {});
-    }
-    var _otW = openThread; openThread = function (u) { var r = _otW.apply(this, arguments); try { fetchPeerWall(u && u.phone); } catch (e) {} return r; };
 
     /* ================= chat screen look: date pills + call card ================= */
     function dayLabel(d) {
       var n = new Date(), y = new Date(Date.now() - 864e5), f = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-      return d.toDateString() === n.toDateString() ? 'Today' : d.toDateString() === y.toDateString() ? 'Yesterday' : f;
+      return d.toDateString() === n.toDateString() ? 'Today, ' + f : d.toDateString() === y.toDateString() ? 'Yesterday, ' + f : f;
     }
     var _am = addMsg;
     addMsg = function (m) {
@@ -7174,7 +6876,6 @@ ZW|Zimbabwe|263`;
       clearAuthStep();
       myPhone = user.phone; E2E.init(user.phone).catch(function () {}); try { RT.start(user.phone); } catch (e) {}
       try { allChats = JSON.parse(localStorage.getItem('zaply_chats') || '[]'); } catch (e) {}
-      try { chatSig = JSON.stringify(allChats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0, c.st || 0]; })); } catch (e) {}
       $('hello').textContent = 'Signed in as ' + user.name;
       $('pfName').textContent = user.name || ''; $('pfPhone').textContent = user.phone || ''; $('pfAv').textContent = (user.name || '#').charAt(0).toUpperCase();
       $('welcomeView').classList.add('hidden');
@@ -8175,10 +7876,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     function openVerification() {
       zOpenPage('Verification badge', function (b) {
         var w = mk('div', 'zdev'); b.appendChild(w); var i = mk('div'); i.innerHTML = '<svg viewBox="0 0 24 24" width="120" height="120" fill="' + VERIFIED_BLUE + '"><path d="' + ZI.verified + '"/></svg>'; w.appendChild(i);
-        w.appendChild(mk('h2', '', 'Zanply verification'));
-        w.appendChild(mk('p', '', 'The blue badge shows that an account is real. It protects against fake accounts, builds trust and makes your account look professional and official. It cannot be obtained for free, only with Zanply Premium.'));
-        if (premOn()) { w.appendChild(mk('p', '', 'Your account is verified. The badge shows next to your name while Zanply Premium is active.')); }
-        else { var go = mk('button', 'zpm-cta', 'Subscribe to Zanply Premium'); go.style.marginTop = '14px'; go.addEventListener('click', function () { closeOv(); setTimeout(openPremium, 200); }); w.appendChild(go); }
+        w.appendChild(mk('h2', '', 'Zanply verification')); w.appendChild(mk('p', '', 'A blue badge shows that an account is real. Verification is being set up and will be available soon.'));
       });
     }
 
@@ -8192,6 +7890,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         var hd = b.parentNode.querySelector('.zpg-h span'); hd.innerHTML = ''; hd.appendChild(document.createTextNode('New Group')); var sm = mk('small', '', 'up to 10,000 members'); sm.style.cssText = 'display:block;font-size:13px;font-weight:400;opacity:.65'; hd.appendChild(sm);
         var q = zin('Who would you like to add?', 'search', 40); q.style.cssText = 'margin:8px 16px;width:calc(100% - 32px);border-radius:999px'; b.appendChild(q);
         var list = mk('div'); b.appendChild(list);
+        var note = mk('div', 'zfoot', 'Zanply Premium: groups from 10,000 up to 10 million members.'); note.style.padding = '8px 20px 90px'; b.appendChild(note);
         function count() { return Object.keys(picked).filter(function (k) { return picked[k]; }).length; }
         function paint() {
           list.innerHTML = ''; var t = q.value.toLowerCase().trim();
@@ -8540,11 +8239,11 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   /* per-chat wallpaper */
   var _at = applyTheme;
   applyTheme = function () {
-    _at(); try { var w = openWith && (lsGet('zaply_cwall_' + openWith, null) || lsGet('zaply_pwall_' + openWith, null)), m = $('msgs'); if (w && w.css) { m.style.background = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; m.style.backgroundBlendMode = ''; } } catch (e) {}
+    _at(); try { var w = openWith && lsGet('zaply_cwall_' + openWith, null), m = $('msgs'); if (w && w.css) { m.style.background = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; m.style.backgroundBlendMode = ''; } } catch (e) {}
   };
   var _sw = setWall;
   setWall = function (w) {
-    if (window.__cw) { if (w) { if (!lsSet('zaply_cwall_' + window.__cw, w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_cwall_' + window.__cw); } catch (e) {} } try { window.zShareWall(window.__cw, w); } catch (e) {} applyTheme(); return true; }
+    if (window.__cw) { if (w) { if (!lsSet('zaply_cwall_' + window.__cw, w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_cwall_' + window.__cw); } catch (e) {} } applyTheme(); return true; }
     return _sw(w);
   };
   var _oa = openAppearance; openAppearance = function () { window.__cw = null; return _oa.apply(this, arguments); };
@@ -8562,55 +8261,30 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   Array.prototype.forEach.call($('plusMenu').querySelectorAll('button'), function (b) { var a = b.getAttribute('data-a'); if (a !== 'ai' && a !== 'loc') b.remove(); });
   $('btnCamera').addEventListener('click', function (e) {
     e.stopImmediatePropagation(); if (!openWith) return; camChat = openWith; $('plusMenu').classList.add('hidden');
-    window.zAttach();
+    sheet(function (d, close) {
+      var pill = mk('div', 'v3pill');
+      [['Gallery', P.img, 'fileImg'], ['Camera', P.cam, 'fileCam'], ['Files', P.file, 'fileAny']].forEach(function (x) {
+        var b = mk('button'); b.innerHTML = ico(x[1]) + '<span>' + x[0] + '</span>'; b.addEventListener('click', function () { close(); camChat = openWith; if (x[2] === 'fileCam') chatCamera(); else $(x[2]).click(); }); pill.appendChild(b);
+      }); d.appendChild(pill);
+    });
   }, true);
   $('btnPlus').addEventListener('click', function (e) {
     e.stopImmediatePropagation(); if (!openWith) return; camChat = openWith; $('plusMenu').classList.add('hidden'); $('emojiBox').classList.add('hidden');
-    window.zAttach();
+    var PIN = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>';
+    sheet(function (d, close) {
+      d.className = 'attsheet'; d.appendChild(mk('div', 'ath'));
+      var g = mk('div', 'attgrid');
+      function add(label, icon, color, fn) {
+        var b = mk('button'); b.innerHTML = '<span class="atic" style="background:' + color + '">' + icon + '</span><span class="atl">' + label + '</span>';
+        b.addEventListener('click', function () { close(); camChat = openWith; fn(); }); g.appendChild(b);
+      }
+      add('Camera', ico(P.cam), '#ef5a3c', function () { chatCamera(); });
+      add('Gallery', ico(P.img), '#7b5cf0', function () { $('fileImg').click(); });
+      add('Files', ico(P.file), '#2f8cf0', function () { $('fileAny').click(); });
+      add('Location', PIN, '#1fa855', function () { var src = $('plusMenu').querySelector('button[data-a="loc"]'); if (src) src.click(); });
+      d.appendChild(g);
+    });
   }, true);
-
-  /* Attach sheet (like Telegram): Camera / Photos / Videos tiles and a Gallery | File | Location bar.
-     Photos and Videos open a fresh single-file picker (kept alive and attached to the page so Android cannot drop it). */
-  (function () {
-    var fi = $('fileImg');
-    var VIDP = 'M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z';
-    var PINP = 'M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z';
-    function chatPick(accept) {
-      var chat = openWith || camChat; if (!chat) { toast('Open a chat first'); return; }
-      var f = document.createElement('input'); f.type = 'file'; f.accept = accept;
-      f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
-      window.__zChatPick = f; document.body.appendChild(f); try { window.zWatchPicker(f, 'Chat'); } catch (e) {}
-      function fin() { setTimeout(function () { try { f.remove(); } catch (e) {} if (window.__zChatPick === f) window.__zChatPick = null; }, 1500); }
-      f.addEventListener('change', function () {
-        var file = f.files && f.files[0]; fin(); if (!file) return;
-        var c = openWith || chat; cedQ = [];
-        toast('Opening ' + (isVidF(file) ? 'video' : 'photo') + '\u2026');
-        (isVidF(file) ? openVideoEditor : openEditor)(file, c);
-      });
-      f.addEventListener('cancel', fin);
-      f.click();
-    }
-    window.zAttach = function () {
-      if (!openWith) return; camChat = openWith;
-      sheet(function (d, close) {
-        d.className = 'attsheet tg'; d.appendChild(mk('div', 'ath'));
-        var g = mk('div', 'tggrid');
-        function tile(cls, icon, label, fn) { var b = mk('button', cls); b.innerHTML = ico(icon) + '<span>' + label + '</span>'; b.addEventListener('click', function () { close(); camChat = openWith; fn(); }); g.appendChild(b); }
-        tile('tgcam', P.cam, 'Camera', function () { chatCamera(); });
-        tile('tgph', P.img, 'Photos', function () { chatPick('image/*'); });
-        tile('tgvid', VIDP, 'Videos', function () { chatPick('video/*'); });
-        d.appendChild(g);
-        d.appendChild(mk('div', 'tghint', 'Tap Gallery to pick photos and videos together'));
-        var bar = mk('div', 'tgbar');
-        function tab(cls, icon, label, fn) { var b = mk('button', cls); b.innerHTML = ico(icon) + '<span>' + label + '</span>'; b.addEventListener('click', function () { if (!fn) return; close(); camChat = openWith; fn(); }); bar.appendChild(b); }
-        tab('on', P.img, 'Gallery', function () { chatPick('image/*,video/*'); });
-        tab('', P.file, 'File', function () { $('fileAny').click(); });
-        tab('', PINP, 'Location', function () { var src = $('plusMenu').querySelector('button[data-a="loc"]'); if (src) src.click(); });
-        d.appendChild(bar);
-      });
-    };
-    fi.click = function () { window.zAttach(); };
-  })();
 
   /* ---------- Info page ---------- */
   function contactText() { return (savedName(openUser.phone) || openUser.name || '') + ' ' + openUser.phone; }
@@ -8907,29 +8581,18 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   function ico(p, s, fill) { return '<svg viewBox="0 0 24 24" width="' + (s || 24) + '" height="' + (s || 24) + '" fill="' + (fill || 'currentColor') + '"><path d="' + p + '"/></svg>'; }
   function ibtn(cls, p, label, s) { var b = mk('button', cls); b.setAttribute('aria-label', label); b.innerHTML = ico(p, s); return b; }
 
-  /* ---------- diagnostics: problems are written to the bell (Notifications) so the cause can be read ---------- */
-  var _dg = {}, lastStatusAt = 0;
   /* log lines are kept on the phone and shown live in the menu: Check notifications > App log */
+  var _dg = {}, lastStatusAt = 0;
   function zlog(msg, bad) {
     try {
       var a = lsGet('zaply_diaglog', []); if (!Array.isArray(a)) a = [];
       var last = a[a.length - 1], n = Date.now();
-      if (last && last.m === msg) { last.c = (last.c || 1) + 1; last.t = n; }
-      else a.push({ t: n, m: msg, b: bad ? 1 : 0, c: 1 });
+      if (last && last.m === msg) { last.c = (last.c || 1) + 1; last.t = n; } else a.push({ t: n, m: msg, b: bad ? 1 : 0, c: 1 });
       lsSet('zaply_diaglog', a.slice(-80));
     } catch (e) {}
   }
   function diag(msg) { try { var n = Date.now(); if (_dg[msg] && n - _dg[msg] < 60000) return; _dg[msg] = n; zlog(msg, true); } catch (e) {} }
-  window.zDiag = diag; window.zLog = zlog;
-  window.zWatchPicker = function (f, label) {
-    var got = false, blurred = false;
-    function onBlur() { blurred = true; }
-    function onFocus() { window.removeEventListener('focus', onFocus); setTimeout(function () { if (!got) { got = true; diag(label + ' picker closed but no file reached the app. Android did not hand the chosen file to the page.'); } }, 1800); }
-    window.addEventListener('blur', onBlur); window.addEventListener('focus', onFocus);
-    f.addEventListener('change', function () { got = true; var x = f.files && f.files[0]; (x ? zlog : diag)(x ? label + ' picker returned: ' + (x.name || 'file') + ' (' + (x.type || 'unknown type') + ', ' + Math.round((x.size || 0) / 1024) + ' KB)' : label + ' picker returned an empty selection.'); });
-    f.addEventListener('cancel', function () { got = true; });
-    setTimeout(function () { window.removeEventListener('blur', onBlur); if (!blurred && !got) { got = true; diag(label + ' picker never opened the phone file chooser. The app wrapper may block file choosers or lack storage/photo permission.'); } }, 6000);
-  };
+  window.zLog = zlog; window.zDiag = diag;
   window.addEventListener('error', function (e) { var m = (e && e.message) || ''; if (!m || /ResizeObserver|^Script error/i.test(m)) return; diag('JS error: ' + m + (e.lineno ? ' (line ' + e.lineno + ')' : '')); });
   window.addEventListener('unhandledrejection', function (e) { var r = e && e.reason, m = (r && (r.message || r.name)) || String(r || ''); if (m) diag('Promise error: ' + m); });
 
@@ -8951,7 +8614,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
       if (!x || !x.id || !at || ex <= now) return;
       var ty = (x.type === 'image' || x.type === 'video' || x.type === 'audio') ? x.type : 'text';
       var it = { id: x.id, phone: String(x.phone || x.user || ''), name: x.name || '', type: ty, text: String(x.text || ''), url: okUrl(x.url) ? x.url : '',
-        bg: /^#[0-9a-f]{6}$/i.test(x.bg || '') ? x.bg : BG[0], at: at, music: okUrl(x.music) ? x.music : '', mname: String(x.music_name || ''), likes: +x.likes || 0, liked: !!x.liked, views: +x.views || 0, seen: !!x.seen || !!seenMap[x.id] };
+        bg: /^#[0-9a-f]{6}$/i.test(x.bg || '') ? x.bg : BG[0], at: at, likes: +x.likes || 0, liked: !!x.liked, views: +x.views || 0, seen: !!x.seen || !!seenMap[x.id] };
       if (ty !== 'text' && !it.url) return;
       if (x.mine || (myPhone && it.phone === myPhone)) { it.mine = true; mine.push(it); }
       else (by[it.phone] = by[it.phone] || { phone: it.phone, name: it.name, items: [] }).items.push(it);
@@ -8972,11 +8635,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     S.busy = true; paint(); zlog('Status: loading...');
     return chatCall('status_list', {}).then(function (r) { norm(r); S.err = ''; S.t = Date.now(); S.owner = myPhone; S.loaded = true; })
       .catch(function (e) { S.err = (e && e.message) || 'Could not load status updates.'; })
-      .then(function () {
-        S.busy = false; lastStatusAt = Date.now(); zlog('Status: loaded (' + S.users.length + ' contacts, ' + S.mine.length + ' mine' + (S.err ? ', ERROR: ' + S.err : '') + ')', !!S.err); try { renderStories(); } catch (e) {} paint();
-        if (S.err) diag('Status fetch failed: ' + S.err);
-        try { if (curTab === 'chats') { if (chatListBlank()) diag('Chat list was blank when Status finished reloading (' + (S.err ? 'status error' : 'status ok') + '). It was redrawn.'); renderChats(); } } catch (e) { diag('Chat list redraw after Status failed: ' + ((e && e.message) || e)); }
-      });
+      .then(function () { S.busy = false; lastStatusAt = Date.now(); zlog('Status: loaded (' + S.users.length + ' contacts, ' + S.mine.length + ' mine' + (S.err ? ', ERROR: ' + S.err : '') + ')', !!S.err); try { renderStories(); } catch (e) {} paint(); });
   }
 
   /* ---------- Status tab ---------- */
@@ -8984,9 +8643,10 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   function ensureFabs() {
     if (fabs) return fabs;
     fabs = mk('div', 'zst-fabs hidden');
-    var cb = ibtn('zst-fab main', IC.camPlus, 'Add status', 28);
+    var pb = ibtn('zst-fab', IC.pen, 'Text status', 24), cb = ibtn('zst-fab main', IC.camPlus, 'Add status', 28);
+    pb.addEventListener('click', function () { composer(); });
     cb.addEventListener('click', openSheet);
-    fabs.appendChild(cb); document.body.appendChild(fabs);
+    fabs.appendChild(pb); fabs.appendChild(cb); document.body.appendChild(fabs);
     return fabs;
   }
   function syncFabs() { ensureFabs().classList.toggle('hidden', curTab !== 'status'); }
@@ -9018,107 +8678,12 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   function pick(accept, capture, cb) {
     var f = document.createElement('input'); f.type = 'file'; f.accept = accept; if (capture) f.setAttribute('capture', 'environment');
     f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
-    window.__zPick = f; document.body.appendChild(f); /* kept alive and attached so Android cannot drop it before you choose */
+    window.__zPick = f; document.body.appendChild(f); /* kept attached so Android cannot drop it before you choose */
     function fin() { setTimeout(function () { try { f.remove(); } catch (e) {} if (window.__zPick === f) window.__zPick = null; }, 1500); }
-    try { window.zWatchPicker(f, 'Status'); } catch (e) {}
-    f.addEventListener('change', function () { var file = f.files && f.files[0]; fin(); if (file) { try { cb(file); } catch (e) { diag('Status picker: opening the editor failed: ' + ((e && e.message) || e)); } } else toast('No file was chosen.'); });
-    f.addEventListener('cancel', fin);
+    zlog('Status picker opened (' + accept + ')');
+    f.addEventListener('change', function () { var file = f.files && f.files[0]; fin(); if (file) { zlog('Status picker returned: ' + (file.name || 'file') + ' (' + (file.type || '?') + ', ' + Math.round((file.size || 0) / 1024) + ' KB)'); try { cb(file); } catch (e) { diag('Status: opening the editor failed: ' + ((e && e.message) || e)); } } else { zlog('Status picker returned no file', true); toast('No file was chosen.'); } });
+    f.addEventListener('cancel', function () { zlog('Status picker cancelled'); fin(); });
     f.click();
-  }
-  function musicSearch(cb) {
-    zOpenPage('Add music', function (b) {
-      var inp = mk('input'); inp.type = 'search'; inp.placeholder = 'Search songs or artists'; inp.style.cssText = 'width:calc(100% - 32px);margin:12px 16px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:16px;box-sizing:border-box';
-      var res = mk('div', ''), own = mk('button', 'link', 'Use a song file from this phone instead'); own.style.cssText = 'display:block;margin:0 16px 6px';
-      own.addEventListener('click', function () { closeOv(); pick('audio/*', false, function (f) { if (cb) return cb(f, (f.name || 'Music').replace(/\.[^.]+$/, '')); setTimeout(function () { audioComposer(f, 'music'); }, 300); }); });
-      b.appendChild(inp); b.appendChild(own); b.appendChild(res);
-      var tm = 0, aud = null;
-      function stop() { if (aud) { try { aud.pause(); } catch (e) {} aud = null; } }
-      function say(t) { res.innerHTML = ''; res.appendChild(mk('div', 'zempty', t)); }
-      function search() {
-        var q = inp.value.trim(); if (q.length < 2) { res.innerHTML = ''; return; } say('Searching\u2026');
-        fetch('https://itunes.apple.com/search?media=music&entity=song&limit=30&term=' + encodeURIComponent(q)).then(function (r) { return r.json(); }).then(function (d) {
-          var L = (d.results || []).filter(function (x) { return x.previewUrl; }); if (!L.length) return say('No songs found');
-          res.innerHTML = '';
-          L.forEach(function (x) {
-            var r = mk('div', 'row'), im = mk('img'), mid = mk('div', 'mid'), pl = mk('button', '', '\u25B6'); r.style.padding = '10px 16px';
-            im.src = x.artworkUrl60; im.style.cssText = 'width:48px;height:48px;border-radius:8px;margin-right:12px;flex:none';
-            mid.appendChild(mk('b', '', x.trackName)); mid.appendChild(mk('span', '', x.artistName));
-            pl.style.cssText = 'border:0;background:none;color:var(--text);font-size:20px;padding:8px 12px';
-            pl.addEventListener('click', function (e) { e.stopPropagation(); stop(); aud = new Audio(x.previewUrl); aud.play().catch(function () {}); });
-            r.appendChild(im); r.appendChild(mid); r.appendChild(pl);
-            r.addEventListener('click', function () {
-              stop(); toast('Getting song\u2026');
-              fetch(x.previewUrl).then(function (rr) { return rr.blob(); }).then(function (bl) {
-                var f = new File([bl], (x.trackName + ' - ' + x.artistName).slice(0, 60) + '.m4a', { type: bl.type || 'audio/mp4' });
-                closeOv(); if (cb) return cb(f, x.trackName + ' \u2013 ' + x.artistName); setTimeout(function () { audioComposer(f, 'music'); }, 300);
-              }).catch(function () { toast('Could not load that song. Try another one.'); });
-            });
-            res.appendChild(r);
-          });
-        }).catch(function () { say('Could not search. Check your internet and try again.'); });
-      }
-      inp.addEventListener('input', function () { clearTimeout(tm); tm = setTimeout(search, 450); });
-      setTimeout(function () { try { inp.focus(); } catch (e) {} }, 300);
-    });
-  }
-  /* live camera for Status: opens the phone camera so the person can take a photo or record a video on the spot */
-  function statusCamera() {
-    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
-      zsheet('Camera', [['Take photo', function () { pick('image/*', true, picked); }], ['Record video', function () { pick('video/*', true, picked); }]]); return;
-    }
-    var stream = null, face = 'environment', mode = 'photo', mr = null, chunks = [], tick = 0, recording = false, fin = false;
-    function stopStream() { if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; } }
-    function cleanup() { clearInterval(tick); try { if (mr && mr.state !== 'inactive') mr.stop(); } catch (e) {} stopStream(); }
-    zOpenPage('Camera', function (b) {
-      b.style.cssText += ';display:flex;flex-direction:column;background:#000';
-      var v = document.createElement('video'); v.autoplay = true; v.muted = true; v.setAttribute('playsinline', ''); v.style.cssText = 'width:100%;flex:1;min-height:0;object-fit:cover;background:#000';
-      var msg = mk('div', 'zerr'); msg.style.cssText = 'color:#fff;padding:0 20px;text-align:center';
-      var modes = mk('div'); modes.style.cssText = 'display:flex;justify-content:center;gap:10px;padding:10px 0 0';
-      var bp = mk('button', '', 'Photo'), bv = mk('button', '', 'Video');
-      [bp, bv].forEach(function (x) { x.style.cssText = 'border:0;border-radius:16px;padding:7px 16px;font-size:14px;font-weight:600;color:#fff;background:rgba(255,255,255,.16)'; modes.appendChild(x); });
-      var bar = mk('div'); bar.style.cssText = 'display:flex;justify-content:space-around;align-items:center;padding:14px 0 26px';
-      var tm = mk('span', '', ''); tm.style.cssText = 'color:#fff;font-size:15px;width:44px;text-align:center';
-      var flip = mk('button'); flip.innerHTML = ico(IC.cam, 30, '#fff'); flip.style.cssText = 'background:none;border:0;width:44px'; flip.setAttribute('aria-label', 'Switch camera');
-      var shot = mk('button'); shot.setAttribute('aria-label', 'Take picture');
-      function paintShot() { shot.style.cssText = 'width:70px;height:70px;border-radius:50%;border:5px solid #fff;background:' + (recording ? '#e53935' : mode === 'video' ? 'rgba(229,57,53,.55)' : 'rgba(255,255,255,.25)'); }
-      function paintModes() { bp.style.background = mode === 'photo' ? '#21c063' : 'rgba(255,255,255,.16)'; bv.style.background = mode === 'video' ? '#21c063' : 'rgba(255,255,255,.16)'; paintShot(); }
-      bar.appendChild(tm); bar.appendChild(shot); bar.appendChild(flip); b.appendChild(v); b.appendChild(msg); b.appendChild(modes); b.appendChild(bar);
-      function ok(s) { stream = s; v.srcObject = s; v.style.transform = face === 'user' ? 'scaleX(-1)' : ''; }
-      function start() {
-        stopStream(); msg.textContent = '';
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: face }, audio: mode === 'video' }).then(ok)
-          .catch(function () { if (mode === 'video') return navigator.mediaDevices.getUserMedia({ video: { facingMode: face }, audio: false }).then(ok); throw new Error('x'); })
-          .catch(function () { msg.textContent = 'Camera is not allowed. Turn on Camera for Zanply in your phone settings.'; });
-      }
-      function setMode(m) { if (recording) return; mode = m; paintModes(); start(); }
-      bp.addEventListener('click', function () { setMode('photo'); }); bv.addEventListener('click', function () { setMode('video'); });
-      flip.addEventListener('click', function () { if (recording) return; face = face === 'user' ? 'environment' : 'user'; start(); });
-      function stopRec() { if (!recording) return; fin = true; recording = false; clearInterval(tick); tm.textContent = ''; paintShot(); try { mr.stop(); } catch (e) {} }
-      shot.addEventListener('click', function () {
-        if (!stream) return;
-        if (mode === 'photo') {
-          if (!v.videoWidth) return;
-          var c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; var g = c.getContext('2d');
-          if (face === 'user') { g.translate(c.width, 0); g.scale(-1, 1); } g.drawImage(v, 0, 0);
-          c.toBlob(function (bl) { if (!bl) return; var f = new File([bl], 'camera.jpg', { type: 'image/jpeg' }); cleanup(); closeOv(); picked(f); }, 'image/jpeg', 0.92);
-          return;
-        }
-        if (recording) return stopRec();
-        if (!window.MediaRecorder) return toast('Video recording is not supported on this phone');
-        var mt = ['video/mp4', 'video/webm;codecs=vp8,opus', 'video/webm'].filter(function (t) { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } })[0] || '';
-        try { mr = new MediaRecorder(stream, mt ? { mimeType: mt } : undefined); } catch (e) { return toast('Video recording is not supported on this phone'); }
-        chunks = []; fin = false;
-        mr.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
-        mr.onstop = function () {
-          if (!fin || !chunks.length) return;
-          var type = String(mr.mimeType || mt || 'video/webm').split(';')[0], f = new File(chunks, 'status.' + (/mp4/.test(type) ? 'mp4' : 'webm'), { type: type });
-          cleanup(); closeOv(); picked(f);
-        };
-        mr.start(); recording = true; var t0 = Date.now(); paintShot();
-        tick = setInterval(function () { var sec = Math.floor((Date.now() - t0) / 1000); tm.textContent = Math.floor(sec / 60) + ':' + ('0' + (sec % 60)).slice(-2); if (sec >= 30) stopRec(); }, 250);
-      });
-      paintModes(); start();
-    }, cleanup);
   }
   function openSheet() {
     var bd = mk('div', 'zsh-bd'), sh = mk('div', 'zsh');
@@ -9128,12 +8693,12 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     function tile(label, p, fn) { var b = mk('button', 'zsh-tile'); b.innerHTML = ico(p, 34); b.appendChild(mk('span', '', label)); b.addEventListener('click', fn); return b; }
     var chips = mk('div', 'zsh-chips');
     chips.appendChild(chip('Text', IC.pen, function () { closeOv(); setTimeout(composer, 300); }));
-    chips.appendChild(chip('Music', IC.music, function () { closeOv(); setTimeout(musicSearch, 300); }));
+    chips.appendChild(chip('Music', IC.music, function () { closeOv(); pick('audio/*', false, function (f) { setTimeout(function () { audioComposer(f, 'music'); }, 300); }); }));
     chips.appendChild(chip('Voice', IC.mic, function () { closeOv(); setTimeout(voiceRec, 300); }));
     sh.appendChild(chips);
     sh.appendChild(mk('div', 'zsh-lbl', 'Pictures and videos'));
     var g = mk('div', 'zsh-grid');
-    g.appendChild(tile('Camera', IC.cam, function () { closeOv(); setTimeout(statusCamera, 250); }));
+    g.appendChild(tile('Camera', IC.cam, function () { closeOv(); pick('image/*,video/*', true, picked); }));
     g.appendChild(tile('Photos', IC.photo, function () { closeOv(); pick('image/*', false, picked); }));
     g.appendChild(tile('Videos', IC.video, function () { closeOv(); pick('video/*', false, picked); }));
     sh.appendChild(g);
@@ -9143,29 +8708,17 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     pushOv(function () { bd.remove(); sh.remove(); });
   }
   function picked(file) {
-    zlog('Status: opening ' + (isVid(file) ? 'video' : 'photo') + ' editor for ' + (file.name || 'file'));
-    function openIt(retry) {
-      try {
-        if (isVid(file)) {
-          if (file.size > VID_MAX) return toast('That video is too big. The limit is 30 MB.');
-          if (window.zOpenVideoEditor) window.zOpenVideoEditor(file, '__status__'); else videoComposer(file);
-        } else if (window.zOpenEditor) window.zOpenEditor(file, '__status__');
-        else { diag('Status: the photo editor function is missing'); toast('Photo editor is not ready. Try again.'); return; }
-      } catch (e) { diag('Status: editor crashed: ' + ((e && e.message) || e)); return; }
-      setTimeout(function () {
-        var ce = $('camEd');
-        if (ce && ce.classList.contains('hidden')) {
-          if (!retry) { diag('Status: editor closed itself right after opening. Opening it again.'); openIt(true); }
-          else diag('Status: editor is still NOT visible after a second try');
-        } else zlog('Status: editor is open');
-      }, retry ? 1500 : 900);
-    }
     var waits = 0;
     function go() {
-      /* the sheet closes with history.back(); Android can deliver that late (after the file chooser), and it would close the editor again */
+      /* the sheet closes with history.back(); Android can deliver it late and it would close the editor again */
       if (typeof popSkip !== 'undefined' && popSkip > 0 && waits++ < 30) return setTimeout(go, 100);
       if (waits > 0) zlog('Status: waited ' + (waits * 100) + 'ms for the back-step to settle');
-      openIt(false);
+      zlog('Status: opening ' + (isVid(file) ? 'video' : 'photo') + ' editor');
+      try {
+        if (isVid(file)) videoComposer(file);
+        else if (window.zOpenEditor) window.zOpenEditor(file, '__status__');
+        else { diag('Status: the photo editor function is missing'); toast('Photo editor is not ready. Try again.'); }
+      } catch (e) { diag('Status: editor crashed: ' + ((e && e.message) || e)); }
     }
     setTimeout(go, 300);
   }
@@ -9178,34 +8731,19 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
       return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/' + kind + '/upload', { method: 'POST', body: fd }).then(function (r) { return r.json(); });
     }).then(function (j) { if (!j || !j.secure_url) throw new Error((j && j.error && j.error.message) || 'Upload failed. Try again.'); return j.secure_url; });
   }
-  function postedNote() {
-    var n = mk('div', 'zst-pop'); n.appendChild(mk('span', '', 'Your Status has been posted successfully.'));
-    var v = mk('button', '', 'View'); v.style.cssText = 'margin-left:14px;border:0;background:none;color:#25d366;font-weight:700;font-size:15px;padding:4px 2px';
-    v.addEventListener('click', function () { n.remove(); showTab('status'); }); n.appendChild(v); document.body.appendChild(n);
-    setTimeout(function () { if (n.parentNode) n.remove(); }, 7000);
-  }
-  /* the editor closes at once and the status uploads in the background, so the person can keep using the app */
   function addStatus(job) {
-    var pop = mk('div', 'zst-pop'); pop.innerHTML = '<i></i><span>Posting status\u2026</span>'; document.body.appendChild(pop);
-    closeOv(); zlog('Status: posting...');
+    var pop = mk('div', 'zst-pop'); pop.innerHTML = '<i></i><span>Adding status\u2026</span>'; document.body.appendChild(pop);
+    var t0 = Date.now();
     return job().then(function () {
-      zlog('Status: posted OK'); pop.remove(); postedNote(); return load(true).catch(function () {});
-    }).catch(function (e) { pop.remove(); diag('Status: post FAILED: ' + ((e && e.message) || e)); toast((e && e.message) || 'Could not post your status. Try again.'); });
+      var w = 4000 - (Date.now() - t0); return w > 0 ? new Promise(function (r) { setTimeout(r, w); }) : 0;
+    }).then(function () {
+      pop.remove(); closeOv(); showTab('status'); toast('Status added', true);
+      return load(true).catch(function () {});
+    }).catch(function (e) { pop.remove(); throw e; });
   }
-  window.zStatusPublishImage = function (blob, caption, music) {
-    return addStatus(function () {
-      return upload(blob, 'image').then(function (url) {
-        if (!music || !music.file) return { url: url };
-        if (music.file.size > AUD_MAX) throw new Error('That song file is too big. The limit is 15 MB.');
-        return upload(music.file, 'video').then(function (mu) { return { url: url, mu: mu }; });
-      }).then(function (r) { var q = { type: 'image', url: r.url, text: caption || '' }; if (r.mu) { q.music = r.mu; q.music_name = music.name || 'Music'; } return chatCall('status_post', q); });
-    });
+  window.zStatusPublishImage = function (blob, caption) {
+    return addStatus(function () { return upload(blob, 'image').then(function (url) { return chatCall('status_post', { type: 'image', url: url, text: caption || '' }); }); });
   };
-  window.zStatusPublishVideo = function (file, caption) {
-    if (file.size > VID_MAX) { toast('That video is too big. The limit is 30 MB.'); return Promise.resolve(); }
-    return addStatus(function () { return upload(file, 'video').then(function (url) { return chatCall('status_post', { type: 'video', url: url, text: caption || '' }); }); });
-  };
-  window.zStatusMusicPick = function (cb) { musicSearch(cb); };
   function postMedia(type, blob, caption, btn) {
     btn.disabled = true;
     addStatus(function () { return upload(blob, 'video').then(function (url) { return chatCall('status_post', { type: type, url: url, text: caption || '' }); }); })
@@ -9345,13 +8883,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
       var nm = mk('div'); nm.appendChild(mk('b', '', u.mine ? 'My status' : nameFor(u))); nm.appendChild(mk('small', '', ago(it.at)));
       var cx = ibtn('', IC.x, 'Close', 26); cx.addEventListener('click', closeOv); hd.appendChild(av); hd.appendChild(nm); hd.appendChild(cx);
       body.innerHTML = ''; body.className = 'zst-body'; body.style.background = '';
-      if (it.type === 'image') {
-        var im = document.createElement('img'); im.src = it.url; im.alt = ''; body.appendChild(im); if (it.text) body.appendChild(mk('div', 'zst-cap', it.text));
-        if (it.music) {
-          var mu = document.createElement('audio'); mu.src = it.music; mu.loop = true; mv = mu; try { mu.play().catch(function () {}); } catch (e) {}
-          var mtag = mk('div', '', '\u266A ' + (it.mname || 'Music')); mtag.style.cssText = 'position:absolute;top:8px;left:12px;right:12px;text-align:center;color:#fff;font-size:13px;text-shadow:0 1px 3px rgba(0,0,0,.7);pointer-events:none'; body.appendChild(mtag);
-        }
-      }
+      if (it.type === 'image') { var im = document.createElement('img'); im.src = it.url; im.alt = ''; body.appendChild(im); if (it.text) body.appendChild(mk('div', 'zst-cap', it.text)); }
       else if (media) {
         var m;
         if (it.type === 'video') { m = document.createElement('video'); m.setAttribute('playsinline', ''); m.src = it.url; body.appendChild(m); }
@@ -9413,12 +8945,8 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   };
 
   /* ---------- stories strip on the chat list ---------- */
-  var stSig = '';
   renderStories = function () {
-    var box = $('storyStrip'); if (!box) return;
-    var sig = JSON.stringify([myPhone, S.mine.length, S.users.map(function (u) { return [u.phone, u.unseen ? 1 : 0]; })]);
-    if (sig === stSig && box.firstChild) return; stSig = sig;
-    box.innerHTML = '';
+    var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
     var sc = mk('div', 'st-scroll'); box.appendChild(sc);
     var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })); add.appendChild(mk('span', 'st-plus', '+'));
     add.classList.toggle('has', S.mine.length > 0);
@@ -9434,50 +8962,26 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   var _show = showTab;
   showTab = function (t) { _show(t); if (t === 'status') { paint(); load(true); } else if (t === 'chats') load(false); syncFabs(); };
 
-  var bootT = setInterval(function () { if (getToken() && myPhone) { clearInterval(bootT); load(true); } }, 800);
+  var boot = setInterval(function () { if (getToken() && myPhone) { clearInterval(boot); load(true); } }, 800);
   setInterval(function () { if (!document.hidden && getToken() && myPhone) load(true); }, 60000);
-  document.addEventListener('visibilitychange', function () { zlog('App ' + (document.hidden ? 'went to background' : 'came to foreground')); if (!document.hidden) load(false); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) load(false); });
   try { ensureFabs(); syncFabs(); if (curTab === 'status') paint(); } catch (e) {}
 
+  /* ---------- live log + blank-list safety ---------- */
   var _rcLog = renderChats;
   renderChats = function () {
     var r = _rcLog.apply(this, arguments);
     try {
       var n = document.querySelectorAll('#chatList .swrap').length, why = [];
       (allChats || []).forEach(function (c) {
-        if (!c) return; var r = '';
-        try { if (isLocked(c.phone)) r = 'LOCKED'; else if (isArchived(c)) r = 'ARCHIVED'; else if (isHidden(c)) r = 'DELETED-HIDDEN (chat at ' + new Date(c.at).toLocaleString() + ', hidden since ' + new Date(lsGet('zaply_hidden', {})[c.phone]).toLocaleString() + ')'; } catch (e) {}
-        if (r) why.push((c.name || c.phone) + ': ' + r);
+        if (!c) return; var x = '';
+        try { if (isLocked(c.phone)) x = 'LOCKED'; else if (isArchived(c)) x = 'ARCHIVED'; else if (isHidden(c)) x = 'DELETED-HIDDEN'; } catch (e) {}
+        if (x) why.push((c.name || c.phone) + ': ' + x);
       });
       zlog('Chat list drawn: ' + n + ' rows, ' + (allChats ? allChats.length : 0) + ' chats known, filter ' + filt + (why.length ? '. Not shown -> ' + why.join(' | ') : ''), n === 0 && allChats && allChats.length > 0 && filt === 'all');
     } catch (e) {}
     return r;
   };
-  function hm(t) { var d = new Date(t); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2); }
-  function paintLive() {
-    try {
-      var bx = $('diagBox'); if (!bx || bx.classList.contains('hidden')) return;
-      var a = lsGet('zaply_diaglog', []); if (!Array.isArray(a)) a = [];
-      var out = $('diagLiveOut'), atEnd = out.scrollTop + out.clientHeight >= out.scrollHeight - 30;
-      out.textContent = a.length ? a.map(function (e) { return hm(e.t) + (e.b ? ' \u274C ' : '  ') + e.m + (e.c > 1 ? '  (x' + e.c + ')' : ''); }).join('\n') : 'Nothing logged yet. Use the app (open Status, pick a photo) and watch this fill in.';
-      $('diagLiveN').textContent = a.length ? '(' + a.length + ')' : '';
-      if (atEnd) out.scrollTop = out.scrollHeight;
-    } catch (e) {}
-  }
-  setInterval(paintLive, 1000);
-  $('diagRestore').addEventListener('click', function () {
-    var m = lsGet('zaply_hidden', {}), n = Object.keys(m || {}).length;
-    lsSet('zaply_hidden', {}); zlog('Restored ' + n + ' chat(s) hidden by delete'); try { renderChats(); } catch (e) {}
-    toast(n ? n + ' chat' + (n > 1 ? 's' : '') + ' restored' : 'No deleted chats to restore', true);
-  });
-  $('diagLiveClear').addEventListener('click', function () { lsSet('zaply_diaglog', []); $('diagLiveOut').textContent = ''; paintLive(); });
-  $('diagLiveCopy').addEventListener('click', function () {
-    var t = $('diagLiveOut').textContent;
-    try { if (navigator.clipboard) { navigator.clipboard.writeText(t).then(function () { toast('Log copied', true); }, function () { toast('Could not copy'); }); return; } } catch (e) {}
-    toast('Could not copy');
-  });
-
-  /* if the chat list is ever blank while chats exist, say so in the log and redraw it */
   function chatListBlank() {
     try {
       if (curTab !== 'chats' || filt !== 'all' || (($('chatSearch') || {}).value || '').trim()) return false;
@@ -9488,11 +8992,32 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   }
   setInterval(function () {
     if (document.hidden || !chatListBlank()) return;
-    var ago = lastStatusAt ? Math.round((Date.now() - lastStatusAt) / 1000) + 's after the last Status load' : 'before any Status load finished';
-    diag('Chat list was blank (' + ago + '). Redrawing it now.');
+    diag('Chat list was blank' + (lastStatusAt ? ' (' + Math.round((Date.now() - lastStatusAt) / 1000) + 's after the last Status load)' : '') + '. Redrawing it now.');
     try { renderChats(); } catch (e) { diag('Chat list redraw failed: ' + ((e && e.message) || e)); }
-    setTimeout(function () { if (chatListBlank()) diag('Chat list is STILL blank after redraw. renderChats is failing.'); }, 400);
   }, 1500);
+  function hm(t) { var d = new Date(t); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2); }
+  function paintLive() {
+    try {
+      var bx = $('diagBox'); if (!bx || bx.classList.contains('hidden')) return;
+      var a = lsGet('zaply_diaglog', []); if (!Array.isArray(a)) a = [];
+      var out = $('diagLiveOut'), atEnd = out.scrollTop + out.clientHeight >= out.scrollHeight - 30;
+      out.textContent = a.length ? a.map(function (e) { return hm(e.t) + (e.b ? ' \u274C ' : '  ') + e.m + (e.c > 1 ? '  (x' + e.c + ')' : ''); }).join('\n') : 'Nothing logged yet.';
+      $('diagLiveN').textContent = a.length ? '(' + a.length + ')' : '';
+      if (atEnd) out.scrollTop = out.scrollHeight;
+    } catch (e) {}
+  }
+  setInterval(paintLive, 1000);
+  $('diagLiveClear').addEventListener('click', function () { lsSet('zaply_diaglog', []); paintLive(); });
+  $('diagLiveCopy').addEventListener('click', function () {
+    var t = $('diagLiveOut').textContent;
+    try { if (navigator.clipboard) { navigator.clipboard.writeText(t).then(function () { toast('Log copied', true); }, function () { toast('Could not copy'); }); return; } } catch (e) {}
+    toast('Could not copy');
+  });
+  $('diagRestore').addEventListener('click', function () {
+    var m = lsGet('zaply_hidden', {}), n = Object.keys(m || {}).length;
+    lsSet('zaply_hidden', {}); zlog('Restored ' + n + ' chat(s) hidden by delete'); try { renderChats(); } catch (e) {}
+    toast(n ? n + ' chat' + (n > 1 ? 's' : '') + ' restored' : 'No deleted chats to restore', true);
+  });
 })();
 </script>
 <div id="fbCaptcha"></div>
