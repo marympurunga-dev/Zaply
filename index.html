@@ -1208,6 +1208,16 @@ html,body{overflow-x:hidden}
 .attsheet .atic{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
 .attsheet .atic svg{width:28px;height:28px}
 .attsheet .atl{font-size:14px;font-weight:600}
+.attsheet.tg .tggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.attsheet.tg .tggrid button{aspect-ratio:1/1;border:0;border-radius:16px;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px}
+.attsheet.tg .tggrid svg{width:36px;height:36px}
+.attsheet.tg .tgcam{background:#0b0f12}.attsheet.tg .tgph{background:linear-gradient(135deg,#7b5cf0,#3b82f6)}.attsheet.tg .tgvid{background:linear-gradient(135deg,#ef5a3c,#f59e0b)}
+.attsheet.tg .tghint{font-size:13px;opacity:.65;text-align:center;margin:2px 8px 14px}
+.attsheet.tg .tgbar{display:flex;justify-content:space-around;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);border-radius:36px;padding:8px 6px}
+.attsheet.tg .tgbar button{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;color:inherit;font-weight:600;font-size:14px;padding:8px 22px;border-radius:28px}
+.attsheet.tg .tgbar button svg{width:28px;height:28px}
+.attsheet.tg .tgbar button.on{background:rgba(37,211,102,.16);color:#25d366}
+html.islight .attsheet.tg .tgbar{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.08)}
 </style>
 <style id="themefix">
 /* ===== Light theme: used when Light is selected, or System default on a light phone ===== */
@@ -8544,49 +8554,54 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   Array.prototype.forEach.call($('plusMenu').querySelectorAll('button'), function (b) { var a = b.getAttribute('data-a'); if (a !== 'ai' && a !== 'loc') b.remove(); });
   $('btnCamera').addEventListener('click', function (e) {
     e.stopImmediatePropagation(); if (!openWith) return; camChat = openWith; $('plusMenu').classList.add('hidden');
-    sheet(function (d, close) {
-      var pill = mk('div', 'v3pill');
-      [['Gallery', P.img, 'fileImg'], ['Camera', P.cam, 'fileCam'], ['Files', P.file, 'fileAny']].forEach(function (x) {
-        var b = mk('button'); b.innerHTML = ico(x[1]) + '<span>' + x[0] + '</span>'; b.addEventListener('click', function () { close(); camChat = openWith; if (x[2] === 'fileCam') chatCamera(); else $(x[2]).click(); }); pill.appendChild(b);
-      }); d.appendChild(pill);
-    });
+    window.zAttach();
   }, true);
   $('btnPlus').addEventListener('click', function (e) {
     e.stopImmediatePropagation(); if (!openWith) return; camChat = openWith; $('plusMenu').classList.add('hidden'); $('emojiBox').classList.add('hidden');
-    var PIN = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>';
-    sheet(function (d, close) {
-      d.className = 'attsheet'; d.appendChild(mk('div', 'ath'));
-      var g = mk('div', 'attgrid');
-      function add(label, icon, color, fn) {
-        var b = mk('button'); b.innerHTML = '<span class="atic" style="background:' + color + '">' + icon + '</span><span class="atl">' + label + '</span>';
-        b.addEventListener('click', function () { close(); camChat = openWith; fn(); }); g.appendChild(b);
-      }
-      add('Camera', ico(P.cam), '#ef5a3c', function () { chatCamera(); });
-      add('Gallery', ico(P.img), '#7b5cf0', function () { $('fileImg').click(); });
-      add('Files', ico(P.file), '#2f8cf0', function () { $('fileAny').click(); });
-      add('Location', PIN, '#1fa855', function () { var src = $('plusMenu').querySelector('button[data-a="loc"]'); if (src) src.click(); });
-      d.appendChild(g);
-    });
+    window.zAttach();
   }, true);
 
-  /* Gallery: choose Photos or Videos and open a fresh single-file picker, exactly like Status does.
-     The shared hidden input (image/*,video/* + multiple) does not open on some Android WebViews. */
+  /* Attach sheet (like Telegram): Camera / Photos / Videos tiles and a Gallery | File | Location bar.
+     Photos and Videos open a fresh single-file picker (kept alive and attached to the page so Android cannot drop it). */
   (function () {
     var fi = $('fileImg');
+    var VIDP = 'M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z';
+    var PINP = 'M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z';
     function chatPick(accept) {
       var chat = openWith || camChat; if (!chat) { toast('Open a chat first'); return; }
-      var f = document.createElement('input'); f.type = 'file'; f.accept = accept; window.__zChatPick = f;
+      var f = document.createElement('input'); f.type = 'file'; f.accept = accept;
+      f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
+      window.__zChatPick = f; document.body.appendChild(f);
+      function fin() { setTimeout(function () { try { f.remove(); } catch (e) {} if (window.__zChatPick === f) window.__zChatPick = null; }, 1500); }
       f.addEventListener('change', function () {
-        var file = f.files && f.files[0]; window.__zChatPick = null; if (!file) return;
+        var file = f.files && f.files[0]; fin(); if (!file) return;
         var c = openWith || chat; cedQ = [];
         toast('Opening ' + (isVidF(file) ? 'video' : 'photo') + '\u2026');
         (isVidF(file) ? openVideoEditor : openEditor)(file, c);
       });
+      f.addEventListener('cancel', fin);
       f.click();
     }
-    fi.click = function () {
-      zsheet('Send from gallery', [['Photos', function () { chatPick('image/*'); }], ['Videos', function () { chatPick('video/*'); }]]);
+    window.zAttach = function () {
+      if (!openWith) return; camChat = openWith;
+      sheet(function (d, close) {
+        d.className = 'attsheet tg'; d.appendChild(mk('div', 'ath'));
+        var g = mk('div', 'tggrid');
+        function tile(cls, icon, label, fn) { var b = mk('button', cls); b.innerHTML = ico(icon) + '<span>' + label + '</span>'; b.addEventListener('click', function () { close(); camChat = openWith; fn(); }); g.appendChild(b); }
+        tile('tgcam', P.cam, 'Camera', function () { chatCamera(); });
+        tile('tgph', P.img, 'Photos', function () { chatPick('image/*'); });
+        tile('tgvid', VIDP, 'Videos', function () { chatPick('video/*'); });
+        d.appendChild(g);
+        d.appendChild(mk('div', 'tghint', 'Pick a photo or video from your phone to edit and send'));
+        var bar = mk('div', 'tgbar');
+        function tab(cls, icon, label, fn) { var b = mk('button', cls); b.innerHTML = ico(icon) + '<span>' + label + '</span>'; b.addEventListener('click', function () { if (!fn) return; close(); camChat = openWith; fn(); }); bar.appendChild(b); }
+        tab('on', P.img, 'Gallery', null);
+        tab('', P.file, 'File', function () { $('fileAny').click(); });
+        tab('', PINP, 'Location', function () { var src = $('plusMenu').querySelector('button[data-a="loc"]'); if (src) src.click(); });
+        d.appendChild(bar);
+      });
     };
+    fi.click = function () { window.zAttach(); };
   })();
 
   /* ---------- Info page ---------- */
@@ -8964,7 +8979,11 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   /* ---------- bottom sheet (camera button) ---------- */
   function pick(accept, capture, cb) {
     var f = document.createElement('input'); f.type = 'file'; f.accept = accept; if (capture) f.setAttribute('capture', 'environment');
-    f.addEventListener('change', function () { var file = f.files && f.files[0]; if (file) cb(file); });
+    f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
+    window.__zPick = f; document.body.appendChild(f); /* kept alive and attached so Android cannot drop it before you choose */
+    function fin() { setTimeout(function () { try { f.remove(); } catch (e) {} if (window.__zPick === f) window.__zPick = null; }, 1500); }
+    f.addEventListener('change', function () { var file = f.files && f.files[0]; fin(); if (file) cb(file); else toast('No file was chosen.'); });
+    f.addEventListener('cancel', fin);
     f.click();
   }
   function musicSearch(cb) {
