@@ -1551,6 +1551,11 @@ html.islight #infoView #inAv{border-color:#25d366!important}
         <button class="link hidden" id="btnTest" style="width:100%;margin-bottom:8px">Send a test notification to this phone (build 19)</button>
         <div id="diagBox" class="hidden" style="margin:8px;padding:12px;border:1px solid var(--border);border-radius:12px;font-size:13px;line-height:1.5">
           <div id="diagOut" style="white-space:pre-wrap;word-break:break-word"></div>
+          <div id="diagLive" style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+            <div style="font-weight:700;margin-bottom:6px">App log (live) <span id="diagLiveN" style="font-weight:400;color:var(--muted)"></span></div>
+            <div id="diagLiveOut" style="white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:12px;max-height:260px;overflow:auto"></div>
+            <div style="display:flex;gap:8px;margin-top:8px"><button class="link" id="diagLiveCopy" style="flex:1">Copy log</button><button class="link" id="diagLiveClear" style="flex:1">Clear log</button></div>
+          </div>
           <button class="link" id="diagTest" style="width:100%;margin-top:10px">Send a real test (then close Zanply)</button>
           <button class="link" id="diagClose" style="width:100%;margin-top:6px">Close</button>
         </div>
@@ -8571,7 +8576,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       var chat = openWith || camChat; if (!chat) { toast('Open a chat first'); return; }
       var f = document.createElement('input'); f.type = 'file'; f.accept = accept;
       f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
-      window.__zChatPick = f; document.body.appendChild(f);
+      window.__zChatPick = f; document.body.appendChild(f); try { window.zWatchPicker(f, 'Chat'); } catch (e) {}
       function fin() { setTimeout(function () { try { f.remove(); } catch (e) {} if (window.__zChatPick === f) window.__zChatPick = null; }, 1500); }
       f.addEventListener('change', function () {
         var file = f.files && f.files[0]; fin(); if (!file) return;
@@ -8592,10 +8597,10 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         tile('tgph', P.img, 'Photos', function () { chatPick('image/*'); });
         tile('tgvid', VIDP, 'Videos', function () { chatPick('video/*'); });
         d.appendChild(g);
-        d.appendChild(mk('div', 'tghint', 'Pick a photo or video from your phone to edit and send'));
+        d.appendChild(mk('div', 'tghint', 'Tap Gallery to pick photos and videos together'));
         var bar = mk('div', 'tgbar');
         function tab(cls, icon, label, fn) { var b = mk('button', cls); b.innerHTML = ico(icon) + '<span>' + label + '</span>'; b.addEventListener('click', function () { if (!fn) return; close(); camChat = openWith; fn(); }); bar.appendChild(b); }
-        tab('on', P.img, 'Gallery', null);
+        tab('on', P.img, 'Gallery', function () { chatPick('image/*,video/*'); });
         tab('', P.file, 'File', function () { $('fileAny').click(); });
         tab('', PINP, 'Location', function () { var src = $('plusMenu').querySelector('button[data-a="loc"]'); if (src) src.click(); });
         d.appendChild(bar);
@@ -8899,6 +8904,32 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   function ico(p, s, fill) { return '<svg viewBox="0 0 24 24" width="' + (s || 24) + '" height="' + (s || 24) + '" fill="' + (fill || 'currentColor') + '"><path d="' + p + '"/></svg>'; }
   function ibtn(cls, p, label, s) { var b = mk('button', cls); b.setAttribute('aria-label', label); b.innerHTML = ico(p, s); return b; }
 
+  /* ---------- diagnostics: problems are written to the bell (Notifications) so the cause can be read ---------- */
+  var _dg = {}, lastStatusAt = 0;
+  /* log lines are kept on the phone and shown live in the menu: Check notifications > App log */
+  function zlog(msg, bad) {
+    try {
+      var a = lsGet('zaply_diaglog', []); if (!Array.isArray(a)) a = [];
+      var last = a[a.length - 1], n = Date.now();
+      if (last && last.m === msg) { last.c = (last.c || 1) + 1; last.t = n; }
+      else a.push({ t: n, m: msg, b: bad ? 1 : 0, c: 1 });
+      lsSet('zaply_diaglog', a.slice(-80));
+    } catch (e) {}
+  }
+  function diag(msg) { try { var n = Date.now(); if (_dg[msg] && n - _dg[msg] < 60000) return; _dg[msg] = n; zlog(msg, true); } catch (e) {} }
+  window.zDiag = diag; window.zLog = zlog;
+  window.zWatchPicker = function (f, label) {
+    var got = false, blurred = false;
+    function onBlur() { blurred = true; }
+    function onFocus() { window.removeEventListener('focus', onFocus); setTimeout(function () { if (!got) { got = true; diag(label + ' picker closed but no file reached the app. Android did not hand the chosen file to the page.'); } }, 1800); }
+    window.addEventListener('blur', onBlur); window.addEventListener('focus', onFocus);
+    f.addEventListener('change', function () { got = true; var x = f.files && f.files[0]; diag(x ? label + ' picker returned: ' + (x.name || 'file') + ' (' + (x.type || 'unknown type') + ', ' + Math.round((x.size || 0) / 1024) + ' KB)' : label + ' picker returned an empty selection.'); });
+    f.addEventListener('cancel', function () { got = true; });
+    setTimeout(function () { window.removeEventListener('blur', onBlur); if (!blurred && !got) { got = true; diag(label + ' picker never opened the phone file chooser. The app wrapper may block file choosers or lack storage/photo permission.'); } }, 6000);
+  };
+  window.addEventListener('error', function (e) { var m = (e && e.message) || ''; if (!m || /ResizeObserver|^Script error/i.test(m)) return; diag('JS error: ' + m + (e.lineno ? ' (line ' + e.lineno + ')' : '')); });
+  window.addEventListener('unhandledrejection', function (e) { var r = e && e.reason, m = (r && (r.message || r.name)) || String(r || ''); if (m) diag('Promise error: ' + m); });
+
   var S = { owner: '', mine: [], users: [], loaded: false, busy: false, err: '', t: 0 };
   var seenMap = lsGet('zaply_status_seen', {}); if (!seenMap || typeof seenMap !== 'object') seenMap = {};
   var VID_MAX = 30 * 1024 * 1024, AUD_MAX = 15 * 1024 * 1024;
@@ -8935,10 +8966,14 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     if (!getToken() || !myPhone) return Promise.resolve();
     if (S.owner && S.owner !== myPhone) { S.mine = []; S.users = []; S.loaded = false; S.t = 0; S.owner = ''; }
     if (S.busy || (!force && Date.now() - S.t < 20000)) return Promise.resolve();
-    S.busy = true; paint();
+    S.busy = true; paint(); zlog('Status: loading...');
     return chatCall('status_list', {}).then(function (r) { norm(r); S.err = ''; S.t = Date.now(); S.owner = myPhone; S.loaded = true; })
       .catch(function (e) { S.err = (e && e.message) || 'Could not load status updates.'; })
-      .then(function () { S.busy = false; try { renderStories(); } catch (e) {} paint(); try { if (curTab === 'chats') renderChats(); } catch (e) {} });
+      .then(function () {
+        S.busy = false; lastStatusAt = Date.now(); zlog('Status: loaded (' + S.users.length + ' contacts, ' + S.mine.length + ' mine' + (S.err ? ', ERROR: ' + S.err : '') + ')', !!S.err); try { renderStories(); } catch (e) {} paint();
+        if (S.err) diag('Status fetch failed: ' + S.err);
+        try { if (curTab === 'chats') { if (chatListBlank()) diag('Chat list was blank when Status finished reloading (' + (S.err ? 'status error' : 'status ok') + '). It was redrawn.'); renderChats(); } } catch (e) { diag('Chat list redraw after Status failed: ' + ((e && e.message) || e)); }
+      });
   }
 
   /* ---------- Status tab ---------- */
@@ -8982,7 +9017,8 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     f.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0';
     window.__zPick = f; document.body.appendChild(f); /* kept alive and attached so Android cannot drop it before you choose */
     function fin() { setTimeout(function () { try { f.remove(); } catch (e) {} if (window.__zPick === f) window.__zPick = null; }, 1500); }
-    f.addEventListener('change', function () { var file = f.files && f.files[0]; fin(); if (file) cb(file); else toast('No file was chosen.'); });
+    try { window.zWatchPicker(f, 'Status'); } catch (e) {}
+    f.addEventListener('change', function () { var file = f.files && f.files[0]; fin(); if (file) { try { cb(file); } catch (e) { diag('Status picker: opening the editor failed: ' + ((e && e.message) || e)); } } else toast('No file was chosen.'); });
     f.addEventListener('cancel', fin);
     f.click();
   }
@@ -9377,8 +9413,50 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
 
   var bootT = setInterval(function () { if (getToken() && myPhone) { clearInterval(bootT); load(true); } }, 800);
   setInterval(function () { if (!document.hidden && getToken() && myPhone) load(true); }, 60000);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) load(false); });
+  document.addEventListener('visibilitychange', function () { zlog('App ' + (document.hidden ? 'went to background' : 'came to foreground')); if (!document.hidden) load(false); });
   try { ensureFabs(); syncFabs(); if (curTab === 'status') paint(); } catch (e) {}
+
+  var _rcLog = renderChats;
+  renderChats = function () {
+    var r = _rcLog.apply(this, arguments);
+    try { var n = document.querySelectorAll('#chatList .swrap').length; zlog('Chat list drawn: ' + n + ' rows, ' + (allChats ? allChats.length : 0) + ' chats known, filter ' + filt, n === 0 && allChats && allChats.length > 0 && filt === 'all'); } catch (e) {}
+    return r;
+  };
+  function hm(t) { var d = new Date(t); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2); }
+  function paintLive() {
+    try {
+      var bx = $('diagBox'); if (!bx || bx.classList.contains('hidden')) return;
+      var a = lsGet('zaply_diaglog', []); if (!Array.isArray(a)) a = [];
+      var out = $('diagLiveOut'), atEnd = out.scrollTop + out.clientHeight >= out.scrollHeight - 30;
+      out.textContent = a.length ? a.map(function (e) { return hm(e.t) + (e.b ? ' \u274C ' : '  ') + e.m + (e.c > 1 ? '  (x' + e.c + ')' : ''); }).join('\n') : 'Nothing logged yet. Use the app (open Status, pick a photo) and watch this fill in.';
+      $('diagLiveN').textContent = a.length ? '(' + a.length + ')' : '';
+      if (atEnd) out.scrollTop = out.scrollHeight;
+    } catch (e) {}
+  }
+  setInterval(paintLive, 1000);
+  $('diagLiveClear').addEventListener('click', function () { lsSet('zaply_diaglog', []); $('diagLiveOut').textContent = ''; paintLive(); });
+  $('diagLiveCopy').addEventListener('click', function () {
+    var t = $('diagLiveOut').textContent;
+    try { if (navigator.clipboard) { navigator.clipboard.writeText(t).then(function () { toast('Log copied', true); }, function () { toast('Could not copy'); }); return; } } catch (e) {}
+    toast('Could not copy');
+  });
+
+  /* if the chat list is ever blank while chats exist, say so in the log and redraw it */
+  function chatListBlank() {
+    try {
+      if (curTab !== 'chats' || filt !== 'all' || (($('chatSearch') || {}).value || '').trim()) return false;
+      var box = $('chatList'); if (!box || !allChats || !allChats.length) return false;
+      var vis = allChats.filter(function (c) { return c && c.phone && !isLocked(c.phone) && !isArchived(c) && !isHidden(c); });
+      return vis.length > 0 && !box.querySelector('.swrap');
+    } catch (e) { return false; }
+  }
+  setInterval(function () {
+    if (document.hidden || !chatListBlank()) return;
+    var ago = lastStatusAt ? Math.round((Date.now() - lastStatusAt) / 1000) + 's after the last Status load' : 'before any Status load finished';
+    diag('Chat list was blank (' + ago + '). Redrawing it now.');
+    try { renderChats(); } catch (e) { diag('Chat list redraw failed: ' + ((e && e.message) || e)); }
+    setTimeout(function () { if (chatListBlank()) diag('Chat list is STILL blank after redraw. renderChats is failing.'); }, 400);
+  }, 1500);
 })();
 </script>
 <div id="fbCaptcha"></div>
