@@ -4681,7 +4681,8 @@ ZW|Zimbabwe|263`;
       (allChats || []).forEach(function (o) {
         if (!o || o.group || have[o.phone]) return;
         chatMiss[o.phone] = (chatMiss[o.phone] || 0) + 1;
-        if (chatMiss[o.phone] <= 2) { chats.push(o); added = true; try { console.warn('Zanply: chat list answer missed', o.phone); } catch (e) {} }
+        try { if (window.zLog) window.zLog('Server list left out ' + (o.name || o.phone) + ' (miss ' + chatMiss[o.phone] + ')', true); } catch (e) {}
+        if (chatMiss[o.phone] <= 20) { chats.push(o); added = true; try { console.warn('Zanply: chat list answer missed', o.phone); } catch (e) {} }
       });
       if (added) chats.sort(function (a, b) { return (new Date(b.at).getTime() || 0) - (new Date(a.at).getTime() || 0); });
       return chats;
@@ -4693,6 +4694,7 @@ ZW|Zimbabwe|263`;
           return E2E.decrypt(c.phone, c.last).then(function (t) { c.last = t; return c; }, function () { c.last = '\ud83d\udd12 Message'; return c; });
         }));
       }).then(function (chats) {
+        try { if (window.zLog) window.zLog('Server returned ' + chats.length + ' chats: ' + chats.map(function (c) { return c.name || c.phone; }).join(', ')); } catch (e) {}
         chats = keepMissing(chats);
         var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0, c.st || 0]; }));
         try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = ''; try { RT.watchChats(allChats); } catch (e) {}
@@ -9158,7 +9160,14 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
         } else zlog('Status: editor is open');
       }, retry ? 1500 : 900);
     }
-    setTimeout(function () { openIt(false); }, 300);
+    var waits = 0;
+    function go() {
+      /* the sheet closes with history.back(); Android can deliver that late (after the file chooser), and it would close the editor again */
+      if (typeof popSkip !== 'undefined' && popSkip > 0 && waits++ < 30) return setTimeout(go, 100);
+      if (waits > 0) zlog('Status: waited ' + (waits * 100) + 'ms for the back-step to settle');
+      openIt(false);
+    }
+    setTimeout(go, 300);
   }
 
   /* ---------- posting: black "Adding status..." pop for 4 seconds, then the status is added ---------- */
