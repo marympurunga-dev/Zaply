@@ -787,7 +787,7 @@
 #searchBox{position:relative;margin-bottom:14px}
 #searchBox input{border:1.5px solid var(--border)!important;border-radius:26px!important;background:var(--card)!important;padding:18px 56px 18px 56px!important;margin:0!important}
 #searchBox .si{position:absolute;left:20px;top:50%;transform:translateY(-50%);color:var(--text);pointer-events:none}
-#storyStrip{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}#storyStrip.hidden{display:none}
+#storyStrip{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;min-height:106px}#storyStrip.hidden{display:none}
 .st-add{flex:none;width:76px;height:106px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600;line-height:1.2}
 .st-add .plus{width:34px;height:34px;border-radius:50%;border:1.5px dashed var(--muted);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:400}
 .st-scroll{flex:1;display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;min-width:0}.st-scroll::-webkit-scrollbar{display:none}
@@ -5359,9 +5359,14 @@ ZW|Zimbabwe|263`;
       });
     }
     function isVidF(f) { return /^video\//.test(f.type || '') || /\.(mp4|mov|3gp|webm|mkv|m4v)$/i.test(f.name || ''); }
+    /* Android can restart the app while the gallery is open; remember the pick so we can tell the user instead of failing silently */
+    $('fileImg').addEventListener('click', function () { try { localStorage.setItem('zaply_pickwait_img', String(Date.now())); } catch (e) {} });
+    (function () { try { var w = +localStorage.getItem('zaply_pickwait_img'); if (w) { localStorage.removeItem('zaply_pickwait_img'); if (Date.now() - w < 300000) setTimeout(function () { toast('Android restarted Zanply while you were choosing the photo or video. Please try again.', false, 6000); }, 1500); } } catch (e) {} })();
     $('fileImg').addEventListener('change', function () {
       var inp = this, fs = Array.prototype.slice.call(inp.files || [], 0, 5), chat = openWith || camChat;
-      if (!fs.length) return; if (!chat) { inp.value = ''; return; }
+      try { localStorage.removeItem('zaply_pickwait_img'); } catch (e) {}
+      if (!fs.length) return; if (!chat) { inp.value = ''; toast('Open the chat again and choose the photo or video again.'); return; }
+      toast('Opening ' + (fs.length > 1 ? fs.length + ' files' : (isVidF(fs[0]) ? 'video' : 'photo')) + '\u2026');
       var first = fs.shift(); cedQ = fs; (isVidF(first) ? openVideoEditor : openEditor)(first, chat, function () { inp.value = ''; });
     });
     var camChat = null;
@@ -7122,6 +7127,7 @@ ZW|Zimbabwe|263`;
       clearAuthStep();
       myPhone = user.phone; E2E.init(user.phone).catch(function () {}); try { RT.start(user.phone); } catch (e) {}
       try { allChats = JSON.parse(localStorage.getItem('zaply_chats') || '[]'); } catch (e) {}
+      try { chatSig = JSON.stringify(allChats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0, c.st || 0]; })); } catch (e) {}
       $('hello').textContent = 'Signed in as ' + user.name;
       $('pfName').textContent = user.name || ''; $('pfPhone').textContent = user.phone || ''; $('pfAv').textContent = (user.name || '#').charAt(0).toUpperCase();
       $('welcomeView').classList.add('hidden');
@@ -9280,8 +9286,12 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   };
 
   /* ---------- stories strip on the chat list ---------- */
+  var stSig = '';
   renderStories = function () {
-    var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
+    var box = $('storyStrip'); if (!box) return;
+    var sig = JSON.stringify([myPhone, S.mine.length, S.users.map(function (u) { return [u.phone, u.unseen ? 1 : 0]; })]);
+    if (sig === stSig && box.firstChild) return; stSig = sig;
+    box.innerHTML = '';
     var sc = mk('div', 'st-scroll'); box.appendChild(sc);
     var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })); add.appendChild(mk('span', 'st-plus', '+'));
     add.classList.toggle('has', S.mine.length > 0);
@@ -9297,7 +9307,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   var _show = showTab;
   showTab = function (t) { _show(t); if (t === 'status') { paint(); load(true); } else if (t === 'chats') load(false); syncFabs(); };
 
-  var boot = setInterval(function () { if (getToken() && myPhone) { clearInterval(boot); load(true); } }, 800);
+  var bootT = setInterval(function () { if (getToken() && myPhone) { clearInterval(bootT); load(true); } }, 800);
   setInterval(function () { if (!document.hidden && getToken() && myPhone) load(true); }, 60000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) load(false); });
   try { ensureFabs(); syncFabs(); if (curTab === 'status') paint(); } catch (e) {}
