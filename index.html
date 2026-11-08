@@ -1367,7 +1367,7 @@ html.islight #infoView #inAv{border-color:#25d366!important}
 .zbrow .hs{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .zbrow .hs .st{color:#21c063;font-weight:600;font-size:16px;white-space:nowrap}.zbrow .hs .st.c{color:#e5484d}
 .zbrow .hs .rt2{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.zbrow .hs .cv{flex:none;display:flex;color:var(--muted);transition:transform .2s}.zbrow.open .hs .cv{transform:rotate(180deg)}
+.zbrow .hs .hchev{flex:none;display:flex;color:var(--muted);transition:transform .2s}.zbrow.open .hs .hchev{transform:rotate(180deg)}
 .zhrsx{display:none;padding:2px 16px 12px 58px;color:var(--muted);font-size:14.5px;line-height:1.7}.zhrsx.on{display:block}
 .zhrsx .td{color:inherit;font-weight:600}
 .zbrow.note .bt small{font-size:14.5px;margin-top:3px}
@@ -5110,7 +5110,7 @@ ZW|Zimbabwe|263`;
     }
     function bizHoursRow(H) {
       var r = mk('div', 'zbrow hrs'), st = H.open === null ? '' : (H.open ? 'Open now' : 'Closed now');
-      r.innerHTML = '<span class="bi mu">' + BIZ_IC.clock + '</span><span class="hs"><span class="st' + (H.open === false ? ' c' : '') + '"></span><span class="rt2"></span><span class="cv"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></span>';
+      r.innerHTML = '<span class="bi mu">' + BIZ_IC.clock + '</span><span class="hs"><span class="st' + (H.open === false ? ' c' : '') + '"></span><span class="rt2"></span><span class="hchev"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></span>';
       r.querySelector('.st').textContent = st || 'Opening hours'; r.querySelector('.rt2').textContent = H.right;
       var x = mk('div', 'zhrsx'), order = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], todayN = BIZ_DAYS[new Date().getDay()];
       order.forEach(function (d) { var on = !H.days.length || H.days.indexOf(d) > -1, l = mk('div', ''); l.innerHTML = '<span class="td"></span>'; l.querySelector('.td').textContent = d + (d === todayN ? ' (today)' : ''); l.appendChild(document.createTextNode(': ' + (on ? (H.right || 'Open') : 'Closed'))); x.appendChild(l); });
