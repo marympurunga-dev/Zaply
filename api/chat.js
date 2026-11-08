@@ -234,9 +234,11 @@ async function findUser(phone) {
 
 const EMPTY_PROFILE = { name: '', username: '', email: '', address: '', bio: '', birthday: '', pet: '', links: '', photo_url: '', acct: 'personal', biz: null };
 // the "extra" column holds the account type and the business profile as JSON
+const NAME_STYLES = ['bold', 'italic', 'serif', 'script', 'mono', 'grad'];
 function parseExtra(raw) {
   let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch (e) { o = {}; }
-  return { acct: o.acct === 'business' ? 'business' : 'personal', biz: o.biz && typeof o.biz === 'object' ? o.biz : null };
+  return { acct: o.acct === 'business' ? 'business' : 'personal', biz: o.biz && typeof o.biz === 'object' ? o.biz : null,
+    pstyle: NAME_STYLES.indexOf(o.pstyle) > -1 ? o.pstyle : '', pcolor: /^#[0-9a-f]{6}$/i.test(String(o.pcolor || '')) ? String(o.pcolor) : '' };
 }
 const cleanRow = (r) => Object.assign({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '', links: r.links || '', photo_url: r.photo_url || '' }, parseExtra(r.extra));
 // trims, and cuts to a number of characters (emoji count as one)
@@ -330,6 +332,29 @@ async function pushTo(subs, payload) {
     try { await webpush.sendNotification(JSON.parse(r.sub), payload, { TTL: 86400, urgency: 'high' }); }
     catch (e) { if (e.statusCode === 404 || e.statusCode === 410) await db().query('DELETE FROM push_subs WHERE id = ?', [r.id]); }
   }));
+}
+// Zanply Premium: one bundle. A row means the person has (or had) a plan; it counts while until_at is in the future.
+let premReady = null;
+function premTable() {
+  if (!premReady) premReady = db().query('CREATE TABLE IF NOT EXISTS premium (phone VARCHAR(20) NOT NULL PRIMARY KEY, plan VARCHAR(10) NOT NULL, until_at DATETIME NOT NULL, renew TINYINT NOT NULL DEFAULT 1, updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)').catch((e) => { premReady = null; throw e; });
+  return premReady;
+}
+let wallReady = null;
+function wallTable() {
+  if (!wallReady) wallReady = db().query('CREATE TABLE IF NOT EXISTS chat_walls (owner VARCHAR(20) NOT NULL, peer VARCHAR(20) NOT NULL, css MEDIUMTEXT NOT NULL, kind VARCHAR(12) NOT NULL DEFAULT \'\', updated TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (owner, peer))').catch((e) => { wallReady = null; throw e; });
+  return wallReady;
+}
+let stColsReady = null;
+function statusCols() {
+  if (!stColsReady) stColsReady = db().query("ALTER TABLE statuses ADD COLUMN music VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {}).then(() => db().query("ALTER TABLE statuses ADD COLUMN music_name VARCHAR(120) NOT NULL DEFAULT ''").catch(() => {}));
+  return stColsReady;
+}
+async function isPremium(phone) {
+  try { await premTable(); const [r] = await db().query('SELECT 1 FROM premium WHERE phone = ? AND until_at > NOW()', [phone]); return r.length > 0; } catch (e) { return false; }
+}
+async function premInfo(phone) {
+  try { await premTable(); const [r] = await db().query('SELECT plan, until_at, renew FROM premium WHERE phone = ? AND until_at > NOW()', [phone]); if (r[0]) return { active: true, plan: r[0].plan, until: new Date(r[0].until_at).toISOString(), renew: !!r[0].renew }; } catch (e) {}
+  return { active: false };
 }
 let fcmReady = null;
 function fcmTable() {
@@ -750,7 +775,8 @@ module.exports = async (req, res) => {
       const [nm] = await db().query('SELECT name FROM users WHERE phone = ?', [who]);
       let hide = false;
       if (who !== me) { const [pr] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [who]); try { hide = !!JSON.parse((pr[0] && pr[0].privacy) || '{}').hidePhone; } catch (e) {} }
-      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '', display_name: (await displayNames([who]).catch(() => ({})))[who] || (nm[0] ? nm[0].name || '' : ''), phone_hidden: hide }) });
+      const pv = await premInfo(who);
+      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '', display_name: (await displayNames([who]).catch(() => ({})))[who] || (nm[0] ? nm[0].name || '' : ''), phone_hidden: hide, verified: !!pv.active, pstyle: pv.active && r[0] ? parseExtra(r[0].extra).pstyle : '', pcolor: pv.active && r[0] ? parseExtra(r[0].extra).pcolor : '' }) });
     }
 
     if (b.action === 'profile_set') {
@@ -773,6 +799,47 @@ module.exports = async (req, res) => {
       }
       const [nm2] = await db().query('SELECT name FROM users WHERE phone = ?', [me]);
       return res.json({ profile: { name: nm2[0] ? nm2[0].name || '' : '', username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet, links: p.links, acct: ex.acct, biz: ex.biz } });
+    }
+
+    // ---- Premium effects: verified badge + name style/colour for many phones, wallpaper for both sides ----
+    if (b.action === 'premium_bulk') {
+      const ph = (Array.isArray(b.phones) ? b.phones : []).filter(phoneOk).slice(0, 100);
+      if (!ph.length) return res.json({ premium: {} });
+      await premTable();
+      const [rows] = await db().query('SELECT p.phone, pr.extra FROM premium p LEFT JOIN profiles pr ON pr.phone = p.phone WHERE p.until_at > NOW() AND p.phone IN (?)', [ph]);
+      const out = {};
+      rows.forEach((r) => { const ex = parseExtra(r.extra); out[r.phone] = { s: ex.pstyle, c: ex.pcolor }; });
+      return res.json({ premium: out });
+    }
+    if (b.action === 'profile_style_set') {
+      if (!(await isPremium(me))) return res.status(403).json({ error: 'Name styles and profile colours are part of Zanply Premium.', premium: true });
+      const st = NAME_STYLES.indexOf(b.pstyle) > -1 ? b.pstyle : '', co = /^#[0-9a-f]{6}$/i.test(String(b.pcolor || '')) ? String(b.pcolor) : '';
+      let ex = parseExtra(null);
+      try { const [cur] = await db().query('SELECT extra FROM profiles WHERE phone = ?', [me]); ex = parseExtra(cur && cur[0] && cur[0].extra); } catch (e) {}
+      ex.pstyle = st; ex.pcolor = co;
+      await db().query('INSERT INTO profiles (phone, extra) VALUES (?, ?) ON DUPLICATE KEY UPDATE extra = VALUES(extra)', [me, JSON.stringify(ex)]);
+      return res.json({ ok: true, pstyle: st, pcolor: co });
+    }
+    if (b.action === 'wall_set') {
+      const to = String(b.to || '');
+      if (!phoneOk(to)) return res.status(400).json({ error: 'Bad request.' });
+      if (!(await isPremium(me))) return res.status(403).json({ error: 'Wallpaper for both sides is part of Zanply Premium.', premium: true });
+      await wallTable();
+      const css = String(b.css || '');
+      if (!css) { await db().query('DELETE FROM chat_walls WHERE owner = ? AND peer = ?', [me, to]); return res.json({ ok: true }); }
+      if (css.length > 200000) return res.status(413).json({ error: 'That wallpaper is too large to share. Pick a preset or a smaller picture.' });
+      if (/url\(\s*['"]?\s*(?!data:image\/)/i.test(css) || /[<>]|expression|javascript:/i.test(css)) return res.status(400).json({ error: 'That wallpaper cannot be shared.' });
+      await db().query('INSERT INTO chat_walls (owner, peer, css, kind) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE css = VALUES(css), kind = VALUES(kind)', [me, to, css, String(b.k || '').slice(0, 12)]);
+      return res.json({ ok: true });
+    }
+    if (b.action === 'wall_get') {
+      const peer = String(b.peer || '');
+      if (!phoneOk(peer)) return res.status(400).json({ error: 'Bad request.' });
+      const bs = await blockState(me, peer);
+      if (bs.iBlocked || bs.blockedMe || !(await isPremium(peer))) return res.json({ wall: null });
+      await wallTable();
+      const [r] = await db().query('SELECT css, kind FROM chat_walls WHERE owner = ? AND peer = ?', [peer, me]);
+      return res.json({ wall: r[0] ? { css: r[0].css, k: r[0].kind } : null });
     }
 
     // Is a username free? If not, five different names built from what the person typed.
@@ -821,7 +888,7 @@ module.exports = async (req, res) => {
     }
     if (b.action === 'profile_photo_set') {
       const url = String(b.url || '');
-      const okUrl = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/' + (type === 'image' ? 'image' : 'video') + '/upload/') === 0;
+      const okUrl = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/' + 'image' + '/upload/') === 0;
       if (!okUrl) return res.status(400).json({ error: 'Bad request.' });
       await db().query('INSERT INTO profiles (phone, photo_url) VALUES (?, ?) ON DUPLICATE KEY UPDATE photo_url = VALUES(photo_url)', [me, url]);
       return res.json({ photo_url: url });
@@ -832,16 +899,42 @@ module.exports = async (req, res) => {
       return res.json({ photo_url: '' });
     }
 
+    // Zanply Premium. Real payments are not connected yet: activation only works while PREMIUM_TEST_MODE=1 is set in Vercel.
+    if (b.action === 'premium_get') return res.json(await premInfo(me));
+    if (b.action === 'premium_renew') {
+      await premTable(); await db().query('UPDATE premium SET renew = ? WHERE phone = ?', [b.renew ? 1 : 0, me]);
+      return res.json(await premInfo(me));
+    }
+    if (b.action === 'premium_activate') {
+      const span = { monthly: '1 MONTH', six: '6 MONTH', annual: '1 YEAR' }[b.plan];
+      if (!span) return res.status(400).json({ error: 'Bad request.' });
+      if (process.env.PREMIUM_TEST_MODE !== '1') return res.status(402).json({ error: 'Payments are being connected. No charge was made.' });
+      await premTable();
+      await db().query('INSERT INTO premium (phone, plan, until_at, renew) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ' + span + '), 1) ON DUPLICATE KEY UPDATE plan = VALUES(plan), until_at = DATE_ADD(GREATEST(until_at, NOW()), INTERVAL ' + span + '), renew = 1', [me, b.plan]);
+      return res.json(await premInfo(me));
+    }
+
     // Channels: create one, and list the ones I own or follow.
     if (b.action === 'channel_create') {
       const name = Array.from(String(b.name || '').trim()).slice(0, 100).join('');
       if (!name) return res.status(400).json({ error: 'Give the channel a name.' });
+      { const lim = (await isPremium(me)) ? 10 : 2; const [oc] = await db().query('SELECT COUNT(*) AS n FROM channels WHERE owner = ?', [me]); if (Number(oc[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'Free accounts can create 2 channels. Go Premium to create up to 10.' : 'You reached the limit of 10 channels.', premium: true }); }
       const description = Array.from(String(b.description || '').trim()).slice(0, 255).join('');
       const url = String(b.photo_url || '');
-      const photo = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/' + (type === 'image' ? 'image' : 'video') + '/upload/') === 0 ? url : '';
+      const photo = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/' + 'image' + '/upload/') === 0 ? url : '';
       const [c] = await db().query('INSERT INTO channels (owner, name, description, photo_url) VALUES (?, ?, ?, ?)', [me, name, description, photo]);
       await db().query('INSERT INTO channel_subs (channel_id, phone) VALUES (?, ?)', [c.insertId, me]);
       return res.json({ channel: { id: c.insertId, name, description, photo_url: photo, subscribers: 1 } });
+    }
+    // Stop following a channel (owners cannot unfollow their own channel).
+    if (b.action === 'channel_unfollow') {
+      const cid = parseInt(String(b.channel || '').replace(/^c:/, ''), 10);
+      if (!cid) return res.status(400).json({ error: 'Bad request.' });
+      const [own] = await db().query('SELECT owner FROM channels WHERE id = ?', [cid]);
+      if (own[0] && own[0].owner === me) return res.status(400).json({ error: 'You own this channel.' });
+      const [del] = await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, me]);
+      if (del.affectedRows) await db().query('UPDATE channels SET subscribers = GREATEST(subscribers - 1, 0) WHERE id = ?', [cid]);
+      return res.json({ ok: true });
     }
     if (b.action === 'channel_list') {
       const [r] = await db().query('SELECT c.id, c.name, c.description, c.photo_url, c.subscribers, c.owner FROM channels c JOIN channel_subs s ON s.channel_id = c.id WHERE s.phone = ? ORDER BY c.id DESC LIMIT 200', [me]);
@@ -875,6 +968,7 @@ module.exports = async (req, res) => {
     if (b.action === 'group_create') {
       const name = Array.from(String(b.name || '').trim()).slice(0, 250).join('');
       if (!name) return res.status(400).json({ error: 'Give the group a name.' });
+      { const lim = (await isPremium(me)) ? 10 : 2; const [og] = await db().query('SELECT COUNT(*) AS n FROM chat_groups WHERE creator = ?', [me]); if (Number(og[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'Free accounts can create 2 groups. Go Premium to create up to 10.' : 'You reached the limit of 10 groups.', premium: true }); }
       const wanted = Array.from(new Set((Array.isArray(b.members) ? b.members : []).filter((p) => phoneOk(p) && p !== me))).slice(0, MAX_GROUP - 1);
       if (!wanted.length) return res.status(400).json({ error: 'Add at least one member.' });
       const [found] = await db().query('SELECT phone FROM users WHERE phone IN (?)', [wanted]);
@@ -1026,8 +1120,9 @@ module.exports = async (req, res) => {
 
     // ---- Status updates (24 hours). Visible to people I have a chat with or saved, never across a block. ----
     if (b.action === 'status_list') {
+      await statusCols();
       const [rows] = await db().query(
-        `SELECT s.id, s.owner, s.type, s.text, s.bg, s.url, s.created_at, s.expires_at,
+        `SELECT s.id, s.owner, s.type, s.text, s.bg, s.url, s.music, s.music_name, s.created_at, s.expires_at,
            (SELECT COUNT(*) FROM status_likes l WHERE l.status_id = s.id) AS likes,
            (SELECT COUNT(*) FROM status_views v WHERE v.status_id = s.id AND v.viewer <> s.owner) AS views,
            EXISTS(SELECT 1 FROM status_likes l WHERE l.status_id = s.id AND l.viewer = ?) AS liked,
@@ -1041,7 +1136,7 @@ module.exports = async (req, res) => {
       const owners = Array.from(new Set(rows.map((r) => r.owner)));
       const names = owners.length ? await displayNames(owners) : {};
       return res.json({ statuses: rows.map((r) => ({
-        id: r.id, phone: r.owner, name: names[r.owner] || '', type: r.type, text: r.text, bg: r.bg, url: r.url,
+        id: r.id, phone: r.owner, name: names[r.owner] || '', type: r.type, text: r.text, bg: r.bg, url: r.url, music: r.music || '', music_name: r.music_name || '',
         at: r.created_at, expires: r.expires_at, likes: Number(r.likes) || 0, views: Number(r.views) || 0,
         liked: !!Number(r.liked), seen: !!Number(r.seen), mine: r.owner === me })) });
     }
@@ -1053,6 +1148,7 @@ module.exports = async (req, res) => {
       return res.json({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, timestamp, signature, public_id: publicId });
     }
     if (b.action === 'status_post') {
+      await statusCols();
       const type = ['image', 'video', 'audio'].indexOf(b.type) > -1 ? b.type : 'text';
       let text = Array.from(String(b.text || '').trim()).slice(0, type === 'text' ? 400 : 200).join(''), bg = '#128c7e', url = '';
       if (type === 'text') {
@@ -1063,14 +1159,20 @@ module.exports = async (req, res) => {
         const okUrl = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/' + (type === 'image' ? 'image' : 'video') + '/upload/') === 0;
         if (!okUrl) return res.status(400).json({ error: 'Bad request.' });
       }
+      let music = '', musicName = '';
+      if (type === 'image' && b.music) {
+        music = String(b.music);
+        if (!(cloudOn() && music.length <= 300 && music.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/video/upload/') === 0)) return res.status(400).json({ error: 'Bad request.' });
+        musicName = Array.from(String(b.music_name || '').trim()).slice(0, 100).join('');
+      }
       const [cnt] = await db().query('SELECT COUNT(*) AS n FROM statuses WHERE owner = ? AND expires_at > NOW()', [me]);
-      if (Number(cnt[0].n) >= 30) return res.status(400).json({ error: 'You have too many active status updates. Delete one first.' });
-      const [r] = await db().query('INSERT INTO statuses (owner, type, text, bg, url, expires_at) VALUES (?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))', [me, type, text, bg, url]);
+      { const lim = (await isPremium(me)) ? 13 : 2; if (Number(cnt[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'Free accounts can share 2 Status per day. Go Premium to share up to 13.' : 'You reached 13 Status for today.', premium: true }); }
+      const [r] = await db().query('INSERT INTO statuses (owner, type, text, bg, url, music, music_name, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))', [me, type, text, bg, url, music, musicName]);
       /* tidy up: remove updates that expired more than a day ago, with their views and likes */
       db().query('DELETE FROM status_views WHERE status_id IN (SELECT id FROM statuses WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY))').catch(() => {});
       db().query('DELETE FROM status_likes WHERE status_id IN (SELECT id FROM statuses WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY))').catch(() => {});
       db().query('DELETE FROM statuses WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY)').catch(() => {});
-      return res.json({ status: { id: r.insertId, phone: me, type, text, bg, url, at: new Date().toISOString(), likes: 0, views: 0, liked: false, seen: true, mine: true } });
+      return res.json({ status: { id: r.insertId, phone: me, type, text, bg, url, music, music_name: musicName, at: new Date().toISOString(), likes: 0, views: 0, liked: false, seen: true, mine: true } });
     }
     if (b.action === 'status_view' || b.action === 'status_like') {
       const id = Number(b.id) || 0; if (!id) return res.status(400).json({ error: 'Bad request.' });
