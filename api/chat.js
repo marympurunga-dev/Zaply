@@ -258,7 +258,13 @@ function cleanBiz(b) {
   if (b === null) return { biz: null };
   if (!b || typeof b !== 'object') return { biz: undefined };
   const out = { name: clip(b.name, 60), username: clip(b.username, 31).replace(/^@/, '').toLowerCase(), email: clip(b.email, 120), address: clip(b.address, 160),
-    link: '', cat: clip(b.cat, 60), catOther: clip(b.catOther, 60), links: [], social: {} };
+    link: '', cat: clip(b.cat, 60), catOther: clip(b.catOther, 60), links: [], social: {},
+    // "what does the business do" (204 letters) and opening days / hours shown to other people
+    bio: clip(b.bio, 204),
+    days: (Array.isArray(b.days) ? b.days : []).filter((d, i, a) => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].includes(d) && a.indexOf(d) === i),
+    from: /^([01]\d|2[0-3]):[0-5]\d$/.test(String(b.from || '')) ? String(b.from) : '',
+    to: /^([01]\d|2[0-3]):[0-5]\d$/.test(String(b.to || '')) ? String(b.to) : '',
+    open24: !!b.open24 };
   if (out.username && !/^[a-z0-9.]{3,30}$/.test(out.username)) return { error: 'Business username must be 3 to 30 letters, numbers or dots.' };
   if (out.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(out.email)) return { error: 'That business email doesn’t look right.' };
   if (b.link) { const l = cleanLink(b.link); if (l === null) return { error: 'That business link doesn’t look right.' }; out.link = l; }
