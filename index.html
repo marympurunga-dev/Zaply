@@ -4628,10 +4628,29 @@ ZW|Zimbabwe|263`;
         try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = ''; try { RT.watchChats(allChats); } catch (e) {}
         try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
         try { warmProfiles(); } catch (e) {}
+        try { bizAuto(chats); } catch (e) {}
         try { countUnread(); } catch (e) {}
         try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
         if (sig !== chatSig || wasErr) { chatSig = sig; renderChats(); } else updateCounts();
       }).catch(function (e) { loadErr = e && e.status ? 'Server error (' + e.status + ')' : 'Can\u2019t reach the server'; renderChats(); });
+    }
+    /* Zanply Business: greeting message and away message are sent automatically (while the app is open on this phone) */
+    function bizAuto(chats) {
+      if (acctType() !== 'business') return;
+      var s = bizSet(); if (!s.greet && !s.away) return;
+      var since = lsGet('zaply_bizauto_since', 0), done = lsGet('zaply_bizauto_h', {}), greeted = lsGet('zaply_bizauto_g', {}), awayAt = lsGet('zaply_bizauto_a', {}), now = Date.now(), ch = false;
+      var H = null; try { H = bizHours(s); } catch (e) {}
+      var away = !!s.away && (!H || H.open === null || H.open === false);
+      (chats || []).forEach(function (c) {
+        if (c.group || c.mine || !c.phone || typeof c.last !== 'string' || isCallMsg(c.last)) return;
+        var t = new Date(c.at).getTime(); if (!t || t <= since || (done[c.phone] || 0) >= t) return;
+        done[c.phone] = t; ch = true;
+        var out = [];
+        if (s.greet && s.greetText && !greeted[c.phone]) { greeted[c.phone] = 1; out.push(s.greetText); }
+        if (away && s.awayText && now - (awayAt[c.phone] || 0) > 864e5) { awayAt[c.phone] = now; out.push(s.awayText); }
+        out.forEach(function (txt) { var it = { t: Date.now() + '_' + Math.random().toString(36).slice(2), to: c.phone, body: txt }, a = outbox(); a.push(it); setOutbox(a); });
+      });
+      if (ch) { lsSet('zaply_bizauto_h', done); lsSet('zaply_bizauto_g', greeted); lsSet('zaply_bizauto_a', awayAt); flushOutbox(); }
     }
     $('chatSearch').addEventListener('input', renderChats);
     $('chatList').addEventListener('click', function (e) {
@@ -5105,16 +5124,17 @@ ZW|Zimbabwe|263`;
       if (!det) { det = mk('div', 'zcard'); det.id = 'inBizD'; soc.parentNode.insertBefore(det, soc.nextSibling); }
       bio.innerHTML = ''; det.innerHTML = ''; bio.style.display = 'none'; det.style.display = 'none';
       infoSocialCard(soc, p);
+      var ipEl = $('inPhone'); if (ipEl) ipEl.style.display = (p && p.acct === 'business') ? 'none' : ''; /* business: the number is in the details card, the header shows only the name */
       if (!p || p.acct !== 'business') return;
       var B = p.biz || {}, cat = B.cat === 'Other' && B.catOther ? B.catOther : (B.cat || ''), links = (B.links || []).filter(Boolean), els = [];
       /* same order as WhatsApp Business: phone, hours, what it does, address, email, website, other links. No small grey labels, and the business username is not shown to the other person */
       var ph = (phone && !p.phone_hidden) ? phone : ''; if (ph) els.push(bizRow('phone', ph, '', 'tel:' + String(ph).replace(/[^\d+]/g, ''), { cls: 'one wh', mu: true }));
       var H = bizHours(B); if (H) bizHoursRow(H).forEach(function (e) { els.push(e); });
-      if (cat) els.push(bizRow('shapes', cat, '', '', { cls: 'one', mu: true }));
+      var what = String(B.bio || '').trim() || cat; if (what) els.push(bizRow('shapes', what, '', '', { mu: true }));
       if (B.address) els.push(bizRow('pin', B.address, '', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(B.address), { mu: true }));
       if (B.email) els.push(bizRow('mail', B.email, '', 'mailto:' + B.email, { cls: 'one', mu: true }));
       if (B.link) els.push(bizRow('globe', String(B.link), '', bizHref(B.link), { cls: 'one', mu: true }));
-      links.forEach(function (u) { els.push(bizRow('globe', String(u), '', bizHref(u), { cls: 'one', mu: true })); });
+      links.forEach(function (u) { els.push(bizRow('link', String(u), '', bizHref(u), { cls: 'one', mu: true })); });
       det.style.display = ''; els.forEach(function (e) { det.appendChild(e); });
       var first = det.querySelector('.zbrow'); if (first) first.style.borderTop = '0';
       det.querySelectorAll('.zbrow.wh').forEach(function (e) { e.classList.remove('g'); e.style.color = 'inherit'; });
@@ -7457,7 +7477,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
             function br(icon, label, val, empty, key) { row(cb, icon, label, val, empty, function () { bizPage(key, P, after); }); }
             br('brief', 'Business name', B.name, 'Add business name', 'name'); br('at', 'Business username', B.username ? '@' + B.username : '', 'Add business username', 'username');
             br('mail', 'Business email', B.email, 'Add business email', 'email'); br('pin', 'Business address', B.address, 'Add business address', 'address');
-            br('link', 'Business link', B.link, 'Add business link', 'link'); br('info', 'What does the business do', B.cat === 'Other' && B.catOther ? 'Other: ' + B.catOther : B.cat, 'Choose a category', 'cat');
+            br('link', 'Business link', B.link, 'Add business link', 'link'); br('info', 'What does the business do', B.bio, 'Explain what your business does', 'bio');
             br('link', 'Links', (B.links || []).join(', '), 'Add up to 5 links', 'links'); br('person', 'Social media links', Object.keys(B.social || {}).length ? Object.keys(B.social).length + ' added' : '', 'Add social media links', 'social');
             list.appendChild(cb);
           }
@@ -7544,7 +7564,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
 
     /* =============================== BUSINESS PROFILE =============================== */
     function bizPage(key, P, done) {
-      var T = { name: 'Business name', username: 'Business username', email: 'Business email', address: 'Business address', link: 'Business link', cat: 'What does the business do', links: 'Links', social: 'Social media links' };
+      var T = { name: 'Business name', username: 'Business username', email: 'Business email', address: 'Business address', link: 'Business link', bio: 'What does the business do', cat: 'What does the business do', links: 'Links', social: 'Social media links' };
       zOpenPage(T[key], function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w); var B = JSON.parse(JSON.stringify(P.biz || {})); B.links = B.links || []; B.social = B.social || {};
         var m = mk('div', 'zerr'), sv = mk('button', 'primary', 'Save'), collect;
@@ -7553,7 +7573,12 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         else if (key === 'email') { var e1 = zin('business@email.com', 'email', 120); e1.value = B.email || ''; w.appendChild(e1); collect = function () { B.email = e1.value.trim(); }; }
         else if (key === 'address') { var ad = zin('Business address', 'text', 160); ad.value = B.address || ''; w.appendChild(ad); collect = function () { B.address = ad.value.trim(); }; }
         else if (key === 'link') { var l1 = zin('http://url.com', 'url', 200); l1.value = B.link || ''; l1.setAttribute('autocapitalize', 'none'); w.appendChild(l1); collect = function () { B.link = l1.value.trim(); }; }
-        else if (key === 'cat') {
+        else if (key === 'bio') {
+          w.appendChild(mk('div', 'sub', 'Tell people what your business does. Up to 204 letters.')); var bt = mk('textarea', 'zin'); bt.rows = 5; bt.placeholder = 'What does your business do?'; bt.value = Array.from(B.bio || '').slice(0, 204).join(''); w.appendChild(bt);
+          var bc = mk('div', 'sub', ''); bc.style.textAlign = 'right'; w.appendChild(bc);
+          function bcnt() { var a = Array.from(bt.value); if (a.length > 204) { bt.value = a.slice(0, 204).join(''); a = a.slice(0, 204); } bc.textContent = a.length + '/204'; } bt.addEventListener('input', bcnt); bcnt();
+          collect = function () { B.bio = bt.value.trim(); };
+        } else if (key === 'cat') {
           var s = zin('Search', 'text', 40), box = mk('div'), other = zin('Please tell us what your business does', 'text', 60), chosen = B.cat || ''; s.style.marginBottom = '8px'; w.appendChild(s); w.appendChild(box); other.style.marginTop = '10px'; w.appendChild(other);
           function pc() { box.innerHTML = ''; var q = s.value.toLowerCase().trim(); BIZ_CATS.forEach(function (c) { if (q && c.toLowerCase().indexOf(q) < 0) return; var r = mk('button', 'zir'); r.appendChild(mk('div', 'zt', c)); var d = mk('span', '', chosen === c ? '\u25CF' : '\u25CB'); d.style.color = chosen === c ? 'var(--acc,#21c063)' : 'var(--muted)'; r.appendChild(d); r.addEventListener('click', function () { chosen = c; pc(); other.style.display = chosen === 'Other' ? '' : 'none'; }); box.appendChild(r); }); }
           other.value = B.catOther || ''; other.style.display = chosen === 'Other' ? '' : 'none'; s.addEventListener('input', pc); pc();
@@ -7602,7 +7627,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       } else {
         /* like WhatsApp Business: the name is in the header, and only what the business has filled in is shown */
         var B = p.biz || {}, add = function (el, has) { if (has) card.appendChild(el); };
-        var catTxt = B.cat === 'Other' && B.catOther ? B.catOther : B.cat, blinks = (B.links || []).filter(Boolean);
+        var catTxt = String(B.bio || '').trim() || (B.cat === 'Other' && B.catOther ? B.catOther : B.cat), blinks = (B.links || []).filter(Boolean);
         add(profRow('brief', catTxt, 'What the business does'), !!catTxt);
         add(profRow('pin', B.address, 'Business address'), !!B.address);
         add(profRow('mail', B.email, 'Business email'), !!B.email);
@@ -7811,18 +7836,19 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         }
         var s = bizSet(); function sv() { lsSet('zaply_biz', s); }
         w.appendChild(mk('div', 'sub', 'Your business details are in Profile. Set your messages and opening times here.'));
-        zswitchRow(w, 'Greeting message', 'Send a welcome message to new customers.', s.greet, function (v) { s.greet = v; sv(); });
+        zswitchRow(w, 'Greeting message', 'Send a welcome message to new customers.', s.greet, function (v) { s.greet = v; if (v) { lsSet('zaply_bizauto_since', Date.now()); var gd = lsGet('zaply_bizauto_g', {}); (allChats || []).forEach(function (c) { gd[c.phone] = 1; }); lsSet('zaply_bizauto_g', gd); } sv(); });
         var g = zin('Hello! Thanks for contacting us.', 'text', 300); g.value = s.greetText || ''; g.addEventListener('input', function () { s.greetText = g.value; sv(); }); w.appendChild(g);
-        zswitchRow(w, 'Away message', 'Reply automatically when you are away.', s.away, function (v) { s.away = v; sv(); });
+        zswitchRow(w, 'Away message', 'Reply automatically when you are away.', s.away, function (v) { s.away = v; if (v) lsSet('zaply_bizauto_since', Date.now()); sv(); });
         var a = zin('Thanks! We will reply soon.', 'text', 300); a.value = s.awayText || ''; a.addEventListener('input', function () { s.awayText = a.value; sv(); }); w.appendChild(a);
         zlbl(w, 'Open days'); var dr = mk('div', 'zdays'); s.days = s.days || [];
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(function (d) { var x = mk('button', 'zday' + (s.days.indexOf(d) > -1 ? ' on' : ''), d); x.addEventListener('click', function () { var i = s.days.indexOf(d); if (i > -1) s.days.splice(i, 1); else s.days.push(d); x.classList.toggle('on'); sv(); }); dr.appendChild(x); }); w.appendChild(dr);
         var pushT = 0, sv0 = sv; sv = function () { sv0(); clearTimeout(pushT); pushT = setTimeout(function () { try { myProf().then(function (P0) { var B2 = JSON.parse(JSON.stringify(P0.biz || {})); B2.days = s.days || []; B2.from = s.from || ''; B2.to = s.to || ''; B2.open24 = !!s.open24; return saveProfile(P0, { biz: B2 }); }).catch(function () {}); } catch (e) {} }, 900); };
         zswitchRow(w, 'Open 24 hours', 'Customers will see that you are open all day.', s.open24, function (v) { s.open24 = v; sv(); });
+        sv();
         zlbl(w, 'Open hours'); var hr = mk('div'); hr.style.cssText = 'display:flex;gap:10px;align-items:center';
         var f = zin('08:00', 'time'), t = zin('17:00', 'time'); f.value = s.from || ''; t.value = s.to || ''; f.addEventListener('input', function () { s.from = f.value; sv(); }); t.addEventListener('input', function () { s.to = t.value; sv(); });
         hr.appendChild(f); hr.appendChild(mk('span', '', 'to')); hr.appendChild(t); w.appendChild(hr);
-        w.appendChild(mk('div', 'zfoot', 'These are saved on this phone for now. Sending them automatically to customers will be switched on with the server update.'));
+        w.appendChild(mk('div', 'zfoot', 'Greeting and away messages are sent automatically while Zanply is open on this phone. Open days and hours are shown on your business profile.'));
         var back = mk('button', '', 'Switch back to Personal account'); back.style.cssText = 'width:100%;margin-top:22px'; back.addEventListener('click', function () { switchAcct('personal', function () { closeOv(); setTimeout(openBusiness, 80); }); }); w.appendChild(back);
       });
     }
