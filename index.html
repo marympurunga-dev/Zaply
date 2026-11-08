@@ -8938,7 +8938,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     S.busy = true; paint();
     return chatCall('status_list', {}).then(function (r) { norm(r); S.err = ''; S.t = Date.now(); S.owner = myPhone; S.loaded = true; })
       .catch(function (e) { S.err = (e && e.message) || 'Could not load status updates.'; })
-      .then(function () { S.busy = false; try { renderStories(); } catch (e) {} paint(); });
+      .then(function () { S.busy = false; try { renderStories(); } catch (e) {} paint(); try { if (curTab === 'chats') renderChats(); } catch (e) {} });
   }
 
   /* ---------- Status tab ---------- */
@@ -9095,8 +9095,8 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     sh.appendChild(mk('div', 'zsh-lbl', 'Pictures and videos'));
     var g = mk('div', 'zsh-grid');
     g.appendChild(tile('Camera', IC.cam, function () { closeOv(); setTimeout(statusCamera, 250); }));
-    g.appendChild(tile('Photos', IC.photo, function () { pick('image/*', false, picked); closeOv(); }));
-    g.appendChild(tile('Videos', IC.video, function () { pick('video/*', false, picked); closeOv(); }));
+    g.appendChild(tile('Photos', IC.photo, function () { closeOv(); pick('image/*', false, picked); }));
+    g.appendChild(tile('Videos', IC.video, function () { closeOv(); pick('video/*', false, picked); }));
     sh.appendChild(g);
     bd.addEventListener('click', closeOv);
     document.body.appendChild(bd); document.body.appendChild(sh);
