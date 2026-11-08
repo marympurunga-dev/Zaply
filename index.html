@@ -1555,6 +1555,7 @@ html.islight #infoView #inAv{border-color:#25d366!important}
             <div style="font-weight:700;margin-bottom:6px">App log (live) <span id="diagLiveN" style="font-weight:400;color:var(--muted)"></span></div>
             <div id="diagLiveOut" style="white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:12px;max-height:260px;overflow:auto"></div>
             <div style="display:flex;gap:8px;margin-top:8px"><button class="link" id="diagLiveCopy" style="flex:1">Copy log</button><button class="link" id="diagLiveClear" style="flex:1">Clear log</button></div>
+            <button class="link" id="diagRestore" style="width:100%;margin-top:8px">Restore chats deleted from this phone</button>
           </div>
           <button class="link" id="diagTest" style="width:100%;margin-top:10px">Send a real test (then close Zanply)</button>
           <button class="link" id="diagClose" style="width:100%;margin-top:6px">Close</button>
@@ -5424,7 +5425,7 @@ ZW|Zimbabwe|263`;
     /* photo editor: shown after the camera takes a picture */
     var ced = { chat: null, src: null, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
     function cedVidReset() { var v = $('cedVid'); if (v) { try { v.pause(); URL.revokeObjectURL(v.src); } catch (e) {} v.remove(); } $('cedWrap').style.display = ''; var tb = document.querySelector('#camEd .ced-top > div'); if (tb) tb.style.display = 'flex'; if (ced) ced.video = null; }
-    function cedClose() { cedVidReset(); $('camEd').classList.add('hidden'); ced.src = null; $('cedItems').innerHTML = ''; cedQ = []; }
+    function cedClose() { try { if (window.zLog) window.zLog('Editor closed (overlays ' + (typeof overlays !== 'undefined' ? overlays.length : '?') + ', popSkip ' + (typeof popSkip !== 'undefined' ? popSkip : '?') + ') via ' + String(new Error().stack || '').split('\n').slice(2, 5).map(function (l) { return l.trim().replace(/\(.*[\/]/, '('); }).join(' < ')); } catch (e) {} cedVidReset(); $('camEd').classList.add('hidden'); ced.src = null; $('cedItems').innerHTML = ''; cedQ = []; }
     function cedTool(m) {
       ced.mode = ced.mode === m ? '' : m;
       $('cedT_draw').classList.toggle('on', ced.mode === 'draw'); $('cedDraw').classList.toggle('on', ced.mode === 'draw');
@@ -9141,16 +9142,23 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   }
   function picked(file) {
     zlog('Status: opening ' + (isVid(file) ? 'video' : 'photo') + ' editor for ' + (file.name || 'file'));
-    setTimeout(function () {
+    function openIt(retry) {
       try {
         if (isVid(file)) {
           if (file.size > VID_MAX) return toast('That video is too big. The limit is 30 MB.');
           if (window.zOpenVideoEditor) window.zOpenVideoEditor(file, '__status__'); else videoComposer(file);
         } else if (window.zOpenEditor) window.zOpenEditor(file, '__status__');
-        else { diag('Status: the photo editor function is missing'); toast('Photo editor is not ready. Try again.'); }
-      } catch (e) { diag('Status: editor crashed: ' + ((e && e.message) || e)); }
-      setTimeout(function () { var ce = $('camEd'); if (ce && ce.classList.contains('hidden')) diag('Status: editor is still NOT visible 1.5s after the file was chosen'); else zlog('Status: editor is open'); }, 1500);
-    }, 300);
+        else { diag('Status: the photo editor function is missing'); toast('Photo editor is not ready. Try again.'); return; }
+      } catch (e) { diag('Status: editor crashed: ' + ((e && e.message) || e)); return; }
+      setTimeout(function () {
+        var ce = $('camEd');
+        if (ce && ce.classList.contains('hidden')) {
+          if (!retry) { diag('Status: editor closed itself right after opening. Opening it again.'); openIt(true); }
+          else diag('Status: editor is still NOT visible after a second try');
+        } else zlog('Status: editor is open');
+      }, retry ? 1500 : 900);
+    }
+    setTimeout(function () { openIt(false); }, 300);
   }
 
   /* ---------- posting: black "Adding status..." pop for 4 seconds, then the status is added ---------- */
@@ -9448,6 +9456,11 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     } catch (e) {}
   }
   setInterval(paintLive, 1000);
+  $('diagRestore').addEventListener('click', function () {
+    var m = lsGet('zaply_hidden', {}), n = Object.keys(m || {}).length;
+    lsSet('zaply_hidden', {}); zlog('Restored ' + n + ' chat(s) hidden by delete'); try { renderChats(); } catch (e) {}
+    toast(n ? n + ' chat' + (n > 1 ? 's' : '') + ' restored' : 'No deleted chats to restore', true);
+  });
   $('diagLiveClear').addEventListener('click', function () { lsSet('zaply_diaglog', []); $('diagLiveOut').textContent = ''; paintLive(); });
   $('diagLiveCopy').addEventListener('click', function () {
     var t = $('diagLiveOut').textContent;
