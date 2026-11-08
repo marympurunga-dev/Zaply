@@ -1359,6 +1359,18 @@ html.islight #infoView #inAv{border-color:#25d366!important}
 .zbrow .bi{flex:none;display:flex;color:#21c063}
 .zbrow .bt{display:flex;flex-direction:column;min-width:0}.zbrow .bt b{font-weight:600;font-size:16px;word-break:break-word}.zbrow .bt small{color:var(--muted);font-size:12.5px;margin-top:2px}
 .zbrow.g .bt b{color:#21c063}
+.zbrow .bt{flex:1}
+.zbrow.one .bt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;word-break:normal;font-size:16px}
+.zbrow .bi{width:26px;justify-content:center}
+.zbrow .bi.mu{color:var(--muted)}
+.zbrow.hrs{cursor:pointer}
+.zbrow .hs{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.zbrow .hs .st{color:#21c063;font-weight:600;font-size:16px;white-space:nowrap}.zbrow .hs .st.c{color:#e5484d}
+.zbrow .hs .rt2{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zbrow .hs .cv{flex:none;display:flex;color:var(--muted);transition:transform .2s}.zbrow.open .hs .cv{transform:rotate(180deg)}
+.zhrsx{display:none;padding:2px 16px 12px 58px;color:var(--muted);font-size:14.5px;line-height:1.7}.zhrsx.on{display:block}
+.zhrsx .td{color:inherit;font-weight:600}
+.zbrow.note .bt small{font-size:14.5px;margin-top:3px}
 /* share sheet people */
 .zshh{padding:10px 18px 4px;color:var(--muted);font-size:13px;font-weight:600}
 .zshp{display:flex;gap:14px;overflow-x:auto;padding:6px 16px 18px}
@@ -5049,14 +5061,42 @@ ZW|Zimbabwe|263`;
       pin: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg>',
       planet: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5.2"/><path d="M3.2 15.4C2 13.2 5.6 9 11.4 6.6M20.8 8.6c1.2 2.2-2.4 6.4-8.2 8.8"/></svg>',
       link: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M3.9 12a3.1 3.1 0 0 1 3.1-3.1h4V7H7a5 5 0 0 0 0 10h4v-1.9H7A3.1 3.1 0 0 1 3.9 12zM8 13h8v-2H8v2zm9-6h-4v1.9h4a3.1 3.1 0 0 1 0 6.2h-4V17h4a5 5 0 0 0 0-10z"/></svg>',
-      clock: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm.5 5v5.2l4.3 2.5-.8 1.3L11 13V7h1.5z"/></svg>',
-      at: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>'
+      at: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>',
+      phone: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.34 1.78.66 2.62a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.46-1.27a2 2 0 0 1 2.11-.45c.84.32 1.72.54 2.62.66A2 2 0 0 1 22 16.92z"/></svg>',
+      globe: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.6 4 5.9 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-5.9-4-9.5s1.4-6.9 4-9.5z"/></svg>',
+      shapes: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 8 9.5h8z"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><circle cx="17.2" cy="17" r="3.5"/></svg>',
+      info: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5M12 7.6v.1"/></svg>',
+      clock: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 6.8V12l3.4 2"/></svg>'
     };
     function bizHref(u) { u = String(u || '').trim(); return /^(https?:|mailto:|tel:)/i.test(u) ? u : 'https://' + u.replace(/^\/+/, ''); }
-    function bizRow(icon, text, label, href) {
-      var r = href ? mk('a', 'zbrow g') : mk('div', 'zbrow'); if (href) { r.href = href; if (!/^mailto:/i.test(href)) { r.target = '_blank'; r.rel = 'noopener noreferrer'; } }
-      r.innerHTML = '<span class="bi">' + BIZ_IC[icon] + '</span><span class="bt"><b></b><small></small></span>';
-      r.querySelector('b').textContent = text; r.querySelector('small').textContent = label; return r;
+    function bizRow(icon, text, label, href, opt) {
+      opt = opt || {};
+      var r = href ? mk('a', 'zbrow g') : mk('div', 'zbrow'); if (opt.cls) r.className += ' ' + opt.cls; if (href) { r.href = href; if (!/^(mailto|tel):/i.test(href)) { r.target = '_blank'; r.rel = 'noopener noreferrer'; } }
+      r.innerHTML = '<span class="bi' + (opt.mu ? ' mu' : '') + '">' + BIZ_IC[icon] + '</span><span class="bt"><b></b>' + (label ? '<small></small>' : '') + '</span>';
+      r.querySelector('b').textContent = text; if (label) r.querySelector('small').textContent = label; return r;
+    }
+    var BIZ_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    function bizHours(B) {
+      var days = Array.isArray(B.days) ? B.days.filter(Boolean) : [], f = B.from || '', t = B.to || '';
+      if (!days.length && !f && !t && !B.hours && !B.open24) return null;
+      var all = !!B.open24 || (f === '00:00' && (t === '23:59' || t === '00:00' || t === '24:00')), now = new Date(), open = null;
+      var today = BIZ_DAYS[now.getDay()], dayOk = !days.length || days.indexOf(today) > -1;
+      if (all) open = dayOk;
+      else if (f && t) {
+        var m = now.getHours() * 60 + now.getMinutes(), a = f.split(':'), b = t.split(':'), A = (+a[0]) * 60 + (+a[1] || 0), Z = (+b[0]) * 60 + (+b[1] || 0);
+        open = dayOk && (A <= Z ? (m >= A && m < Z) : (m >= A || m < Z));
+      } else if (days.length) open = dayOk;
+      var right = all ? 'Open 24 hours' : (f && t ? f + ' \u2013 ' + t : (B.hours || ''));
+      return { open: open, right: right, days: days, all: all };
+    }
+    function bizHoursRow(H) {
+      var r = mk('div', 'zbrow hrs'), st = H.open === null ? '' : (H.open ? 'Open now' : 'Closed now');
+      r.innerHTML = '<span class="bi mu">' + BIZ_IC.clock + '</span><span class="hs"><span class="st' + (H.open === false ? ' c' : '') + '"></span><span class="rt2"></span><span class="cv"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></span>';
+      r.querySelector('.st').textContent = st || 'Opening hours'; r.querySelector('.rt2').textContent = H.right;
+      var x = mk('div', 'zhrsx'), order = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], todayN = BIZ_DAYS[new Date().getDay()];
+      order.forEach(function (d) { var on = !H.days.length || H.days.indexOf(d) > -1, l = mk('div', ''); l.innerHTML = '<span class="td"></span>'; l.querySelector('.td').textContent = d + (d === todayN ? ' (today)' : ''); l.appendChild(document.createTextNode(': ' + (on ? (H.right || 'Open') : 'Closed'))); x.appendChild(l); });
+      r.addEventListener('click', function () { r.classList.toggle('open'); x.classList.toggle('on'); });
+      return [r, x];
     }
     function renderInfoBiz(phone, p) {
       var box = $('inBiz'), soc = $('inSoc'); if (!box) return; box.innerHTML = ''; box.style.display = 'none'; soc.innerHTML = '';
@@ -5066,18 +5106,19 @@ ZW|Zimbabwe|263`;
       bio.innerHTML = ''; det.innerHTML = ''; bio.style.display = 'none'; det.style.display = 'none';
       infoSocialCard(soc, p);
       if (!p || p.acct !== 'business') return;
-      var B = p.biz || {}, cat = B.cat === 'Other' && B.catOther ? B.catOther : (B.cat || '');
-      if (cat) { bio.style.display = ''; var bb = mk('div', 'zbio'); bb.appendChild(mk('small', '', 'What does the business do')); bb.appendChild(mk('div', 'bt', cat)); bio.appendChild(bb); }
-      var rows = [], links = (B.links || []).filter(Boolean);
-      if (B.email) rows.push(bizRow('mail', B.email, 'Business email', 'mailto:' + B.email));
-      if (B.address) rows.push(bizRow('pin', B.address, 'Address', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(B.address)));
-      if (B.link) rows.push(bizRow('planet', String(B.link).replace(/^https?:\/\/(www\.)?/i, ''), 'Business link', bizHref(B.link)));
-      links.forEach(function (u) { rows.push(bizRow('link', String(u).replace(/^https?:\/\/(www\.)?/i, ''), 'Other link', bizHref(u))); });
-      var days = Array.isArray(B.days) ? B.days : [], hrs = B.hours || ((B.from || B.to) ? (B.from || '') + ' \u2013 ' + (B.to || '') : '');
-      if (days.length || hrs) rows.push(bizRow('clock', [days.length ? days.join(', ') : '', hrs].filter(Boolean).join(' \u00b7 '), 'Opening hours', ''));
-      if (B.username) rows.push(bizRow('at', '@' + B.username, 'Business username', ''));
-      if (rows.length) { det.style.display = ''; det.appendChild(mk('div', 'zsec', 'Business account')); rows.forEach(function (r) { det.appendChild(r); }); }
-      else { det.style.display = ''; det.appendChild(mk('div', 'zsec', 'Business account')); }
+      var B = p.biz || {}, cat = B.cat === 'Other' && B.catOther ? B.catOther : (B.cat || ''), links = (B.links || []).filter(Boolean), els = [];
+      /* same order as WhatsApp Business: phone, hours, what it does, address, email, website, other links. No small grey labels, and the business username is not shown to the other person */
+      var ph = (phone && !p.phone_hidden) ? phone : ''; if (ph) els.push(bizRow('phone', ph, '', 'tel:' + String(ph).replace(/[^\d+]/g, ''), { cls: 'one wh', mu: true }));
+      var H = bizHours(B); if (H) bizHoursRow(H).forEach(function (e) { els.push(e); });
+      if (cat) els.push(bizRow('shapes', cat, '', '', { cls: 'one', mu: true }));
+      if (B.address) els.push(bizRow('pin', B.address, '', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(B.address), { mu: true }));
+      if (B.email) els.push(bizRow('mail', B.email, '', 'mailto:' + B.email, { cls: 'one', mu: true }));
+      if (B.link) els.push(bizRow('globe', String(B.link), '', bizHref(B.link), { cls: 'one', mu: true }));
+      links.forEach(function (u) { els.push(bizRow('globe', String(u), '', bizHref(u), { cls: 'one', mu: true })); });
+      det.style.display = ''; els.forEach(function (e) { det.appendChild(e); });
+      var first = det.querySelector('.zbrow'); if (first) first.style.borderTop = '0';
+      det.querySelectorAll('.zbrow.wh').forEach(function (e) { e.classList.remove('g'); e.style.color = 'inherit'; });
+      det.appendChild(bizRow('info', 'Business Account', 'This account uses Zanply Business', '', { cls: 'note', mu: true }));
     }
     function openInfo() {
       if (!openUser) return; pushOv(closeInfo);
@@ -7563,7 +7604,6 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         var B = p.biz || {}, add = function (el, has) { if (has) card.appendChild(el); };
         var catTxt = B.cat === 'Other' && B.catOther ? B.catOther : B.cat, blinks = (B.links || []).filter(Boolean);
         add(profRow('brief', catTxt, 'What the business does'), !!catTxt);
-        add(profRow('at', B.username ? '@' + B.username : '', 'Business username'), !!B.username);
         add(profRow('pin', B.address, 'Business address'), !!B.address);
         add(profRow('mail', B.email, 'Business email'), !!B.email);
         add(linkRow('link', 'Business link', B.link ? [B.link] : []), !!B.link);
@@ -7777,6 +7817,8 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         var a = zin('Thanks! We will reply soon.', 'text', 300); a.value = s.awayText || ''; a.addEventListener('input', function () { s.awayText = a.value; sv(); }); w.appendChild(a);
         zlbl(w, 'Open days'); var dr = mk('div', 'zdays'); s.days = s.days || [];
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(function (d) { var x = mk('button', 'zday' + (s.days.indexOf(d) > -1 ? ' on' : ''), d); x.addEventListener('click', function () { var i = s.days.indexOf(d); if (i > -1) s.days.splice(i, 1); else s.days.push(d); x.classList.toggle('on'); sv(); }); dr.appendChild(x); }); w.appendChild(dr);
+        var pushT = 0, sv0 = sv; sv = function () { sv0(); clearTimeout(pushT); pushT = setTimeout(function () { try { myProf().then(function (P0) { var B2 = JSON.parse(JSON.stringify(P0.biz || {})); B2.days = s.days || []; B2.from = s.from || ''; B2.to = s.to || ''; B2.open24 = !!s.open24; return saveProfile(P0, { biz: B2 }); }).catch(function () {}); } catch (e) {} }, 900); };
+        zswitchRow(w, 'Open 24 hours', 'Customers will see that you are open all day.', s.open24, function (v) { s.open24 = v; sv(); });
         zlbl(w, 'Open hours'); var hr = mk('div'); hr.style.cssText = 'display:flex;gap:10px;align-items:center';
         var f = zin('08:00', 'time'), t = zin('17:00', 'time'); f.value = s.from || ''; t.value = s.to || ''; f.addEventListener('input', function () { s.from = f.value; sv(); }); t.addEventListener('input', function () { s.to = t.value; sv(); });
         hr.appendChild(f); hr.appendChild(mk('span', '', 'to')); hr.appendChild(t); w.appendChild(hr);
