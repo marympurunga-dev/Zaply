@@ -1576,7 +1576,7 @@ html.islight #infoView #inAv{border-color:#25d366!important}
       </div>
       <div id="emojiBox" class="emojibox hidden"></div>
       <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedBri" aria-label="Brighten">☀</button><button id="cedRot" aria-label="Crop and rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button id="cedEmo" aria-label="Stickers"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6l8-8z"/><path d="M20 12h-4a2 2 0 0 0-2 2v4"/><path d="M8.5 9.5h.01M14.5 9.5h.01"/></svg></button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div><div id="cedTxtOv" class="hidden"><div class="cto-top"><button id="ctoDone" class="cto-t">Done</button><div style="display:flex;gap:8px"><button id="ctoAl" aria-label="Align"></button><button id="ctoBg" aria-label="Background">A</button></div></div><div class="cto-mid"><textarea id="ctoIn" rows="1" placeholder="Add text" maxlength="120"></textarea></div><div class="cto-bot"><input type="range" id="ctoHue" min="0" max="100" value="0" aria-label="Colour"><div id="ctoFonts"></div></div></div><div id="cedStk" class="hidden"><div class="stk-sheet"><div class="stk-h"></div><div class="stk-tabs"><button data-t="e">&#128578;</button><button data-t="s">Stickers</button></div><div class="stk-body" id="stkBody"></div></div></div><div id="cedCrop" class="hidden"><div id="ccStage"><div id="ccWrap"><canvas id="ccCv"></canvas><div id="ccBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div></div></div><div class="cc-bar"><button id="ccCancel">Cancel</button><button id="ccRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="ccDone">Done</button></div></div></div>
-      <input id="fileImg" type="file" accept="image/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden><input id="fileAudio" type="file" hidden>
+      <input id="fileImg" type="file" accept="image/*,video/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden><input id="fileAudio" type="file" hidden>
       <div id="recBar" class="recbar hidden"><button id="recCancel" aria-label="Cancel recording"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button><span class="recdot"></span><span id="recT">0:00</span><span style="flex:1;opacity:.7;font-size:13px">Recording&hellip;</span><button id="recSend" aria-label="Send voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
       <div id="blockBar" class="blockbar hidden"><span id="blockBarT"></span><button id="blockBarBtn">Unblock</button></div>
       <div class="comp" id="comp">
@@ -5003,7 +5003,7 @@ ZW|Zimbabwe|263`;
       if (b.indexOf('__loc__') === 0) return '\ud83d\udccd Location';
       if (b.indexOf('__game__') === 0) return '\ud83c\udfae Tic-Tac-Toe';
       if (b.indexOf('__media__') === 0) {
-        var m = parseTail(b, 9) || {}, t = m.k === 'image' ? '\ud83d\udcf7 Photo' : m.k === 'audio' ? '\ud83c\udfa4 Voice message' : '\ud83d\udcce ' + (m.n || 'File');
+        var m = parseTail(b, 9) || {}, t = m.k === 'image' ? '\ud83d\udcf7 Photo' : m.k === 'video' ? '\ud83c\udfa5 Video' : m.k === 'audio' ? '\ud83c\udfa4 Voice message' : '\ud83d\udcce ' + (m.n || 'File');
         return t;
       }
       return b;
@@ -5085,10 +5085,14 @@ ZW|Zimbabwe|263`;
       fs.reduce(function (p, f) { return p.then(function () { return sendPhoto(chat, f); }); }, Promise.resolve());
     }
     var cedQ = [];
+    function isVidF(f) { return /^video\//.test(f.type || '') || /\.(mp4|mov|3gp|webm|mkv|m4v)$/i.test(f.name || ''); }
     $('fileImg').addEventListener('change', function () {
       var inp = this, fs = Array.prototype.slice.call(inp.files || [], 0, 5), chat = openWith || camChat;
       if (!fs.length) return; if (!chat) { inp.value = ''; return; }
-      var first = fs.shift(); openEditor(first, chat, function () { inp.value = ''; }); cedQ = fs;
+      var vids = fs.filter(isVidF), imgs = fs.filter(function (f) { return !isVidF(f); });
+      vids.reduce(function (p, v) { return p.then(function () { return sendMedia(chat, 'video', v, { m: v.type || 'video/mp4', n: v.name || 'video.mp4', s: v.size }); }); }, Promise.resolve());
+      if (!imgs.length) { inp.value = ''; return; }
+      var first = imgs.shift(); openEditor(first, chat, function () { inp.value = ''; }); cedQ = imgs;
     });
     var camChat = null;
     $('fileCam').addEventListener('change', function () {
@@ -5218,9 +5222,10 @@ ZW|Zimbabwe|263`;
         ced = { chat: chat, src: c, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
         cedBri = 0; $('cedBase').style.filter = 'none'; $('cedBase').removeAttribute('data-f'); $('cedBri').classList.remove('on');
         $('cedHD').classList.remove('on'); $('cedVO').classList.remove('on'); $('cedCap').value = ''; $('cedItems').innerHTML = ''; $('cedSend').disabled = false;
-        $('cedTo').textContent = nameOf(chat) || chat; cedTool(''); ['cedTxtOv','cedStk','cedCrop'].forEach(function (i) { $(i).classList.add('hidden'); }); pushOv(cedClose); $('camEd').classList.remove('hidden'); cedLayout();
+        $('cedTo').textContent = chat === '__status__' ? 'Status (Contacts)' : (nameOf(chat) || chat); $('cedVO').style.display = chat === '__status__' ? 'none' : ''; cedTool(''); ['cedTxtOv','cedStk','cedCrop'].forEach(function (i) { $(i).classList.add('hidden'); }); pushOv(cedClose); $('camEd').classList.remove('hidden'); cedLayout();
       }).catch(function () { if (done) done(); toast('Could not open that photo. Try again.'); });
     }
+    window.zOpenEditor = openEditor;
     $('cedX').addEventListener('click', closeOv);
     $('cedHD').addEventListener('click', function () { ced.hd = !ced.hd; this.classList.toggle('on', ced.hd); toast(ced.hd ? 'HD quality on' : 'Standard quality'); });
     $('cedBri').addEventListener('click', function () {
@@ -5335,6 +5340,7 @@ ZW|Zimbabwe|263`;
     });
     $('cedSend').addEventListener('click', function () {
       var btn = this, chat = ced.chat, cap = $('cedCap').value.trim(), vo = ced.vo; btn.disabled = true;
+      if (chat === '__status__') { cedBuild().then(function (r) { return window.zStatusPublishImage(r.blob, cap); }).then(function () { btn.disabled = false; }, function (e) { btn.disabled = false; toast((e && e.message) || 'Could not add your status. Try again.'); }); return; }
       cedBuild().then(function (r) {
         var meta = { m: 'image/jpeg', w: r.w, h: r.h, n: 'photo.jpg' }; if (cap) meta.t = cap; if (vo) meta.vo = 1;
         var rest = cedQ.slice(); closeOv(); cedQ = rest;
@@ -5380,6 +5386,17 @@ ZW|Zimbabwe|263`;
           }).catch(function () { box.classList.add('err'); box.textContent = 'Couldn\u2019t load the photo. Tap to try again.'; box.onclick = load; });
         };
         if (m.mine || autoDl('photos')) load(); else { box.classList.add('err'); box.textContent = 'Tap to download photo'; box.onclick = load; }
+      } else if (meta.k === 'video') {
+        var vbx = mk('div', 'mvid'), vbt = mk('button', 'mvidb'); vbt.innerHTML = '<span class="mvp">\u25b6</span><span>Video' + (meta.s ? ' \u00b7 ' + fmtSize(meta.s) : '') + '</span>';
+        vbx.appendChild(vbt); b.appendChild(vbx);
+        if (!m.mine && autoDl('video')) mediaBlob(meta, chat).catch(function () {});
+        vbt.addEventListener('click', function () {
+          vbt.disabled = true; vbt.lastChild.textContent = 'Loading\u2026';
+          mediaObjUrl(meta, chat).then(function (url) {
+            var v = document.createElement('video'); v.setAttribute('playsinline', ''); v.controls = true; v.src = url;
+            vbx.innerHTML = ''; vbx.appendChild(v); v.play().catch(function () {});
+          }).catch(function () { vbt.disabled = false; vbt.lastChild.textContent = 'Tap to retry'; });
+        });
       } else if (meta.k === 'audio') {
         var row = mk('div', 'maud'), btn = mk('button', 'mplay', '\u25b6'), bar = mk('div', 'mbar'), fill = mk('i'), dur = mk('span', 'mdur', fmtDur(meta.d));
         if (!m.mine && autoDl('audio')) mediaBlob(meta, chat).catch(function () {});
@@ -8178,29 +8195,89 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
 .zst-send{width:52px;height:52px;border-radius:50%;border:none;background:#21c063;color:#06140c;display:flex;align-items:center;justify-content:center;flex:none;padding:0}
 .zst-send:disabled{opacity:.5}
 </style>
+<style>
+.zst-fabs{position:fixed;right:16px;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:7;display:flex;flex-direction:column;align-items:center;gap:14px}
+.zst-fab{width:48px;height:48px;border-radius:16px;background:#1f272d;color:#e9edef;border:none;padding:0;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.zst-fab.main{width:60px;height:60px;border-radius:20px;background:#21c063;color:#06140c}
+html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
+.zst-avw.has>:first-child,.st-add.has>:first-child{box-shadow:0 0 0 2px var(--bg),0 0 0 4.5px #21c063;border-radius:50%}
+.zst-how{display:block;margin:22px auto;border:none;color:var(--muted);font-size:13px;text-decoration:underline}
+.zsh-bd{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.55);opacity:0;transition:opacity .25s}.zsh-bd.in{opacity:1}
+.zsh{position:fixed;left:0;right:0;bottom:0;z-index:81;background:#1b2228;color:#fff;border-radius:24px 24px 0 0;padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .28s ease}.zsh.in{transform:none}
+.zsh-grip{width:44px;height:5px;border-radius:3px;background:#59636b;margin:2px auto 8px}
+.zsh-hd{display:flex;align-items:center;gap:14px;font-size:20px;font-weight:700;margin:6px 0 18px}.zsh-hd button{background:transparent;border:none;color:#fff;padding:4px;display:flex}
+.zsh-chips{display:flex;gap:12px}
+.zsh-chip{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;background:transparent;border:none;color:#fff;font-size:14px;padding:0}.zsh-chip em{font-style:normal}
+.zsh-chip span{width:100%;height:56px;border-radius:28px;background:#2a333a;display:flex;align-items:center;justify-content:center}
+.zsh-lbl{margin:22px 4px 10px;font-size:15px;color:#9aa5ad}
+.zsh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.zsh-tile{height:108px;border-radius:16px;background:#232b31;border:none;color:#e9edef;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px;padding:0}.zsh-tile svg{color:#21c063}
+.zst-pop{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:400;background:#000;color:#fff;border:1px solid #333;padding:13px 22px;border-radius:14px;display:flex;align-items:center;gap:12px;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+.zst-pop i{width:16px;height:16px;border-radius:50%;border:2px solid #555;border-top-color:#21c063;animation:zspin .8s linear infinite}@keyframes zspin{to{transform:rotate(360deg)}}
+.zst-body video{max-width:100%;max-height:100%}
+.zst-body.au{flex-direction:column;gap:16px;font-size:20px;font-weight:600}.zst-body.au audio{width:86%}
+.zst-auic{width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}.zst-auic.rec{background:#c62828;animation:zpulse 1.2s ease-in-out infinite}@keyframes zpulse{50%{transform:scale(1.08)}}
+.zst-tm{font-size:34px}.zst-hint{font-size:14px;opacity:.7;font-weight:400}
+.zst-rec{width:64px;height:64px;border-radius:50%;border:none;background:#e53935;color:#fff;display:flex;align-items:center;justify-content:center;padding:0}
+.zst-capw{flex:1;display:flex}.zst-capw input{flex:1}.zst-toline,.zst-to{font-size:13px;color:#cfd8dc;padding:0 18px 2px}
+.mvid{width:min(260px,70vw);border-radius:12px;overflow:hidden;background:#000}.mvid video{width:100%;display:block;max-height:60vh}
+.mvidb{width:100%;min-height:150px;border:none;border-radius:0;background:#111;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:14px}
+.mvp{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:20px}
+.zi{align-items:center;justify-content:center;gap:14px;padding:16px;background:#0b1014}
+.zi-title{font-size:20px;font-weight:700}.zi-wrap{position:relative;width:240px;height:540px}
+.zi-phone{position:absolute;left:10px;top:0;width:220px;height:440px;border-radius:34px;border:6px solid #2b3036;background:#111b21;overflow:hidden}
+.zi-notch{position:absolute;left:50%;top:0;width:70px;height:16px;margin-left:-35px;background:#2b3036;border-radius:0 0 12px 12px;z-index:3}
+.zi-sc,.zi-cp{position:absolute;inset:0;opacity:0;animation:zis 16s infinite}
+.zi-cp{inset:458px 0 auto 0;text-align:center;font-size:15px;line-height:1.35}
+@keyframes zis{0%{opacity:0;transform:translateY(8px)}4%,22%{opacity:1;transform:none}26%,100%{opacity:0}}
+.zi-hdr{padding:26px 14px 8px;font-weight:700;font-size:16px}
+.zi-row{display:flex;align-items:center;gap:10px;padding:6px 14px}.zi-line{height:8px;flex:1;background:#26313a;border-radius:4px}
+.zi-av{position:relative;width:38px;height:38px;border-radius:50%;background:#37474f;flex:none}.zi-av.s{display:inline-block;width:20px;height:20px;margin-right:6px;vertical-align:middle}
+.zi-av b{position:absolute;right:-3px;bottom:-3px;width:16px;height:16px;border-radius:50%;background:#21c063;color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center}
+.zi-chat{height:34px;margin:10px 14px;border-radius:8px;background:#1b252c}
+.zi-tap{position:absolute;font-size:26px;animation:zpulse 1s infinite}
+.zi-chips,.zi-tiles{display:flex;gap:6px;padding:8px 12px}.zi-chips i,.zi-tiles i{flex:1;font-style:normal;font-size:11px;text-align:center;background:#2a333a;border-radius:14px;padding:12px 0}.zi-tiles i{border-radius:10px;padding:26px 0}
+.zi-photo{position:absolute;inset:0 0 70px;background:linear-gradient(160deg,#128c7e,#6a1b9a 60%,#ef6c00)}.zi-photo.v{top:60px;inset-bottom:56px}
+.zi-capbar{position:absolute;left:10px;right:56px;bottom:12px;height:40px;border-radius:20px;background:#222d34;font-size:11px;padding:12px 14px;color:#9aa5ad}
+.zi-send{position:absolute;right:10px;bottom:12px;width:40px;height:40px;border-radius:50%;background:#21c063;display:flex;align-items:center;justify-content:center}
+.zi-popm{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:#000;border:1px solid #333;border-radius:10px;padding:8px 14px;font-size:12px}
+.zi-bars{position:absolute;left:8px;right:8px;top:22px;display:flex;gap:3px}.zi-bars i{flex:1;height:3px;background:#fff;opacity:.6;border-radius:2px}
+.zi-who{position:absolute;left:10px;top:34px;font-size:11px}.zi-react{position:absolute;left:10px;right:10px;bottom:12px;display:flex;gap:8px;align-items:center}.zi-react span{flex:1;background:#222d34;border-radius:16px;padding:8px 12px;font-size:11px}.zi-react b{font-size:20px;color:#ff4d6d}
+.zi-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:5;background:#000}.zi.hasvid .zi-sc,.zi.hasvid .zi-cp{display:none}
+.zi-cp b{color:#21c063}
+.zi-go{position:absolute;left:24px;right:24px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:auto}
+</style>
 <script>
 (function () {
   var BG = ['#128c7e', '#6a1b9a', '#c2185b', '#ef6c00', '#1565c0', '#37474f', '#2e7d32', '#b71c1c'];
   var IC = {
     pen: 'M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z',
-    cam: 'M9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z',
+    camPlus: 'M3 4V1h2v3h3v2H5v3H3V6H0V4h3zm3 6V7h3V4h7l1.83 2H21c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2V10h3zm7 9c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-3.2-5c0 1.77 1.43 3.2 3.2 3.2s3.2-1.43 3.2-3.2-1.43-3.2-3.2-3.2-3.2 1.43-3.2 3.2z',
     x: 'M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
     heart: 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z',
     eye: 'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z',
     trash: 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z',
     send: 'M2.01 21 23 12 2.01 3 2 10l15 2-15 2z',
-    pal: 'M12 3a9 9 0 000 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c2.8 0 5-2.2 5-5 0-4.4-4-7.4-10.4-7.4z'
+    pal: 'M12 3a9 9 0 000 18c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4c2.8 0 5-2.2 5-5 0-4.4-4-7.4-10.4-7.4z',
+    music: 'M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z',
+    mic: 'M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z',
+    photo: 'M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z',
+    video: 'M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z',
+    cam: 'M9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 100 6 3 3 0 000-6z',
+    stop: 'M6 6h12v12H6z'
   };
   function ico(p, s, fill) { return '<svg viewBox="0 0 24 24" width="' + (s || 24) + '" height="' + (s || 24) + '" fill="' + (fill || 'currentColor') + '"><path d="' + p + '"/></svg>'; }
   function ibtn(cls, p, label, s) { var b = mk('button', cls); b.setAttribute('aria-label', label); b.innerHTML = ico(p, s); return b; }
 
   var S = { owner: '', mine: [], users: [], loaded: false, busy: false, err: '', t: 0 };
   var seenMap = lsGet('zaply_status_seen', {}); if (!seenMap || typeof seenMap !== 'object') seenMap = {};
+  var VID_MAX = 30 * 1024 * 1024, AUD_MAX = 15 * 1024 * 1024;
 
   function tms(x) { var n = typeof x === 'number' ? x : /^\d+$/.test(String(x)) ? +x : Date.parse(x); return n && n < 1e12 ? n * 1000 : (n || 0); }
   function ago(t) { var m = Math.max(0, Math.round((Date.now() - t) / 60000)); if (m < 1) return 'Just now'; if (m < 60) return m + ' min ago'; var h = Math.round(m / 60); return h < 24 ? h + ' h ago' : 'Yesterday'; }
   function okUrl(u) { return typeof u === 'string' && /^https:\/\//i.test(u); }
   function nameFor(u) { var sv = ''; try { sv = savedName(u.phone); } catch (e) {} return sv || u.name || u.phone || ''; }
+  function isVid(f) { return /^video\//.test(f.type || '') || /\.(mp4|mov|3gp|webm|mkv|m4v)$/i.test(f.name || ''); }
 
   /* turn the server list into my statuses + one entry per contact */
   function norm(r) {
@@ -8208,9 +8285,10 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     arr.forEach(function (x) {
       var at = tms(x.at || x.created_at), ex = tms(x.expires || x.expires_at) || at + 864e5;
       if (!x || !x.id || !at || ex <= now) return;
-      var it = { id: x.id, phone: String(x.phone || x.user || ''), name: x.name || '', type: x.type === 'image' ? 'image' : 'text', text: String(x.text || ''), url: okUrl(x.url) ? x.url : '',
+      var ty = (x.type === 'image' || x.type === 'video' || x.type === 'audio') ? x.type : 'text';
+      var it = { id: x.id, phone: String(x.phone || x.user || ''), name: x.name || '', type: ty, text: String(x.text || ''), url: okUrl(x.url) ? x.url : '',
         bg: /^#[0-9a-f]{6}$/i.test(x.bg || '') ? x.bg : BG[0], at: at, likes: +x.likes || 0, liked: !!x.liked, views: +x.views || 0, seen: !!x.seen || !!seenMap[x.id] };
-      if (it.type === 'image' && !it.url) return;
+      if (ty !== 'text' && !it.url) return;
       if (x.mine || (myPhone && it.phone === myPhone)) { it.mine = true; mine.push(it); }
       else (by[it.phone] = by[it.phone] || { phone: it.phone, name: it.name, items: [] }).items.push(it);
     });
@@ -8234,17 +8312,27 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   }
 
   /* ---------- Status tab ---------- */
+  var fabs = null;
+  function ensureFabs() {
+    if (fabs) return fabs;
+    fabs = mk('div', 'zst-fabs hidden');
+    var pb = ibtn('zst-fab', IC.pen, 'Text status', 24), cb = ibtn('zst-fab main', IC.camPlus, 'Add status', 28);
+    pb.addEventListener('click', function () { composer(); });
+    cb.addEventListener('click', openSheet);
+    fabs.appendChild(pb); fabs.appendChild(cb); document.body.appendChild(fabs);
+    return fabs;
+  }
+  function syncFabs() { ensureFabs().classList.toggle('hidden', curTab !== 'status'); }
+
   function paint() {
     var p = $('paneStatus'); if (!p) return; p.innerHTML = '';
-    var row = mk('div', 'zst-row'), w = mk('span', 'zst-avw'), tx = mk('div', 'zst-txt'), ac = mk('div', 'zst-acts'), last = S.mine[S.mine.length - 1];
+    var row = mk('div', 'zst-row'), w = mk('span', 'zst-avw'), tx = mk('div', 'zst-txt'), last = S.mine[S.mine.length - 1];
     w.appendChild(window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })); w.appendChild(mk('i', '', '+'));
+    w.classList.toggle('has', S.mine.length > 0);
     tx.appendChild(mk('b', '', 'My status'));
-    tx.appendChild(mk('small', '', last ? S.mine.length + (S.mine.length > 1 ? ' updates' : ' update') + ' \u00B7 ' + ago(last.at) : 'Tap to add a status update'));
-    var bt = ibtn('zst-ic', IC.pen, 'Text status'), bc = ibtn('zst-ic', IC.cam, 'Photo status');
-    bt.addEventListener('click', function (e) { e.stopPropagation(); composer('text'); });
-    bc.addEventListener('click', function (e) { e.stopPropagation(); pickPhoto(); });
-    ac.appendChild(bt); ac.appendChild(bc); row.appendChild(w); row.appendChild(tx); row.appendChild(ac);
-    row.addEventListener('click', function () { if (S.mine.length) viewer([{ phone: myPhone, name: 'My status', items: S.mine, mine: true }], 0); else pickPhoto(); });
+    tx.appendChild(mk('small', '', last ? S.mine.length + (S.mine.length > 1 ? ' updates' : ' update') + ' \u00B7 ' + ago(last.at) : 'No status'));
+    row.appendChild(w); row.appendChild(tx);
+    row.addEventListener('click', function () { if (S.mine.length) viewer([{ phone: myPhone, name: 'My status', items: S.mine, mine: true }], 0); else openSheet(); });
     p.appendChild(row);
     p.appendChild(mk('div', 'zst-sec', 'Recent updates'));
     if (!S.loaded && S.busy) p.appendChild(mk('div', 'zst-msg', 'Loading\u2026'));
@@ -8255,64 +8343,166 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       ring.appendChild(avatar({ phone: u.phone, name: nameFor(u) })); t.appendChild(mk('b', '', nameFor(u))); t.appendChild(mk('small', '', ago(u.last)));
       r.appendChild(ring); r.appendChild(t); r.addEventListener('click', function () { viewer(S.users, idx); }); p.appendChild(r);
     });
+    var how = mk('button', 'zst-how', 'Watch how status works'); how.addEventListener('click', function () { intro(null); }); p.appendChild(how);
+    syncFabs();
   }
 
-  /* photo picker -> composer */
-  function pickPhoto() {
-    var f = document.createElement('input'); f.type = 'file'; f.accept = 'image/*';
-    f.addEventListener('change', function () { var file = f.files && f.files[0]; if (file) composer('image', file); });
+  /* ---------- bottom sheet (camera button) ---------- */
+  function pick(accept, capture, cb) {
+    var f = document.createElement('input'); f.type = 'file'; f.accept = accept; if (capture) f.setAttribute('capture', 'environment');
+    f.addEventListener('change', function () { var file = f.files && f.files[0]; if (file) cb(file); });
     f.click();
   }
+  function openSheet() {
+    var bd = mk('div', 'zsh-bd'), sh = mk('div', 'zsh');
+    sh.appendChild(mk('div', 'zsh-grip'));
+    var hd = mk('div', 'zsh-hd'), cx = ibtn('', IC.x, 'Close', 26); cx.addEventListener('click', closeOv); hd.appendChild(cx); hd.appendChild(mk('span', '', 'Add status')); sh.appendChild(hd);
+    function chip(label, p, fn) { var b = mk('button', 'zsh-chip'), s = mk('span'); s.innerHTML = ico(p, 26); b.appendChild(s); b.appendChild(mk('em', '', label)); b.addEventListener('click', fn); return b; }
+    function tile(label, p, fn) { var b = mk('button', 'zsh-tile'); b.innerHTML = ico(p, 34); b.appendChild(mk('span', '', label)); b.addEventListener('click', fn); return b; }
+    var chips = mk('div', 'zsh-chips');
+    chips.appendChild(chip('Text', IC.pen, function () { closeOv(); setTimeout(composer, 300); }));
+    chips.appendChild(chip('Music', IC.music, function () { pick('audio/*', false, function (f) { setTimeout(function () { audioComposer(f, 'music'); }, 300); }); closeOv(); }));
+    chips.appendChild(chip('Voice', IC.mic, function () { closeOv(); setTimeout(voiceRec, 300); }));
+    sh.appendChild(chips);
+    sh.appendChild(mk('div', 'zsh-lbl', 'Pictures and videos'));
+    var g = mk('div', 'zsh-grid');
+    g.appendChild(tile('Camera', IC.cam, function () { pick('image/*,video/*', true, picked); closeOv(); }));
+    g.appendChild(tile('Photos', IC.photo, function () { pick('image/*', false, picked); closeOv(); }));
+    g.appendChild(tile('Videos', IC.video, function () { pick('video/*', false, picked); closeOv(); }));
+    sh.appendChild(g);
+    bd.addEventListener('click', closeOv);
+    document.body.appendChild(bd); document.body.appendChild(sh);
+    requestAnimationFrame(function () { requestAnimationFrame(function () { bd.classList.add('in'); sh.classList.add('in'); }); });
+    pushOv(function () { bd.remove(); sh.remove(); });
+  }
+  function picked(file) {
+    setTimeout(function () {
+      if (isVid(file)) return videoComposer(file);
+      if (window.zOpenEditor) window.zOpenEditor(file, '__status__');
+      else toast('Photo editor is not ready. Try again.');
+    }, 300);
+  }
 
-  /* ---------- composer (text or photo) ---------- */
-  function composer(kind, file) {
-    var el = mk('div', 'zst-ov zst-cmp'), top = mk('div', 'zst-top'), body = mk('div', 'zst-body'), bot = mk('div', 'zst-bot');
-    var bg = Math.floor(Math.random() * BG.length), blob = null, busy = false, field, url = '';
+  /* ---------- posting: black "Adding status..." pop for 4 seconds, then the status is added ---------- */
+  function upload(blob, kind) {
+    return chatCall('status_sign', {}).then(function (sg) {
+      var fd = new FormData(); fd.append('file', blob); fd.append('api_key', sg.api_key); fd.append('timestamp', sg.timestamp); fd.append('signature', sg.signature); fd.append('public_id', sg.public_id);
+      if (sg.folder) fd.append('folder', sg.folder);
+      return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/' + kind + '/upload', { method: 'POST', body: fd }).then(function (r) { return r.json(); });
+    }).then(function (j) { if (!j || !j.secure_url) throw new Error((j && j.error && j.error.message) || 'Upload failed. Try again.'); return j.secure_url; });
+  }
+  function addStatus(job) {
+    var pop = mk('div', 'zst-pop'); pop.innerHTML = '<i></i><span>Adding status\u2026</span>'; document.body.appendChild(pop);
+    var t0 = Date.now();
+    return job().then(function () {
+      var w = 4000 - (Date.now() - t0); return w > 0 ? new Promise(function (r) { setTimeout(r, w); }) : 0;
+    }).then(function () {
+      pop.remove(); closeOv(); showTab('status'); toast('Status added', true);
+      return load(true).catch(function () {});
+    }).catch(function (e) { pop.remove(); throw e; });
+  }
+  window.zStatusPublishImage = function (blob, caption) {
+    return addStatus(function () { return upload(blob, 'image').then(function (url) { return chatCall('status_post', { type: 'image', url: url, text: caption || '' }); }); });
+  };
+  function postMedia(type, blob, caption, btn) {
+    btn.disabled = true;
+    addStatus(function () { return upload(blob, 'video').then(function (url) { return chatCall('status_post', { type: type, url: url, text: caption || '' }); }); })
+      .catch(function (e) { btn.disabled = false; toast((e && e.message) || 'Could not post your status. Try again.'); });
+  }
+
+  /* ---------- text composer ---------- */
+  function composer() {
+    var el = mk('div', 'zst-ov zst-cmp'), top = mk('div', 'zst-top'), body = mk('div', 'zst-body t'), bot = mk('div', 'zst-bot');
+    var bg = Math.floor(Math.random() * BG.length), busy = false, field;
     var cl = ibtn('', IC.x, 'Close', 28); cl.addEventListener('click', closeOv); top.appendChild(cl);
     var send = mk('button', 'zst-send'); send.innerHTML = ico(IC.send, 24); send.setAttribute('aria-label', 'Post status');
-    if (kind === 'text') {
-      body.classList.add('t'); body.style.background = BG[bg];
-      field = document.createElement('textarea'); field.maxLength = 400; field.placeholder = 'Type a status'; body.appendChild(field);
-      var pb = ibtn('', IC.pal, 'Change color', 26); pb.addEventListener('click', function () { bg = (bg + 1) % BG.length; body.style.background = BG[bg]; }); top.appendChild(pb);
-      bot.style.justifyContent = 'flex-end';
-    } else {
-      var img = document.createElement('img'); body.appendChild(img);
-      field = document.createElement('input'); field.type = 'text'; field.maxLength = 200; field.placeholder = 'Add a caption\u2026'; bot.appendChild(field);
-      send.disabled = true;
-      prepImage(file, 1080, 0.8).then(function (r) { blob = r.blob; url = URL.createObjectURL(blob); img.src = url; send.disabled = false; })
-        .catch(function () { toast('Could not read that photo'); closeOv(); });
-    }
-    bot.appendChild(send); el.appendChild(top); el.appendChild(body); el.appendChild(bot); document.body.appendChild(el);
-    pushOv(function () { el.remove(); if (url) URL.revokeObjectURL(url); });
-    if (kind === 'text') setTimeout(function () { field.focus(); }, 150);
+    body.style.background = BG[bg];
+    field = document.createElement('textarea'); field.maxLength = 400; field.placeholder = 'Type a status'; body.appendChild(field);
+    var pb = ibtn('', IC.pal, 'Change color', 26); pb.addEventListener('click', function () { bg = (bg + 1) % BG.length; body.style.background = BG[bg]; }); top.appendChild(pb);
+    bot.style.justifyContent = 'space-between'; bot.appendChild(mk('span', 'zst-to', 'Status (Contacts)')); bot.appendChild(send);
+    el.appendChild(top); el.appendChild(body); el.appendChild(bot); document.body.appendChild(el);
+    pushOv(function () { el.remove(); });
+    setTimeout(function () { field.focus(); }, 150);
     send.addEventListener('click', function () {
-      if (busy) return; var text = field.value.trim();
-      if (kind === 'text' && !text) return toast('Write something first');
+      if (busy) return; var text = field.value.trim(); if (!text) return toast('Write something first');
       busy = true; send.disabled = true;
-      var p = kind === 'text' ? chatCall('status_post', { type: 'text', text: text, bg: BG[bg] })
-        : chatCall('status_sign', {}).then(function (sg) {
-          var fd = new FormData(); fd.append('file', blob); fd.append('api_key', sg.api_key); fd.append('timestamp', sg.timestamp); fd.append('signature', sg.signature); fd.append('public_id', sg.public_id);
-          if (sg.folder) fd.append('folder', sg.folder);
-          return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/image/upload', { method: 'POST', body: fd }).then(function (r) { return r.json(); });
-        }).then(function (j) { if (!j || !j.secure_url) throw new Error('Upload failed. Try again.'); return chatCall('status_post', { type: 'image', url: j.secure_url, text: text }); });
-      p.then(function () { closeOv(); toast('Status posted', true); return load(true); })
+      addStatus(function () { return chatCall('status_post', { type: 'text', text: text, bg: BG[bg] }); })
         .catch(function (e) { busy = false; send.disabled = false; toast((e && e.message) || 'Could not post your status. Try again.'); });
     });
   }
 
+  /* ---------- video / music / voice composer ---------- */
+  function mediaComposer(type, blob, label) {
+    var el = mk('div', 'zst-ov zst-cmp'), top = mk('div', 'zst-top'), body = mk('div', 'zst-body'), bot = mk('div', 'zst-bot'), url = URL.createObjectURL(blob), m;
+    var cl = ibtn('', IC.x, 'Close', 28); cl.addEventListener('click', closeOv); top.appendChild(cl);
+    if (type === 'video') { m = document.createElement('video'); m.setAttribute('playsinline', ''); m.controls = true; m.src = url; body.appendChild(m); }
+    else {
+      body.classList.add('au'); body.style.background = BG[Math.floor(Math.random() * BG.length)];
+      var c = mk('div', 'zst-auic'); c.innerHTML = ico(label === 'Voice' ? IC.mic : IC.music, 54); body.appendChild(c); body.appendChild(mk('div', '', label));
+      m = document.createElement('audio'); m.controls = true; m.src = url; body.appendChild(m);
+    }
+    var field = document.createElement('input'); field.type = 'text'; field.maxLength = 200; field.placeholder = 'Add a caption\u2026';
+    var send = mk('button', 'zst-send'); send.innerHTML = ico(IC.send, 24); send.setAttribute('aria-label', 'Post status');
+    var wrap = mk('div', 'zst-capw'); wrap.appendChild(field); bot.appendChild(wrap); bot.appendChild(send);
+    var to = mk('div', 'zst-toline', 'Status (Contacts)');
+    el.appendChild(top); el.appendChild(body); el.appendChild(to); el.appendChild(bot); document.body.appendChild(el);
+    pushOv(function () { try { m.pause(); } catch (e) {} URL.revokeObjectURL(url); el.remove(); });
+    send.addEventListener('click', function () { postMedia(type, blob, field.value.trim(), send); });
+  }
+  function videoComposer(file) {
+    if (file.size > VID_MAX) return toast('That video is too big. The limit is 30 MB.');
+    mediaComposer('video', file, 'Video');
+  }
+  function audioComposer(blob, label) {
+    if (blob.size > AUD_MAX) return toast('That audio is too big. The limit is 15 MB.');
+    mediaComposer('audio', blob, label === 'voice' ? 'Voice' : 'Music');
+  }
+
+  /* ---------- voice recorder ---------- */
+  function voiceRec() {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder)) return toast('Voice recording is not supported on this phone');
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      var mt = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].filter(function (t) { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } })[0] || '';
+      var mr = new MediaRecorder(stream, mt ? { mimeType: mt } : undefined), chunks = [], cancelled = false, done = false, t0 = Date.now(), timer;
+      var el = mk('div', 'zst-ov zst-cmp'), top = mk('div', 'zst-top'), body = mk('div', 'zst-body au'), tm = mk('div', 'zst-tm', '0:00'), stop = mk('button', 'zst-rec');
+      var cl = ibtn('', IC.x, 'Close', 28); cl.addEventListener('click', closeOv); top.appendChild(cl);
+      body.style.background = '#1b2228'; var c = mk('div', 'zst-auic rec'); c.innerHTML = ico(IC.mic, 54); body.appendChild(c); body.appendChild(tm); body.appendChild(mk('div', 'zst-hint', 'Recording\u2026 tap the square to finish'));
+      stop.innerHTML = ico(IC.stop, 30); stop.setAttribute('aria-label', 'Stop recording');
+      var bot = mk('div', 'zst-bot'); bot.style.justifyContent = 'center'; bot.appendChild(stop);
+      el.appendChild(top); el.appendChild(body); el.appendChild(bot); document.body.appendChild(el);
+      mr.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+      mr.onstop = function () {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        if (cancelled || !chunks.length) return;
+        var blob = new Blob(chunks, { type: mr.mimeType || mt || 'audio/webm' });
+        setTimeout(function () { audioComposer(blob, 'voice'); }, 300);
+      };
+      function finish(save) { cancelled = !save; clearInterval(timer); try { if (mr.state !== 'inactive') mr.stop(); } catch (e) {} }
+      function fin() { done = true; finish(true); closeOv(); }
+      pushOv(function () { if (!done) finish(false); el.remove(); });
+      stop.addEventListener('click', fin);
+      timer = setInterval(function () {
+        var s = Math.floor((Date.now() - t0) / 1000); tm.textContent = Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+        if (s >= 90) fin();
+      }, 250);
+      mr.start();
+    }).catch(function () { toast('Allow the microphone to record a voice status'); });
+  }
+
   /* ---------- viewer ---------- */
   function viewer(users, ui) {
-    var el = mk('div', 'zst-ov'), u = users[ui], i = 0, timer = null, started = 0, left = 0, hold = null, held = false, paused = false;
+    var el = mk('div', 'zst-ov'), u = users[ui], i = 0, timer = null, started = 0, left = 0, hold = null, held = false, paused = false, mv = null;
     if (!u || !u.items.length) return;
     if (!u.mine) { var f = u.items.findIndex(function (x) { return !x.seen; }); i = f > -1 ? f : 0; }
     var bars = mk('div', 'zst-bars'), hd = mk('div', 'zst-hd'), body = mk('div', 'zst-body'), ft = mk('div', 'zst-ft');
     el.appendChild(bars); el.appendChild(hd); el.appendChild(body); el.appendChild(ft); document.body.appendChild(el);
-    pushOv(function () { clearTimeout(timer); clearTimeout(hold); el.remove(); try { renderStories(); paint(); } catch (e) {} });
+    pushOv(function () { clearTimeout(timer); clearTimeout(hold); stopMedia(); el.remove(); try { renderStories(); paint(); } catch (e) {} });
 
+    function stopMedia() { if (mv) { try { mv.pause(); } catch (e) {} mv = null; } }
     function curBar() { return bars.children[i] && bars.children[i].firstChild; }
     function run(ms) { clearTimeout(timer); started = Date.now(); left = ms; timer = setTimeout(next, ms); }
-    function pause() { if (paused) return; paused = true; clearTimeout(timer); left -= Date.now() - started; var b = curBar(); if (b) b.style.animationPlayState = 'paused'; }
-    function resume() { if (!paused) return; paused = false; var b = curBar(); if (b) b.style.animationPlayState = 'running'; run(Math.max(200, left)); }
+    function pause() { if (paused) return; paused = true; clearTimeout(timer); left -= Date.now() - started; var b = curBar(); if (b) b.style.animationPlayState = 'paused'; if (mv) { try { mv.pause(); } catch (e) {} } }
+    function resume() { if (!paused) return; paused = false; var b = curBar(); if (b) b.style.animationPlayState = 'running'; if (mv) { try { mv.play().catch(function () {}); } catch (e) {} } run(Math.max(200, left)); }
     function next() {
       if (i < u.items.length - 1) { i++; show(); }
       else if (!u.mine && users[ui + 1]) { ui++; u = users[ui]; var f2 = u.items.findIndex(function (x) { return !x.seen; }); i = f2 > -1 ? f2 : 0; show(); }
@@ -8346,17 +8536,36 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       }
     }
     function show() {
-      var it = u.items[i]; paused = false;
-      bars.innerHTML = ''; u.items.forEach(function (x, k) { var s = mk('i', k < i ? 'done' : k === i ? 'cur' : ''), b = mk('b'); if (k === i) b.style.animationDuration = '5s'; s.appendChild(b); bars.appendChild(s); });
+      stopMedia();
+      var it = u.items[i], media = it.type === 'video' || it.type === 'audio', ms = media ? 30000 : 5000; paused = false;
+      bars.innerHTML = ''; u.items.forEach(function (x, k) { var s = mk('i', k < i ? 'done' : k === i ? 'cur' : ''), b = mk('b'); if (k === i) b.style.animationDuration = (ms / 1000) + 's'; s.appendChild(b); bars.appendChild(s); });
       hd.innerHTML = ''; var av = avatar(u.mine ? { phone: myPhone, name: 'Me' } : { phone: u.phone, name: nameFor(u) }); if (u.mine && window.zMyStoryAv) av = window.zMyStoryAv();
       var nm = mk('div'); nm.appendChild(mk('b', '', u.mine ? 'My status' : nameFor(u))); nm.appendChild(mk('small', '', ago(it.at)));
       var cx = ibtn('', IC.x, 'Close', 26); cx.addEventListener('click', closeOv); hd.appendChild(av); hd.appendChild(nm); hd.appendChild(cx);
       body.innerHTML = ''; body.className = 'zst-body'; body.style.background = '';
       if (it.type === 'image') { var im = document.createElement('img'); im.src = it.url; im.alt = ''; body.appendChild(im); if (it.text) body.appendChild(mk('div', 'zst-cap', it.text)); }
+      else if (media) {
+        var m;
+        if (it.type === 'video') { m = document.createElement('video'); m.setAttribute('playsinline', ''); m.src = it.url; body.appendChild(m); }
+        else {
+          body.classList.add('au'); body.style.background = BG[Math.abs(+it.id || 0) % BG.length];
+          var ac = mk('div', 'zst-auic'); ac.innerHTML = ico(IC.music, 54); body.appendChild(ac); m = document.createElement('audio'); m.src = it.url; body.appendChild(m);
+        }
+        if (it.text) body.appendChild(mk('div', 'zst-cap', it.text));
+        mv = m;
+        m.addEventListener('loadedmetadata', function () {
+          if (mv !== m || paused || !isFinite(m.duration) || !m.duration) return;
+          var d = Math.min(m.duration, 90) * 1000, b = curBar();
+          if (b) { b.style.animation = 'none'; void b.offsetWidth; b.style.animation = ''; b.style.animationDuration = (d / 1000) + 's'; }
+          run(d);
+        });
+        m.addEventListener('ended', function () { if (mv === m && !paused) next(); });
+        try { m.play().catch(function () {}); } catch (e) {}
+      }
       else { body.classList.add('t'); body.style.background = it.bg; body.textContent = it.text; }
       foot();
       if (!u.mine && !it.seen) { it.seen = true; seenMap[it.id] = 1; var ks = Object.keys(seenMap); if (ks.length > 500) delete seenMap[ks[0]]; lsSet('zaply_status_seen', seenMap); u.unseen = u.items.some(function (x) { return !x.seen; }); chatCall('status_view', { id: it.id }).catch(function () {}); }
-      run(5000);
+      run(ms);
     }
     body.addEventListener('pointerdown', function () { held = false; hold = setTimeout(function () { held = true; pause(); }, 250); });
     ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (n) { body.addEventListener(n, function () { clearTimeout(hold); if (held) resume(); }); });
@@ -8364,12 +8573,44 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     show();
   }
 
-  /* ---------- stories strip on the chat list: now driven by the server ---------- */
+  /* ---------- intro clip: an iPhone showing how status works ---------- */
+  function intro(done) {
+    var el = mk('div', 'zst-ov zi');
+    el.innerHTML =
+      '<div class="zi-title">How status works</div>' +
+      '<div class="zi-wrap"><div class="zi-phone"><div class="zi-notch"></div><video class="zi-vid" src="/status-intro.mp4" autoplay muted loop playsinline></video>' +
+      '<div class="zi-sc" style="animation-delay:0s"><div class="zi-hdr">Chats</div><div class="zi-row"><div class="zi-av"><b>+</b></div><div class="zi-line"></div></div><div class="zi-chat"></div><div class="zi-chat"></div><div class="zi-chat"></div><div class="zi-tap" style="left:30px;top:62px">\uD83D\uDC46</div></div>' +
+      '<div class="zi-sc" style="animation-delay:4s"><div class="zi-hdr">Add status</div><div class="zi-chips"><i>Text</i><i>Music</i><i>Voice</i></div><div class="zi-tiles"><i>Camera</i><i>Photos</i><i>Videos</i></div><div class="zi-sheet"></div></div>' +
+      '<div class="zi-sc" style="animation-delay:8s"><div class="zi-photo"></div><div class="zi-capbar">Add a caption\u2026</div><div class="zi-send">\u27A4</div><div class="zi-popm">Adding status\u2026</div></div>' +
+      '<div class="zi-sc" style="animation-delay:12s"><div class="zi-bars"><i></i><i></i></div><div class="zi-who"><span class="zi-av s"></span>Amina \u00B7 2 h ago</div><div class="zi-photo v"></div><div class="zi-react"><span>Reply\u2026</span><b>\u2764</b></div></div>' +
+      '</div>' +
+      '<div class="zi-caps"><div class="zi-cp" style="animation-delay:0s">Tap the <b>+</b> on your profile picture</div><div class="zi-cp" style="animation-delay:4s">Pick a photo, video, text, music or voice</div><div class="zi-cp" style="animation-delay:8s">Edit it, tap send, and your status is added</div><div class="zi-cp" style="animation-delay:12s">Friends watch it, like \u2764 and reply. It disappears after 24 hours</div></div></div>';
+    var zv = el.querySelector('.zi-vid');
+    if (zv) {
+      zv.addEventListener('error', function () { zv.remove(); });
+      zv.addEventListener('playing', function () { el.classList.add('hasvid'); });
+      try { zv.play().catch(function () {}); } catch (e) {}
+    }
+    var go = mk('button', 'primary zi-go', 'Continue');
+    go.addEventListener('click', function () {
+      try { localStorage.setItem('zaply_st_intro', '1'); } catch (e) {}
+      closeOv(); setTimeout(function () { if (done) done(); }, 120);
+    });
+    el.appendChild(go); document.body.appendChild(el);
+    pushOv(function () { el.remove(); });
+  }
+  window.zStatusStart = function () {
+    var seen = ''; try { seen = localStorage.getItem('zaply_st_intro'); } catch (e) {}
+    if (seen) showTab('status'); else intro(function () { showTab('status'); });
+  };
+
+  /* ---------- stories strip on the chat list ---------- */
   renderStories = function () {
     var box = $('storyStrip'); if (!box) return; box.innerHTML = '';
     var sc = mk('div', 'st-scroll'); box.appendChild(sc);
     var add = mk('button', 'st-add'); add.setAttribute('aria-label', 'Add status'); add.appendChild(window.zMyStoryAv ? window.zMyStoryAv() : avatar({ phone: myPhone, name: 'Me' })); add.appendChild(mk('span', 'st-plus', '+'));
-    add.addEventListener('click', function () { showTab('status'); }); sc.appendChild(add);
+    add.classList.toggle('has', S.mine.length > 0);
+    add.addEventListener('click', function () { window.zStatusStart(); }); sc.appendChild(add);
     S.users.forEach(function (u, idx) {
       var c = { phone: u.phone, name: nameFor(u) }, it = mk('button', 'st-it'), ring = mk('span', 'st-ring' + (u.unseen ? '' : ' seen'));
       ring.appendChild(avatar(c)); it.appendChild(ring); it.appendChild(mk('span', 'st-n', shortUser(labelOf(c)).split(' ')[0]));
@@ -8379,12 +8620,12 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   };
 
   var _show = showTab;
-  showTab = function (t) { _show(t); if (t === 'status') { paint(); load(true); } else if (t === 'chats') load(false); };
+  showTab = function (t) { _show(t); if (t === 'status') { paint(); load(true); } else if (t === 'chats') load(false); syncFabs(); };
 
   var boot = setInterval(function () { if (getToken() && myPhone) { clearInterval(boot); load(true); } }, 800);
   setInterval(function () { if (!document.hidden && getToken() && myPhone) load(true); }, 60000);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) load(false); });
-  try { if (curTab === 'status') paint(); } catch (e) {}
+  try { ensureFabs(); syncFabs(); if (curTab === 'status') paint(); } catch (e) {}
 })();
 </script>
 <div id="fbCaptcha"></div>
