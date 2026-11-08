@@ -8923,7 +8923,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     function onBlur() { blurred = true; }
     function onFocus() { window.removeEventListener('focus', onFocus); setTimeout(function () { if (!got) { got = true; diag(label + ' picker closed but no file reached the app. Android did not hand the chosen file to the page.'); } }, 1800); }
     window.addEventListener('blur', onBlur); window.addEventListener('focus', onFocus);
-    f.addEventListener('change', function () { got = true; var x = f.files && f.files[0]; diag(x ? label + ' picker returned: ' + (x.name || 'file') + ' (' + (x.type || 'unknown type') + ', ' + Math.round((x.size || 0) / 1024) + ' KB)' : label + ' picker returned an empty selection.'); });
+    f.addEventListener('change', function () { got = true; var x = f.files && f.files[0]; (x ? zlog : diag)(x ? label + ' picker returned: ' + (x.name || 'file') + ' (' + (x.type || 'unknown type') + ', ' + Math.round((x.size || 0) / 1024) + ' KB)' : label + ' picker returned an empty selection.'); });
     f.addEventListener('cancel', function () { got = true; });
     setTimeout(function () { window.removeEventListener('blur', onBlur); if (!blurred && !got) { got = true; diag(label + ' picker never opened the phone file chooser. The app wrapper may block file choosers or lack storage/photo permission.'); } }, 6000);
   };
@@ -9140,10 +9140,16 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     pushOv(function () { bd.remove(); sh.remove(); });
   }
   function picked(file) {
+    zlog('Status: opening ' + (isVid(file) ? 'video' : 'photo') + ' editor for ' + (file.name || 'file'));
     setTimeout(function () {
-      if (isVid(file)) { if (file.size > VID_MAX) return toast('That video is too big. The limit is 30 MB.'); if (window.zOpenVideoEditor) return window.zOpenVideoEditor(file, '__status__'); return videoComposer(file); }
-      if (window.zOpenEditor) window.zOpenEditor(file, '__status__');
-      else toast('Photo editor is not ready. Try again.');
+      try {
+        if (isVid(file)) {
+          if (file.size > VID_MAX) return toast('That video is too big. The limit is 30 MB.');
+          if (window.zOpenVideoEditor) window.zOpenVideoEditor(file, '__status__'); else videoComposer(file);
+        } else if (window.zOpenEditor) window.zOpenEditor(file, '__status__');
+        else { diag('Status: the photo editor function is missing'); toast('Photo editor is not ready. Try again.'); }
+      } catch (e) { diag('Status: editor crashed: ' + ((e && e.message) || e)); }
+      setTimeout(function () { var ce = $('camEd'); if (ce && ce.classList.contains('hidden')) diag('Status: editor is still NOT visible 1.5s after the file was chosen'); else zlog('Status: editor is open'); }, 1500);
     }, 300);
   }
 
@@ -9164,10 +9170,10 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   /* the editor closes at once and the status uploads in the background, so the person can keep using the app */
   function addStatus(job) {
     var pop = mk('div', 'zst-pop'); pop.innerHTML = '<i></i><span>Posting status\u2026</span>'; document.body.appendChild(pop);
-    closeOv();
+    closeOv(); zlog('Status: posting...');
     return job().then(function () {
-      pop.remove(); postedNote(); return load(true).catch(function () {});
-    }).catch(function (e) { pop.remove(); toast((e && e.message) || 'Could not post your status. Try again.'); });
+      zlog('Status: posted OK'); pop.remove(); postedNote(); return load(true).catch(function () {});
+    }).catch(function (e) { pop.remove(); diag('Status: post FAILED: ' + ((e && e.message) || e)); toast((e && e.message) || 'Could not post your status. Try again.'); });
   }
   window.zStatusPublishImage = function (blob, caption, music) {
     return addStatus(function () {
@@ -9419,7 +9425,15 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
   var _rcLog = renderChats;
   renderChats = function () {
     var r = _rcLog.apply(this, arguments);
-    try { var n = document.querySelectorAll('#chatList .swrap').length; zlog('Chat list drawn: ' + n + ' rows, ' + (allChats ? allChats.length : 0) + ' chats known, filter ' + filt, n === 0 && allChats && allChats.length > 0 && filt === 'all'); } catch (e) {}
+    try {
+      var n = document.querySelectorAll('#chatList .swrap').length, why = [];
+      (allChats || []).forEach(function (c) {
+        if (!c) return; var r = '';
+        try { if (isLocked(c.phone)) r = 'LOCKED'; else if (isArchived(c)) r = 'ARCHIVED'; else if (isHidden(c)) r = 'DELETED-HIDDEN (chat at ' + new Date(c.at).toLocaleString() + ', hidden since ' + new Date(lsGet('zaply_hidden', {})[c.phone]).toLocaleString() + ')'; } catch (e) {}
+        if (r) why.push((c.name || c.phone) + ': ' + r);
+      });
+      zlog('Chat list drawn: ' + n + ' rows, ' + (allChats ? allChats.length : 0) + ' chats known, filter ' + filt + (why.length ? '. Not shown -> ' + why.join(' | ') : ''), n === 0 && allChats && allChats.length > 0 && filt === 'all');
+    } catch (e) {}
     return r;
   };
   function hm(t) { var d = new Date(t); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ':' + ('0' + d.getSeconds()).slice(-2); }
