@@ -787,7 +787,7 @@
 #searchBox{position:relative;margin-bottom:14px}
 #searchBox input{border:1.5px solid var(--border)!important;border-radius:26px!important;background:var(--card)!important;padding:18px 56px 18px 56px!important;margin:0!important}
 #searchBox .si{position:absolute;left:20px;top:50%;transform:translateY(-50%);color:var(--text);pointer-events:none}
-#storyStrip{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px;min-height:106px}#storyStrip.hidden{display:none}
+#storyStrip{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}#storyStrip.hidden{display:none}
 .st-add{flex:none;width:76px;height:106px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-size:15px;font-weight:600;line-height:1.2}
 .st-add .plus{width:34px;height:34px;border-radius:50%;border:1.5px dashed var(--muted);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:400}
 .st-scroll{flex:1;display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;min-width:0}.st-scroll::-webkit-scrollbar{display:none}
@@ -1036,7 +1036,7 @@
 .swrap.selrow>.row,.swrap.selrow>div:not(.sacts){background:rgba(37,211,102,.20)!important}
 .swrap.selrow::after{content:'\2713';position:absolute;left:52px;top:46px;width:22px;height:22px;border-radius:50%;background:#25d366;color:#04160b;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;border:2px solid #050906;z-index:2}
 
-.st-scroll{display:flex;overflow-x:auto;scrollbar-width:none}.st-scroll::-webkit-scrollbar{display:none}
+.st-scroll{display:flex;overflow-x:auto;scrollbar-width:none;padding:6px;margin:-6px}.st-scroll::-webkit-scrollbar{display:none}
 </style>
 
 
@@ -4647,6 +4647,29 @@ ZW|Zimbabwe|263`;
       try { lockedRow(box); } catch (e) {}
       base.filter(function (c) { return !c.group; }).forEach(function (c) { cb.appendChild(row(c, false)); });
     }
+    /* If the server's list leaves out a one-to-one chat we already had (a slow or partial answer), keep it for up to 2 answers so the row does not vanish and come back */
+    var chatMiss = {};
+    /* true when a chat that should be on screen (All Chats, no search) has no row in the list */
+    function listOutOfSync() {
+      try {
+        if (filt !== 'all' || ($('chatSearch').value || '').trim()) return false;
+        var box = $('chatList'); if (!box) return false;
+        return allChats.some(function (c) {
+          if (!c || !c.phone || isLocked(c.phone) || isArchived(c) || isHidden(c)) return false;
+          return !box.querySelector('.swrap[data-ph="' + String(c.phone).replace(/"/g, '') + '"]');
+        });
+      } catch (e) { return false; }
+    }
+    function keepMissing(chats) {
+      var have = {}, added = false; chats.forEach(function (c) { have[c.phone] = 1; delete chatMiss[c.phone]; });
+      (allChats || []).forEach(function (o) {
+        if (!o || o.group || have[o.phone]) return;
+        chatMiss[o.phone] = (chatMiss[o.phone] || 0) + 1;
+        if (chatMiss[o.phone] <= 2) { chats.push(o); added = true; try { console.warn('Zanply: chat list answer missed', o.phone); } catch (e) {} }
+      });
+      if (added) chats.sort(function (a, b) { return (new Date(b.at).getTime() || 0) - (new Date(a.at).getTime() || 0); });
+      return chats;
+    }
     function loadChats() {
       chatCall('list').then(function (res) {
         return Promise.all((res.chats || []).map(function (c) {
@@ -4654,6 +4677,7 @@ ZW|Zimbabwe|263`;
           return E2E.decrypt(c.phone, c.last).then(function (t) { c.last = t; return c; }, function () { c.last = '\ud83d\udd12 Message'; return c; });
         }));
       }).then(function (chats) {
+        chats = keepMissing(chats);
         var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0, c.st || 0]; }));
         try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = ''; try { RT.watchChats(allChats); } catch (e) {}
         try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
@@ -4661,7 +4685,7 @@ ZW|Zimbabwe|263`;
         try { bizAuto(chats); } catch (e) {}
         try { countUnread(); } catch (e) {}
         try { if (!localStorage.getItem('zaply_seen_init')) { allChats.forEach(function (c) { localStorage.setItem('zaply_seen_' + c.phone, String(Date.now())); }); localStorage.setItem('zaply_seen_init', '1'); } } catch (e) {}
-        if (sig !== chatSig || wasErr) { chatSig = sig; renderChats(); } else updateCounts();
+        if (sig !== chatSig || wasErr || listOutOfSync()) { chatSig = sig; renderChats(); } else updateCounts();
       }).catch(function (e) { loadErr = e && e.status ? 'Server error (' + e.status + ')' : 'Can\u2019t reach the server'; renderChats(); });
     }
     /* Zanply Business: greeting message and away message are sent automatically (while the app is open on this phone) */
@@ -6563,6 +6587,11 @@ ZW|Zimbabwe|263`;
     }
     function decoAll() { decoList(); decoThread(); }
     var _rcDeco = renderChats; renderChats = function () { _rcDeco(); try { decoList(); } catch (e) {} };
+    var _rcSafe = renderChats, rcErrAt = 0;
+    renderChats = function () {
+      try { return _rcSafe.apply(this, arguments); }
+      catch (e) { chatSig = null; try { console.error(e); } catch (x) {} if (Date.now() - rcErrAt > 15000) { rcErrAt = Date.now(); try { toast('Chat list error: ' + ((e && e.message) || e), false, 8000); } catch (x) {} } }
+    };
     try { new MutationObserver(function () { try { decoThread(); } catch (e) {} }).observe($('thName'), { childList: true, characterData: true, subtree: true }); } catch (e) {}
     function openNameStyle() {
       zOpenPage('Name style and colours', function (b) {
@@ -8539,6 +8568,26 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       d.appendChild(g);
     });
   }, true);
+
+  /* Gallery: choose Photos or Videos and open a fresh single-file picker, exactly like Status does.
+     The shared hidden input (image/*,video/* + multiple) does not open on some Android WebViews. */
+  (function () {
+    var fi = $('fileImg');
+    function chatPick(accept) {
+      var chat = openWith || camChat; if (!chat) { toast('Open a chat first'); return; }
+      var f = document.createElement('input'); f.type = 'file'; f.accept = accept; window.__zChatPick = f;
+      f.addEventListener('change', function () {
+        var file = f.files && f.files[0]; window.__zChatPick = null; if (!file) return;
+        var c = openWith || chat; cedQ = [];
+        toast('Opening ' + (isVidF(file) ? 'video' : 'photo') + '\u2026');
+        (isVidF(file) ? openVideoEditor : openEditor)(file, c);
+      });
+      f.click();
+    }
+    fi.click = function () {
+      zsheet('Send from gallery', [['Photos', function () { chatPick('image/*'); }], ['Videos', function () { chatPick('video/*'); }]]);
+    };
+  })();
 
   /* ---------- Info page ---------- */
   function contactText() { return (savedName(openUser.phone) || openUser.name || '') + ' ' + openUser.phone; }
