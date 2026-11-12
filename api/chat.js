@@ -137,6 +137,7 @@ function ensureTable() {
       /* online / last seen: last_active = last time their app told us it was open, is_online = 0 once they close it */
       await db().query("ALTER TABLE profiles ADD COLUMN last_active TIMESTAMP NULL").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN is_online TINYINT NOT NULL DEFAULT 0").catch(() => {});
+      await db().query("ALTER TABLE profiles ADD COLUMN session_prev TIMESTAMP NULL").catch(() => {});
       await db().query(`CREATE TABLE IF NOT EXISTS phone_otps (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,
         owner VARCHAR(20) NOT NULL,
@@ -367,6 +368,13 @@ async function fcmPush(rows, data, opts) {
   const dead = await sendFcm(rows, data, opts);
   if (dead.length) await db().query('DELETE FROM fcm_tokens WHERE id IN (' + dead.map(() => '?').join(',') + ')', dead);
 }
+async function photoOk(privRaw, owner, viewer) {
+  if (owner === viewer) return true;
+  const pv = parsePv(privRaw);
+  if (pv.photo === 'nobody') return false;
+  if (pv.photo === 'contacts') { const [sv] = await db().query('SELECT 1 FROM saved_contacts WHERE owner = ? AND phone = ? LIMIT 1', [owner, viewer]); return sv.length > 0; }
+  return true;
+}
 async function senderPhoto(from, to) {
   try {
     const [r] = await db().query("SELECT photo_url, privacy FROM profiles WHERE phone = ? AND photo_url <> ''", [from]);
@@ -513,8 +521,9 @@ module.exports = async (req, res) => {
         un.forEach((x) => { if (parseExtra(x.extra).acct !== 'business') unames[x.phone] = x.username; });
       }
       const hideT = {}; for (const o of others) { if (!(o in hideT)) hideT[o] = await ticksHidden(o); }
+      const hidMap = {}; if (others.length) { const [hp] = await db().query('SELECT phone, privacy FROM profiles WHERE phone IN (?)', [others]).catch(() => [[]]); hp.forEach((x) => { if (parsePv(x.privacy).hidePhone) hidMap[x.phone] = true; }); }
       const chats = last.map((m, i) => ({
-        phone: others[i], name: names[others[i]] || '', username: unames[others[i]] || '', last: m.body,
+        hid: !!hidMap[others[i]], phone: others[i], name: names[others[i]] || '', username: unames[others[i]] || '', last: m.body,
         mine: m.sender === me, at: m.created_at,
         st: m.sender === me ? (m.read_at && !hideT[others[i]] ? 3 : m.delivered_at ? 2 : 1) : 0 }));
       const [gs] = await db().query(
@@ -578,6 +587,12 @@ module.exports = async (req, res) => {
         id: m.id, mine: m.sender === me, body: m.body, at: m.created_at, st: m.sender === me ? stOf(m) : 0 })) });
     }
 
+    if (b.action === 'read_all') {
+      const [un] = await db().query('SELECT DISTINCT sender FROM messages WHERE receiver = ? AND read_at IS NULL', [me]).catch(() => [[]]);
+      await db().query('UPDATE messages SET delivered_at = COALESCE(delivered_at, NOW()), read_at = NOW() WHERE receiver = ? AND read_at IS NULL', [me]).catch(() => {});
+      if (un.length && !(await ticksHidden(me))) await rt.signal(un.map((r) => r.sender), 'tick', { from: me });
+      return res.json({ ok: true });
+    }
     if (b.action === 'typing') {
       if (!phoneOk(b.to) || b.to === me) return res.json({ ok: true });
       try {
@@ -717,7 +732,7 @@ module.exports = async (req, res) => {
     }
     // Online / last seen. The app pings every ~25s while open; "online" = pinged within the last 60s.
     if (b.action === 'presence_ping') {
-      await db().query('INSERT INTO profiles (phone, last_active, is_online) VALUES (?, NOW(), ?) ON DUPLICATE KEY UPDATE last_active = NOW(), is_online = VALUES(is_online)', [me, b.online === false ? 0 : 1]);
+      await db().query('INSERT INTO profiles (phone, last_active, is_online) VALUES (?, NOW(), ?) ON DUPLICATE KEY UPDATE session_prev = IF(is_online = 1 AND last_active > NOW() - INTERVAL 90 SECOND, session_prev, last_active), last_active = NOW(), is_online = VALUES(is_online)', [me, b.online === false ? 0 : 1]);
       return res.json({ ok: true });
     }
     if (b.action === 'presence_get') {
@@ -727,13 +742,15 @@ module.exports = async (req, res) => {
       if (bs.iBlocked || bs.blockedMe) return res.json({ hidden: true });
       const [mine] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
       const myLast = lsRule(parsePv(mine[0] && mine[0].privacy)) !== 'nobody'; /* if I hide my own last seen, I can't see other people's last seen either (online is still shown) */
-      const [rows] = await db().query('SELECT privacy, extra, last_active, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS online FROM profiles WHERE phone = ?', [who]);
+      const [rows] = await db().query('SELECT privacy, extra, last_active, session_prev, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS online FROM profiles WHERE phone = ?', [who]);
       const r = rows[0];
       if (!r || !r.last_active) return res.json({ hidden: false, online: false, last: null });
       const acc = await presenceAccess(who, r.privacy, me);
       { const sh = await stealthOf(who, r.extra); if (sh.online) acc.canOnline = false; if (sh.seen) acc.canLast = false; }
-      const online = acc.canOnline && Number(r.online) === 1;
-      return res.json({ hidden: false, online, last: acc.canLast && myLast && !online ? r.last_active : null });
+      const liveNow = Number(r.online) === 1, online = acc.canOnline && liveNow;
+      /* online hidden but last seen allowed: they keep seeing the time BEFORE this visit (e.g. 12:00), not the current one (3:00) */
+      const last = acc.canLast && myLast && !online ? (liveNow ? (r.session_prev || null) : r.last_active) : null;
+      return res.json({ hidden: false, online, last });
     }
     // Who is online right now, for the chat list (green dot). Same privacy rules as presence_get.
     if (b.action === 'presence_bulk') {
@@ -849,10 +866,10 @@ module.exports = async (req, res) => {
       const [r] = await db().query(
         "SELECT username, email, address, bio, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, pet, links, photo_url, extra FROM profiles WHERE phone = ?", [who]);
       const [nm] = await db().query('SELECT name FROM users WHERE phone = ?', [who]);
-      let hide = false;
-      if (who !== me) { const [pr] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [who]); try { hide = !!JSON.parse((pr[0] && pr[0].privacy) || '{}').hidePhone; } catch (e) {} }
+      let hide = false, photoBlock = false;
+      if (who !== me) { const [pr] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [who]); try { hide = !!JSON.parse((pr[0] && pr[0].privacy) || '{}').hidePhone; } catch (e) {} photoBlock = !(await photoOk(pr[0] && pr[0].privacy, who, me)); }
       const pv = await premInfo(who);
-      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '', display_name: (await displayNames([who]).catch(() => ({})))[who] || (nm[0] ? nm[0].name || '' : ''), phone_hidden: hide, verified: !!pv.active, pstyle: pv.active && r[0] ? parseExtra(r[0].extra).pstyle : '', pcolor: pv.active && r[0] ? parseExtra(r[0].extra).pcolor : '' }) });
+      return res.json({ profile: Object.assign({}, r[0] ? cleanRow(r[0]) : EMPTY_PROFILE, { name: nm[0] ? nm[0].name || '' : '', display_name: (await displayNames([who]).catch(() => ({})))[who] || (nm[0] ? nm[0].name || '' : ''), phone_hidden: hide, verified: !!pv.active, pstyle: pv.active && r[0] ? parseExtra(r[0].extra).pstyle : '', pcolor: pv.active && r[0] ? parseExtra(r[0].extra).pcolor : '' }, photoBlock ? { photo_url: '' } : {}) });
     }
 
     if (b.action === 'profile_set') {
@@ -946,7 +963,7 @@ module.exports = async (req, res) => {
       await Promise.all(rows.map(async (r) => {
         if (r.phone !== me) {
           let pv = {}; try { pv = JSON.parse(r.privacy || '{}'); } catch (e) {}
-          if (pv.photo === 'nobody') return;
+          if (!(await photoOk(r.privacy, r.phone, me))) return;
           const bs = await blockState(me, r.phone); if (bs.iBlocked || bs.blockedMe) return;
         }
         out[r.phone] = r.photo_url;
@@ -1061,13 +1078,58 @@ module.exports = async (req, res) => {
       await db().query('INSERT INTO two_step (phone, salt, hash) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE salt = VALUES(salt), hash = VALUES(hash)', [me, salt, hash]);
       return res.json({ enabled: true });
     }
-    if (b.action === 'ts_off') {
-      const [t] = await db().query('SELECT salt, hash FROM two_step WHERE phone = ?', [me]);
+    if (b.action === 'ts_off_send') {
+      const [t] = await db().query('SELECT phone FROM two_step WHERE phone = ?', [me]);
       if (!t[0]) return res.json({ enabled: false });
-      const test = crypto.scryptSync(String(b.pin || ''), t[0].salt, 32);
-      if (!crypto.timingSafeEqual(test, Buffer.from(t[0].hash, 'hex'))) return res.status(403).json({ error: 'Wrong PIN.' });
+      const [p] = await db().query('SELECT email FROM profiles WHERE phone = ?', [me]);
+      const em = p[0] && p[0].email ? String(p[0].email).toLowerCase() : '';
+      if (!em) return res.status(400).json({ error: 'Add your email address first.', needEmail: true });
+      await db().query(`CREATE TABLE IF NOT EXISTS email_otps (id BIGINT AUTO_INCREMENT PRIMARY KEY, owner VARCHAR(20) NOT NULL, email VARCHAR(120) NOT NULL, code_hash CHAR(64) NOT NULL, tries INT NOT NULL DEFAULT 0, used TINYINT NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, expires_at TIMESTAMP NOT NULL, INDEX idx_o (owner))`);
+      const [cnt] = await db().query('SELECT COUNT(*) AS n FROM email_otps WHERE owner = ? AND created_at > (NOW() - INTERVAL 1 DAY)', [me]);
+      if (cnt[0].n >= 8) return res.status(429).json({ error: 'You have reached today\u2019s limit for code requests. Try again tomorrow.' });
+      const code = String(crypto.randomInt(100000, 1000000));
+      try { await sendCodeEmail(em, code); } catch (e) { return res.status(502).json({ error: e.message || 'Could not send the code.' }); }
+      await db().query('INSERT INTO email_otps (owner, email, code_hash, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL 10 MINUTE)', [me, 'ts-off:' + em, sha(code + SECRET)]);
+      return res.json({ ok: true, email: em });
+    }
+    if (b.action === 'ts_off') {
+      const code = String(b.code || '').trim();
+      if (!/^\d{6}$/.test(code)) return res.status(400).json({ error: 'Enter the 6-digit code from your email.' });
+      const [p] = await db().query('SELECT email FROM profiles WHERE phone = ?', [me]);
+      const em = p[0] && p[0].email ? String(p[0].email).toLowerCase() : '';
+      const [rows] = await db().query('SELECT id, code_hash, tries, TIMESTAMPDIFF(SECOND, NOW(), expires_at) AS secs FROM email_otps WHERE owner = ? AND email = ? AND used = 0 ORDER BY id DESC LIMIT 1', [me, 'ts-off:' + em]);
+      const o = rows[0];
+      if (!o) return res.status(400).json({ error: 'Ask for a new code first.' });
+      if (o.secs <= 0) return res.status(400).json({ error: 'That code has expired. Ask for a new one.' });
+      if (o.tries >= 5) return res.status(429).json({ error: 'Too many wrong tries. Ask for a new code.' });
+      if (sha(code + SECRET) !== o.code_hash) { await db().query('UPDATE email_otps SET tries = tries + 1 WHERE id = ?', [o.id]); return res.status(400).json({ error: 'Wrong code. Try again.' }); }
+      await db().query('UPDATE email_otps SET used = 1 WHERE owner = ?', [me]);
       await db().query('DELETE FROM two_step WHERE phone = ?', [me]);
       return res.json({ enabled: false });
+    }
+
+    /* Delete account: the reason is kept anonymously (no phone, no name); everything that belongs to the account is erased */
+    if (b.action === 'account_delete') {
+      const reason = String(b.reason || '').slice(0, 1000).trim();
+      const run = async (sql, p) => { try { await db().query(sql, p); } catch (e) {} };
+      if (reason) { await run('CREATE TABLE IF NOT EXISTS delete_feedback (id BIGINT AUTO_INCREMENT PRIMARY KEY, reason TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)'); await run('INSERT INTO delete_feedback (reason) VALUES (?)', [reason]); }
+      let myGroups = [], myChannels = [], myStatuses = [];
+      try { [myGroups] = await db().query('SELECT id FROM chat_groups WHERE creator = ?', [me]); } catch (e) {}
+      try { [myChannels] = await db().query('SELECT id FROM channels WHERE owner = ?', [me]); } catch (e) {}
+      try { [myStatuses] = await db().query('SELECT id FROM statuses WHERE owner = ?', [me]); } catch (e) {}
+      if (myGroups.length) { const ids = myGroups.map((g) => g.id); await run('DELETE FROM group_messages WHERE group_id IN (?)', [ids]); await run('DELETE FROM group_members WHERE group_id IN (?)', [ids]); await run('DELETE FROM chat_groups WHERE id IN (?)', [ids]); }
+      if (myChannels.length) { const ids = myChannels.map((g) => g.id); await run('DELETE FROM channel_subs WHERE channel_id IN (?)', [ids]); await run('DELETE FROM channels WHERE id IN (?)', [ids]); }
+      if (myStatuses.length) { const ids = myStatuses.map((g) => g.id); await run('DELETE FROM status_likes WHERE status_id IN (?)', [ids]); await run('DELETE FROM status_views WHERE status_id IN (?)', [ids]); }
+      const jobs = [
+        ['DELETE FROM messages WHERE sender = ? OR receiver = ?', [me, me]], ['DELETE FROM group_messages WHERE sender = ?', [me]], ['DELETE FROM group_members WHERE phone = ?', [me]],
+        ['DELETE FROM channel_subs WHERE phone = ?', [me]], ['DELETE FROM statuses WHERE owner = ?', [me]], ['DELETE FROM status_likes WHERE viewer = ?', [me]], ['DELETE FROM status_views WHERE viewer = ?', [me]],
+        ['DELETE FROM blocks WHERE blocker = ? OR blocked = ?', [me, me]], ['DELETE FROM saved_contacts WHERE owner = ? OR phone = ?', [me, me]],
+        ['DELETE FROM chat_walls WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM media WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM cloud_media WHERE owner = ? OR peer = ?', [me, me]],
+        ['DELETE FROM push_subs WHERE phone = ?', [me]], ['DELETE FROM fcm_tokens WHERE phone = ?', [me]], ['DELETE FROM user_keys WHERE phone = ?', [me]], ['DELETE FROM two_step WHERE phone = ?', [me]],
+        ['DELETE FROM premium WHERE phone = ?', [me]], ['DELETE FROM chat_backups WHERE phone = ?', [me]], ['DELETE FROM email_otps WHERE owner = ?', [me]], ['DELETE FROM phone_otps WHERE owner = ?', [me]],
+        ['DELETE FROM reports WHERE reporter = ?', [me]], ['DELETE FROM profiles WHERE phone = ?', [me]], ['DELETE FROM users WHERE phone = ?', [me]]];
+      for (const [q, p] of jobs) await run(q, p);
+      return res.json({ ok: true });
     }
 
     if (b.action === 'group_create') {
