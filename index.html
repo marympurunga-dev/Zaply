@@ -417,7 +417,7 @@
     .emojibox .egrid{display:flex;flex-wrap:wrap;gap:2px;width:100%}
 
     /* photo editor (after taking a picture) */
-    #camEd{position:fixed;inset:0;z-index:70;background:#000;color:#fff;display:flex;flex-direction:column}
+    #camEd{position:fixed;inset:0;z-index:95;background:#000;color:#fff;display:flex;flex-direction:column}
     #camEd.hidden{display:none}
     .ced-top{display:flex;justify-content:space-between;gap:6px;padding:calc(env(safe-area-inset-top,0px) + 10px) 10px 8px;position:relative;z-index:3}
     .ced-top button,.ced-cap button{width:44px;height:44px;min-width:44px;padding:0;border-radius:50%;border:none;background:rgba(40,40,40,.85);color:#fff;font-size:17px;font-weight:700;display:flex;align-items:center;justify-content:center}
@@ -3739,7 +3739,7 @@ ZW|Zimbabwe|263`;
         zrows(b, [['palette', 'Default chat theme', openThemes]]);
         b.appendChild(mk('div', 'zsep')); var h = mk('div', 'zsec'); h.innerHTML = '<span style="color:#21c063">\u25c6</span> Zanply Plus'; b.appendChild(h);
         zrows(b, [['smile', 'App icon', openAppIcons], ['palette', 'App theme', openAppColors]]);
-        var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Plus to change your app icon, theme and more. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
+        var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Premium to unlock exclusive app icons and more. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
         f.querySelector('a').addEventListener('click', function (e) { e.preventDefault(); soon('Zanply Plus')(); }); b.appendChild(f);
       });
     }
@@ -4328,7 +4328,7 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'globe', 'App language', langName(), openLanguage);
         zrow2(list, 'invite', 'Invite a friend', 'Share Zanply with your contacts', invite);
         list.appendChild(mk('div', 'zsep'));
-        zrow2(list, 'diamond', 'Zanply Premium', 'More statuses, big files, double limits', openPremium);
+        zrow2(list, 'diamond', 'Zanply Premium', '13 Status a day, double limits, unlimited AI', openPremium);
         var vr = zrow2(list, 'verified', 'Verification badge', 'Get the blue verified badge', openVerification); vr.querySelector('svg').style.color = VERIFIED_BLUE;
         zrow2(list, 'store', 'Zanply Business', 'Business profile and auto replies', openBusiness);
         var hh = mk('div', 'zsec', 'Help'); hh.style.color = '#3b9cf5'; hh.setAttribute('data-hdr', '1'); list.appendChild(hh);
@@ -4388,40 +4388,110 @@ ZW|Zimbabwe|263`;
       return 'wifi';
     }
 
-    /* ---------- Zanply Premium (matches the design screenshots) ---------- */
-    var PREM_FEATS = [['\u25b6', 'Stories', 'Unlimited posting, priority order, stealth mode, permanent view history and more.', '#f59e0b'], ['\ud83d\udcc4', 'Unlimited Cloud Storage', '4 GB per each document, unlimited storage for your chats and media overall.', '#f97316'], ['\u00d72', 'Doubled Limits', 'Up to 1000 channels, 30 folders, 10 pins, 20 public links, 4 accounts and more.', '#f0793c'], ['\ud83c\udfea', 'Zanply Business', 'Upgrade your account with business features such as location, opening hours and quick replies.', '#ef6b4f'],
-      ['\ud83d\udc63', 'Last Seen Times', 'View the last seen and read times of others even if you hide yours.', '#ee6459'], ['\ud83c\udf99', 'Voice-to-Text Conversion', 'Ability to read the transcript of any incoming voice message.', '#e9605f'], ['\u26a1', 'Faster Download Speed', 'No more limits on the speed with which media and documents are downloaded.', '#e55a69'], ['\ud83c\udf10', 'Real-Time Translation', 'Real-time translation of chats and channels into other languages.', '#df5575'],
-      ['\ud83d\ude00', 'Animated Emoji', 'Include animated emoji from different packs in any message you send.', '#d95282'], ['\u270b', 'Emoji Statuses', 'Choose from thousands of emoji to display current activity next to your name.', '#d04f90'], ['\ud83c\udff7', 'Tags in Saved Messages', 'Organize your Saved Messages with tags for quicker access.', '#c64f9f'], ['\ud83c\udfa8', 'Name and Profile Colors', 'Choose a color and logo for your profile and replies to your messages.', '#b954ae'],
-      ['\ud83d\uddbc', 'Wallpaper for Both Sides', 'Set custom wallpapers for you and your chat partner.', '#aa58bb'], ['\u2605', 'Profile Badge', 'An exclusive badge next to your name showing that you subscribe to Zanply Premium.', '#9c5cc7'], ['$', 'Paid Messages', 'Charge a fee for messages from non-contacts or new senders.', '#8f60d0'], ['\ud83d\udd75', 'Disable Sharing', 'Prevent forwarding, saving and copying content in private chats.', '#8564d6'],
-      ['\ud83d\udcac', 'Advanced Chat Management', 'Tools to set the default folder, auto-archive and hide new chats from non-contacts.', '#7b68dc'], ['\ud83d\udeab', 'No Ads', 'No more ads in public channels where Zanply sometimes shows ads.', '#6f78e6'], ['\ud83d\udd37', 'Premium App Icons', 'Choose from a selection of Zanply app icons for your homescreen.', '#6485ee'], ['\u2764', 'Infinite Reactions', 'React with thousands of emoji \u2014 using multiple reactions per message.', '#5a90f2']];
-    var PREM_PLANS = { annual: { label: 'Annual', price: '$28.99/year', per: '$2.41/month', cta: 'Subscribe for $28.99 per year' }, monthly: { label: 'Monthly', price: '$3.99/month', per: '$3.99/month', cta: 'Subscribe for $3.99 per month' } };
+    /* ---------- Zanply Premium: ONE bundle, 3 plans, 6 features with animated demos ---------- */
+    var PREM_USD = { monthly: 3.99, six: 19.99, annual: 29.99 };
+    var PREM_CUR = { '254': ['KES', 129, 'KSh'], '255': ['TZS', 2600, 'TSh'], '256': ['UGX', 3700, 'USh'], '234': ['NGN', 1550, '\u20a6'], '27': ['ZAR', 18, 'R'], '233': ['GHS', 15, 'GH\u20b5'], '250': ['RWF', 1400, 'RF'], '251': ['ETB', 125, 'Br'], '44': ['GBP', .78, '\u00a3'], '91': ['INR', 84, '\u20b9'], '1': ['USD', 1, '$'] };
+    function premCur() {
+      var p = ''; try { p = String((lsGet('zaply_user', {}) || {}).phone || '').replace(/\D/g, ''); } catch (e) {}
+      var k = [3, 2, 1].map(function (n) { return p.slice(0, n); }).filter(function (x) { return PREM_CUR[x]; })[0];
+      return PREM_CUR[k] || PREM_CUR['1'];
+    }
+    function premPrice(usd) { var c = premCur(), v = usd * c[1]; v = c[1] >= 50 ? Math.round(v / 10) * 10 : Math.round(v * 100) / 100; return c[2] + ' ' + v.toLocaleString(); }
+    var PREM_PLANS = {
+      monthly: { label: 'Monthly', usd: PREM_USD.monthly, per: 'month' },
+      six: { label: '6 Months', usd: PREM_USD.six, per: '6 months' },
+      annual: { label: 'Annual', usd: PREM_USD.annual, per: 'year', best: true }
+    };
+    var PREM_FEATS = [
+      ['\u25b6', 'Stories (Status)', 'Post up to 13 Status a day and keep each one up to 96 hours.', '#f59e0b', 'story',
+        'Stories are the photos, videos and texts you share on your Status. Free accounts can post 2 Status per day and each one disappears after 24 hours.',
+        'With Premium you can post up to 13 Status per day. You can also choose how long each Status stays visible: 48 hours, 72 hours or 96 hours (4 days). Pick the time when you post.',
+        'Share your whole day, a trip or a business promotion without hitting a limit. Your Status stays longer, so friends and customers who were offline still see it.'],
+      ['\u00d72', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups instead of 2 each.', '#f0793c', 'limits',
+        'Free accounts can create 2 Channels and 2 Groups. Premium raises these limits so you can run more communities.',
+        'Subscribe and the limits lift automatically. You can then create up to 10+ Channels and 10+ Groups from the New group and New channel menu.',
+        'Good for teachers, sellers, churches, clubs and creators who manage many audiences and do not want to delete old ones.'],
+      ['\ud83c\udfa8', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#b954ae', 'colors',
+        'Make your name and profile stand out with special name styles and colours that free accounts do not have.',
+        'Open Profile, tap Name style or Profile colour and pick one. Others see it on your profile and next to your name in chats.',
+        'Your account looks unique and is easy to recognise in busy groups and channels.'],
+      ['\ud83d\udd37', 'Premium App Icons', 'Unlock exclusive app icons in Appearance > App Icons.', '#6485ee', 'icons',
+        'A set of special Zanply icons for your phone home screen that only Premium users can use.',
+        'Go to Settings > Appearance > App Icons, then tap an icon. The Zanply icon on your home screen changes straight away.',
+        'Personalise your phone and show the style you like.'],
+      ['\u2728', 'Unlimited AI Usage', 'No limits when you use Zanply AI.', '#8f60d0', 'ai',
+        'Zanply AI helps you write messages, create images and answer questions. Free accounts have a daily AI limit.',
+        'With Premium the limit is removed. Ask, write and create as much as you want, any time of day.',
+        'You never stop in the middle of your work because the free limit ran out.'],
+      ['\ud83d\uddbc', 'Wallpaper for Both Sides', 'Your chat wallpaper is shown to the other person too.', '#aa58bb', 'wall',
+        'Free accounts see their wallpaper only on their own phone. With Premium the wallpaper you set is shown to the other person as well.',
+        'Set a wallpaper in a chat. The other person sees it in their chat with you. Example: if User A has Premium and sets a wallpaper, User B sees it in User A\u2019s chat only, unless User B changes it.',
+        'Make every chat feel personal and shared, not only on your side.']
+    ];
+    function premDemo(k) {
+      var d = '';
+      if (k === 'story') d = '<div class="pd-ring"><b>13</b><small>per day</small></div><div class="pd-time"><span>24h</span><span>48h</span><span>72h</span><span>96h</span></div><div class="pd-note">Free: 2 per day, 24h</div>';
+      else if (k === 'limits') d = '<div class="pd-bars"><i style="--h:30%"></i><i style="--h:100%"></i></div><div class="pd-cap"><span>Free: 2</span><span>Premium: 10+</span></div>';
+      else if (k === 'colors') d = '<div class="pd-name">Mary</div><div class="pd-sw"><i></i><i></i><i></i><i></i></div>';
+      else if (k === 'icons') d = '<div class="pd-ic"><i></i><i></i><i></i></div>';
+      else if (k === 'ai') d = '<div class="pd-chat"><span>Write a message for my customers</span><span>Done! Ask me anything, no limit \u221e</span></div>';
+      else d = '<div class="pd-ph"><div class="a">You</div><div class="b">Friend</div></div>';
+      return '<div class="pd-demo pd-' + k + '">' + d + '</div>';
+    }
+    (function () {
+      var s = document.createElement('style');
+      s.textContent = '.pd-demo{margin:14px auto;width:min(320px,86%);height:170px;border-radius:20px;background:linear-gradient(135deg,#1d2a44,#3a2a5c);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:14px;color:#fff;flex-direction:column}' +
+        '.pd-ring{width:84px;height:84px;border-radius:50%;border:5px solid #f59e0b;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:pdp 2s infinite}.pd-ring b{font-size:28px}.pd-ring small{font-size:11px;opacity:.8}' +
+        '.pd-time{position:relative;height:22px;width:60px;text-align:center}.pd-time span{position:absolute;inset:0;opacity:0;font-weight:700;animation:pdt 8s infinite}.pd-time span:nth-child(2){animation-delay:2s}.pd-time span:nth-child(3){animation-delay:4s}.pd-time span:nth-child(4){animation-delay:6s}' +
+        '.pd-note{font-size:12px;opacity:.7}.pd-bars{display:flex;align-items:flex-end;gap:30px;height:100px}.pd-bars i{width:46px;height:var(--h);background:#f0793c;border-radius:8px;animation:pdg 2.4s infinite alternate}.pd-bars i:last-child{background:#4ade80}.pd-cap{display:flex;gap:22px;font-size:12px}' +
+        '.pd-name{font-size:34px;font-weight:800;animation:pdc 4s infinite}.pd-sw{display:flex;gap:10px}.pd-sw i{width:26px;height:26px;border-radius:50%;background:#e55a69;animation:pdp 2s infinite}.pd-sw i:nth-child(2){background:#f59e0b;animation-delay:.3s}.pd-sw i:nth-child(3){background:#4ade80;animation-delay:.6s}.pd-sw i:nth-child(4){background:#60a5fa;animation-delay:.9s}' +
+        '.pd-ic{display:flex;gap:16px}.pd-ic i{width:58px;height:58px;border-radius:16px;background:#4ade80;animation:pdr 3s infinite}.pd-ic i:nth-child(2){background:#f59e0b;animation-delay:.4s}.pd-ic i:nth-child(3){background:#a855f7;animation-delay:.8s}' +
+        '.pd-chat{display:flex;flex-direction:column;gap:10px;width:80%}.pd-chat span{padding:9px 12px;border-radius:14px;background:#2b3a55;font-size:13px;opacity:0;animation:pdf 5s infinite}.pd-chat span+span{background:#1f8f5f;align-self:flex-end;animation-delay:1.5s}' +
+        '.pd-ph{display:flex;gap:26px}.pd-ph div{width:76px;height:130px;border-radius:14px;background:#222;font-size:11px;padding:6px;text-align:center}.pd-ph .a{background:linear-gradient(160deg,#4ade80,#0e7490)}.pd-ph .b{animation:pdw 4s infinite}' +
+        '@keyframes pdp{50%{transform:scale(1.1)}}@keyframes pdt{0%,3%{opacity:0}8%,22%{opacity:1}28%,100%{opacity:0}}@keyframes pdg{from{transform:scaleY(.4);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}' +
+        '@keyframes pdc{0%{color:#fff}25%{color:#f59e0b}50%{color:#4ade80}75%{color:#60a5fa}100%{color:#fff}}@keyframes pdr{50%{transform:rotate(12deg) scale(1.12)}}@keyframes pdf{0%{opacity:0}15%,80%{opacity:1}100%{opacity:0}}@keyframes pdw{0%,40%{background:#222}60%,100%{background:linear-gradient(160deg,#4ade80,#0e7490)}}' +
+        '.pd-sec{margin:12px 18px;line-height:1.45}.pd-sec h3{margin:14px 0 4px;font-size:16px}.pd-sec p{margin:0;opacity:.9}';
+      document.head.appendChild(s);
+    })();
     function startPremiumCheckout(plan) { toast('Payments are being connected. No charge was made.'); }
+    function premCta(plan) { var P = PREM_PLANS[plan]; return 'Subscribe for ' + premPrice(P.usd) + ' / ' + P.per; }
+    function premTerms() { return mk('div', 'pd-sec', 'You can cancel anytime. You can turn auto-renewal ON or OFF.'); }
     function openPremium() {
       zOpenPage('Zanply Premium', function (b) {
         var pg = b.parentNode; pg.classList.add('zprem'); var ttl = pg.querySelector('.zpg-h span'); ttl.textContent = '';
-        var plan = 'annual';
-        var hero = mk('div', 'zpm-hero');
-        hero.innerHTML = '<svg width="190" height="150" viewBox="0 0 190 150"><defs><linearGradient id="zpmg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6c8cff"/><stop offset=".55" stop-color="#b65cf5"/><stop offset="1" stop-color="#ff6fd0"/></linearGradient></defs><path d="M95 12l17 38 41 5-31 28 9 41-36-21-36 21 9-41-31-28 41-5z" fill="url(#zpmg)" stroke="url(#zpmg)" stroke-width="10" stroke-linejoin="round"/><g fill="#8fa2ff" opacity=".7"><circle cx="30" cy="30" r="2"/><circle cx="160" cy="24" r="2.5"/><circle cx="20" cy="95" r="2"/><circle cx="172" cy="100" r="2"/><circle cx="60" cy="10" r="1.5"/></g></svg><h2></h2><p></p>';
-        hero.querySelector('h2').textContent = 'Zanply Premium'; hero.querySelector('p').textContent = 'Go beyond the limits and unlock dozens of exclusive features by subscribing to Zanply Premium.'; b.appendChild(hero);
-        var plans = mk('div', 'zpm-plans'), cta = mk('button', 'zpm-cta', PREM_PLANS.annual.cta);
+        var plan = 'annual', hero = mk('div', 'zpm-hero');
+        hero.innerHTML = '<div style="font-size:64px">\ud83d\udc51</div><h2></h2><p></p>';
+        hero.querySelector('h2').textContent = 'Zanply Premium'; hero.querySelector('p').textContent = 'Go beyond with dozens of exclusive features by subscribing to Zanply Premium.'; b.appendChild(hero);
+        var plans = mk('div', 'zpm-plans'), cta = mk('button', 'zpm-cta', premCta(plan));
         function drawPlans() {
           plans.textContent = '';
-          ['annual', 'monthly'].forEach(function (k) {
+          ['monthly', 'six', 'annual'].forEach(function (k) {
             var P = PREM_PLANS[k], x = mk('button', 'zpm-plan' + (plan === k ? ' on' : '')), nm = mk('div', 'nm');
             x.innerHTML = '<span class="rd">' + (plan === k ? zico('check') : '') + '</span>';
-            if (k === 'annual') { nm.innerHTML = '<b>Annual</b><span class="badge">\u221239%</span><div><s>$47.88</s> ' + P.price + '</div>'; } else nm.innerHTML = '<b>Monthly</b>';
-            x.appendChild(nm); x.appendChild(mk('span', '', P.per)); x.addEventListener('click', function () { plan = k; cta.textContent = P.cta; drawPlans(); }); plans.appendChild(x);
+            nm.innerHTML = '<b>' + P.label + '</b>' + (P.best ? '<span class="badge">Most Popular \u2013 Best Value</span>' : '') + '<div></div>';
+            nm.lastChild.textContent = premPrice(P.usd) + ' / ' + P.per;
+            x.appendChild(nm); x.addEventListener('click', function () { plan = k; cta.textContent = premCta(k); drawPlans(); }); plans.appendChild(x);
           });
         }
-        drawPlans(); b.appendChild(plans);
+        var one = mk('div', 'pd-sec'); one.style.textAlign = 'center'; one.innerHTML = '<b>ONE Zanply Premium bundle \u2013 all 6 features included.</b><br><span style="opacity:.8">Pick how long you want to subscribe. The features are the same on every plan.</span>'; b.appendChild(one); drawPlans(); b.appendChild(plans);
         var list = mk('div', 'zpm-list');
         PREM_FEATS.forEach(function (f) {
           var r = mk('button', 'zpm-f'); r.innerHTML = '<span class="ic"></span><span class="tx"><b></b><small></small></span><span class="ch">\u203a</span>';
           var ic = r.querySelector('.ic'); ic.textContent = f[0]; ic.style.background = f[3]; r.querySelector('b').textContent = f[1]; r.querySelector('small').textContent = f[2];
-          r.addEventListener('click', function () { zOpenPage(f[1], function (c) { c.parentNode.classList.add('zprem'); var w = mk('div', 'zpm-hero'); w.innerHTML = '<div style="font-size:64px"></div><h2></h2><p></p>'; w.firstChild.textContent = f[0]; w.querySelector('h2').textContent = f[1]; w.querySelector('p').textContent = f[2]; c.appendChild(w); var s = mk('button', 'zpm-cta', PREM_PLANS[plan].cta); s.addEventListener('click', function () { startPremiumCheckout(plan); }); c.appendChild(s); }); });
+          r.addEventListener('click', function () {
+            zOpenPage(f[1], function (c) {
+              c.parentNode.classList.add('zprem');
+              var w = mk('div', 'zpm-hero'); w.innerHTML = '<h2></h2><p></p>'; w.querySelector('h2').textContent = f[1]; w.querySelector('p').textContent = 'Included in your Zanply Premium bundle'; c.appendChild(w);
+              var dm = mk('div'); dm.innerHTML = premDemo(f[4]); c.appendChild(dm);
+              var sec = mk('div', 'pd-sec');
+              [['What it is', f[5]], ['How it works', f[6]], ['Why it is useful', f[7]]].forEach(function (t) { var h = mk('h3', '', t[0]), p = mk('p', '', t[1]); sec.appendChild(h); sec.appendChild(p); });
+              c.appendChild(sec); c.appendChild(premTerms());
+              var s = mk('button', 'zpm-cta', premCta(plan)); s.addEventListener('click', function () { startPremiumCheckout(plan); }); c.appendChild(s);
+            });
+          });
           list.appendChild(r);
         });
-        b.appendChild(list); cta.addEventListener('click', function () { startPremiumCheckout(plan); }); b.appendChild(cta);
+        b.appendChild(list); b.appendChild(premTerms()); cta.addEventListener('click', function () { startPremiumCheckout(plan); }); b.appendChild(cta);
         b.addEventListener('scroll', function () { ttl.textContent = b.scrollTop > 150 ? 'Zanply Premium' : ''; }, { passive: true });
       });
     }
@@ -8690,7 +8760,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     sh.appendChild(mk('div', 'zsh-grip'));
     var hd = mk('div', 'zsh-hd'), cx = ibtn('', IC.x, 'Close', 26); cx.addEventListener('click', closeOv); hd.appendChild(cx); hd.appendChild(mk('span', '', 'Add status')); sh.appendChild(hd);
     function chip(label, p, fn) { var b = mk('button', 'zsh-chip'), s = mk('span'); s.innerHTML = ico(p, 26); b.appendChild(s); b.appendChild(mk('em', '', label)); b.addEventListener('click', fn); return b; }
-    function tile(label, p, fn) { var b = mk('button', 'zsh-tile'); b.innerHTML = ico(p, 34); b.appendChild(mk('span', '', label)); b.addEventListener('click', fn); return b; }
+    function tile(label, p, fn) { var b = mk('button', 'zsh-tile'); b.innerHTML = ico(p, 34); b.appendChild(mk('span', '', label)); b.addEventListener('click', function () { zlog('Status sheet: tapped ' + label + ' (overlays ' + (typeof overlays !== 'undefined' ? overlays.length : '?') + ', popSkip ' + (typeof popSkip !== 'undefined' ? popSkip : '?') + ')'); fn(); }); return b; }
     var chips = mk('div', 'zsh-chips');
     chips.appendChild(chip('Text', IC.pen, function () { closeOv(); setTimeout(composer, 300); }));
     chips.appendChild(chip('Music', IC.music, function () { closeOv(); pick('audio/*', false, function (f) { setTimeout(function () { audioComposer(f, 'music'); }, 300); }); }));
@@ -8711,12 +8781,12 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     var waits = 0;
     function go() {
       /* the sheet closes with history.back(); Android can deliver it late and it would close the editor again */
-      if (typeof popSkip !== 'undefined' && popSkip > 0 && waits++ < 30) return setTimeout(go, 100);
+      if (typeof popSkip !== 'undefined' && popSkip > 0 && waits++ < 8) return setTimeout(go, 100);
       if (waits > 0) zlog('Status: waited ' + (waits * 100) + 'ms for the back-step to settle');
       zlog('Status: opening ' + (isVid(file) ? 'video' : 'photo') + ' editor');
       try {
         if (isVid(file)) videoComposer(file);
-        else if (window.zOpenEditor) window.zOpenEditor(file, '__status__');
+        else if (window.zOpenEditor) { window.zOpenEditor(file, '__status__'); setTimeout(function () { var e = document.getElementById('camEd'); if (e && e.classList.contains('hidden')) { try { window.zOpenEditor(file, '__status__'); } catch (x) {} } }, 1800); }
         else { diag('Status: the photo editor function is missing'); toast('Photo editor is not ready. Try again.'); }
       } catch (e) { diag('Status: editor crashed: ' + ((e && e.message) || e)); }
     }
@@ -8980,6 +9050,16 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
       });
       zlog('Chat list drawn: ' + n + ' rows, ' + (allChats ? allChats.length : 0) + ' chats known, filter ' + filt + (why.length ? '. Not shown -> ' + why.join(' | ') : ''), n === 0 && allChats && allChats.length > 0 && filt === 'all');
     } catch (e) {}
+    setTimeout(function () {
+      try {
+        var out = [];
+        Array.prototype.forEach.call(document.querySelectorAll('#chatList .swrap'), function (w) {
+          var rc = w.getBoundingClientRect(), cs = getComputedStyle(w), nm = (w.querySelector('.mid b') || {}).textContent || w.getAttribute('data-ph');
+          out.push(nm + ' y' + Math.round(rc.top) + ' h' + Math.round(rc.height) + (cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0 ? ' HIDDEN-BY-CSS' : '') + (rc.height < 5 ? ' ZERO-HEIGHT' : ''));
+        });
+        if (out.length) zlog('Rows on screen: ' + out.join(' | '));
+      } catch (e) {}
+    }, 250);
     return r;
   };
   function chatListBlank() {
