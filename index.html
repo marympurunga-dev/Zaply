@@ -4417,55 +4417,141 @@ ZW|Zimbabwe|263`;
       backup: '<path d="M7 18a4.500 4.500 0 0 1-.6-8.960A6 6 0 0 1 18 9.500a4 4 0 0 1-.5 8.500z"/><path d="M12 17v-6M9.500 13.500L12 11l2.500 2.500"/>',
       translate: '<path d="M4 5h10M9 3v2M6 5c.5 3 2.500 5.500 6 7.500M12 5c-.5 3-3 6-8 8"/><path d="M13 20l4-9 4 9M14.500 17h5"/>',
       live: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15c3-3 5 3 9 0s6 3 9 0"/><circle cx="16.500" cy="9.500" r="1.200"/>',
+      check: '<path d="M5 12.500l4.500 4.500L19 7"/>',
+      lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+      plus: '<path d="M12 5v14M5 12h14"/>',
+      bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+      heart: '<path d="M12 20s-7-4.500-7-10a4 4 0 0 1 7-2.500A4 4 0 0 1 19 10c0 5.500-7 10-7 10z"/>',
+      phone: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
+      mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+      ghost: '<path d="M5 21V11a7 7 0 0 1 14 0v10l-3-2-2 2-2-2-2 2-2-2z"/><circle cx="9.500" cy="11" r=".8"/><circle cx="14.500" cy="11" r=".8"/>',
+      chat: '<path d="M4 5h16v11H9l-5 4z"/>',
+      camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.500"/>',
+      eye: '<path d="M2.500 12S6 5.500 12 5.500 21.500 12 21.500 12 18 18.500 12 18.500 2.500 12 2.500 12z"/><circle cx="12" cy="12" r="3"/>',
       crown: '<path d="M3 8l4.500 4L12 5l4.500 7L21 8l-2 11H5z"/>'
     };
     function psvg(k, sz, col) {
       return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + sz + '" height="' + sz + '" fill="none" stroke="' + (col || '#fff') + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + PICON[k] + '</svg>';
     }
     var PREM_FEATS = [
-      ['story', 'Stories (Status)', 'Post up to 13 Status a day and keep each one up to 96 hours.', '#b8893b', 'story',
-        'Stories are the photos, videos and texts you share on your Status.', 'Pick a Status, choose how long it stays (48, 72 or 96 hours with Premium) and post. You can post up to 13 a day.', 'Share your whole day or promote your business without hitting a limit.', '2 Status per day, each lasts 24 hours', 'Up to 13 Status per day, lasting up to 96 hours'],
+      ['story', 'Stories (Status)', 'Post up to 13 Status a day instead of 2.', '#b8893b', 'story',
+        'Without Premium, you can share only 2 Status per day. With Premium, you can post up to 13 Status per day. Share more moments, more photos, more videos, without waiting for tomorrow.', 'Post Status normally. Premium removes the limit to 13 per day.', 'For creators, businesses, and active users who post a lot.', '2 Status per day', 'Up to 13 Status per day'],
       ['limits', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups.', '#a86f4f', 'limits',
-        'Run more communities with higher creation limits.', 'Subscribe and the limits lift. Create from New group and New channel.', 'Built for people who manage several communities, classes, shops or clubs.', 'Up to 2 Channels and 2 Groups', 'Up to 10+ Channels and 10+ Groups'],
+        'Without Premium, you can create only 2 Channels and 2 Groups. With Premium, you can create up to 10+ Channels and 10+ Groups.', 'Create Channels and Groups normally. Premium unlocks the higher limit.', 'For businesses, churches, schools and creators who run many communities.', '2 Channels and 2 Groups', 'Up to 10+ Channels and 10+ Groups'],
       ['colors', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#8e6aa8', 'colors',
-        'Personalise how your name and profile look.', 'Open Profile, tap Name style or Profile colour, preview and apply. Others see it in chats and groups.', 'Stand out and be easy to recognise in busy chats.', 'Standard name and colour', 'Name styles and exclusive profile colours'],
-      ['icons', 'Premium App Icons', 'Unlock exclusive Zanply app icons.', '#5f7fb8', 'icons',
-        'Special Zanply icons for your home screen.', 'Go to Settings > Appearance > App Icons, preview the icons and tap your favourite.', 'Make Zanply match your style.', 'Default icon only', 'All exclusive app icons'],
-      ['ai', 'Unlimited AI Usage', 'Use Zanply AI without reaching a limit.', '#4f9a8a', 'ai',
-        'Zanply AI helps you write, create images and answer questions.', 'Premium removes the daily AI limit, checked on our server against your subscription.', 'No interruptions in the middle of your work.', 'Limited daily AI usage', 'Unlimited AI usage'],
+        'Change your name style and unlock exclusive profile colours. Make your name bold, colourful, and unique.', 'Go to Profile > Name Colour. Choose from exclusive Premium colours and fonts.', 'Makes your profile stand out and look professional.', 'Standard name and colour', 'Exclusive name styles and colours'],
+      ['icons', 'Premium App Icons', 'Unlock exclusive app icons.', '#5f7fb8', 'icons',
+        'Unlock exclusive app icons. Change how Zanply looks on your home screen.', 'Go to Appearance > App Icons. Choose from Premium icons.', 'Personalise your phone and make it look cool and premium.', 'Default icon only', 'All exclusive app icons'],
+      ['ai', 'Unlimited AI Usage', 'Use Zanply AI without a limit.', '#4f9a8a', 'ai',
+        'Without Premium, AI usage is limited. With Premium, use AI without limit: ask anything, write messages, translate and create images.', 'Open AI Chat. No daily limit. Use as much as you want.', 'For students, businesses, and anyone who uses AI every day.', 'Limited daily AI usage', 'Unlimited AI usage'],
       ['wall', 'Wallpaper for Both Sides', 'Your wallpaper shows to the other person too.', '#b4607a', 'wall',
-        'Set one wallpaper that both people see in your conversation.', 'If User A (Premium) sets a wallpaper in the chat with User B, User B sees it in that chat only. User B can change their own wallpaper.', 'Makes a conversation feel shared and personal.', 'Wallpaper shows only on your phone', 'Wallpaper also shows to the other person in that chat'],
+        'Without Premium, a wallpaper only shows on your own phone. With Premium, the wallpaper you set is also shown to the other person in your chat with them.', 'Set a wallpaper in the chat. If you are Premium, the other person sees it too, in your chat only, unless they change it.', 'Makes chats beautiful for both people. Perfect for couples and friends.', 'Wallpaper shows only on your phone', 'Wallpaper also shows to the other person in that chat'],
       ['stealth', 'Privacy Stealth Mode', 'Hide online, typing, read receipts and last seen.', '#6b7a8f', 'stealth',
-        'Advanced privacy: hide your Online status, Typing indicator, Read receipts (blue ticks) and Last seen, each with its own toggle.', 'Turn each switch on or off in Settings > Privacy. You can still see other people\u2019s status, subject to the app\u2019s privacy rules.', 'Read and reply on your own time without pressure.', 'Standard privacy settings', 'Individual stealth toggles for all four'],
-      ['\ud83d\udcc1', 'Bigger Files & Faster Uploads', 'Send files up to 2 GB with faster uploads.', '#a3793a', 'files',
-        'Send large videos, documents and apps.', 'The maximum size is shown before you upload. Premium files use priority upload.', 'Share big files without compressing or splitting them.', 'Up to 100 MB, normal speed', 'Up to 2 GB, faster uploads'],
-      ['stickers', 'Stickers, Themes & Bubbles', '500+ animated stickers, chat themes and bubble colours.', '#9a6fb0', 'stickers',
-        'Exclusive animated stickers, chat themes and custom bubble colours, in categories.', 'Browse categories, preview a design and apply it. Premium designs are locked for free users.', 'Chat in your own style.', 'Basic stickers and themes', '500+ animated stickers, exclusive themes, custom bubbles'],
+        'Hide your Online status, hide "Typing...", hide Read Receipts (blue ticks) and hide "Last Seen". You can still see other people’s.', 'Go to Privacy > Stealth Mode. Turn ON all 4 switches.', 'Read messages privately without people knowing you are online.', 'Standard privacy settings', 'Hide online, typing, blue ticks and last seen'],
+      ['files', 'Bigger Files & Faster Uploads', 'Send files up to 2 GB with fast upload speed.', '#a3793a', 'files',
+        'Without Premium, send files up to 100 MB at normal speed. With Premium, send files up to 2 GB (videos, documents, apps) with fast upload speed.', 'Select any big file in a chat. Premium uploads it fast with a progress bar.', 'Send big videos, movies, school work and business files without splitting them.', 'Up to 100 MB, normal speed', 'Up to 2 GB, fast upload'],
+      ['stickers', 'Premium Stickers, Themes & Chat Bubbles', '500+ animated stickers, chat themes and bubble colours.', '#9a6fb0', 'stickers',
+        'Unlock 500+ exclusive animated stickers, custom chat themes and chat bubble colours that free users can’t use.', 'Open Stickers / Themes in a chat. Choose a Premium pack.', 'Makes chats fun, colourful and different from everyone else.', 'Basic stickers and themes', '500+ animated stickers, themes and bubble colours'],
       ['sched', 'Scheduled Messages & Auto-Reply', 'Send messages later and reply automatically when busy.', '#5d8a6e', 'sched',
-        'Write a message and choose a date and time for delivery, for example Happy Birthday at midnight. Auto-reply answers for you when you are busy.', 'Delivery runs on our server, so it is sent even if the app is closed. You can switch auto-reply on or off, edit it and choose when it runs.', 'Never miss a birthday or leave people waiting.', 'Not available', 'Scheduled messages and auto-reply'],
-      ['backup', 'Cloud Backup & Priority Support', 'Back up chats, photos and videos with priority support.', '#5f7fb8', 'backup',
-        'Back up your chats, photos and videos and restore them on a new phone.', 'A backup page shows your backup status, last backup and restore options.', 'Never lose your chats when you change or lose a phone.', 'Limited backup', 'Chat, photo and video backup, priority support'],
+        'Schedule a message to send later. Set Auto-Reply when you are busy.', 'Type a message, long press Send, then tap Schedule. For Auto-Reply: Settings > Auto-Reply > turn ON and type your reply.', 'Never forget birthdays. Businesses can reply even when closed.', 'Not available', 'Scheduled messages and Auto-Reply'],
+      ['backup', 'Cloud Backup + Priority Support', 'Unlimited cloud backup and replies in under 1 hour.', '#5f7fb8', 'backup',
+        'Without Premium, backup is limited. With Premium, you get unlimited cloud backup for chats, photos and videos, so you never lose chats. Plus priority support: we reply in under 1 hour.', 'Settings > Backup > turn ON Unlimited Cloud Backup. For support, your ticket goes to the front.', 'Change phone without losing anything. Get help fast.', 'Limited backup', 'Unlimited backup and priority support'],
       ['translate', 'Voice-to-Text & AI Translation', 'Turn voice notes into text and translate in one tap.', '#4f8fa0', 'translate',
-        'Voice notes become readable text, and messages or chats can be translated into your language, such as English to Swahili.', 'Tap a voice note to read it, or tap Translate on a message or chat.', 'Great for long voice notes and talking across countries.', 'Not available', 'Voice-to-text and one-tap translation'],
-      ['live', 'Live Wallpapers + Camera', 'Animated wallpapers in chats and in the Camera.', '#c06a4a', 'live',
-        'Use live, moving wallpapers in your chats and as your Camera background for Status. The other person also sees your live wallpaper in your chat with them.', 'Go to Chat Wallpaper > Live Wallpapers and choose a video or animated wallpaper. For Camera, open Camera > Live Wallpaper.', 'Makes chats look alive, beautiful and premium instead of boring.', 'Static wallpapers only', 'Live wallpapers in chats and Camera']
+        'Convert voice notes to text automatically. Translate any chat to your language with one tap using AI.', 'Long press a voice note > Transcribe. Long press a message > Translate.', 'For long voice notes and chatting with people from other countries.', 'Not available', 'Voice-to-text and one-tap translation'],
+      ['live', 'Live Wallpapers + Camera Live Wallpapers', 'Animated wallpapers in chats and in the Camera.', '#c06a4a', 'live',
+        'Without Premium, only static wallpapers. With Premium, use Live Wallpapers: animated, moving wallpapers in chats and in the Camera. Set a live video as your chat wallpaper or as your Camera background for Status. The other person also sees your live wallpaper in your chat with them.', 'Go to Chat Wallpaper > Live Wallpapers and choose a video or animated wallpaper. For Camera, open Camera > Live Wallpaper.', 'Makes chats look alive, beautiful and premium, not boring.', 'Static wallpapers only', 'Live wallpapers in chats and Camera']
     ];
+    var PVCSS = '.pv{position:relative;width:min(320px,90%);height:190px;margin:14px auto;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#1d2a44,#3a2a5c);color:#fff;font-size:13px}.pv-e{position:absolute;white-space:nowrap;pointer-events:none}' +
+      '.pv-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-weight:600;font-size:12.5px}.pv-row{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;background:rgba(255,255,255,.16);font-size:12.5px}' +
+      '.pv-b{display:inline-block;padding:8px 12px;border-radius:14px;font-size:12.5px;background:rgba(255,255,255,.2)}.pv-b.u{background:#3b82f6}.pv-cap{font-size:12px;opacity:.85;letter-spacing:.3px}.pv-name{font-size:26px}' +
+      '.pv-app{width:72px;height:72px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800}.pv-tap{display:block;width:30px;height:30px;border-radius:50%;border:2px solid #fff;animation:pvtap .6s ease-out infinite}' +
+      '.pv-dot{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center}.pv-glow{box-shadow:0 0 18px #fbbf24}' +
+      '.pv-ph{width:76px;height:118px;border-radius:14px;border:3px solid #e5e7eb;overflow:hidden;background:#000;margin:0 auto 4px}.pv-ps{width:100%;height:100%}' +
+      '.pv-track{position:relative;height:12px;border-radius:6px;background:rgba(255,255,255,.2)}.pv-fill{position:absolute;inset:0;border-radius:6px;background:linear-gradient(90deg,#4ade80,#fbbf24);transform-origin:left;animation:pvfill 5s infinite}.pv-bolt{position:absolute;top:-4px;left:0;animation:pvbolt 5s infinite}' +
+      '.pv-wave{display:inline-flex;align-items:center;gap:3px;height:20px}.pv-wave i{width:3px;background:#fff;border-radius:2px;animation:pvw .6s ease-in-out infinite alternate}.pv-chip{margin-left:8px;font-size:10px;padding:2px 6px;border-radius:6px;background:#fbbf24;color:#000;font-weight:700}' +
+      '.pv-cf{position:absolute;top:-10px;width:6px;height:10px;animation:pvfall 1.8s linear infinite}.pv-inf{font-size:34px;color:#fbbf24;font-weight:700}.pv-cyc{animation:pvcyc 5s infinite}' +
+      '@keyframes pvtap{from{transform:scale(.4);opacity:1}to{transform:scale(1.5);opacity:0}}@keyframes pvfill{0%{transform:scaleX(0)}40%,100%{transform:scaleX(1)}}@keyframes pvbolt{0%{left:0}40%,100%{left:calc(100% - 20px)}}@keyframes pvw{from{height:4px}to{height:20px}}' +
+      '@keyframes pvfall{to{transform:translateY(210px) rotate(540deg)}}@keyframes pvf{50%{transform:translateY(-6px)}}@keyframes pvp{50%{transform:scale(1.1)}}@keyframes pvjump{50%{transform:translateY(-10px)}}@keyframes pvrock{25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}' +
+      '@keyframes pvspin{to{transform:rotate(360deg)}}@keyframes pvcyc{0%{background:#ec4899}33%{background:#22c55e}66%{background:#eab308}100%{background:#ec4899}}@keyframes pvheart{from{transform:translateY(0);opacity:1}to{transform:translateY(-50px);opacity:0}}' +
+      '@keyframes pvwv{to{background-position-x:60px}}@keyframes pvrain{to{background-position:-20px 40px}}@keyframes pvtw{50%{opacity:.25}}@keyframes pvfire{50%{filter:brightness(1.3) saturate(1.2)}}';
+    var PV = { dur: 5, kf: {} };
+    function pvW(a, b) {
+      var n = 'pw' + a + '_' + b;
+      if (!PV.kf[n]) {
+        var h = a <= 0 ? '0%{opacity:1}' : '0%,' + a + '%{opacity:0}' + (a + 3) + '%{opacity:1}';
+        h += b >= 100 ? '94%{opacity:1}100%{opacity:0}' : b + '%{opacity:1}' + (b + 3) + '%{opacity:0}100%{opacity:0}';
+        PV.kf[n] = '@keyframes ' + n + '{' + h + '}';
+      }
+      return 'animation:' + n + ' ' + PV.dur + 's infinite both';
+    }
+    function pvE(a, b, st, html) { return '<div class="pv-e" style="' + st + ';' + pvW(a, b) + '">' + html + '</div>'; }
     function premDemo(k) {
-      var d = '';
-      if (k === 'story') d = '<div class="pd-ring"><b>13</b><small>per day</small></div><div class="pd-time"><span>24h</span><span>48h</span><span>72h</span><span>96h</span></div><div class="pd-note">Free: 2 per day, 24h</div>';
-      else if (k === 'limits') d = '<div class="pd-bars"><i style="--h:30%"></i><i style="--h:100%"></i></div><div class="pd-cap"><span>Free: 2</span><span>Premium: 10+</span></div>';
-      else if (k === 'colors') d = '<div class="pd-name">Mary</div><div class="pd-sw"><i></i><i></i><i></i><i></i></div>';
-      else if (k === 'icons') d = '<div class="pd-ic"><i></i><i></i><i></i></div>';
-      else if (k === 'ai') d = '<div class="pd-chat"><span>Write a message for my customers</span><span>Done! Ask me anything, no limit \u221e</span></div>';
-      else if (k === 'stealth') d = '<div class="pd-tg"><span>Online</span><i></i></div><div class="pd-tg"><span>Typing</span><i></i></div><div class="pd-tg"><span>Read receipts</span><i></i></div><div class="pd-tg"><span>Last seen</span><i></i></div>';
-      else if (k === 'files') d = '<div class="pd-fl"><span>Free \u2013 100 MB</span><u><i style="--w:12%"></i></u><span>Premium \u2013 2 GB</span><u><i style="--w:90%"></i></u></div>';
-      else if (k === 'stickers') d = '<div class="pd-ic pd-em"><i>' + psvg('stickers', 44, 'currentColor') + '</i><i>' + psvg('ai', 44, 'currentColor') + '</i><i>' + psvg('wall', 44, 'currentColor') + '</i></div>';
-      else if (k === 'sched') d = '<div style="animation:pdp 2s infinite;display:flex;justify-content:center">' + psvg('sched', 46, 'currentColor') + '</div><div class="pd-note">Happy Birthday! \u2192 00:00</div>';
-      else if (k === 'backup') d = '<div style="animation:pdp 2s infinite;display:flex;justify-content:center">' + psvg('backup', 46, 'currentColor') + '</div><div class="pd-fl"><u><i style="--w:95%"></i></u></div><div class="pd-note">Chats \u00b7 Photos \u00b7 Videos</div>';
-      else if (k === 'live') d = '<div style="position:absolute;inset:0;background:linear-gradient(180deg,#0b3a6b,#1b78b8,#0b3a6b);background-size:100% 300%;animation:pdlv 4s ease-in-out infinite alternate"></div><div style="position:relative;animation:pdp 2s infinite">' + psvg('live', 56, '#fff') + '</div><div class="pd-note" style="position:relative">Waves \u00b7 Rain \u00b7 Stars \u00b7 Fire</div>';
-      else if (k === 'translate') d = '<div class="pd-chat"><span>Habari za asubuhi</span><span>Good morning</span></div>';
-      else d = '<div class="pd-ph"><div class="a">You</div><div class="b">Friend</div></div>';
-      return '<div class="pd-demo pd-' + k + '">' + d + '</div>';
+      PV.kf = {}; PV.dur = k === 'live' ? 7 : 5;
+      var E = pvE, d = '', i;
+      var C = function (l, t) { return 'left:' + l + '%;top:' + t + '%;transform:translate(-50%,-50%)'; };
+      var pill = function (h, bg) { return '<span class="pv-pill" style="background:' + bg + '">' + h + '</span>'; };
+      var cap = function (t) { return '<span class="pv-cap">' + t + '</span>'; };
+      var ok = psvg('check', 16, '#4ade80'), lock = psvg('lock', 15), RED = '#b91c1c', GRN = '#166534', GOLD = '#b8893b';
+      if (k === 'story') {
+        d = E(0, 34, C(50, 20), pill(lock + ' Status 2/2 · Blocked', RED)) + E(36, 100, C(50, 20), pill(psvg('story', 15) + ' 13/13 Premium', GOLD));
+        for (i = 0; i < 3; i++) d += E(46 + i * 16, 100, C(50, 44 + i * 18), '<div class="pv-row">' + ok + ' Status ' + (i + 1) + ' posted</div>');
+      } else if (k === 'limits') {
+        d = E(0, 100, C(50, 13), pill(psvg('plus', 14) + ' Create Group', 'rgba(255,255,255,.2)')) + E(0, 34, C(50, 32), pill(lock + ' 2/2 · Locked', RED)) + E(36, 100, C(50, 32), '<span class="pv-glow" style="border-radius:20px;display:inline-block">' + pill('10+ unlocked', GOLD) + '</span>');
+        for (i = 0; i < 10; i++) d += E(38 + i * 4, 100, C(20 + 15 * (i % 5), 56 + 17 * Math.floor(i / 5)), '<span class="pv-dot">' + psvg('limits', 18) + '</span>');
+      } else if (k === 'colors') {
+        var cs = [[0, 22, 'color:#fff;font-weight:400', 'Normal'], [22, 40, 'color:#60a5fa;font-weight:800', 'Blue'], [40, 58, 'color:#c084fc;font-weight:800;font-style:italic', 'Purple'], [58, 76, 'color:#fbbf24;font-weight:800', 'Gold'], [76, 100, 'background:linear-gradient(90deg,#f43f5e,#f59e0b,#4ade80,#60a5fa,#c084fc);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:800', 'Rainbow']];
+        d = E(0, 100, C(50, 14), cap('Profile › Name Colour'));
+        cs.forEach(function (c) { d += E(c[0], c[1], C(50, 42), '<span class="pv-name" style="' + c[2] + '">Mary Wanjiku</span>') + E(c[0], c[1], C(50, 68), cap(c[3])); });
+      } else if (k === 'icons') {
+        var ts = [[0, 22, 'linear-gradient(135deg,#5f7fb8,#3b5998)', 'Default'], [22, 42, 'linear-gradient(135deg,#f6d365,#b8893b)', 'Gold'], [42, 60, '#0b0b0f', 'Black'], [60, 78, 'linear-gradient(135deg,#00f0ff,#ff00e6)', 'Neon'], [78, 100, 'conic-gradient(#f43f5e,#f59e0b,#4ade80,#60a5fa,#c084fc,#f43f5e)', 'Rainbow']];
+        d = E(0, 100, C(50, 12), cap('Appearance › App Icons'));
+        ts.forEach(function (t) { d += E(t[0], t[1], C(50, 46), '<span class="pv-app" style="background:' + t[2] + '">Z</span>') + E(t[0], t[1], C(50, 82), cap(t[3])); });
+        [18, 38, 56, 74].forEach(function (t) { d += E(t, t + 6, C(50, 46), '<span class="pv-tap"></span>'); });
+      } else if (k === 'ai') {
+        d = E(0, 34, C(50, 30), pill(lock + ' Daily limit reached', RED)) + E(38, 100, 'right:8%;top:10%', '<div class="pv-b u">Write a message for my customers</div>') + E(48, 100, 'left:8%;top:30%', '<div class="pv-b">Done! Here is your message.</div>') +
+          E(58, 100, 'right:8%;top:50%', '<div class="pv-b u">Translate it to Swahili</div>') + E(68, 100, 'left:8%;top:70%', '<div class="pv-b">Imekamilika. Anything else?</div>') + E(74, 100, C(86, 86), '<span class="pv-inf">∞</span>');
+      } else if (k === 'wall') {
+        var beach = 'linear-gradient(#8fd3f4 0 42%,#2b8fc4 42% 68%,#f3d9a0 68%)', ph = function (bg) { return '<div class="pv-ph"><div class="pv-ps" style="background:' + bg + '"></div></div>'; };
+        var hearts = ''; for (i = 0; i < 3; i++) hearts += '<span style="position:absolute;left:' + (i * 22 - 22) + 'px;top:0;animation:pvheart 1.6s ease-out infinite;animation-delay:' + i * 0.5 + 's">' + psvg('heart', 18, '#fb7185') + '</span>';
+        d = E(0, 100, C(26, 50), ph(beach) + '<div style="text-align:center">' + cap('User A sets it') + '</div>') + E(0, 38, C(74, 50), ph('#3a3f4a') + '<div style="text-align:center">' + cap('User B') + '</div>') + E(38, 100, C(74, 50), ph(beach) + '<div style="text-align:center">' + cap('User B sees it too') + '</div>') +
+          E(24, 100, C(50, 48), '<span style="font-size:22px">→</span>') + E(42, 100, C(74, 36), '<div style="position:relative;width:0;height:0">' + hearts + '</div>');
+      } else if (k === 'stealth') {
+        d = E(0, 100, C(24, 44), '<span style="display:block;animation:pvf 2.4s ease-in-out infinite">' + psvg('ghost', 64, '#e5e7eb') + '</span>') + E(0, 100, C(24, 78), cap('Invisible'));
+        ['Online', 'Typing...', 'Blue ticks', 'Last seen'].forEach(function (l, j) { d += E(14 + j * 16, 100, 'left:46%;top:' + (14 + j * 20) + '%', '<div class="pv-row">' + psvg('stealth', 15, '#f87171') + ' ' + l + ' · Hidden</div>'); });
+      } else if (k === 'files') {
+        d = E(0, 100, C(50, 18), '<div class="pv-row">' + psvg('files', 16) + ' Movie.mp4 · 2 GB</div>') + E(0, 100, 'left:12%;right:12%;top:48%', '<div class="pv-track"><i class="pv-fill"></i><span class="pv-bolt">' + psvg('bolt', 20, '#fbbf24') + '</span></div>') +
+          E(0, 40, C(50, 72), cap('Uploading…')) + E(42, 100, C(50, 72), pill(ok + ' Sent in 2 seconds', GRN));
+      } else if (k === 'stickers') {
+        d = E(0, 34, 'inset:0;background:linear-gradient(135deg,#7a2c5a,#3a1d4d)', '') + E(34, 67, 'inset:0;background:linear-gradient(135deg,#1f6b45,#143a3a)', '') + E(67, 100, 'inset:0;background:linear-gradient(135deg,#8a6a1c,#4a3410)', '') +
+          E(0, 100, 'left:10%;top:14%', '<div class="pv-b pv-cyc">Hey! New theme?</div>') + E(0, 100, 'right:10%;top:38%', '<div class="pv-b pv-cyc" style="animation-delay:-1.6s">Yes, and bubbles too</div>') +
+          E(0, 100, C(50, 78), '<div style="display:flex;gap:22px"><span style="animation:pvjump .8s infinite">' + psvg('stickers', 34) + '</span><span style="animation:pvrock .9s infinite">' + psvg('ai', 34) + '</span><span style="animation:pvp 1s infinite">' + psvg('heart', 34, '#fb7185') + '</span></div>');
+      } else if (k === 'sched') {
+        var clock = '<svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M9 3h6"/><g style="transform-origin:12px 13px;animation:pvspin 2.5s linear infinite"><path d="M12 13V8.500"/></g></svg>', cf = '', cols = ['#f43f5e', '#fbbf24', '#4ade80', '#60a5fa', '#c084fc'];
+        for (i = 0; i < 16; i++) cf += '<i class="pv-cf" style="left:' + (i * 6 + 3) + '%;background:' + cols[i % 5] + ';animation-delay:' + (i % 5) * 0.2 + 's"></i>';
+        d = E(0, 100, C(50, 12), '<div class="pv-row">Happy Birthday</div>') + E(0, 52, C(50, 46), clock) + E(0, 30, C(50, 80), cap('11:58 PM')) + E(30, 52, C(50, 80), cap('11:59 PM')) +
+          E(54, 100, C(50, 40), pill(ok + ' Happy Birthday!', GRN)) + E(54, 100, C(50, 62), cap('12:00 AM · Sent automatically')) + E(54, 100, 'inset:0', cf);
+      } else if (k === 'backup') {
+        d = E(0, 30, C(50, 38), '<span style="position:relative;display:block">' + psvg('phone', 64, '#9ca3af') + '<svg viewBox="0 0 24 24" width="64" height="64" style="position:absolute;left:0;top:0" fill="none" stroke="#f87171" stroke-width="1.6" stroke-linecap="round"><path d="M9 3l3 6-3 4 4 3-2 5"/></svg></span>') + E(0, 30, C(50, 72), pill('Phone broken', RED)) +
+          E(32, 100, C(24, 40), '<span style="display:block;animation:pvp 1.6s infinite">' + psvg('backup', 56) + '</span>') + E(32, 100, C(24, 68), pill('Tap to restore', '#4f6fb8'));
+        ['Chats', 'Photos', 'Videos'].forEach(function (l, j) { d += E(50 + j * 10, 100, 'left:46%;top:' + (16 + j * 17) + '%', '<div class="pv-row">' + ok + ' ' + l + ' restored</div>'); });
+        d += E(80, 100, C(50, 90), pill(psvg('chat', 14) + ' Support replied in 5 min', GRN));
+      } else if (k === 'translate') {
+        var bars = ''; for (i = 0; i < 9; i++) bars += '<i style="animation-delay:' + (i % 4) * 0.12 + 's"></i>';
+        d = E(0, 30, C(50, 24), '<div class="pv-row">' + psvg('mic', 16) + '<span class="pv-wave">' + bars + '</span> 0:12</div>') + E(32, 100, C(50, 24), '<div class="pv-row">Good morning, how are you today?</div>') +
+          E(0, 50, C(50, 58), '<div class="pv-b">Good morning, my friend<span class="pv-chip">EN</span></div>') + E(50, 76, C(50, 58), '<div class="pv-b">Habari za asubuhi, rafiki yangu<span class="pv-chip">SW</span></div>') + E(76, 100, C(50, 58), '<div class="pv-b">Bonjour, mon ami<span class="pv-chip">FR</span></div>') +
+          E(44, 52, C(86, 58), '<span class="pv-tap"></span>') + E(70, 78, C(86, 58), '<span class="pv-tap"></span>') + E(0, 100, C(50, 86), cap('Long press › Translate'));
+      } else if (k === 'live') {
+        var star = 'radial-gradient(2px 2px at 20% 30%,#fff,transparent),radial-gradient(2px 2px at 70% 20%,#fff,transparent),radial-gradient(1.5px 1.5px at 45% 60%,#fff,transparent),radial-gradient(2px 2px at 85% 70%,#fff,transparent),radial-gradient(1.5px 1.5px at 10% 80%,#fff,transparent),radial-gradient(2px 2px at 60% 85%,#fff,transparent),#0b1230';
+        d = E(0, 28, 'inset:0', '<div style="width:100%;height:100%;background:radial-gradient(circle at 50% 130%,transparent 55%,rgba(255,255,255,.3) 56% 59%,transparent 60%) 0 40%/60px 30px,radial-gradient(circle at 50% 130%,transparent 55%,rgba(255,255,255,.2) 56% 59%,transparent 60%) 30px 75%/60px 30px,linear-gradient(#0b5394,#1ea0d8);animation:pvwv 3s linear infinite"></div>') +
+          E(28, 52, 'inset:0', '<div style="width:100%;height:100%;background:repeating-linear-gradient(100deg,transparent 0 14px,rgba(255,255,255,.4) 14px 15px) 0 0/40px 40px,#1f2937;animation:pvrain .5s linear infinite"></div>') +
+          E(52, 76, 'inset:0', '<div style="width:100%;height:100%;background:' + star + ';animation:pvtw 1.4s ease-in-out infinite"></div>') +
+          E(76, 100, 'inset:0', '<div style="width:100%;height:100%;background:linear-gradient(0deg,#ff4500,#ff9e00 40%,#2b0a00);animation:pvfire .7s ease-in-out infinite"></div>') +
+          E(0, 76, 'left:8%;top:22%', '<div class="pv-b">Hi! Look at this</div>') + E(0, 76, 'right:8%;top:42%', '<div class="pv-b u">Love the wallpaper</div>') + E(76, 100, C(50, 38), psvg('camera', 48)) +
+          E(0, 28, C(50, 86), pill('Chat · Ocean waves', 'rgba(0,0,0,.45)')) + E(28, 52, C(50, 86), pill('Chat · Rain', 'rgba(0,0,0,.45)')) + E(52, 76, C(50, 86), pill('Chat · Stars', 'rgba(0,0,0,.45)')) + E(76, 100, C(50, 86), pill('Camera · Fire', 'rgba(0,0,0,.45)')) +
+          E(0, 100, C(50, 10), pill(psvg('eye', 14) + ' Your friend sees it too', 'rgba(0,0,0,.45)'));
+      }
+      var kf = Object.keys(PV.kf).map(function (n) { return PV.kf[n]; }).join('');
+      return '<style>' + PVCSS + kf + '</style><div class="pv">' + d + '</div>';
     }
     (function () {
       var s = document.createElement('style');
