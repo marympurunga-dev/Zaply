@@ -1645,7 +1645,7 @@ html.islight #infoView #inAv{border-color:#25d366!important}
         <button data-a="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 3 3 10.53v.98l6.84 2.65L12.48 21h.98L21 3z"/></svg><span>Location</span></button><button data-a="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg><span>Games</span></button>
       </div>
       <div id="emojiBox" class="emojibox hidden"></div>
-      <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedBri" aria-label="Brighten">☀</button><button id="cedRot" aria-label="Crop and rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button id="cedEmo" aria-label="Stickers"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6l8-8z"/><path d="M20 12h-4a2 2 0 0 0-2 2v4"/><path d="M8.5 9.5h.01M14.5 9.5h.01"/></svg></button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div><div id="cedTxtOv" class="hidden"><div class="cto-top"><button id="ctoDone" class="cto-t">Done</button><div style="display:flex;gap:8px"><button id="ctoAl" aria-label="Align"></button><button id="ctoBg" aria-label="Background">A</button></div></div><div class="cto-mid"><textarea id="ctoIn" rows="1" placeholder="Add text" maxlength="120"></textarea></div><div class="cto-bot"><input type="range" id="ctoHue" min="0" max="100" value="0" aria-label="Colour"><div id="ctoFonts"></div></div></div><div id="cedStk" class="hidden"><div class="stk-sheet"><div class="stk-h"></div><div class="stk-tabs"><button data-t="e">&#128578;</button><button data-t="s">Stickers</button></div><div class="stk-body" id="stkBody"></div></div></div><div id="cedCrop" class="hidden"><div id="ccStage"><div id="ccWrap"><canvas id="ccCv"></canvas><div id="ccBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div></div></div><div class="cc-bar"><button id="ccCancel">Cancel</button><button id="ccRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="ccDone">Done</button></div></div></div>
+      <div id="camEd" class="hidden"><div class="ced-top"><button id="cedX" aria-label="Close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><div style="display:flex;gap:6px"><button id="cedSave" aria-label="Save"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></svg></button><button id="cedHD" aria-label="HD quality">HD</button><button id="cedBri" aria-label="Brighten">☀</button><button id="cedRot" aria-label="Crop and rotate"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg></button><button id="cedEmo" aria-label="Stickers"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6l8-8z"/><path d="M20 12h-4a2 2 0 0 0-2 2v4"/><path d="M8.5 9.5h.01M14.5 9.5h.01"/></svg></button><button id="cedTxt" aria-label="Text">Aa</button><button id="cedDraw" aria-label="Draw"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16 5l3 3L8 19l-4 1z"/></svg></button></div></div><div class="ced-stage"><div class="ced-wrap" id="cedWrap"><canvas id="cedBase"></canvas><canvas id="cedInk"></canvas><div id="cedItems"></div></div></div><div id="cedTools"><div id="cedT_draw"><button class="ced-sw on" data-c="#ffffff" style="background:#ffffff"></button><button class="ced-sw" data-c="#ff3b30" style="background:#ff3b30"></button><button class="ced-sw" data-c="#ffcc00" style="background:#ffcc00"></button><button class="ced-sw" data-c="#34c759" style="background:#34c759"></button><button class="ced-sw" data-c="#0a84ff" style="background:#0a84ff"></button><button class="ced-sw" data-c="#bf5af2" style="background:#bf5af2"></button><button class="ced-sw" data-c="#000000" style="background:#000000"></button><button class="ced-b" id="cedUndo" style="background:#444">Undo</button></div><div id="cedT_txt"><input id="cedTxtIn" maxlength="80" placeholder="Type text"><button class="ced-b" id="cedTxtAdd">Add</button></div><div id="cedT_emo"><button class="ced-e">😀</button><button class="ced-e">😂</button><button class="ced-e">😍</button><button class="ced-e">🥰</button><button class="ced-e">😎</button><button class="ced-e">🤩</button><button class="ced-e">😭</button><button class="ced-e">😡</button><button class="ced-e">👍</button><button class="ced-e">🙏</button><button class="ced-e">👏</button><button class="ced-e">🔥</button><button class="ced-e">❤️</button><button class="ced-e">💯</button><button class="ced-e">🎉</button><button class="ced-e">✨</button><button class="ced-e">😅</button><button class="ced-e">🤣</button><button class="ced-e">😘</button><button class="ced-e">🥺</button><button class="ced-e">🙌</button><button class="ced-e">💪</button><button class="ced-e">🌹</button><button class="ced-e">🎂</button><button class="ced-e">🎁</button><button class="ced-e">⭐</button><button class="ced-e">😴</button><button class="ced-e">🤔</button><button class="ced-e">😜</button><button class="ced-e">💔</button></div></div><div class="ced-cap"><input id="cedCap" maxlength="300" placeholder="Add a caption..."><button id="cedVO" aria-label="View once">1</button></div><div class="ced-bot"><div class="ced-chip" id="cedTo"></div><button id="cedSend" aria-label="Send"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3 20.5v-6.8l11-1.7-11-1.7V3.5L22 12z"/></svg></button></div><div id="cedTxtOv" class="hidden"><div class="cto-top"><button id="ctoDone" class="cto-t">Done</button><div style="display:flex;gap:8px"><button id="ctoAl" aria-label="Align"></button><button id="ctoBg" aria-label="Background">A</button></div></div><div class="cto-mid"><textarea id="ctoIn" rows="1" placeholder="Add text" maxlength="120"></textarea></div><div class="cto-bot"><input type="range" id="ctoHue" min="0" max="100" value="0" aria-label="Colour"><div id="ctoFonts"></div></div></div><div id="cedStk" class="hidden"><div class="stk-sheet"><div class="stk-h"></div><div class="stk-tabs"><button data-t="e">&#128578;</button><button data-t="s">Stickers</button><button data-t="p">&#11088; Premium</button></div><div class="stk-body" id="stkBody"></div></div></div><div id="cedCrop" class="hidden"><div id="ccStage"><div id="ccWrap"><canvas id="ccCv"></canvas><div id="ccBox"><i data-h="tl"></i><i data-h="tr"></i><i data-h="bl"></i><i data-h="br"></i></div></div></div><div class="cc-bar"><button id="ccCancel">Cancel</button><button id="ccRot" aria-label="Rotate"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5"/></svg></button><button id="ccDone">Done</button></div></div></div>
       <input id="fileImg" type="file" accept="image/*,video/*" multiple hidden><input id="fileCam" type="file" accept="image/*" capture="environment" hidden><input id="fileAny" type="file" hidden><input id="fileAudio" type="file" hidden>
       <div id="recBar" class="recbar hidden"><button id="recCancel" aria-label="Cancel recording"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button><span class="recdot"></span><span id="recT">0:00</span><span style="flex:1;opacity:.7;font-size:13px">Recording&hellip;</span><button id="recSend" aria-label="Send voice message"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z"/></svg></button></div>
       <div id="blockBar" class="blockbar hidden"><span id="blockBarT"></span><button id="blockBarBtn">Unblock</button></div>
@@ -2614,7 +2614,7 @@ ZW|Zimbabwe|263`;
       }).then(function (r) {
         return r.json().then(function (j) {
           if (r.status === 401) { clearToken(); showWelcome(); }
-          if (!r.ok) { var er2 = new Error(j.error || 'Something went wrong'); er2.status = r.status; throw er2; }
+          if (!r.ok) { var er2 = new Error(j.error || 'Something went wrong'); er2.status = r.status; er2.premium = !!j.premium; throw er2; }
           return j;
         });
       });
@@ -3074,6 +3074,7 @@ ZW|Zimbabwe|263`;
     /* ---------- Privacy ---------- */
     function openLastSeen() {
       zOpenPage('Last seen and online', function (b) {
+        zrows(b, [['lock', 'Typing & stealth mode (Premium)', function () { window.zpOpen.stealth(); }]]); b.appendChild(mk('div', 'zsep'));
         var p = priv(), O = [['everyone', 'Everyone'], ['contacts', 'My contacts'], ['nobody', 'Nobody']];
         zradios(b, 'Who can see my last seen', O, p.lastseen, function (v) { var q = priv(); q.lastseen = v; setPriv(q); });
         b.appendChild(mk('div', 'zsep'));
@@ -3213,7 +3214,7 @@ ZW|Zimbabwe|263`;
         zswitchRow(b, 'Keep chats archived', 'Archived chats will remain archived when you receive a new message', s.keepArch, function (v) { setChatSet('keepArch', v); });
         zrow2(b, 'archive', 'Archived chats', 'Press and hold a chat in your list to archive it', openArchived);
         b.appendChild(mk('div', 'zsep'));
-        zrows(b, [['storage', 'Chat backup', soon('Chat backup')], ['device', 'Transfer chats', soon('Transfer chats')], ['chat', 'Chat history', openChatHistory]]);
+        zrows(b, [['storage', 'Chat backup', function () { window.zpOpen.backup(); }], ['device', 'Transfer chats', soon('Transfer chats')], ['chat', 'Chat history', openChatHistory]]);
       });
     }
     /* ---------- Chat history: every chat, with a readable copy you can keep on the phone ---------- */
@@ -3367,6 +3368,7 @@ ZW|Zimbabwe|263`;
         zradios(b, '', [['system', 'System default'], ['light', 'Light'], ['dark', 'Dark']], appThemePref(), function (v) {
           try { localStorage.setItem('zaply_apptheme', v); } catch (e) {} applyAppTheme();
         });
+        var pt = mk('button', 'zpm-cta', 'Premium Theme' + (window.zIsPremium && window.zIsPremium() ? '' : ' \uD83D\uDD12')); pt.style.margin = '12px 18px'; pt.addEventListener('click', function () { window.zpOpen.themes(); }); b.appendChild(pt);
         b.appendChild(mk('div', 'zfoot', 'System default follows your phone\u2019s light or dark setting.'));
       });
     }
@@ -3631,7 +3633,7 @@ ZW|Zimbabwe|263`;
       if (w && w.css) bg = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; else if (t.bg) bg = t.bg; else { bg = defaultChatBg(); usedDef = true; }
       m.style.background = bg; m.style.backgroundBlendMode = (usedDef && window.__defBlend) ? window.__defBlend : '';
     }
-    function setWall(w) { if (w) { if (!lsSet('zaply_wall', w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_wall'); } catch (e) {} } applyTheme(); return true; }
+    function setWall(w) { try { if (openWith) ZP.set('wallown_' + openWith, 1); } catch (e) {} if (w) { if (!lsSet('zaply_wall', w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_wall'); } catch (e) {} } applyTheme(); return true; }
     function openWallpaper() {
       zOpenPage('Wallpaper', function (b) {
         var hd = b.parentNode.querySelector('.zpg-h'), more = mk('button'); more.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>';
@@ -3737,7 +3739,7 @@ ZW|Zimbabwe|263`;
     }
     function openAppearance() {
       zOpenPage('Appearance', function (b) {
-        zrows(b, [['palette', 'Default chat theme', openThemes]]);
+        zrows(b, [['palette', 'Default chat theme', openThemes], ['palette', 'Premium Themes', function () { window.zpOpen.themes(); }]]);
         b.appendChild(mk('div', 'zsep')); var h = mk('div', 'zsec'); h.innerHTML = '<span style="color:#21c063">\u25c6</span> Zanply Plus'; b.appendChild(h);
         zrows(b, [['smile', 'App icon', openAppIcons], ['palette', 'App theme', openAppColors]]);
         var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Premium to unlock exclusive app icons and more. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
@@ -3753,7 +3755,7 @@ ZW|Zimbabwe|263`;
           g.appendChild(x);
         });
         b.appendChild(mk('div', 'zfoot', 'The chat bubble and wallpaper will both change.'));
-        b.appendChild(mk('div', 'zsec', 'Customise')); zrows(b, [['chat', 'Chat bubble', openBubble], ['palette', 'Wallpaper', openWallpaper]]);
+        b.appendChild(mk('div', 'zsec', 'Customise')); zrows(b, [['chat', 'Chat bubble', openBubble], ['palette', 'Wallpaper', openWallpaper], ['smile', 'Wallpaper For Both Sides', function () { window.zpOpen.wpBoth(); }], ['palette', 'Live Wallpapers', function () { window.zpOpen.liveWp(); }]]);
       });
     }
 
@@ -4264,7 +4266,7 @@ ZW|Zimbabwe|263`;
         var l = mk('div'); b.appendChild(l);
         zrow2(l, 'faq', 'Zanply FAQ', 'Answers to common questions', openFaq);
         zrow2(l, 'bulb', 'Zanply features', 'What you can do with Zanply', openFeatures);
-        zrow2(l, 'ask', 'Contact us', 'Ask a question by email', askQuestion);
+        zrow2(l, 'ask', (window.zIsPremium && window.zIsPremium() ? '\u2B50 ' : '') + 'Contact us', window.zIsPremium && window.zIsPremium() ? 'Premium Support \u2022 priority, reply in under 1 hour' : 'Ask a question by email', askQuestion);
         zrow2(l, 'chat', 'Send feedback', 'Tell us what to improve', openFeedback);
       });
     }
@@ -4323,6 +4325,8 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'chat', 'Chats', 'Enter is send, font size, archived chats', openChats);
         zrow2(list, 'folder', 'Chat folders', 'Organise your chats into folders', openFolders);
         zrow2(list, 'palette', 'Appearance', 'Chat theme, wallpaper, app icon, app theme', openAppearance);
+        zrow2(list, 'chat', 'Auto-Reply', 'Reply automatically (Premium)', function () { window.zpOpen.autoReply(); });
+        zrow2(list, 'account', 'Name colour', 'Choose your name colour (Premium)', function () { window.zpOpen.nameColour(); });
         zrow2(list, 'bell', 'Notifications', 'Message, group & call tones', openNotif);
         zrow2(list, 'storage', 'Storage and data', 'Network usage, auto-download', openStorage);
         zrow2(list, 'access', 'Accessibility', 'Contrast, animation', openAccess);
@@ -4591,9 +4595,8 @@ ZW|Zimbabwe|263`;
       c.innerHTML = '<div style="margin-bottom:8px">' + window.zLockSvg.replace(/14/g, '34') + '</div>';
       c.appendChild(mk('div', '', msg)).style.cssText = 'font-size:15px;line-height:1.4;margin-bottom:14px';
       function btn(t, fn, pri) { var b = mk('button', '', t); b.style.cssText = 'display:block;width:100%;margin:6px 0;padding:11px;border-radius:12px;border:0;font-weight:700;font-size:14px;' + (pri ? 'background:#f5b32a;color:#000' : 'background:#2d3445;color:#fff'); b.addEventListener('click', function () { o.remove(); if (fn) fn(); }); c.appendChild(b); }
-      btn('Subscribe to Zanply Premium', openPremium, true);
-      if (extra) btn(extra.label, extra.fn);
-      btn('Cancel');
+      if (extra) { btn('Subscribe to Zanply Premium', openPremium, true); btn(extra.label, extra.fn); btn('Cancel'); }
+      else { btn('Cancel'); btn('Subscribe to Zanply Premium', openPremium, true); }
       o.appendChild(c); document.body.appendChild(o); return true;
     };
     /* ===== Zanply Premium features 1-13 (gated) ===== */
@@ -4631,9 +4634,31 @@ ZW|Zimbabwe|263`;
     var ZP_IC = ['Default', 'Golden', 'Ruby', 'Black', 'Neon', 'Rainbow', 'Rose', 'Ocean', 'Sunset', 'Violet', 'Graphite', 'Flame', 'Emerald', 'Midnight', 'Aurora', 'Royal'];
     function openAppIcons() { zpGrid('App Icon', ZP_IC.map(function (n, i) { return [n.toLowerCase(), n, i ? G(i - 1) : 'linear-gradient(135deg,#21c063,#0b6b3a)', 'Z', i > 0 && !window.zIsPremium()]; }), 'appicon', 'To set a Premium App Icon you need to subscribe to Zanply Premium', function (id) { try { var i = ZP_IC.map(function (x) { return x.toLowerCase(); }).indexOf(id), c = document.createElement('canvas'); c.width = c.height = 192; var x = c.getContext('2d'), cs = (i ? ZP_GRAD[(i - 1) % 15] : '#21c063,#0b6b3a').split(','), gr = x.createLinearGradient(0, 0, 192, 192); cs.forEach(function (k, j) { gr.addColorStop(j / Math.max(1, cs.length - 1), k); }); x.fillStyle = gr; x.fillRect(0, 0, 192, 192); x.fillStyle = '#fff'; x.font = '800 110px sans-serif'; x.textAlign = 'center'; x.fillText('Z', 96, 135); var u = c.toDataURL(); document.querySelectorAll('link[rel*=icon]').forEach(function (l) { l.href = u; }); } catch (e) {} toast('App icon changed. On Android, the home-screen icon updates in the installed app.', true, 3500); }, 4); }
     /* 6 wallpaper both sides + 13 live wallpapers */
-    function zpWpApply(k) { return function (id) { var t = ZP.get('wp_target', 0);  }; }
+    var zpKf = document.getElementById('zpLiveCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zpLiveCss' })); zpKf.textContent = '@keyframes zplive{0%{background-position:0 0}100%{background-position:100% 100%}}';
+    function zpWallCss(kind, id) { var n = parseInt(String(id).replace(/\D/g, ''), 10) || 0; return G(n + (kind === 'live' ? 6 : 3)); }
+    window.zpPaintWall = function (css, kind) { var m = document.getElementById('msgs'); if (!m) return; m.style.background = css; if (kind === 'live') { m.style.backgroundSize = '300% 300%'; m.style.animation = 'zplive 12s linear infinite alternate'; } else { m.style.backgroundSize = ''; m.style.animation = ''; } };
+    window.zpPeerWall = function (phone) {
+      setTimeout(function () {
+        try {
+          var m = document.getElementById('msgs'); if (m) { m.style.animation = ''; m.style.backgroundSize = ''; } if (typeof applyTheme === 'function') applyTheme();
+          var mine = ZP.get('wallmine_' + phone, null);
+          if (mine && mine.css && window.zIsPremium()) { window.zpPaintWall(mine.css, mine.k); return; }
+          if (ZP.get('wallown_' + phone, 0)) return;
+          chatCall('wall_get', { peer: phone }).then(function (r) { if (r && r.wall && window.zpChatApi && window.zpChatApi.cur() === phone) window.zpPaintWall(r.wall.css, r.wall.k === 'live' ? 'live' : 'both'); }, function () {});
+        } catch (e) {}
+      }, 250);
+    };
+    function zpWpApply(kind) {
+      return function (id) {
+        var api = window.zpChatApi, to = (api && api.cur && api.cur()) || window.zpLastChat;
+        if (!to) { toast('Open a chat first, then pick the wallpaper again. It is set for that chat only.', false, 4000); return; }
+        var css = zpWallCss(kind, id); ZP.set('wallown_' + to, 0); ZP.set('wallmine_' + to, { css: css, k: kind });
+        if (api && api.cur && api.cur() === to) window.zpPaintWall(css, kind);
+        chatCall('wall_set', { to: to, css: css, k: kind === 'live' ? 'live' : 'both' }).then(function () { toast('The other person now sees this wallpaper in your chat', true, 3000); }, function (e) { toast((e && e.message) || 'Could not share the wallpaper'); });
+      };
+    }
     function openWpBoth() { zpGrid('Wallpaper For Both Sides', zpLocked(['Sky', 'Forest', 'Rose', 'Night', 'Sand', 'Ruby', 'Mint', 'Plum', 'Slate'].map(function (n, i) { return ['wb' + i, n, G(i + 3)]; })), 'wpboth', 'To use Wallpaper For Both Sides you need to subscribe to Zanply Premium', zpWpApply('both')); }
-    function openLiveWp() { zpGrid('Live Wallpapers', zpLocked(['Ocean Waves', 'Rain', 'Stars', 'Fire', 'Aurora', 'Snow'].map(function (n, i) { return ['lw' + i, n, G(i + 6)]; })), 'livewp', 'To use Live Wallpapers you need to subscribe to Zanply Premium', function (id) { var st = document.getElementById('zpLiveCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zpLiveCss' })); st.textContent = '@keyframes zplive{0%{background-position:0 0}100%{background-position:100% 100%}}#chatView,.chatview,.messages{background-size:300% 300%!important;animation:zplive 12s linear infinite alternate}'; zpWpApply('live')(id); }, 2); }
+    function openLiveWp() { zpGrid('Live Wallpapers', zpLocked(['Ocean Waves', 'Rain', 'Stars', 'Fire', 'Aurora', 'Snow'].map(function (n, i) { return ['lw' + i, n, G(i + 6)]; })), 'livewp', 'To use Live Wallpapers you need to subscribe to Zanply Premium', zpWpApply('live'), 2); }
     /* 9 premium themes */
     function openPremThemes() { zpGrid('Premium Themes', zpLocked([['blue', 'Blue', '#1d6bff'], ['purple', 'Purple', '#9b5de5'], ['green', 'Green', '#21c063'], ['gold', 'Gold', '#f5b32a'], ['ruby', 'Ruby', '#e63946'], ['rose', 'Rose', '#ff7eb3']]), 'premtheme', 'To use Premium Themes you need to subscribe to Zanply Premium', function (id) { document.documentElement.style.setProperty('--zp-accent', ({ blue: '#1d6bff', purple: '#9b5de5', green: '#21c063', gold: '#f5b32a', ruby: '#e63946', rose: '#ff7eb3' })[id]); document.documentElement.setAttribute('data-premtheme', id); }); }
     /* 1 status duration */
@@ -4655,6 +4680,7 @@ ZW|Zimbabwe|263`;
     function openAutoReply() { zOpenPage('Auto-Reply', function (b) { var m = 'To use Auto-Reply you need to subscribe to Zanply Premium'; zpToggle(b, 'ar_on', 'Auto-Reply', m); var ta = mk('textarea'); ta.placeholder = 'Type your reply message'; ta.value = ZP.get('ar_msg', ''); ta.style.cssText = 'display:block;width:calc(100% - 36px);margin:8px 18px;min-height:80px;border-radius:12px;padding:10px'; ta.addEventListener('change', function () { if (window.zPremGate(m)) return; ZP.set('ar_msg', ta.value); chatCall('premium_setting', { key: 'ar_msg', value: ta.value }).catch(function () {}); }); b.appendChild(ta); var sel = mk('select'); ['Always', 'When Busy', 'When Offline'].forEach(function (o) { sel.appendChild(Object.assign(mk('option'), { textContent: o })); }); sel.value = ZP.get('ar_when', 'Always'); sel.style.cssText = 'margin:8px 18px;padding:10px;border-radius:12px'; sel.addEventListener('change', function () { if (window.zPremGate(m)) { sel.value = ZP.get('ar_when', 'Always'); return; } ZP.set('ar_when', sel.value); chatCall('premium_setting', { key: 'ar_when', value: sel.value }).catch(function () {}); }); b.appendChild(sel); }); }
     /* 11 backup */
     function openBackupPage() { zOpenPage('Chat Backup', function (b) { var bb = mk('button', 'zpm-cta', 'Back up now (manual)'); bb.addEventListener('click', function () { try { chatCall('backup_now', {}); } catch (e) {} toast('Backup is being connected. Not saved yet.'); }); b.appendChild(bb); zpToggle(b, 'cloud_unlimited', 'Unlimited Cloud Backup (auto: chats, photos, videos)', 'To use Unlimited Cloud Backup you need to subscribe to Zanply Premium'); b.appendChild(mk('div', 'pd-sec', window.zIsPremium() ? 'Premium Support: your tickets go to the front of the queue, reply in under 1 hour.' : 'Free: limited backup, manual only.')); }); }
+    window.zpOpen = { stealth: openStealth, autoReply: openAutoReply, backup: openBackupPage, wpBoth: openWpBoth, liveWp: openLiveWp, themes: openPremThemes, nameColour: openNameColour, duration: openStatusDuration };
     /* hub */
     window.zpHub = function () { var w = mk('div'); [['Status duration', openStatusDuration], ['Name Colour', openNameColour], ['App Icon', openAppIcons], ['Wallpaper For Both Sides', openWpBoth], ['Live Wallpapers', openLiveWp], ['Premium Themes', openPremThemes], ['Last Seen & Online (Stealth)', openStealth], ['Auto-Reply', openAutoReply], ['Chat Backup & Support', openBackupPage]].forEach(function (r) { var x = mk('button', '', r[0] + '  \u203A'); x.style.cssText = 'display:block;width:calc(100% - 36px);margin:6px 18px;padding:13px;border-radius:12px;border:0;text-align:left;font-weight:600;background:#2d3445;color:#fff'; x.addEventListener('click', r[1]); w.appendChild(x); }); return w; };
     /* intercept server actions for limits (2 + 13 Status, 2 groups / channels, AI media) */
@@ -4663,17 +4689,167 @@ ZW|Zimbabwe|263`;
       chatCall = function (a, p) {
         var pr = window.zIsPremium(), f = null;
         if (/^status.*(post|create|add|publish)/.test(a)) { if (!pr && zpCount('status') >= 2) f = 'To post a 3rd Status you need to subscribe to Zanply Premium'; else if (pr && zpCount('status') >= 13) f = 'You reached 13 Status for today.'; else { p = Object.assign({ hours: +ZP.get('statushrs', '24') }, p || {}); if (!pr) p.hours = 24; } }
-        if (a === 'group_create' && !pr && ZP.get('n_group', 0) >= 2) f = 'To create a 3rd Group you have to subscribe to Zanply Premium';
-        if (a === 'channel_create' && !pr && ZP.get('n_channel', 0) >= 2) f = 'To create a 3rd Channel you have to subscribe to Zanply Premium';
         if (/^ai.*(image|video)/.test(a) && !pr) f = 'To generate images/videos with AI you need Zanply Premium';
         if (f) { if (/Premium/.test(f)) window.zPremGate(f); else toast(f); return Promise.reject(new Error('premium')); }
-        return _cc.call(this, a, p).then(function (r) { if (/^status.*(post|create|add|publish)/.test(a)) zpBump('status'); if (a === 'group_create') ZP.set('n_group', ZP.get('n_group', 0) + 1); if (a === 'channel_create') ZP.set('n_channel', ZP.get('n_channel', 0) + 1); return r; });
+        return _cc.call(this, a, p).then(function (r) { if (/^status.*(post|create|add|publish)/.test(a)) zpBump('status'); return r; }, function (e) { if (e && e.premium && !window.zIsPremium() && (a === 'group_create' || a === 'channel_create' || /^status/.test(a))) { setTimeout(function () { window.zPremGate(e.message); }, 0); } throw e; });
       };
     } catch (e) {}
-    /* 10/12: long-press hooks (Schedule on Send, Transcribe/Translate on messages) */
-    (function () { var t; function lp(sel, fn) { document.addEventListener('pointerdown', function (e) { var el = e.target.closest && e.target.closest(sel); if (!el) return; clearTimeout(t); t = setTimeout(function () { fn(el); }, 600); }, true); ['pointerup', 'pointermove', 'pointercancel'].forEach(function (n) { document.addEventListener(n, function () { clearTimeout(t); }, true); }); }
-      lp('#send,#btnSend,.sendbtn,[aria-label=Send]', function () { if (window.zPremGate('To schedule messages you need to subscribe to Zanply Premium')) return; var d = prompt('Schedule Message: date & time (YYYY-MM-DD HH:MM)'); if (d) { ZP.set('sched', ZP.get('sched', []).concat([{ at: d, t: Date.now() }])); toast('Scheduled \u23F0', true); } });
-      lp('.msg,.bubble,.m', function (el) { var voice = el.querySelector && el.querySelector('audio,.voice'); if (window.zPremGate(voice ? 'To transcribe voice notes you need to subscribe to Zanply Premium' : 'To translate messages you need to subscribe to Zanply Premium')) return; toast(voice ? 'Transcribe: needs the speech API (connect later)' : 'Translate: needs the AI API (connect later)'); }); })();
+    /* status duration button: keeps its label in sync, also in the photo editor */
+    var _zdb = window.zpStatusDurationButton;
+    window.zpStatusDurationButton = function (host) { var b = _zdb(host); var iv = setInterval(function () { if (!b.isConnected) return clearInterval(iv); var v = ZP.get('statushrs', '24') + 'h'; if (b.textContent !== v) b.textContent = v; }, 400); return b; };
+    window.zpCedDur = function (on) {
+      var old = document.getElementById('zpCedDur'); if (old) old.remove(); if (!on) return;
+      var b = window.zpStatusDurationButton(); b.id = 'zpCedDur'; b.style.cssText += ';flex:none;margin-left:10px';
+      var chip = document.getElementById('cedTo'), w = chip.parentNode;
+      if (!w.classList.contains('zp-tow')) { var g = document.createElement('div'); g.className = 'zp-tow'; g.style.cssText = 'display:flex;align-items:center;min-width:0'; w.insertBefore(g, chip); g.appendChild(chip); w = g; }
+      w.appendChild(b);
+      var iv = setInterval(function () { var e = document.getElementById('camEd'); if (!e || e.classList.contains('hidden') || !b.isConnected) { b.remove(); clearInterval(iv); } }, 500);
+    };
+    /* 8: cut a photo or video down to under 30 MB */
+    window.zCutTo30 = function (file, cb) {
+      var LIM = 30 * 1024 * 1024 - 300 * 1024, type = file.type || '';
+      function fail(m) { toast(m || 'Could not make the file small enough. Pick a smaller one.', false, 5000); }
+      if (/^image\//.test(type)) {
+        toast('Compressing\u2026'); var img = new Image(), u = URL.createObjectURL(file);
+        img.onload = function () {
+          var sc = 1, q = 0.85;
+          (function step() {
+            var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * sc)); c.height = Math.max(1, Math.round(img.height * sc)); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            c.toBlob(function (bl) {
+              if (bl && bl.size <= LIM) { URL.revokeObjectURL(u); cb(new File([bl], (file.name || 'photo').replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' })); }
+              else if (sc < 0.1) fail(); else { sc *= 0.8; q = Math.max(0.5, q - 0.1); step(); }
+            }, 'image/jpeg', q);
+          })();
+        };
+        img.onerror = function () { fail('Could not read that photo.'); }; img.src = u; return;
+      }
+      if (/^video\//.test(type) && window.MediaRecorder) {
+        var u2 = URL.createObjectURL(file), v = document.createElement('video'); v.src = u2; v.playsInline = true; v.preload = 'auto';
+        v.onerror = function () { fail('Could not read that video.'); };
+        v.onloadedmetadata = function () {
+          var dur = v.duration; if (!isFinite(dur) || dur <= 0) return fail();
+          var vb = Math.max(150000, Math.floor(LIM * 8 * 0.85 / dur) - 96000), chunks = [], ms, rec;
+          try {
+            var st = (v.captureStream || v.mozCaptureStream).call(v); ms = new MediaStream(st.getVideoTracks());
+            try { var ac = new (window.AudioContext || window.webkitAudioContext)(), sr = ac.createMediaElementSource(v), ds = ac.createMediaStreamDestination(); sr.connect(ds); ds.stream.getAudioTracks().forEach(function (t) { ms.addTrack(t); }); } catch (e) {}
+            var mt = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'].filter(function (m) { return MediaRecorder.isTypeSupported(m); })[0] || '';
+            rec = new MediaRecorder(ms, mt ? { mimeType: mt, videoBitsPerSecond: vb, audioBitsPerSecond: 96000 } : { videoBitsPerSecond: vb });
+          } catch (e) { return fail('This phone cannot compress video here. Pick a smaller file.'); }
+          rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+          rec.onstop = function () { URL.revokeObjectURL(u2); var bl = new Blob(chunks, { type: rec.mimeType || 'video/webm' }); if (bl.size > LIM) return fail(); cb(new File([bl], (file.name || 'video').replace(/\.\w+$/, '') + (/mp4/.test(bl.type) ? '.mp4' : '.webm'), { type: bl.type })); };
+          v.onended = function () { try { rec.stop(); } catch (e) {} };
+          toast('Compressing video (about ' + Math.ceil(dur) + 's). Keep this screen open.', false, 6000);
+          rec.start(1000); v.play().catch(function () { fail('Could not start compressing.'); });
+        };
+        return;
+      }
+      toast('Only photos and videos can be cut to 30 MB.');
+    };
+    /* 10: scheduled messages (clock list, edit, cancel; sends by itself while Zanply is open) */
+    function zpSched() { return ZP.get('sched', []).filter(function (x) { return x && x.body && x.to; }); }
+    function zpLoc(ms) { var d = new Date(ms - new Date().getTimezoneOffset() * 60000); return d.toISOString().slice(0, 16); }
+    function zpSchedDialog(it, done) {
+      var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
+      var c = mk('div'); c.style.cssText = 'background:#1f2430;color:#fff;border-radius:18px;padding:18px;max-width:340px;width:100%';
+      c.appendChild(mk('div', '', 'Schedule Message')).style.cssText = 'font-weight:700;font-size:16px;margin-bottom:10px';
+      var ta = mk('textarea'); ta.value = it.body; ta.style.cssText = 'width:100%;min-height:70px;border-radius:12px;padding:10px;box-sizing:border-box'; c.appendChild(ta);
+      var di = document.createElement('input'); di.type = 'datetime-local'; di.min = zpLoc(Date.now() + 60000); di.value = zpLoc(it.at || Date.now() + 3600000); di.style.cssText = 'width:100%;margin-top:10px;padding:10px;border-radius:12px;box-sizing:border-box'; c.appendChild(di);
+      function btn(t, fn, pri) { var x = mk('button', '', t); x.style.cssText = 'display:block;width:100%;margin:8px 0 0;padding:11px;border-radius:12px;border:0;font-weight:700;' + (pri ? 'background:#f5b32a;color:#000' : 'background:#2d3445;color:#fff'); x.addEventListener('click', fn); c.appendChild(x); }
+      btn('Schedule', function () { var at = new Date(di.value).getTime(), body = ta.value.trim(); if (!body) return toast('Write a message first'); if (!(at > Date.now() + 30000)) return toast('Pick a time in the future'); it.body = body; it.at = at; o.remove(); done(it); }, true);
+      btn('Cancel', function () { o.remove(); });
+      o.appendChild(c); document.body.appendChild(o);
+    }
+    function zpSchedList() {
+      zOpenPage('Scheduled messages', function (b) {
+        function draw() {
+          b.innerHTML = ''; var L = zpSched().sort(function (x, y) { return x.at - y.at; });
+          if (!L.length) return b.appendChild(mk('div', 'pd-sec', 'No scheduled messages.'));
+          L.forEach(function (x) {
+            var r = mk('div', 'pd-sec'); r.style.cssText += ';display:flex;gap:8px;align-items:center';
+            var t = mk('div'); t.style.flex = '1'; t.appendChild(mk('div', '', '\u23F0 Scheduled \u00b7 ' + new Date(x.at).toLocaleString())); t.appendChild(mk('div', '', x.body.slice(0, 120))); r.appendChild(t);
+            var e = mk('button', '', 'Edit'), c = mk('button', '', 'Cancel'); [e, c].forEach(function (z) { z.style.cssText = 'padding:6px 12px;border-radius:99px;border:0;background:#2d3445;color:#fff;font-weight:600'; r.appendChild(z); });
+            e.addEventListener('click', function () { zpSchedDialog(JSON.parse(JSON.stringify(x)), function (n) { ZP.set('sched', ZP.get('sched', []).map(function (y) { return y.id === n.id ? n : y; })); draw(); }); });
+            c.addEventListener('click', function () { ZP.set('sched', ZP.get('sched', []).filter(function (y) { return y.id !== x.id; })); draw(); toast('Cancelled', true); });
+            b.appendChild(r);
+          });
+        }
+        draw();
+      });
+    }
+    setInterval(function () {
+      var api = window.zpChatApi; if (!api) return; var now = Date.now(), due = zpSched().filter(function (x) { return x.at <= now; });
+      if (due.length) { ZP.set('sched', ZP.get('sched', []).filter(function (x) { return x.at > now; })); due.forEach(function (x) { api.send(x.to, x.body); }); }
+      var chip = document.getElementById('zpSchedChip'), open = api.cur && api.cur(), n = open ? zpSched().filter(function (x) { return x.to === open; }).length : 0, cp = document.getElementById('comp');
+      if (!n || !cp) { if (chip) chip.remove(); return; }
+      if (!chip) { chip = mk('button'); chip.id = 'zpSchedChip'; chip.style.cssText = 'position:fixed;left:12px;z-index:50;padding:6px 12px;border-radius:99px;border:0;background:#2d3445;color:#fff;font-weight:600;font-size:12px'; chip.addEventListener('click', zpSchedList); document.body.appendChild(chip); }
+      chip.textContent = '\u23F0 Scheduled (' + n + ')'; chip.style.bottom = Math.max(70, window.innerHeight - cp.getBoundingClientRect().top + 6) + 'px';
+    }, 5000);
+    window.zpOpen.scheduled = zpSchedList;
+
+    /* ===== typing indicator (sent while typing, respects the Stealth settings on the server) ===== */
+    (function () {
+      var last = 0, inp = document.getElementById('msgInput'); if (!inp) return;
+      inp.addEventListener('input', function () {
+        var to = window.zpChatApi && window.zpChatApi.cur && window.zpChatApi.cur(), now = Date.now();
+        if (!to || !/^\+\d{7,15}$/.test(to) || now - last < 3000 || !inp.value) return;
+        last = now; chatCall('typing', { to: to }).catch(function () {});
+      });
+    })();
+    /* ===== 11 chat backup: real backup on the server, restore in 1 tap, auto-backup every 24h for Premium ===== */
+    function zpBackupRun(auto) { return chatCall('backup_now', { auto: !!auto }).then(function (r) { ZP.set('bk_last', Date.now()); return r; }); }
+    function openBackupPage() {
+      zOpenPage('Chat Backup', function (b) {
+        var info = mk('div', 'pd-sec', 'Checking your backup\u2026'); b.appendChild(info);
+        function refresh() { chatCall('backup_info', {}).then(function (r) { info.textContent = r.backup ? 'Last backup: ' + new Date(r.backup.at).toLocaleString() + ' \u2022 ' + r.backup.count + ' messages' : 'No backup yet.'; }, function () { info.textContent = 'Could not read backup status.'; }); }
+        refresh();
+        var bb = mk('button', 'zpm-cta', 'Back up now');
+        bb.addEventListener('click', function () { bb.disabled = true; bb.textContent = 'Backing up\u2026'; zpBackupRun(false).then(function (r) { toast('Backed up ' + r.count + ' messages' + (r.limited ? ' (free backup keeps your latest 500)' : ''), true, 3500); refresh(); }, function (e) { toast((e && e.message) || 'Backup failed'); }).then(function () { bb.disabled = false; bb.textContent = 'Back up now'; }); });
+        b.appendChild(bb);
+        var rb = mk('button', 'zpm-cta', 'Restore from backup'); rb.style.marginTop = '10px';
+        rb.addEventListener('click', function () { rb.disabled = true; chatCall('backup_restore', {}).then(function (r) { toast('Restored ' + r.restored + ' missing messages', true, 3500); try { loadChats(); } catch (e) {} }, function (e) { toast((e && e.message) || 'Restore failed'); }).then(function () { rb.disabled = false; }); });
+        b.appendChild(rb);
+        zpToggle(b, 'cloud_unlimited', 'Unlimited Cloud Backup (auto-backup every day)', 'To use Unlimited Cloud Backup you need to subscribe to Zanply Premium');
+        b.appendChild(mk('div', 'pd-sec', window.zIsPremium() ? 'Premium: up to 20,000 messages, automatic daily backup. Priority Support: replies in under 1 hour.' : 'Free: manual backup only, latest 500 messages.'));
+      });
+    }
+    window.zpOpen.backup = openBackupPage;
+    try { setTimeout(function () { if (window.zIsPremium() && ZP.get('cloud_unlimited', false) && Date.now() - ZP.get('bk_last', 0) > 864e5) zpBackupRun(true).catch(function () {}); }, 8000); } catch (e) {}
+    /* ===== 9 premium themes also colour your chat bubbles ===== */
+    function zpTextOn(hex) { var n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, bl = n & 255; return (r * 299 + g * 587 + bl * 114) / 1000 > 150 ? '#111111' : '#ffffff'; }
+    function openPremThemes() {
+      var C = { blue: '#1d6bff', purple: '#9b5de5', green: '#21c063', gold: '#f5b32a', ruby: '#e63946', rose: '#ff7eb3' };
+      zpGrid('Premium Themes', zpLocked([['blue', 'Blue', C.blue], ['purple', 'Purple', C.purple], ['green', 'Green', C.green], ['gold', 'Gold', C.gold], ['ruby', 'Ruby', C.ruby], ['rose', 'Rose', C.rose]]), 'premtheme', 'To use Premium Themes you need to subscribe to Zanply Premium', function (id) {
+        document.documentElement.style.setProperty('--zp-accent', C[id]); document.documentElement.setAttribute('data-premtheme', id);
+        try { localStorage.setItem('zaply_bubble', JSON.stringify({ c: C[id], t: zpTextOn(C[id]) })); applyTheme(); } catch (e) {}
+      });
+    }
+    window.zpOpen.themes = openPremThemes;
+    /* ===== 9 Premium Stickers pack (500+), in the sticker tray of the photo/status editor ===== */
+    window.zpStickerPack = (function () { var a = [], cps = []; for (var c = 0x1F300; c <= 0x1F64F; c++) cps.push(c); for (var d = 0x1F680; d <= 0x1F6C5; d++) cps.push(d); for (var e = 0x1F900; e <= 0x1F9FF; e++) cps.push(e); cps.forEach(function (x) { var ch = String.fromCodePoint(x); try { if (/\p{Emoji_Presentation}/u.test(ch)) a.push(ch); } catch (er) { a.push(ch); } }); return a; })();
+
+    var lpAt = 0;
+    document.addEventListener('click', function (e) { if (Date.now() - lpAt < 900 && e.target.closest && e.target.closest('#btnSendMsg')) { e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+    (function () { var t; document.addEventListener('pointerdown', function (e) { var el = e.target.closest && e.target.closest('#btnSendMsg'); if (!el) return; clearTimeout(t); t = setTimeout(function () {
+      lpAt = Date.now(); if (window.zPremGate('To schedule messages you need to subscribe to Zanply Premium')) return;
+      var api = window.zpChatApi, text = api && api.text().trim(), to = api && api.cur(); if (!text || !to) return toast('Type a message first');
+      zpSchedDialog({ id: 's' + Date.now(), to: to, body: text, at: 0 }, function (it) { ZP.set('sched', ZP.get('sched', []).concat([it])); api.clear(); toast('Scheduled \u23F0 ' + new Date(it.at).toLocaleString(), true); });
+    }, 600); }, true); ['pointerup', 'pointermove', 'pointercancel'].forEach(function (n) { document.addEventListener(n, function () { clearTimeout(t); }, true); }); })();
+    /* 12: Translate / Transcribe (Premium) */
+    function zpBubble(m) { return document.querySelector('#msgs .bub[data-id="' + m.id + '"]'); }
+    function zpResult(el, txt) { var o = el.querySelector('.zp-res') || el.appendChild(mk('div', 'zp-res')); o.style.cssText = 'margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.25);font-size:14px'; o.textContent = txt; }
+    window.zpTranslate = function (m, text) {
+      if (window.zPremGate('To translate messages you need to subscribe to Zanply Premium')) return;
+      zsheet('Translate to', ['English', 'Swahili', 'French', 'Spanish', 'Arabic', 'Portuguese', 'Hindi', 'German'].map(function (l) { return [l, function () {
+        var el = zpBubble(m); if (el) zpResult(el, 'Translating\u2026');
+        chatCall('ai_translate', { text: text, lang: l }).then(function (r) { if (el) zpResult(el, r.text); }, function (e) { if (el) zpResult(el, (e && e.message) || 'Translation is not available yet.'); });
+      }]; }));
+    };
+    window.zpTranscribe = function (m, aud) {
+      if (window.zPremGate('To transcribe voice notes you need to subscribe to Zanply Premium')) return;
+      var el = zpBubble(m); if (el) zpResult(el, 'Transcribing\u2026');
+      fetch(aud.currentSrc || aud.src).then(function (r) { return r.blob(); }).then(function (bl) { return new Promise(function (res) { var fr = new FileReader(); fr.onload = function () { res({ d: String(fr.result).split(',')[1], t: bl.type }); }; fr.readAsDataURL(bl); }); })
+        .then(function (o) { return chatCall('ai_transcribe', { audio: o.d, mime: o.t }); }).then(function (r) { if (el) zpResult(el, r.text || '(no speech found)'); }, function (e) { if (el) zpResult(el, (e && e.message) || 'Transcribe is not available yet.'); });
+    };
 
     function openPremium() {
       zOpenPage('Zanply Premium', function (b) {
@@ -5148,6 +5324,10 @@ ZW|Zimbabwe|263`;
       function refreshChats() { clearTimeout(chatsT); chatsT = setTimeout(function () { try { loadChats(); } catch (e) {} }, 120); }
       function onInbox(m) {
         var from = m && m.data && m.data.from;
+        if (m && m.name === 'typing') {
+          if (from && from === openWith) { try { var tp = $('thPhone'); tp.textContent = 'typing\u2026'; tp.classList.add('pon'); clearTimeout(window.__typT); window.__typT = setTimeout(function () { try { presShow(from, presOpenNow(from)); } catch (e) {} }, 4000); } catch (e) {} }
+          return;
+        }
         if (openWith && (from === openWith || !from)) fetchMsgs();
         refreshChats();
       }
@@ -5224,7 +5404,7 @@ ZW|Zimbabwe|263`;
     })();
     function openThread(u) {
       if ($('threadView').classList.contains('hidden')) pushOv(closeThread);
-      markSeen(u.phone); openWith = u.phone; saveScreen(); lastId = 0; $('msgs').innerHTML = ''; thCache = []; gameEls = {}; openUser = u;
+      markSeen(u.phone); openWith = u.phone; try { window.zpLastChat = u.phone; window.zpPeerWall && window.zpPeerWall(u.phone); } catch (e) {} saveScreen(); lastId = 0; $('msgs').innerHTML = ''; thCache = []; gameEls = {}; openUser = u;
       var svn = u.group ? '' : savedName(u.phone); if (svn) u.name = svn; $('thName').textContent = shortUser(labelOf(u)); $('thPhone').textContent = u.group ? 'Group' : ''; $('thPhone').classList.remove('pon'); setAv($('thAv'), u);
       $('thVideo').style.display = u.group ? 'none' : ''; $('thAudio').style.display = u.group ? 'none' : '';
       curBlocked = false; setBlockedUI();
@@ -5245,6 +5425,7 @@ ZW|Zimbabwe|263`;
       $('msgInput').value = ''; syncComp(); queueMsg(openWith, body);
     }
     $('btnSendMsg').addEventListener('click', sendMsg);
+    window.zpChatApi = { send: function (to, body) { queueMsg(to, body); }, cur: function () { return openWith; }, text: function () { return $('msgInput').value; }, clear: function () { $('msgInput').value = ''; try { syncComp(); } catch (e) {} } };
     /* fast refresh so new messages and ticks show up within about a second */
     var pollN = 0;
     setInterval(function () {
@@ -5565,7 +5746,7 @@ ZW|Zimbabwe|263`;
     setInterval(flushMedia, 6000);
     function sendMedia(chat, kind, blob, meta) {
       if (!chat) return Promise.resolve();
-      { var zpCap = (window.zIsPremium && window.zIsPremium() ? 150 : 30) * 1048576; if (blob.size > zpCap) { if (window.zPremGate && !window.zIsPremium()) window.zPremGate('To send a file above 30 MB you have to subscribe to Zanply Premium'); else toast('That file is too big. The limit is 150 MB.'); return Promise.resolve(); } }
+      { var zpCap = (window.zIsPremium && window.zIsPremium() ? 150 : 30) * 1048576; if (blob.size > zpCap) { if (window.zPremGate && !window.zIsPremium()) window.zPremGate('To send a file above 30 MB you have to subscribe to Zanply Premium', { label: 'Cut file to 30 MB', fn: function () { window.zCutTo30(blob, function (f) { sendMedia(chat, kind, f, Object.assign({}, meta || {}, { m: f.type || (meta && meta.m), n: f.name || (meta && meta.n), s: f.size })); }); } }); else toast('That file is too big. The limit is 150 MB.'); return Promise.resolve(); } }
       var it = { t: Date.now() + '_' + Math.random().toString(36).slice(2), to: chat, kind: kind, meta: meta || {}, st: 'p' };
       return moPut(it.t, blob).then(function () {
         var a = mout(); a.push(it); setMout(a);
@@ -5767,7 +5948,7 @@ ZW|Zimbabwe|263`;
         ced = { chat: chat, src: c, hd: false, vo: false, mode: '', color: '#ffffff', strokes: [], items: [], cur: null };
         cedBri = 0; $('cedBase').style.filter = 'none'; $('cedBase').removeAttribute('data-f'); $('cedBri').classList.remove('on');
         $('cedHD').classList.remove('on'); $('cedVO').classList.remove('on'); $('cedCap').value = ''; $('cedItems').innerHTML = ''; $('cedSend').disabled = false;
-        $('cedTo').textContent = chat === '__status__' ? 'Status (Contacts)' : (nameOf(chat) || chat); $('cedVO').style.display = chat === '__status__' ? 'none' : ''; cedTool(''); ['cedTxtOv','cedStk','cedCrop'].forEach(function (i) { $(i).classList.add('hidden'); }); pushOv(cedClose); $('camEd').classList.remove('hidden'); cedLayout();
+        try { window.zpCedDur && window.zpCedDur(chat === '__status__'); } catch (e) {} $('cedTo').textContent = chat === '__status__' ? 'STATUS (CONTACTS)' : (nameOf(chat) || chat); $('cedVO').style.display = chat === '__status__' ? 'none' : ''; cedTool(''); ['cedTxtOv','cedStk','cedCrop'].forEach(function (i) { $(i).classList.add('hidden'); }); pushOv(cedClose); $('camEd').classList.remove('hidden'); cedLayout();
       }).catch(function () { if (done) done(); toast('Could not open that photo. Try again.'); });
     }
     window.zOpenEditor = openEditor;
@@ -5814,7 +5995,8 @@ ZW|Zimbabwe|263`;
     function stkTab(t) {
       Array.prototype.forEach.call(document.querySelectorAll('.stk-tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === t); });
       var h = '';
-      if (t === 'e') h = '<div class="stk-g">' + EMOJIS.map(function (e) { return '<button data-e="' + e + '">' + e + '</button>'; }).join('') + '</div>';
+      if (t === 'p') { var pk = window.zpStickerPack || []; h = '<h4>Premium Stickers (' + pk.length + ')' + (window.zIsPremium && window.zIsPremium() ? '' : ' \uD83D\uDD12') + '</h4><div class="stk-g">' + pk.map(function (e) { return '<button data-e="' + e + '" data-p="1">' + e + '</button>'; }).join('') + '</div>'; }
+      else if (t === 'e') h = '<div class="stk-g">' + EMOJIS.map(function (e) { return '<button data-e="' + e + '">' + e + '</button>'; }).join('') + '</div>';
       else {
         var d = new Date(), tm = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2), dt = d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
         h = '<h4>Content Stickers</h4><div class="stk-row"><button class="stk-pill" data-ct="' + tm + '">' + tm + '</button><button class="stk-pill" data-ct="' + dt + '">' + dt + '</button></div><h4>Shapes</h4><div class="stk-row">' +
@@ -5827,6 +6009,7 @@ ZW|Zimbabwe|263`;
       if (e.target === this) { this.classList.add('hidden'); return; }
       var t = e.target.closest('[data-t]'), em = e.target.closest('[data-e]'), sh = e.target.closest('[data-sh]'), ct = e.target.closest('[data-ct]');
       if (t) { stkTab(t.getAttribute('data-t')); return; }
+      if (em && em.getAttribute('data-p') && window.zPremGate('To use Premium Stickers you need to subscribe to Zanply Premium')) return;
       if (em) cedAdd({ k: 'e', t: em.getAttribute('data-e'), c: '#ffffff', f: 0.2 });
       else if (sh) cedAdd({ k: 's', s: sh.getAttribute('data-sh'), w: 0.4 });
       else if (ct) cedAdd({ k: 't', t: ct.getAttribute('data-ct'), c: '#ffffff', bg: true, al: 'center', fam: CED_FONTS[0], f: 0.08 });
@@ -8698,6 +8881,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     it('Verify security code', function () { msClear(); if (isGroupId(openWith)) return toast('Groups don\u2019t have a security code'); $('sEnc').click(); });
     if (one) it('Info', function () { var m = one; msClear(); zsheet('Message info', [['Sent: ' + new Date(m.at).toLocaleString(), function () {}], ['Status: ' + (m.mine ? (m.st >= 3 ? 'Read' : m.st === 2 ? 'Delivered' : 'Sent') : 'Received'), function () {}]]); });
     it('Copy', function () { var t = msMsgs().map(msTxt).join('\n'); if (acpOn(openWith)) return toast('Copying is off in this chat'); msClear(); copyText(t, 'Copied'); });
+    if (one) { var zvel = document.querySelector('#msgs .bub[data-id="' + one.id + '"] audio'); if (zvel) it('Transcribe', function () { var m = one; msClear(); window.zpTranscribe(m, zvel); }); else if (msTxt(one)) it('Translate', function () { var m = one, t = msTxt(m); msClear(); window.zpTranslate(m, t); }); }
     var pm = lsGet('zaply_pm_' + openWith, null);
     if (one) it(pm && pm.id === one.id ? 'Unpin' : 'Pin', function () { var m = one; msClear(); if (pm && pm.id === m.id) lsSet('zaply_pm_' + openWith, null); else lsSet('zaply_pm_' + openWith, { id: m.id, txt: msTxt(m).replace(/\s+/g, ' ').slice(0, 80) }); pinBarUpdate(); toast(pm && pm.id === m.id ? 'Unpinned' : 'Pinned', true); });
     document.body.appendChild(d);
@@ -9093,7 +9277,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     body.style.background = BG[bg];
     field = document.createElement('textarea'); field.maxLength = 400; field.placeholder = 'Type a status'; body.appendChild(field);
     var pb = ibtn('', IC.pal, 'Change color', 26); pb.addEventListener('click', function () { bg = (bg + 1) % BG.length; body.style.background = BG[bg]; }); top.appendChild(pb);
-    bot.style.justifyContent = 'space-between'; bot.appendChild(mk('span', 'zst-to', 'Status (Contacts)')); bot.appendChild(send);
+    bot.style.justifyContent = 'space-between'; var tg = mk('div'); tg.style.cssText = 'display:flex;align-items:center;gap:10px'; tg.appendChild(mk('span', 'zst-to', 'STATUS (CONTACTS)')); try { window.zpStatusDurationButton(tg).style.flex = 'none'; } catch (e) {} bot.appendChild(tg); bot.appendChild(send);
     el.appendChild(top); el.appendChild(body); el.appendChild(bot); document.body.appendChild(el);
     pushOv(function () { el.remove(); });
     setTimeout(function () { field.focus(); }, 150);
@@ -9118,7 +9302,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     var field = document.createElement('input'); field.type = 'text'; field.maxLength = 200; field.placeholder = 'Add a caption\u2026';
     var send = mk('button', 'zst-send'); send.innerHTML = ico(IC.send, 24); send.setAttribute('aria-label', 'Post status');
     var wrap = mk('div', 'zst-capw'); wrap.appendChild(field); bot.appendChild(wrap); bot.appendChild(send);
-    var to = mk('div', 'zst-toline', 'Status (Contacts)');
+    var to = mk('div', 'zst-toline', 'STATUS (CONTACTS)'); to.style.cssText += ';display:flex;align-items:center;gap:10px'; try { window.zpStatusDurationButton(to).style.flex = 'none'; } catch (e) {}
     el.appendChild(top); el.appendChild(body); el.appendChild(to); el.appendChild(bot); document.body.appendChild(el);
     pushOv(function () { try { m.pause(); } catch (e) {} URL.revokeObjectURL(url); el.remove(); });
     send.addEventListener('click', function () { postMedia(type, blob, field.value.trim(), send); });
@@ -9142,7 +9326,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
       var mt = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].filter(function (t) { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } })[0] || '';
       var mr = new MediaRecorder(stream, mt ? { mimeType: mt } : undefined), chunks = [], cancelled = false, done = false, t0 = Date.now(), timer;
       var el = mk('div', 'zst-ov zst-cmp'), top = mk('div', 'zst-top'), body = mk('div', 'zst-body au'), tm = mk('div', 'zst-tm', '0:00'), stop = mk('button', 'zst-rec');
-      var cl = ibtn('', IC.x, 'Close', 28); cl.addEventListener('click', closeOv); top.appendChild(cl);
+      var cl = ibtn('', IC.x, 'Close', 28); cl.addEventListener('click', closeOv); top.appendChild(cl); try { window.zpStatusDurationButton(top).style.marginLeft = 'auto'; } catch (e) {}
       body.style.background = '#1b2228'; var c = mk('div', 'zst-auic rec'); c.innerHTML = ico(IC.mic, 54); body.appendChild(c); body.appendChild(tm); body.appendChild(mk('div', 'zst-hint', 'Recording\u2026 tap the square to finish'));
       stop.innerHTML = ico(IC.stop, 30); stop.setAttribute('aria-label', 'Stop recording');
       var bot = mk('div', 'zst-bot'); bot.style.justifyContent = 'center'; bot.appendChild(stop);
