@@ -2614,7 +2614,7 @@ ZW|Zimbabwe|263`;
       }).then(function (r) {
         return r.json().then(function (j) {
           if (r.status === 401) { clearToken(); showWelcome(); }
-          if (!r.ok) { var er2 = new Error(j.error || 'Something went wrong'); er2.status = r.status; er2.premium = !!j.premium; throw er2; }
+          if (!r.ok) { var er2 = new Error(j.error || 'Something went wrong'); er2.status = r.status; er2.premium = !!j.premium; er2.needEmail = !!j.needEmail; throw er2; }
           return j;
         });
       });
@@ -3000,35 +3000,92 @@ ZW|Zimbabwe|263`;
       bk.addEventListener('click', function () { p.remove(); });
       a.addEventListener('click', function () { p.remove(); closeOv(); setTimeout(openDetails, 60); });
     }
+    function maskEmail(e) { e = String(e || ''); var p = e.split('@'); return p.length < 2 ? e : p[0].slice(0, 2) + '***@' + p[1]; }
     function openTwoStep() {
       zOpenPage('Two-step verification', function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
-        var note = mk('div', 'ai-res'); note.style.lineHeight = '1.5'; note.textContent = 'Your email and your two-step verification PIN are what will be used to recover your chats.'; w.appendChild(note);
-        var body = mk('div'); body.style.marginTop = '16px'; w.appendChild(body);
-        function pinBox(label, go) {
-          body.innerHTML = ''; var a = zin('6-digit PIN', 'password', 6), c = zin(label, 'password', 6), m = mk('div', 'zmsg'), s2 = mk('button', 'primary', 'Save');
-          [a, c].forEach(function (i) { i.inputMode = 'numeric'; i.style.marginBottom = '10px'; }); if (!go.confirm) c.classList.add('hidden');
-          s2.style.marginTop = '6px'; body.appendChild(a); body.appendChild(c); body.appendChild(m); body.appendChild(s2); a.focus();
+        var body = mk('div'); w.appendChild(body);
+        var email = '';
+        function head(text) { var n = mk('div', 'ai-res'); n.style.cssText = 'line-height:1.5;margin-bottom:14px'; n.textContent = text; return n; }
+        function pinStep() {
+          body.innerHTML = ''; body.appendChild(head('Choose a 6-digit PIN. You will need it, together with your email, to recover your chats.'));
+          var a = zin('6-digit PIN', 'password', 6), c = zin('Confirm PIN', 'password', 6), m = mk('div', 'zmsg'), s2 = mk('button', 'primary', 'Save');
+          [a, c].forEach(function (i) { i.inputMode = 'numeric'; i.style.marginBottom = '10px'; }); s2.style.marginTop = '6px';
+          body.appendChild(a); body.appendChild(c); body.appendChild(m); body.appendChild(s2); a.focus();
           s2.addEventListener('click', function () {
-            m.textContent = ''; if (!/^\d{6}$/.test(a.value)) return m.textContent = 'Enter 6 digits.'; if (go.confirm && a.value !== c.value) return m.textContent = 'The two PINs do not match.';
-            s2.disabled = true; go.run(a.value).catch(function (e) { if (e && /email address/i.test(e.message || '')) { needEmailPopup(); return; } m.textContent = (e && e.message) || 'Something went wrong.'; }).then(function () { s2.disabled = false; });
+            m.textContent = ''; if (!/^\d{6}$/.test(a.value)) return m.textContent = 'Enter 6 digits.'; if (a.value !== c.value) return m.textContent = 'The two PINs do not match.';
+            s2.disabled = true; chatCall('ts_set', { pin: a.value }).then(function () { toast('Two-step verification added', true); added(); }, function (e) { if (e && e.needEmail) return needEmail(); m.textContent = (e && e.message) || 'Something went wrong.'; }).then(function () { s2.disabled = false; });
           });
         }
-        function show(on) {
+        function needEmail() {
+          body.innerHTML = ''; body.appendChild(head('To use two-step verification you must first add an email address to this account. We send a 6-digit code to it to confirm it is yours.'));
+          var bt = mk('button', 'primary', 'Add email'); body.appendChild(bt); bt.addEventListener('click', function () { closeOv(); setTimeout(openDetails, 60); });
+        }
+        function off() { body.innerHTML = ''; body.appendChild(head('Two-step verification is off. Turn it on to protect your chats with a 6-digit PIN.')); var bt = mk('button', 'primary', 'Turn on two-step verification'); body.appendChild(bt); bt.addEventListener('click', function () { if (!email) return needEmail(); pinStep(); }); }
+        function added() {
           body.innerHTML = '';
-          var bt = mk('button', 'primary', on ? 'Turn off two-step verification' : 'Set up PIN'); body.appendChild(bt); if (on) body.insertBefore(mk('div', 'sub', 'Two-step verification is on.'), bt);
-          bt.addEventListener('click', function () {
-            if (on) return pinBox('', { confirm: false, run: function (pin) { return chatCall('ts_off', { pin: pin }).then(function () { toast('Turned off', true); show(false); }); } });
-            pinBox('Confirm PIN', { confirm: true, run: function (pin) { return chatCall('ts_set', { pin: pin }).then(function () { toast('Two-step verification is on', true); show(true); }); } });
-          });
+          var card = mk('div'); card.style.cssText = 'display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:rgba(33,192,99,.14);margin-bottom:14px';
+          var ck = mk('div', '', '\u2713'); ck.style.cssText = 'width:34px;height:34px;border-radius:50%;background:#21c063;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none';
+          var tx = mk('div'); tx.appendChild(mk('div', '', 'Two-step verification added')).style.fontWeight = '700'; var sub = mk('div', 'sub', 'Email: ' + maskEmail(email)); tx.appendChild(sub);
+          card.appendChild(ck); card.appendChild(tx); body.appendChild(card);
+          var bt = mk('button', 'primary', 'Disable two-step verification'); bt.style.background = '#d9534f'; body.appendChild(bt);
+          bt.addEventListener('click', sendOff);
         }
-        chatCall('ts_status', {}).then(function (r) { show(!!r.enabled); }).catch(function () { show(false); });
+        function sendOff() {
+          body.innerHTML = ''; body.appendChild(head('Sending a 6-digit code to ' + maskEmail(email) + '\u2026'));
+          chatCall('ts_off_send', {}).then(function (r) { email = r.email || email; codeStep(); }, function (e) { if (e && e.needEmail) return needEmail(); toast((e && e.message) || 'Could not send the code'); added(); });
+        }
+        function codeStep() {
+          body.innerHTML = ''; body.appendChild(head('To disable two-step verification, enter the 6-digit code we sent to ' + maskEmail(email) + '.'));
+          var c = zin('6-digit code', 'text', 6), m = mk('div', 'zmsg'), go = mk('button', 'primary', 'Disable'), rs = mk('button', '', 'Send a new code'), bk = mk('button', '', 'Cancel');
+          c.inputMode = 'numeric'; c.style.marginBottom = '10px'; go.style.marginTop = '6px'; rs.style.marginTop = '10px'; bk.style.marginTop = '4px';
+          [c, m, go, rs, bk].forEach(function (x) { body.appendChild(x); }); c.focus();
+          go.addEventListener('click', function () { m.textContent = ''; if (!/^\d{6}$/.test(c.value.trim())) return m.textContent = 'Enter the 6-digit code.'; go.disabled = true; chatCall('ts_off', { code: c.value.trim() }).then(function () { toast('Two-step verification disabled', true); off(); }, function (e) { m.textContent = (e && e.message) || 'Wrong code.'; }).then(function () { go.disabled = false; }); });
+          rs.addEventListener('click', sendOff); bk.addEventListener('click', added);
+        }
+        body.appendChild(head('Loading\u2026'));
+        Promise.all([chatCall('ts_status', {}).catch(function () { return { enabled: false }; }), myProf().catch(function () { return {}; })]).then(function (r) {
+          email = (r[1] && r[1].email) || ''; if (r[0].enabled) added(); else if (!email) needEmail(); else off();
+        });
+      });
+    }
+    function openDeleteAccount() {
+      zOpenPage('Delete account', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var t = mk('div', 'ai-res'); t.style.cssText = 'line-height:1.5;margin-bottom:14px'; t.textContent = 'We are not happy to see you delete this account. Please tell us what makes you delete this account!'; w.appendChild(t);
+        var q = mk('div'); q.style.cssText = 'font-weight:700;margin-bottom:8px'; q.textContent = 'Why are you leaving?'; w.appendChild(q);
+        var picked = '', reasons = ['I have another account', 'I am worried about my privacy', 'The app is not working well for me', 'I do not use Zanply anymore', 'Something else'], chips = mk('div'); chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px';
+        reasons.forEach(function (r) { var x = mk('button', '', r); x.style.cssText = 'padding:8px 12px;border-radius:99px;border:1px solid #444;background:transparent;color:inherit'; x.addEventListener('click', function () { picked = r; Array.prototype.forEach.call(chips.children, function (y) { y.style.background = 'transparent'; y.style.borderColor = '#444'; }); x.style.background = 'rgba(33,192,99,.25)'; x.style.borderColor = '#21c063'; }); chips.appendChild(x); });
+        w.appendChild(chips);
+        var ta = mk('textarea'); ta.placeholder = 'Tell us what made you delete this account'; ta.maxLength = 1000; ta.style.cssText = 'display:block;width:100%;box-sizing:border-box;min-height:110px;border-radius:12px;padding:10px;margin-bottom:14px'; w.appendChild(ta);
+        var del = mk('button', 'primary', 'Delete account'); del.style.background = '#d9534f'; w.appendChild(del);
+        del.addEventListener('click', function () {
+          var p = mk('div', 'zpop'), d = mk('div'); d.appendChild(mk('div', '', 'If this account is deleted, all chats and everything will be deleted and can\u2019t be restored.'));
+          var l = mk('div', 'zline'), cancel = mk('button', '', 'Cancel'), ok = mk('button', 'primary', 'Delete account'); ok.style.background = '#d9534f'; l.appendChild(cancel); l.appendChild(ok); d.appendChild(l); p.appendChild(d); document.body.appendChild(p);
+          cancel.addEventListener('click', function () { p.remove(); });
+          ok.addEventListener('click', function () {
+            p.remove();
+            var reason = (picked ? picked + '. ' : '') + ta.value.trim(), result = { ok: false, err: '' };
+            var call1 = chatCall('account_delete', { reason: reason }).then(function () { result.ok = true; }, function (e) { result.err = (e && e.message) || 'Could not delete the account.'; });
+            showLoader('Deleting account', 5000).then(function () { return call1; }).then(function () {
+              if (!result.ok) return toast(result.err || 'Could not delete the account.');
+              var t0 = getToken(); putAccts(getAccts().filter(function (x) { return x.t !== t0; }));
+              var done = mk('div', 'zpop'), dd = mk('div'); dd.appendChild(mk('div', '', 'Account deleted successfully.')); done.appendChild(dd); document.body.appendChild(done);
+              setTimeout(function () {
+                done.remove(); try { unsubPush(); } catch (e) {} try { if (window.ZanplyNative) ZanplyNative.clearChatKeys(); } catch (e) {}
+                clearToken(); try { Object.keys(localStorage).filter(function (k) { return /^zaply_/.test(k) && k !== 'zaply_accts'; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+                document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); showWelcome();
+              }, 2500);
+            });
+          });
+        });
       });
     }
     function openAccount() {
       zOpenPage('Account', function (b) {
-        zrows(b, [['invite', 'Add account', addAccount], '-', ['account', 'Profile', openDetails], ['shield', 'Two-step verification', openTwoStep], '-',
-          ['out', 'Log out', function () { $('btnLogout').click(); document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); }, 1]]);
+        zrows(b, [['invite', 'Add account', addAccount], '-', ['shield', 'Two-step verification', openTwoStep], '-',
+          ['out', 'Log out', function () { $('btnLogout').click(); document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); }, 1],
+          ['trash', 'Delete account', openDeleteAccount, 1]]);
       });
     }
 
@@ -4956,7 +5013,13 @@ ZW|Zimbabwe|263`;
     }
     $('menuSettings').addEventListener('click', function () { $('menuBox').classList.add('hidden'); try { openSettings(); } catch (e) { toast('Settings error: ' + e.message); } });
     $('menuLinked').addEventListener('click', function () { $('menuBox').classList.add('hidden'); openLinked(); });
-    $('menuReadAll').addEventListener('click', function () { $('menuBox').classList.add('hidden'); toast('Read all is not connected yet'); });
+    $('menuReadAll').addEventListener('click', function () {
+      $('menuBox').classList.add('hidden');
+      var n = 0; try { n = allChats.filter(isUnread).length; } catch (e) {}
+      try { allChats.forEach(function (c) { markSeen(c.phone); }); renderChats(); } catch (e) {}
+      chatCall('read_all', {}).then(function () { try { loadChats(); } catch (e) {} }, function () {});
+      toast(n ? 'All chats marked as read' : 'No unread chats', true, 2500);
+    });
     refreshSwitch();
     var filt = 'all', FILTERS = [['fAll', 'all'], ['fUnread', 'unread'], ['fFav', 'fav'], ['fGroups', 'groups']];
     FILTERS.forEach(function (f) {
@@ -8165,9 +8228,11 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       if (!u) return '';
       if (u.group) return u.name || u.phone || '';
       var sv = savedName(u.phone); if (sv) return sv;
-      var un = u.username;
-      if (!un) { var c = (allChats || []).filter(function (x) { return x.phone === u.phone; })[0]; un = c && c.username; }
-      return un ? '@' + un : (u.name || u.phone || '');
+      var un = u.username, c = (allChats || []).filter(function (x) { return x.phone === u.phone; })[0];
+      if (!un) un = c && c.username;
+      if (un) return '@' + un;
+      if (u.name) return u.name;
+      return (u.hid || (c && c.hid)) ? 'Hidden number' : (u.phone || '');
     }
 
     /* ---------- profile picture: sheet with Camera, Gallery, AI image and delete ---------- */
