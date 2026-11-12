@@ -4437,7 +4437,7 @@ ZW|Zimbabwe|263`;
       ['story', 'Stories (Status)', 'Post up to 13 Status a day instead of 2.', '#b8893b', 'story',
         'Without Premium, you can share only 2 Status per day. With Premium, you can post up to 13 Status per day. Share more moments, more photos, more videos, without waiting for tomorrow.', 'Post Status normally. Premium removes the limit to 13 per day.', 'For creators, businesses, and active users who post a lot.', '2 Status per day', 'Up to 13 Status per day'],
       ['limits', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups.', '#a86f4f', 'limits',
-        'Without Premium, you can create only 2 Channels and 2 Groups. With Premium, you can create up to 10+ Channels and 10+ Groups.', 'Create Channels and Groups normally. Premium unlocks the higher limit.', 'For businesses, churches, schools and creators who run many communities.', '2 Channels and 2 Groups', 'Up to 10+ Channels and 10+ Groups'],
+        'Free users: Groups up to 100,000 members. Premium users: Groups from 1 to 1M members. Free: 2 Groups + 2 Channels. Premium: 10+ of each.', 'Create Channels and Groups normally. Premium unlocks the higher limit.', 'For businesses, churches, schools and creators who run many communities.', '2 Channels and 2 Groups', 'Up to 10+ Channels and 10+ Groups'],
       ['colors', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#8e6aa8', 'colors',
         'Change your name style and unlock exclusive profile colours. Make your name bold, colourful, and unique.', 'Go to Profile > Name Colour. Choose from exclusive Premium colours and fonts.', 'Makes your profile stand out and look professional.', 'Standard name and colour', 'Exclusive name styles and colours'],
       ['icons', 'Premium App Icons', 'Unlock exclusive app icons.', '#5f7fb8', 'icons',
@@ -4448,8 +4448,8 @@ ZW|Zimbabwe|263`;
         'Without Premium, a wallpaper only shows on your own phone. With Premium, the wallpaper you set is also shown to the other person in your chat with them.', 'Set a wallpaper in the chat. If you are Premium, the other person sees it too, in your chat only, unless they change it.', 'Makes chats beautiful for both people. Perfect for couples and friends.', 'Wallpaper shows only on your phone', 'Wallpaper also shows to the other person in that chat'],
       ['stealth', 'Privacy Stealth Mode', 'Hide online, typing, read receipts and last seen.', '#6b7a8f', 'stealth',
         'Hide your Online status, hide "Typing...", hide Read Receipts (blue ticks) and hide "Last Seen". You can still see other people’s.', 'Go to Privacy > Stealth Mode. Turn ON all 4 switches.', 'Read messages privately without people knowing you are online.', 'Standard privacy settings', 'Hide online, typing, blue ticks and last seen'],
-      ['files', 'Bigger Files & Faster Uploads', 'Send files up to 2 GB with fast upload speed.', '#a3793a', 'files',
-        'Without Premium, send files up to 100 MB at normal speed. With Premium, send files up to 2 GB (videos, documents, apps) with fast upload speed.', 'Select any big file in a chat. Premium uploads it fast with a progress bar.', 'Send big videos, movies, school work and business files without splitting them.', 'Up to 100 MB, normal speed', 'Up to 2 GB, fast upload'],
+      ['files', 'Bigger Files & Faster Uploads', 'Free: 30 MB. Premium: 150 MB + Faster Uploads.', '#a3793a', 'files',
+        'Free: 30 MB. Premium: 150 MB + Faster Uploads.', 'Select any big file in a chat. Premium uploads it fast with a progress bar.', 'Send big videos, movies, school work and business files without splitting them.', 'Up to 30 MB, normal speed', 'Up to 150 MB, fast upload'],
       ['stickers', 'Premium Stickers, Themes & Chat Bubbles', '500+ animated stickers, chat themes and bubble colours.', '#9a6fb0', 'stickers',
         'Unlock 500+ exclusive animated stickers, custom chat themes and chat bubble colours that free users can’t use.', 'Open Stickers / Themes in a chat. Choose a Premium pack.', 'Makes chats fun, colourful and different from everyone else.', 'Basic stickers and themes', '500+ animated stickers, themes and bubble colours'],
       ['sched', 'Scheduled Messages & Auto-Reply', 'Send messages later and reply automatically when busy.', '#5d8a6e', 'sched',
@@ -4519,7 +4519,7 @@ ZW|Zimbabwe|263`;
         d = E(0, 100, C(24, 44), '<span style="display:block;animation:pvf 2.4s ease-in-out infinite">' + psvg('ghost', 64, '#e5e7eb') + '</span>') + E(0, 100, C(24, 78), cap('Invisible'));
         ['Online', 'Typing...', 'Blue ticks', 'Last seen'].forEach(function (l, j) { d += E(14 + j * 16, 100, 'left:46%;top:' + (14 + j * 20) + '%', '<div class="pv-row">' + psvg('stealth', 15, '#f87171') + ' ' + l + ' · Hidden</div>'); });
       } else if (k === 'files') {
-        d = E(0, 100, C(50, 18), '<div class="pv-row">' + psvg('files', 16) + ' Movie.mp4 · 2 GB</div>') + E(0, 100, 'left:12%;right:12%;top:48%', '<div class="pv-track"><i class="pv-fill"></i><span class="pv-bolt">' + psvg('bolt', 20, '#fbbf24') + '</span></div>') +
+        d = E(0, 100, C(50, 18), '<div class="pv-row">' + psvg('files', 16) + ' Movie.mp4 · 150 MB</div>') + E(0, 100, 'left:12%;right:12%;top:48%', '<div class="pv-track"><i class="pv-fill"></i><span class="pv-bolt">' + psvg('bolt', 20, '#fbbf24') + '</span></div>') +
           E(0, 40, C(50, 72), cap('Uploading…')) + E(42, 100, C(50, 72), pill(ok + ' Sent in 2 seconds', GRN));
       } else if (k === 'stickers') {
         d = E(0, 34, 'inset:0;background:linear-gradient(135deg,#7a2c5a,#3a1d4d)', '') + E(34, 67, 'inset:0;background:linear-gradient(135deg,#1f6b45,#143a3a)', '') + E(67, 100, 'inset:0;background:linear-gradient(135deg,#8a6a1c,#4a3410)', '') +
@@ -4580,6 +4580,101 @@ ZW|Zimbabwe|263`;
     }
     function premCta(plan) { var P = PREM_PLANS[plan]; return 'Subscribe for ' + premPrice(P.usd) + ' / ' + P.per; }
     function premTerms() { return mk('div', 'pd-sec', 'You can cancel anytime. You can turn auto-renewal ON or OFF.'); }
+    /* ---- Premium gate: lock icon + popup (Cancel / Subscribe) ---- */
+    premStatus(function () {});
+    window.zLockSvg = '<svg viewBox="0 0 24 24" width="14" height="14" fill="#f5b32a"><path d="M18 8h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg>';
+    window.zLockBadge = function (el) { if (window.zIsPremium() || !el) return; el.style.position = 'relative'; var b = document.createElement('span'); b.className = 'zlock'; b.innerHTML = window.zLockSvg; b.style.cssText = 'position:absolute;top:-4px;right:-4px;background:#1b1b1b;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid #8a6a1f'; el.appendChild(b); };
+    window.zPremGate = function (msg, extra) {
+      if (window.zIsPremium()) return false;
+      var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
+      var c = mk('div'); c.style.cssText = 'background:#1f2430;color:#fff;border-radius:18px;padding:20px;max-width:340px;width:100%;text-align:center';
+      c.innerHTML = '<div style="margin-bottom:8px">' + window.zLockSvg.replace(/14/g, '34') + '</div>';
+      c.appendChild(mk('div', '', msg)).style.cssText = 'font-size:15px;line-height:1.4;margin-bottom:14px';
+      function btn(t, fn, pri) { var b = mk('button', '', t); b.style.cssText = 'display:block;width:100%;margin:6px 0;padding:11px;border-radius:12px;border:0;font-weight:700;font-size:14px;' + (pri ? 'background:#f5b32a;color:#000' : 'background:#2d3445;color:#fff'); b.addEventListener('click', function () { o.remove(); if (fn) fn(); }); c.appendChild(b); }
+      btn('Subscribe to Zanply Premium', openPremium, true);
+      if (extra) btn(extra.label, extra.fn);
+      btn('Cancel');
+      o.appendChild(c); document.body.appendChild(o); return true;
+    };
+    /* ===== Zanply Premium features 1-13 (gated) ===== */
+    var ZP = { get: function (k, d) { try { var v = localStorage.getItem('zp_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set: function (k, v) { try { localStorage.setItem('zp_' + k, JSON.stringify(v)); } catch (e) {} } };
+    var ZP_PRICE = 'You can cancel anytime. You can turn auto-renewal ON or OFF.';
+    function zpDay() { return new Date().toISOString().slice(0, 10); }
+    function zpCount(k) { var o = ZP.get('cnt_' + k, {}); return o.d === zpDay() ? o.n : 0; }
+    function zpBump(k) { ZP.set('cnt_' + k, { d: zpDay(), n: zpCount(k) + 1 }); }
+    function zpGrid(title, items, key, msg, apply, cols) {
+      zOpenPage(title, function (b) {
+        var g = mk('div'); g.style.cssText = 'display:grid;grid-template-columns:repeat(' + (cols || 3) + ',1fr);gap:14px;padding:16px';
+        function draw() {
+          g.innerHTML = ''; var cur = ZP.get(key, items[0][0]);
+          items.forEach(function (it) {
+            var c = mk('div'); c.style.cssText = 'text-align:center;font-size:12px;cursor:pointer';
+            var t = mk('div'); t.style.cssText = 'height:64px;border-radius:16px;margin:0 auto 4px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:' + it[2] + (cur === it[0] ? ';outline:3px solid #21c063' : ''); t.textContent = cur === it[0] ? '\u2713' : (it[3] || '');
+            if (it[4]) window.zLockBadge(t);
+            c.appendChild(t); c.appendChild(mk('div', '', it[1]));
+            c.addEventListener('click', function () { if (it[4] && window.zPremGate(msg)) return; ZP.set(key, it[0]); if (apply) apply(it[0]); draw(); toast('Saved', true); });
+            g.appendChild(c);
+          });
+        }
+        draw(); b.appendChild(g); var f = mk('div', 'pd-sec', ZP_PRICE); b.appendChild(f);
+        if (!window.zIsPremium()) { var s = mk('button', 'zpm-cta', 'Subscribe to Zanply Premium'); s.addEventListener('click', openPremium); b.appendChild(s); }
+      });
+    }
+    function zpLocked(arr) { var p = window.zIsPremium(); return arr.map(function (a, i) { return [a[0], a[1], a[2], a[3], !p && a[4] !== false]; }); }
+    var ZP_GRAD = ['#1d9bf0,#0a4fc2', '#9b5de5,#5a189a', '#f5b32a,#b8860b', '#ff0000,#ff9900,#33cc33,#0099ff,#9900ff', '#21c063,#0b6b3a', '#e63946,#7a0010', '#111,#444', '#39ff14,#0a0', '#ff7eb3,#ff758c', '#00c9ff,#92fe9d', '#fc4a1a,#f7b733', '#8e2de2,#4a00e0', '#232526,#414345', '#ff512f,#dd2476', '#43cea2,#185a9d'];
+    function G(i) { return 'linear-gradient(135deg,' + ZP_GRAD[i % ZP_GRAD.length] + ')'; }
+    /* 3 name colours */
+    var ZP_NC = { blue: '#1d6bff', purple: '#9b5de5', gold: '#f5b32a', rainbow: 'linear-gradient(90deg,red,orange,yellow,green,blue,violet)', green: '#21c063' };
+    function zpApplyName(id) { var c = ZP_NC[id]; var st = document.getElementById('zpNameCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zpNameCss' })); st.textContent = c ? (c.indexOf('gradient') > -1 ? '.zname-me{background:' + c + ';-webkit-background-clip:text;color:transparent!important}' : '.zname-me{color:' + c + '!important}') : ''; try { var hx = { blue: '#1d6bff', purple: '#9b5de5', gold: '#f5b32a', green: '#21c063' }[id]; chatCall('profile_style_set', { pstyle: id === 'rainbow' ? 'grad' : '', pcolor: hx || '' }).catch(function () {}); } catch (e) {} }
+    function openNameColour() { zpGrid('Select Name Colour', zpLocked([['blue', 'Pure Blue', '#1d6bff'], ['purple', 'Purple', '#9b5de5'], ['gold', 'Gold', '#f5b32a'], ['rainbow', 'Rainbow', G(3)], ['green', 'Green', '#21c063']]), 'namecolour', 'You need to subscribe to Zanply Premium to get Name Colours', zpApplyName); }
+    /* 4 app icons (16) */
+    var ZP_IC = ['Default', 'Golden', 'Ruby', 'Black', 'Neon', 'Rainbow', 'Rose', 'Ocean', 'Sunset', 'Violet', 'Graphite', 'Flame', 'Emerald', 'Midnight', 'Aurora', 'Royal'];
+    function openAppIcons() { zpGrid('App Icon', ZP_IC.map(function (n, i) { return [n.toLowerCase(), n, i ? G(i - 1) : 'linear-gradient(135deg,#21c063,#0b6b3a)', 'Z', i > 0 && !window.zIsPremium()]; }), 'appicon', 'To set a Premium App Icon you need to subscribe to Zanply Premium', function (id) { try { var i = ZP_IC.map(function (x) { return x.toLowerCase(); }).indexOf(id), c = document.createElement('canvas'); c.width = c.height = 192; var x = c.getContext('2d'), cs = (i ? ZP_GRAD[(i - 1) % 15] : '#21c063,#0b6b3a').split(','), gr = x.createLinearGradient(0, 0, 192, 192); cs.forEach(function (k, j) { gr.addColorStop(j / Math.max(1, cs.length - 1), k); }); x.fillStyle = gr; x.fillRect(0, 0, 192, 192); x.fillStyle = '#fff'; x.font = '800 110px sans-serif'; x.textAlign = 'center'; x.fillText('Z', 96, 135); var u = c.toDataURL(); document.querySelectorAll('link[rel*=icon]').forEach(function (l) { l.href = u; }); } catch (e) {} toast('App icon changed. On Android, the home-screen icon updates in the installed app.', true, 3500); }, 4); }
+    /* 6 wallpaper both sides + 13 live wallpapers */
+    function zpWpApply(k) { return function (id) { var t = ZP.get('wp_target', 0);  }; }
+    function openWpBoth() { zpGrid('Wallpaper For Both Sides', zpLocked(['Sky', 'Forest', 'Rose', 'Night', 'Sand', 'Ruby', 'Mint', 'Plum', 'Slate'].map(function (n, i) { return ['wb' + i, n, G(i + 3)]; })), 'wpboth', 'To use Wallpaper For Both Sides you need to subscribe to Zanply Premium', zpWpApply('both')); }
+    function openLiveWp() { zpGrid('Live Wallpapers', zpLocked(['Ocean Waves', 'Rain', 'Stars', 'Fire', 'Aurora', 'Snow'].map(function (n, i) { return ['lw' + i, n, G(i + 6)]; })), 'livewp', 'To use Live Wallpapers you need to subscribe to Zanply Premium', function (id) { var st = document.getElementById('zpLiveCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zpLiveCss' })); st.textContent = '@keyframes zplive{0%{background-position:0 0}100%{background-position:100% 100%}}#chatView,.chatview,.messages{background-size:300% 300%!important;animation:zplive 12s linear infinite alternate}'; zpWpApply('live')(id); }, 2); }
+    /* 9 premium themes */
+    function openPremThemes() { zpGrid('Premium Themes', zpLocked([['blue', 'Blue', '#1d6bff'], ['purple', 'Purple', '#9b5de5'], ['green', 'Green', '#21c063'], ['gold', 'Gold', '#f5b32a'], ['ruby', 'Ruby', '#e63946'], ['rose', 'Rose', '#ff7eb3']]), 'premtheme', 'To use Premium Themes you need to subscribe to Zanply Premium', function (id) { document.documentElement.style.setProperty('--zp-accent', ({ blue: '#1d6bff', purple: '#9b5de5', green: '#21c063', gold: '#f5b32a', ruby: '#e63946', rose: '#ff7eb3' })[id]); document.documentElement.setAttribute('data-premtheme', id); }); }
+    /* 1 status duration */
+    function openStatusDuration() { zpGrid('Status duration', [['24', '24 hours', '#2d3445', '24h', false], ['48', '48 hours', '#2d3445', '48h', !window.zIsPremium()], ['72', '72 hours', '#2d3445', '72h', !window.zIsPremium()], ['96', '96 hours', '#2d3445', '96h', !window.zIsPremium()]], 'statushrs', 'To use 48h+ Status duration you need Zanply Premium', null, 4); }
+    window.zpStatusDurationButton = function (host) { var b = mk('button', '', (ZP.get('statushrs', '24')) + 'h'); b.style.cssText = 'width:38px;height:38px;border-radius:50%;border:2px solid #fff;background:transparent;color:#fff;font-weight:700;font-size:12px'; b.addEventListener('click', openStatusDuration); if (host) host.appendChild(b); return b; };
+    /* 7 privacy stealth */
+    function openStealth() {
+      zOpenPage('Last Seen & Online', function (b) {
+        [['typ_see', 'Who can see when I\u2019m typing'], ['typ_view', 'Who can I see when he/she is typing']].forEach(function (r) {
+          b.appendChild(mk('div', 'pd-sec', r[1])); var row = mk('div'); row.style.cssText = 'display:flex;gap:8px;padding:0 18px';
+          function draw() { row.innerHTML = ''; var cur = ZP.get(r[0], 'Contacts'); ['Everyone', 'Contacts', 'Nobody'].forEach(function (o) { var x = mk('button', '', o); x.style.cssText = 'flex:1;padding:10px;border-radius:12px;border:0;font-weight:600;position:relative;background:' + (cur === o ? '#21c063' : '#2d3445') + ';color:#fff'; if (o === 'Everyone') window.zLockBadge(x); x.addEventListener('click', function () { if (o === 'Everyone' && window.zPremGate('To select Everyone you need to subscribe to Zanply Premium')) return; ZP.set(r[0], o); try { chatCall('premium_setting', { key: r[0], value: o }).catch(function () {}); } catch (e) {} draw(); }); row.appendChild(x); }); }
+          draw(); b.appendChild(row);
+        });
+        [['hide_online', 'Hide Online'], ['hide_typing', 'Hide Typing'], ['hide_ticks', 'Hide Blue Ticks'], ['hide_seen', 'Hide Last Seen']].forEach(function (r) { zpToggle(b, r[0], r[1], 'To use Privacy Stealth Mode you need to subscribe to Zanply Premium'); });
+      });
+    }
+    function zpToggle(b, k, label, msg, cb) { var row = mk('div', 'pd-sec'); row.style.cssText += ';display:flex;justify-content:space-between;align-items:center'; row.appendChild(mk('span', '', label)); var t = mk('button', '', ZP.get(k, false) ? 'ON' : 'OFF'); t.style.cssText = 'padding:6px 16px;border-radius:99px;border:0;font-weight:700;position:relative;background:' + (ZP.get(k, false) ? '#21c063' : '#2d3445') + ';color:#fff'; window.zLockBadge(t); t.addEventListener('click', function () { if (window.zPremGate(msg)) return; var v = !ZP.get(k, false); ZP.set(k, v); t.textContent = v ? 'ON' : 'OFF'; t.style.background = v ? '#21c063' : '#2d3445'; try { chatCall('premium_setting', { key: k, value: v }).catch(function () {}); } catch (e) {} if (cb) cb(v); }); row.appendChild(t); b.appendChild(row); }
+    /* 10 auto-reply */
+    function openAutoReply() { zOpenPage('Auto-Reply', function (b) { var m = 'To use Auto-Reply you need to subscribe to Zanply Premium'; zpToggle(b, 'ar_on', 'Auto-Reply', m); var ta = mk('textarea'); ta.placeholder = 'Type your reply message'; ta.value = ZP.get('ar_msg', ''); ta.style.cssText = 'display:block;width:calc(100% - 36px);margin:8px 18px;min-height:80px;border-radius:12px;padding:10px'; ta.addEventListener('change', function () { if (window.zPremGate(m)) return; ZP.set('ar_msg', ta.value); chatCall('premium_setting', { key: 'ar_msg', value: ta.value }).catch(function () {}); }); b.appendChild(ta); var sel = mk('select'); ['Always', 'When Busy', 'When Offline'].forEach(function (o) { sel.appendChild(Object.assign(mk('option'), { textContent: o })); }); sel.value = ZP.get('ar_when', 'Always'); sel.style.cssText = 'margin:8px 18px;padding:10px;border-radius:12px'; sel.addEventListener('change', function () { if (window.zPremGate(m)) { sel.value = ZP.get('ar_when', 'Always'); return; } ZP.set('ar_when', sel.value); chatCall('premium_setting', { key: 'ar_when', value: sel.value }).catch(function () {}); }); b.appendChild(sel); }); }
+    /* 11 backup */
+    function openBackupPage() { zOpenPage('Chat Backup', function (b) { var bb = mk('button', 'zpm-cta', 'Back up now (manual)'); bb.addEventListener('click', function () { try { chatCall('backup_now', {}); } catch (e) {} toast('Backup is being connected. Not saved yet.'); }); b.appendChild(bb); zpToggle(b, 'cloud_unlimited', 'Unlimited Cloud Backup (auto: chats, photos, videos)', 'To use Unlimited Cloud Backup you need to subscribe to Zanply Premium'); b.appendChild(mk('div', 'pd-sec', window.zIsPremium() ? 'Premium Support: your tickets go to the front of the queue, reply in under 1 hour.' : 'Free: limited backup, manual only.')); }); }
+    /* hub */
+    window.zpHub = function () { var w = mk('div'); [['Status duration', openStatusDuration], ['Name Colour', openNameColour], ['App Icon', openAppIcons], ['Wallpaper For Both Sides', openWpBoth], ['Live Wallpapers', openLiveWp], ['Premium Themes', openPremThemes], ['Last Seen & Online (Stealth)', openStealth], ['Auto-Reply', openAutoReply], ['Chat Backup & Support', openBackupPage]].forEach(function (r) { var x = mk('button', '', r[0] + '  \u203A'); x.style.cssText = 'display:block;width:calc(100% - 36px);margin:6px 18px;padding:13px;border-radius:12px;border:0;text-align:left;font-weight:600;background:#2d3445;color:#fff'; x.addEventListener('click', r[1]); w.appendChild(x); }); return w; };
+    /* intercept server actions for limits (2 + 13 Status, 2 groups / channels, AI media) */
+    try {
+      var _cc = chatCall;
+      chatCall = function (a, p) {
+        var pr = window.zIsPremium(), f = null;
+        if (/^status.*(post|create|add|publish)/.test(a)) { if (!pr && zpCount('status') >= 2) f = 'To post a 3rd Status you need to subscribe to Zanply Premium'; else if (pr && zpCount('status') >= 13) f = 'You reached 13 Status for today.'; else { p = Object.assign({ hours: +ZP.get('statushrs', '24') }, p || {}); if (!pr) p.hours = 24; } }
+        if (a === 'group_create' && !pr && ZP.get('n_group', 0) >= 2) f = 'To create a 3rd Group you have to subscribe to Zanply Premium';
+        if (a === 'channel_create' && !pr && ZP.get('n_channel', 0) >= 2) f = 'To create a 3rd Channel you have to subscribe to Zanply Premium';
+        if (/^ai.*(image|video)/.test(a) && !pr) f = 'To generate images/videos with AI you need Zanply Premium';
+        if (f) { if (/Premium/.test(f)) window.zPremGate(f); else toast(f); return Promise.reject(new Error('premium')); }
+        return _cc.call(this, a, p).then(function (r) { if (/^status.*(post|create|add|publish)/.test(a)) zpBump('status'); if (a === 'group_create') ZP.set('n_group', ZP.get('n_group', 0) + 1); if (a === 'channel_create') ZP.set('n_channel', ZP.get('n_channel', 0) + 1); return r; });
+      };
+    } catch (e) {}
+    /* 10/12: long-press hooks (Schedule on Send, Transcribe/Translate on messages) */
+    (function () { var t; function lp(sel, fn) { document.addEventListener('pointerdown', function (e) { var el = e.target.closest && e.target.closest(sel); if (!el) return; clearTimeout(t); t = setTimeout(function () { fn(el); }, 600); }, true); ['pointerup', 'pointermove', 'pointercancel'].forEach(function (n) { document.addEventListener(n, function () { clearTimeout(t); }, true); }); }
+      lp('#send,#btnSend,.sendbtn,[aria-label=Send]', function () { if (window.zPremGate('To schedule messages you need to subscribe to Zanply Premium')) return; var d = prompt('Schedule Message: date & time (YYYY-MM-DD HH:MM)'); if (d) { ZP.set('sched', ZP.get('sched', []).concat([{ at: d, t: Date.now() }])); toast('Scheduled \u23F0', true); } });
+      lp('.msg,.bubble,.m', function (el) { var voice = el.querySelector && el.querySelector('audio,.voice'); if (window.zPremGate(voice ? 'To transcribe voice notes you need to subscribe to Zanply Premium' : 'To translate messages you need to subscribe to Zanply Premium')) return; toast(voice ? 'Transcribe: needs the speech API (connect later)' : 'Translate: needs the AI API (connect later)'); }); })();
+
     function openPremium() {
       zOpenPage('Zanply Premium', function (b) {
         var pg = b.parentNode; pg.classList.add('zprem'); var ttl = pg.querySelector('.zpg-h span'); ttl.textContent = '';
@@ -4616,7 +4711,7 @@ ZW|Zimbabwe|263`;
           });
           list.appendChild(r);
         });
-        b.appendChild(list); b.appendChild(premTerms()); cta.addEventListener('click', function () { startPremiumCheckout(plan, cta); }); b.appendChild(cta);
+        b.appendChild(list); b.appendChild(window.zpHub()); b.appendChild(premTerms()); cta.addEventListener('click', function () { startPremiumCheckout(plan, cta); }); b.appendChild(cta);
         b.addEventListener('scroll', function () { ttl.textContent = b.scrollTop > 150 ? 'Zanply Premium' : ''; }, { passive: true });
       });
     }
@@ -5470,7 +5565,7 @@ ZW|Zimbabwe|263`;
     setInterval(flushMedia, 6000);
     function sendMedia(chat, kind, blob, meta) {
       if (!chat) return Promise.resolve();
-      if (blob.size > MEDIA_MAX) { toast('That file is too big. The limit is 10 MB.'); return Promise.resolve(); }
+      { var zpCap = (window.zIsPremium && window.zIsPremium() ? 150 : 30) * 1048576; if (blob.size > zpCap) { if (window.zPremGate && !window.zIsPremium()) window.zPremGate('To send a file above 30 MB you have to subscribe to Zanply Premium'); else toast('That file is too big. The limit is 150 MB.'); return Promise.resolve(); } }
       var it = { t: Date.now() + '_' + Math.random().toString(36).slice(2), to: chat, kind: kind, meta: meta || {}, st: 'p' };
       return moPut(it.t, blob).then(function () {
         var a = mout(); a.push(it); setMout(a);
@@ -8085,7 +8180,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         var hd = b.parentNode.querySelector('.zpg-h span'); hd.innerHTML = ''; hd.appendChild(document.createTextNode('New Group')); var sm = mk('small', '', 'up to 10,000 members'); sm.style.cssText = 'display:block;font-size:13px;font-weight:400;opacity:.65'; hd.appendChild(sm);
         var q = zin('Who would you like to add?', 'search', 40); q.style.cssText = 'margin:8px 16px;width:calc(100% - 32px);border-radius:999px'; b.appendChild(q);
         var list = mk('div'); b.appendChild(list);
-        var note = mk('div', 'zfoot', 'Zanply Premium: groups from 10,000 up to 10 million members.'); note.style.padding = '8px 20px 90px'; b.appendChild(note);
+        var note = mk('div', 'zfoot', 'Free users: Groups up to 100,000 members. Premium users: Groups from 1 to 1M members.'); note.style.padding = '8px 20px 90px'; b.appendChild(note);
         function count() { return Object.keys(picked).filter(function (k) { return picked[k]; }).length; }
         function paint() {
           list.innerHTML = ''; var t = q.value.toLowerCase().trim();
@@ -9029,7 +9124,10 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     send.addEventListener('click', function () { postMedia(type, blob, field.value.trim(), send); });
   }
   function videoComposer(file) {
-    if (file.size > VID_MAX) return toast('That video is too big. The limit is 30 MB.');
+    if (file.size > (window.zIsPremium() ? 150 : 30) * 1024 * 1024) {
+      if (window.zIsPremium()) return toast('That file is too big. The limit is 150 MB.');
+      return window.zPremGate('To send a file above 30 MB you have to subscribe to Zanply Premium', { label: 'Cut file to 30 MB', fn: function () { if (window.zCutTo30) window.zCutTo30(file, videoComposer); else toast('Compressing is not available yet. Pick a smaller file.'); } });
+    }
     mediaComposer('video', file, 'Video');
   }
   function audioComposer(blob, label) {
