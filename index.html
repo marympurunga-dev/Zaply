@@ -2530,6 +2530,7 @@ ZW|Zimbabwe|263`;
       };
       s.onerror = function () { chartWaiters = []; chartLoading = false; s.remove(); showStatus('Could not load the chart tools. Check your internet.', true); };
       document.head.appendChild(s);
+      var s2 = document.createElement('style'); s2.textContent = '.pd-tg{display:flex;justify-content:space-between;align-items:center;width:70%;font-size:13px}.pd-tg i{width:34px;height:18px;border-radius:9px;background:#c9a24a;position:relative;animation:pdo 3s infinite}.pd-tg i:after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;animation:pdk 3s infinite}.pd-fl{width:80%;display:flex;flex-direction:column;gap:6px;font-size:12px}.pd-fl u{display:block;height:8px;border-radius:4px;background:#ffffff26;overflow:hidden}.pd-fl u i{display:block;height:100%;width:var(--w);background:#c9a24a;animation:pdw2 3s infinite alternate}.pd-em i{background:none;font-style:normal;font-size:44px;width:auto;height:auto}.pd-cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 18px}.pd-cmp div{padding:12px;border-radius:14px;background:var(--zp-card);font-size:13px;line-height:1.35}.pd-cmp div:last-child{border:1.5px solid #c9a24a}.pd-cmp b{display:block;margin-bottom:4px}.pd-st{margin:12px 14px;padding:14px;border-radius:16px;background:var(--zp-card);font-size:14px;line-height:1.4}.pd-st button{margin-top:8px;border:1.5px solid #c9a24a;background:none;color:inherit;border-radius:12px;padding:8px 14px}@keyframes pdo{0%,40%{background:#6b7280}50%,100%{background:#c9a24a}}@keyframes pdk{0%,40%{left:2px}50%,100%{left:18px}}@keyframes pdw2{from{transform:scaleX(.2);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}'; document.head.appendChild(s2);
     }
 
     var chart = null, chartType = 'bar', rows = [];
@@ -4328,7 +4329,7 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'globe', 'App language', langName(), openLanguage);
         zrow2(list, 'invite', 'Invite a friend', 'Share Zanply with your contacts', invite);
         list.appendChild(mk('div', 'zsep'));
-        zrow2(list, 'diamond', 'Zanply Premium', '13 Status a day, double limits, unlimited AI', openPremium);
+        zrow2(list, 'diamond', 'Zanply Premium', '12 features: more Status, bigger files, backup, AI', openPremium);
         var vr = zrow2(list, 'verified', 'Verification badge', 'Get the blue verified badge', openVerification); vr.querySelector('svg').style.color = VERIFIED_BLUE;
         zrow2(list, 'store', 'Zanply Business', 'Business profile and auto replies', openBusiness);
         var hh = mk('div', 'zsec', 'Help'); hh.style.color = '#3b9cf5'; hh.setAttribute('data-hdr', '1'); list.appendChild(hh);
@@ -4403,30 +4404,30 @@ ZW|Zimbabwe|263`;
       annual: { label: 'Annual', usd: PREM_USD.annual, per: 'year', best: true }
     };
     var PREM_FEATS = [
-      ['\u25b6', 'Stories (Status)', 'Post up to 13 Status a day and keep each one up to 96 hours.', '#f59e0b', 'story',
-        'Stories are the photos, videos and texts you share on your Status. Free accounts can post 2 Status per day and each one disappears after 24 hours.',
-        'With Premium you can post up to 13 Status per day. You can also choose how long each Status stays visible: 48 hours, 72 hours or 96 hours (4 days). Pick the time when you post.',
-        'Share your whole day, a trip or a business promotion without hitting a limit. Your Status stays longer, so friends and customers who were offline still see it.'],
-      ['\u00d72', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups instead of 2 each.', '#f0793c', 'limits',
-        'Free accounts can create 2 Channels and 2 Groups. Premium raises these limits so you can run more communities.',
-        'Subscribe and the limits lift automatically. You can then create up to 10+ Channels and 10+ Groups from the New group and New channel menu.',
-        'Good for teachers, sellers, churches, clubs and creators who manage many audiences and do not want to delete old ones.'],
-      ['\ud83c\udfa8', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#b954ae', 'colors',
-        'Make your name and profile stand out with special name styles and colours that free accounts do not have.',
-        'Open Profile, tap Name style or Profile colour and pick one. Others see it on your profile and next to your name in chats.',
-        'Your account looks unique and is easy to recognise in busy groups and channels.'],
-      ['\ud83d\udd37', 'Premium App Icons', 'Unlock exclusive app icons in Appearance > App Icons.', '#6485ee', 'icons',
-        'A set of special Zanply icons for your phone home screen that only Premium users can use.',
-        'Go to Settings > Appearance > App Icons, then tap an icon. The Zanply icon on your home screen changes straight away.',
-        'Personalise your phone and show the style you like.'],
-      ['\u2728', 'Unlimited AI Usage', 'No limits when you use Zanply AI.', '#8f60d0', 'ai',
-        'Zanply AI helps you write messages, create images and answer questions. Free accounts have a daily AI limit.',
-        'With Premium the limit is removed. Ask, write and create as much as you want, any time of day.',
-        'You never stop in the middle of your work because the free limit ran out.'],
-      ['\ud83d\uddbc', 'Wallpaper for Both Sides', 'Your chat wallpaper is shown to the other person too.', '#aa58bb', 'wall',
-        'Free accounts see their wallpaper only on their own phone. With Premium the wallpaper you set is shown to the other person as well.',
-        'Set a wallpaper in a chat. The other person sees it in their chat with you. Example: if User A has Premium and sets a wallpaper, User B sees it in User A\u2019s chat only, unless User B changes it.',
-        'Make every chat feel personal and shared, not only on your side.']
+      ['\u25b6', 'Stories (Status)', 'Post up to 13 Status a day and keep each one up to 96 hours.', '#b8893b', 'story',
+        'Stories are the photos, videos and texts you share on your Status.', 'Pick a Status, choose how long it stays (48, 72 or 96 hours with Premium) and post. You can post up to 13 a day.', 'Share your whole day or promote your business without hitting a limit.', '2 Status per day, each lasts 24 hours', 'Up to 13 Status per day, lasting up to 96 hours'],
+      ['\u00d72', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups.', '#a86f4f', 'limits',
+        'Run more communities with higher creation limits.', 'Subscribe and the limits lift. Create from New group and New channel.', 'Built for people who manage several communities, classes, shops or clubs.', 'Up to 2 Channels and 2 Groups', 'Up to 10+ Channels and 10+ Groups'],
+      ['\ud83c\udfa8', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#8e6aa8', 'colors',
+        'Personalise how your name and profile look.', 'Open Profile, tap Name style or Profile colour, preview and apply. Others see it in chats and groups.', 'Stand out and be easy to recognise in busy chats.', 'Standard name and colour', 'Name styles and exclusive profile colours'],
+      ['\ud83d\udd37', 'Premium App Icons', 'Unlock exclusive Zanply app icons.', '#5f7fb8', 'icons',
+        'Special Zanply icons for your home screen.', 'Go to Settings > Appearance > App Icons, preview the icons and tap your favourite.', 'Make Zanply match your style.', 'Default icon only', 'All exclusive app icons'],
+      ['\u2728', 'Unlimited AI Usage', 'Use Zanply AI without reaching a limit.', '#4f9a8a', 'ai',
+        'Zanply AI helps you write, create images and answer questions.', 'Premium removes the daily AI limit, checked on our server against your subscription.', 'No interruptions in the middle of your work.', 'Limited daily AI usage', 'Unlimited AI usage'],
+      ['\ud83d\uddbc', 'Wallpaper for Both Sides', 'Your wallpaper shows to the other person too.', '#b4607a', 'wall',
+        'Set one wallpaper that both people see in your conversation.', 'If User A (Premium) sets a wallpaper in the chat with User B, User B sees it in that chat only. User B can change their own wallpaper.', 'Makes a conversation feel shared and personal.', 'Wallpaper shows only on your phone', 'Wallpaper also shows to the other person in that chat'],
+      ['\ud83d\udd75', 'Privacy Stealth Mode', 'Hide online, typing, read receipts and last seen.', '#6b7a8f', 'stealth',
+        'Advanced privacy: hide your Online status, Typing indicator, Read receipts (blue ticks) and Last seen, each with its own toggle.', 'Turn each switch on or off in Settings > Privacy. You can still see other people\u2019s status, subject to the app\u2019s privacy rules.', 'Read and reply on your own time without pressure.', 'Standard privacy settings', 'Individual stealth toggles for all four'],
+      ['\ud83d\udcc1', 'Bigger Files & Faster Uploads', 'Send files up to 2 GB with faster uploads.', '#a3793a', 'files',
+        'Send large videos, documents and apps.', 'The maximum size is shown before you upload. Premium files use priority upload.', 'Share big files without compressing or splitting them.', 'Up to 100 MB, normal speed', 'Up to 2 GB, faster uploads'],
+      ['\ud83d\ude00', 'Stickers, Themes & Bubbles', '500+ animated stickers, chat themes and bubble colours.', '#9a6fb0', 'stickers',
+        'Exclusive animated stickers, chat themes and custom bubble colours, in categories.', 'Browse categories, preview a design and apply it. Premium designs are locked for free users.', 'Chat in your own style.', 'Basic stickers and themes', '500+ animated stickers, exclusive themes, custom bubbles'],
+      ['\u23f0', 'Scheduled Messages & Auto-Reply', 'Send messages later and reply automatically when busy.', '#5d8a6e', 'sched',
+        'Write a message and choose a date and time for delivery, for example Happy Birthday at midnight. Auto-reply answers for you when you are busy.', 'Delivery runs on our server, so it is sent even if the app is closed. You can switch auto-reply on or off, edit it and choose when it runs.', 'Never miss a birthday or leave people waiting.', 'Not available', 'Scheduled messages and auto-reply'],
+      ['\u2601', 'Cloud Backup & Priority Support', 'Back up chats, photos and videos with priority support.', '#5f7fb8', 'backup',
+        'Back up your chats, photos and videos and restore them on a new phone.', 'A backup page shows your backup status, last backup and restore options.', 'Never lose your chats when you change or lose a phone.', 'Limited backup', 'Chat, photo and video backup, priority support'],
+      ['\ud83c\udf10', 'Voice-to-Text & AI Translation', 'Turn voice notes into text and translate in one tap.', '#4f8fa0', 'translate',
+        'Voice notes become readable text, and messages or chats can be translated into your language, such as English to Swahili.', 'Tap a voice note to read it, or tap Translate on a message or chat.', 'Great for long voice notes and talking across countries.', 'Not available', 'Voice-to-text and one-tap translation']
     ];
     function premDemo(k) {
       var d = '';
@@ -4435,7 +4436,13 @@ ZW|Zimbabwe|263`;
       else if (k === 'colors') d = '<div class="pd-name">Mary</div><div class="pd-sw"><i></i><i></i><i></i><i></i></div>';
       else if (k === 'icons') d = '<div class="pd-ic"><i></i><i></i><i></i></div>';
       else if (k === 'ai') d = '<div class="pd-chat"><span>Write a message for my customers</span><span>Done! Ask me anything, no limit \u221e</span></div>';
-      else d = '<div class="pd-ph"><div class="a">You</div><div class="b">Friend</div></div>';
+      else if (k === 'stealth') d = '<div class="pd-tg"><span>Online</span><i></i></div><div class="pd-tg"><span>Typing</span><i></i></div><div class="pd-tg"><span>Read receipts</span><i></i></div><div class="pd-tg"><span>Last seen</span><i></i></div>';
+      else if (k === 'files') d = '<div class="pd-fl"><span>Free \u2013 100 MB</span><u><i style="--w:12%"></i></u><span>Premium \u2013 2 GB</span><u><i style="--w:90%"></i></u></div>';
+      else if (k === 'stickers') d = '<div class="pd-ic pd-em"><i>\ud83d\ude0d</i><i>\ud83d\udd25</i><i>\ud83c\udf89</i></div>';
+      else if (k === 'sched') d = '<div style="font-size:46px;animation:pdp 2s infinite">\u23f0</div><div class="pd-note">Happy Birthday! \u2192 00:00</div>';
+      else if (k === 'backup') d = '<div style="font-size:46px;animation:pdp 2s infinite">\u2601\ufe0f</div><div class="pd-fl"><u><i style="--w:95%"></i></u></div><div class="pd-note">Chats \u00b7 Photos \u00b7 Videos</div>';
+      else if (k === 'translate') d = '<div class="pd-chat"><span>Habari za asubuhi</span><span>Good morning</span></div>';
+      else d = '<div class="pd-ph<div class="a">You</div><div class="b">Friend</div></div>';
       return '<div class="pd-demo pd-' + k + '">' + d + '</div>';
     }
     (function () {
@@ -4453,7 +4460,16 @@ ZW|Zimbabwe|263`;
         '.pd-sec{margin:12px 18px;line-height:1.45}.pd-sec h3{margin:14px 0 4px;font-size:16px}.pd-sec p{margin:0;opacity:.9}';
       document.head.appendChild(s);
     })();
-    function startPremiumCheckout(plan) { toast('Payments are being connected. No charge was made.'); }
+    var PREM_ST = null;
+    function premStatus(cb) { chatCall('premium_status').then(function (r) { PREM_ST = r || {}; cb(PREM_ST); }, function () { PREM_ST = { active: false }; cb(PREM_ST); }); }
+    window.zIsPremium = function () { return !!(PREM_ST && PREM_ST.active && (!PREM_ST.expires || new Date(PREM_ST.expires).getTime() > Date.now())); };
+    function startPremiumCheckout(plan, btn) {
+      var t0 = btn && btn.textContent; if (btn) { btn.disabled = true; btn.textContent = 'Please wait\u2026'; }
+      function back() { if (btn) { btn.disabled = false; btn.textContent = t0; } }
+      chatCall('premium_checkout', { plan: plan, currency: premCur()[0] }).then(function (r) {
+        if (r && r.url) { location.href = r.url; } else throw new Error('x');
+      }).catch(function () { back(); toast('Payments are not available yet. No charge was made and Premium stays locked.'); });
+    }
     function premCta(plan) { var P = PREM_PLANS[plan]; return 'Subscribe for ' + premPrice(P.usd) + ' / ' + P.per; }
     function premTerms() { return mk('div', 'pd-sec', 'You can cancel anytime. You can turn auto-renewal ON or OFF.'); }
     function openPremium() {
@@ -4473,7 +4489,8 @@ ZW|Zimbabwe|263`;
             x.appendChild(nm); x.addEventListener('click', function () { plan = k; cta.textContent = premCta(k); drawPlans(); }); plans.appendChild(x);
           });
         }
-        var one = mk('div', 'pd-sec'); one.style.textAlign = 'center'; one.innerHTML = '<b>ONE Zanply Premium bundle \u2013 all 6 features included.</b><br><span style="opacity:.8">Pick how long you want to subscribe. The features are the same on every plan.</span>'; b.appendChild(one); drawPlans(); b.appendChild(plans);
+        var stc = mk('div', 'pd-st'); stc.style.display = 'none'; b.appendChild(stc); premStatus(function (r) { if (!window.zIsPremium()) return; stc.style.display = ''; var d = r.expires ? new Date(r.expires).toLocaleDateString() : ''; stc.textContent = 'Premium is active' + (d ? (r.renew === false ? ' until ' : ' \u2013 renews on ') + d : '') + '.'; var ab = mk('button', '', r.renew === false ? 'Turn auto-renewal ON' : 'Turn auto-renewal OFF'); ab.addEventListener('click', function () { chatCall('premium_autorenew', { on: r.renew === false }).then(function () { toast('Auto-renewal updated', true); openPremium(); }, function () { toast('Could not change auto-renewal. Try again.'); }); }); stc.appendChild(document.createElement('br')); stc.appendChild(ab); });
+        var one = mk('div', 'pd-sec'); one.style.textAlign = 'center'; one.innerHTML = '<b>ONE Zanply Premium bundle \u2013 all 12 features included.</b><br><span style="opacity:.8">Pick how long you want to subscribe. The features are the same on every plan.</span>'; b.appendChild(one); drawPlans(); b.appendChild(plans);
         var list = mk('div', 'zpm-list');
         PREM_FEATS.forEach(function (f) {
           var r = mk('button', 'zpm-f'); r.innerHTML = '<span class="ic"></span><span class="tx"><b></b><small></small></span><span class="ch">\u203a</span>';
@@ -4485,13 +4502,13 @@ ZW|Zimbabwe|263`;
               var dm = mk('div'); dm.innerHTML = premDemo(f[4]); c.appendChild(dm);
               var sec = mk('div', 'pd-sec');
               [['What it is', f[5]], ['How it works', f[6]], ['Why it is useful', f[7]]].forEach(function (t) { var h = mk('h3', '', t[0]), p = mk('p', '', t[1]); sec.appendChild(h); sec.appendChild(p); });
-              c.appendChild(sec); c.appendChild(premTerms());
-              var s = mk('button', 'zpm-cta', premCta(plan)); s.addEventListener('click', function () { startPremiumCheckout(plan); }); c.appendChild(s);
+              c.appendChild(sec); var cmp = mk('div', 'pd-cmp'); cmp.innerHTML = '<div><b>Free</b><span></span></div><div><b>Premium</b><span></span></div>'; cmp.children[0].lastChild.textContent = f[8]; cmp.children[1].lastChild.textContent = f[9]; c.appendChild(cmp); c.appendChild(premTerms());
+              var s = mk('button', 'zpm-cta', premCta(plan)); s.addEventListener('click', function () { startPremiumCheckout(plan, s); }); c.appendChild(s);
             });
           });
           list.appendChild(r);
         });
-        b.appendChild(list); b.appendChild(premTerms()); cta.addEventListener('click', function () { startPremiumCheckout(plan); }); b.appendChild(cta);
+        b.appendChild(list); b.appendChild(premTerms()); cta.addEventListener('click', function () { startPremiumCheckout(plan, cta); }); b.appendChild(cta);
         b.addEventListener('scroll', function () { ttl.textContent = b.scrollTop > 150 ? 'Zanply Premium' : ''; }, { passive: true });
       });
     }
@@ -4701,7 +4718,7 @@ ZW|Zimbabwe|263`;
         if (!o || o.group || have[o.phone]) return;
         chatMiss[o.phone] = (chatMiss[o.phone] || 0) + 1;
         try { if (window.zLog) window.zLog('Server list left out ' + (o.name || o.phone) + ' (miss ' + chatMiss[o.phone] + ')', true); } catch (e) {}
-        if (chatMiss[o.phone] <= 20) { chats.push(o); added = true; }
+        chats.push(o); added = true; /* never drop a single chat just because one server list left it out */
       });
       if (added) chats.sort(function (a, b) { return (new Date(b.at).getTime() || 0) - (new Date(a.at).getTime() || 0); });
       return chats;
