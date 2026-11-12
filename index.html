@@ -4390,7 +4390,7 @@ ZW|Zimbabwe|263`;
 
     /* ---------- Zanply Premium: ONE bundle, 3 plans, 6 features with animated demos ---------- */
     var PREM_USD = { monthly: 3.99, six: 19.99, annual: 29.99 };
-    var PREM_CUR = { '254': ['KES', 129, 'KSh'], '255': ['TZS', 2600, 'TSh'], '256': ['UGX', 3700, 'USh'], '234': ['NGN', 1550, '\u20a6'], '27': ['ZAR', 18, 'R'], '233': ['GHS', 15, 'GH\u20b5'], '250': ['RWF', 1400, 'RF'], '251': ['ETB', 125, 'Br'], '44': ['GBP', .78, '\u00a3'], '91': ['INR', 84, '\u20b9'], '1': ['USD', 1, '$'] };
+    var PREM_CUR = { '213': ['DZD', 135, 'DZD'], '244': ['AOA', 920, 'AOA'], '229': ['XOF', 600, 'XOF'], '267': ['BWP', 13.6, 'BWP'], '226': ['XOF', 600, 'XOF'], '257': ['BIF', 2950, 'BIF'], '238': ['CVE', 100, 'CVE'], '237': ['XAF', 600, 'XAF'], '236': ['XAF', 600, 'XAF'], '235': ['XAF', 600, 'XAF'], '269': ['KMF', 450, 'KMF'], '242': ['XAF', 600, 'XAF'], '243': ['CDF', 2850, 'CDF'], '225': ['XOF', 600, 'XOF'], '253': ['DJF', 178, 'DJF'], '20': ['EGP', 49, 'EGP'], '240': ['XAF', 600, 'XAF'], '291': ['ERN', 15, 'ERN'], '268': ['SZL', 18, 'SZL'], '251': ['ETB', 125, 'Br'], '241': ['XAF', 600, 'XAF'], '220': ['GMD', 72, 'GMD'], '233': ['GHS', 15, 'GH\u20b5'], '224': ['GNF', 8600, 'GNF'], '245': ['XOF', 600, 'XOF'], '254': ['KES', 129, 'KSh'], '266': ['LSL', 18, 'LSL'], '231': ['LRD', 190, 'LRD'], '218': ['LYD', 5.4, 'LYD'], '261': ['MGA', 4500, 'MGA'], '265': ['MWK', 1750, 'MWK'], '223': ['XOF', 600, 'XOF'], '222': ['MRU', 40, 'MRU'], '230': ['MUR', 46, 'MUR'], '212': ['MAD', 9.8, 'MAD'], '258': ['MZN', 64, 'MZN'], '264': ['NAD', 18, 'NAD'], '227': ['XOF', 600, 'XOF'], '234': ['NGN', 1550, '\u20a6'], '250': ['RWF', 1400, 'RF'], '239': ['STN', 23, 'STN'], '221': ['XOF', 600, 'XOF'], '248': ['SCR', 14, 'SCR'], '232': ['SLE', 23, 'SLE'], '252': ['SOS', 570, 'SOS'], '27': ['ZAR', 18, 'R'], '211': ['SSP', 4500, 'SSP'], '249': ['SDG', 600, 'SDG'], '255': ['TZS', 2600, 'TSh'], '228': ['XOF', 600, 'XOF'], '216': ['TND', 3.1, 'TND'], '256': ['UGX', 3700, 'USh'], '260': ['ZMW', 25, 'ZMW'], '263': ['ZWG', 26, 'ZWG'], '44': ['GBP', .78, '\u00a3'], '91': ['INR', 84, '\u20b9'], '1': ['USD', 1, '$'] };
     function premCur() {
       var p = ''; try { p = String((lsGet('zaply_user', {}) || {}).phone || '').replace(/\D/g, ''); } catch (e) {}
       var k = [3, 2, 1].map(function (n) { return p.slice(0, n); }).filter(function (x) { return PREM_CUR[x]; })[0];
@@ -7194,7 +7194,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     var TR = {}; Object.keys(TR_RAW).forEach(function (k) { TR[k] = TR_RAW[k].split('|'); });
     var RTL = ['ar', 'ur', 'fa', 'he', 'yi', 'ps', 'sd', 'ug', 'dv', 'ckb'];
     var lang = 'en';
-    function T(i) { var d = TR[lang] || TR[lang.split('-')[0]] || TR.en; return d[i] || TR.en[i]; }
+    function T(i) { if (!TR || !lang) return ''; var d = TR[lang] || TR[lang.split('-')[0]] || TR.en; return (d && d[i]) || (TR.en && TR.en[i]) || ''; }
     var MAP = [['#welcomeView h1', 0], ['#welcomeView .w-terms', 1, 'h'], ['#btnAgree', 2], ['#btnInstall', 3], ['#stepPhone h2', 4], ['#stepPhone .sub', 5], ['#phone', 6, 'p'], ['#cvTitle', 7], ['#stepCode h2', 8], ['#btnDidnt', 9], ['#btnBack', 10], ['#stepEmail h2', 11], ['#stepName h2', 12], ['#btnName', 13], ['#btnLogout', 14], ['#tabChats .nl', 15], ['#msgInput', 17, 'p'], ['.cf-box p', 19], ['#btnConfirmYes', 20], ['#btnConfirmNo', 21], ['#chatSearch', 23, 'p'], ['#menuContacts', 24], ['#menuSettings', 25], ['#menuProfile', 26], ['#fAll', 27], ['#fUnread', 28], ['#fFav', 29], ['#fGroups', 30], ['#btnEmailSkip', 31], ['#btnSend', 2], ['#btnEmail', 2]];
     var triedLang = {};
     function applyLang() {
@@ -8768,7 +8768,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     sh.appendChild(chips);
     sh.appendChild(mk('div', 'zsh-lbl', 'Pictures and videos'));
     var g = mk('div', 'zsh-grid');
-    g.appendChild(tile('Camera', IC.cam, function () { closeOv(); pick('image/*,video/*', true, picked); }));
+    g.appendChild(tile('Camera', IC.cam, function () { closeOv(); setTimeout(liveCamera, 300); }));
     g.appendChild(tile('Photos', IC.photo, function () { closeOv(); pick('image/*', false, picked); }));
     g.appendChild(tile('Videos', IC.video, function () { closeOv(); pick('video/*', false, picked); }));
     sh.appendChild(g);
@@ -8776,6 +8776,50 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
     document.body.appendChild(bd); document.body.appendChild(sh);
     requestAnimationFrame(function () { requestAnimationFrame(function () { bd.classList.add('in'); sh.classList.add('in'); }); });
     pushOv(function () { bd.remove(); sh.remove(); });
+  }
+  /* ---------- live in-app camera: take a real photo or record a video ---------- */
+  function liveCamera() {
+    if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { toast('Opening your phone camera\u2026'); return pick('image/*', true, picked); }
+    var el = mk('div', 'zst-ov'), vid = document.createElement('video'), facing = 'environment', stream = null, mr = null, chunks = [], mode = 'photo', rec = false, stopT = null, gone = false;
+    vid.autoplay = true; vid.playsInline = true; vid.muted = true; vid.setAttribute('playsinline', ''); vid.style.cssText = 'flex:1;min-height:0;width:100%;object-fit:cover;background:#000';
+    var bar = mk('div'); bar.style.cssText = 'display:flex;align-items:center;justify-content:space-around;padding:18px 10px 24px;background:#000';
+    function btn(t, fs) { var b = mk('button', '', t); b.style.cssText = 'background:none;border:0;color:#fff;font-size:' + (fs || 15) + 'px;padding:10px 14px'; return b; }
+    var x = btn('\u2715', 24), flip = btn('\ud83d\udd04', 26), photoB = btn('Photo'), videoB = btn('Video');
+    var sh = mk('button'); sh.style.cssText = 'width:72px;height:72px;border-radius:50%;border:5px solid #fff;background:#fff0;padding:0';
+    function paintMode() { photoB.style.fontWeight = mode === 'photo' ? '700' : '400'; videoB.style.fontWeight = mode === 'video' ? '700' : '400'; photoB.style.color = mode === 'photo' ? '#21c063' : '#fff'; videoB.style.color = mode === 'video' ? '#21c063' : '#fff'; sh.style.background = mode === 'video' ? '#e5484d' : '#fff0'; }
+    function stop() { gone = true; clearTimeout(stopT); try { if (mr && mr.state === 'recording') { mr.onstop = null; mr.stop(); } } catch (e) {} if (stream) stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
+    function start() {
+      if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
+      function ok(st) { if (gone) { st.getTracks().forEach(function (t) { t.stop(); }); return; } stream = st; vid.srcObject = st; vid.play().catch(function () {}); }
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: true }).then(ok, function () {
+        return navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } }).then(ok);
+      }).catch(function () { toast('Allow camera permission to take a photo.'); closeOv(); });
+    }
+    function finish(file) { closeOv(); picked(file); }
+    sh.addEventListener('click', function () {
+      if (!stream) return;
+      if (mode === 'photo') {
+        var c = document.createElement('canvas'); c.width = vid.videoWidth || 1280; c.height = vid.videoHeight || 720;
+        c.getContext('2d').drawImage(vid, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { if (b) finish(new File([b], 'photo.jpg', { type: 'image/jpeg' })); else toast('Could not take the photo. Try again.'); }, 'image/jpeg', .92);
+        return;
+      }
+      if (!rec) {
+        if (!window.MediaRecorder) return toast('Video recording is not supported on this phone');
+        var mt = ['video/mp4', 'video/webm;codecs=vp8,opus', 'video/webm'].filter(function (t) { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } })[0] || '';
+        chunks = []; mr = new MediaRecorder(stream, mt ? { mimeType: mt } : undefined);
+        mr.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+        mr.onstop = function () { var type = (mr.mimeType || mt || 'video/webm').split(';')[0]; finish(new File([new Blob(chunks, { type: type })], 'video.' + (/mp4/.test(type) ? 'mp4' : 'webm'), { type: type })); };
+        mr.start(); rec = true; sh.style.borderRadius = '14px'; stopT = setTimeout(function () { try { mr.stop(); } catch (e) {} }, 30000);
+      } else { rec = false; clearTimeout(stopT); try { mr.stop(); } catch (e) {} }
+    });
+    photoB.addEventListener('click', function () { if (!rec) { mode = 'photo'; paintMode(); } });
+    videoB.addEventListener('click', function () { if (!rec) { mode = 'video'; paintMode(); } });
+    flip.addEventListener('click', function () { if (rec) return; facing = facing === 'environment' ? 'user' : 'environment'; start(); });
+    x.addEventListener('click', closeOv);
+    [x, photoB, sh, videoB, flip].forEach(function (n) { bar.appendChild(n); });
+    el.appendChild(vid); el.appendChild(bar); document.body.appendChild(el); paintMode(); start();
+    pushOv(function () { stop(); el.remove(); });
   }
   function picked(file) {
     var waits = 0;
@@ -8786,7 +8830,7 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
       zlog('Status: opening ' + (isVid(file) ? 'video' : 'photo') + ' editor');
       try {
         if (isVid(file)) videoComposer(file);
-        else if (window.zOpenEditor) { window.zOpenEditor(file, '__status__'); setTimeout(function () { var e = document.getElementById('camEd'); if (e && e.classList.contains('hidden')) { try { window.zOpenEditor(file, '__status__'); } catch (x) {} } }, 1800); }
+        else if (window.zOpenEditor) { var ce = document.getElementById('camEd'); if (ce && ce.parentNode !== document.body) document.body.appendChild(ce); window.zOpenEditor(file, '__status__'); setTimeout(function () { var e = document.getElementById('camEd'); if (e && e.classList.contains('hidden')) { try { window.zOpenEditor(file, '__status__'); } catch (x) {} } }, 1800); }
         else { diag('Status: the photo editor function is missing'); toast('Photo editor is not ready. Try again.'); }
       } catch (e) { diag('Status: editor crashed: ' + ((e && e.message) || e)); }
     }
