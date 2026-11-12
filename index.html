@@ -3368,7 +3368,7 @@ ZW|Zimbabwe|263`;
         zradios(b, '', [['system', 'System default'], ['light', 'Light'], ['dark', 'Dark']], appThemePref(), function (v) {
           try { localStorage.setItem('zaply_apptheme', v); } catch (e) {} applyAppTheme();
         });
-        var pt = mk('button', 'zpm-cta', 'Premium Theme' + (window.zIsPremium && window.zIsPremium() ? '' : ' \uD83D\uDD12')); pt.style.margin = '12px 18px'; pt.addEventListener('click', function () { window.zpOpen.themes(); }); b.appendChild(pt);
+        var pt = mk('button', 'zpm-cta', 'Premium Theme'); pt.style.margin = '12px 18px'; pt.addEventListener('click', function () { window.zpOpen.themes(); }); b.appendChild(pt);
         b.appendChild(mk('div', 'zfoot', 'System default follows your phone\u2019s light or dark setting.'));
       });
     }
@@ -4586,8 +4586,8 @@ ZW|Zimbabwe|263`;
     function premTerms() { return mk('div', 'pd-sec', 'You can cancel anytime. You can turn auto-renewal ON or OFF.'); }
     /* ---- Premium gate: lock icon + popup (Cancel / Subscribe) ---- */
     premStatus(function () {});
-    window.zLockSvg = '<svg viewBox="0 0 24 24" width="14" height="14" fill="#f5b32a"><path d="M18 8h-1V6a5 5 0 0 0-10 0v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z"/></svg>';
-    window.zLockBadge = function (el) { if (window.zIsPremium() || !el) return; el.style.position = 'relative'; var b = document.createElement('span'); b.className = 'zlock'; b.innerHTML = window.zLockSvg; b.style.cssText = 'position:absolute;top:-4px;right:-4px;background:#1b1b1b;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid #8a6a1f'; el.appendChild(b); };
+    window.zLockSvg = '<svg viewBox="0 0 24 24" width="14" height="14"><defs><linearGradient id="zpgd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#f5a623"/></linearGradient></defs><path fill="url(#zpgd)" d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z"/></svg>';
+    window.zLockBadge = function (el) { if (window.zIsPremium() || !el) return; el.style.position = 'relative'; var b = document.createElement('span'); b.className = 'zpgold'; b.innerHTML = window.zLockSvg; b.style.cssText = 'position:absolute;top:-4px;right:-4px;background:#1b1b1b;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid #8a6a1f'; el.appendChild(b); };
     window.zPremGate = function (msg, extra) {
       if (window.zIsPremium()) return false;
       var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
@@ -4675,7 +4675,7 @@ ZW|Zimbabwe|263`;
         [['hide_online', 'Hide Online'], ['hide_typing', 'Hide Typing'], ['hide_ticks', 'Hide Blue Ticks'], ['hide_seen', 'Hide Last Seen']].forEach(function (r) { zpToggle(b, r[0], r[1], 'To use Privacy Stealth Mode you need to subscribe to Zanply Premium'); });
       });
     }
-    function zpToggle(b, k, label, msg, cb) { var row = mk('div', 'pd-sec'); row.style.cssText += ';display:flex;justify-content:space-between;align-items:center'; row.appendChild(mk('span', '', label)); var t = mk('button', '', ZP.get(k, false) ? 'ON' : 'OFF'); t.style.cssText = 'padding:6px 16px;border-radius:99px;border:0;font-weight:700;position:relative;background:' + (ZP.get(k, false) ? '#21c063' : '#2d3445') + ';color:#fff'; window.zLockBadge(t); t.addEventListener('click', function () { if (window.zPremGate(msg)) return; var v = !ZP.get(k, false); ZP.set(k, v); t.textContent = v ? 'ON' : 'OFF'; t.style.background = v ? '#21c063' : '#2d3445'; try { chatCall('premium_setting', { key: k, value: v }).catch(function () {}); } catch (e) {} if (cb) cb(v); }); row.appendChild(t); b.appendChild(row); }
+    function zpToggle(b, k, label, msg, cb) { var row = mk('div', 'pd-sec'); row.style.cssText += ';display:flex;justify-content:space-between;align-items:center'; row.appendChild(mk('span', '', label)); var t = mk('button', '', ZP.get(k, false) ? 'ON' : 'OFF'); t.style.cssText = 'padding:6px 16px;border-radius:99px;border:0;font-weight:700;position:relative;background:' + (ZP.get(k, false) ? '#21c063' : '#2d3445') + ';color:#fff'; t.addEventListener('click', function () { if (window.zPremGate(msg)) return; var v = !ZP.get(k, false); ZP.set(k, v); t.textContent = v ? 'ON' : 'OFF'; t.style.background = v ? '#21c063' : '#2d3445'; try { chatCall('premium_setting', { key: k, value: v }).catch(function () {}); } catch (e) {} if (cb) cb(v); }); row.appendChild(t); b.appendChild(row); }
     /* 10 auto-reply */
     function openAutoReply() { zOpenPage('Auto-Reply', function (b) { var m = 'To use Auto-Reply you need to subscribe to Zanply Premium'; zpToggle(b, 'ar_on', 'Auto-Reply', m); var ta = mk('textarea'); ta.placeholder = 'Type your reply message'; ta.value = ZP.get('ar_msg', ''); ta.style.cssText = 'display:block;width:calc(100% - 36px);margin:8px 18px;min-height:80px;border-radius:12px;padding:10px'; ta.addEventListener('change', function () { if (window.zPremGate(m)) return; ZP.set('ar_msg', ta.value); chatCall('premium_setting', { key: 'ar_msg', value: ta.value }).catch(function () {}); }); b.appendChild(ta); var sel = mk('select'); ['Always', 'When Busy', 'When Offline'].forEach(function (o) { sel.appendChild(Object.assign(mk('option'), { textContent: o })); }); sel.value = ZP.get('ar_when', 'Always'); sel.style.cssText = 'margin:8px 18px;padding:10px;border-radius:12px'; sel.addEventListener('change', function () { if (window.zPremGate(m)) { sel.value = ZP.get('ar_when', 'Always'); return; } ZP.set('ar_when', sel.value); chatCall('premium_setting', { key: 'ar_when', value: sel.value }).catch(function () {}); }); b.appendChild(sel); }); }
     /* 11 backup */
@@ -4887,7 +4887,7 @@ ZW|Zimbabwe|263`;
           });
           list.appendChild(r);
         });
-        b.appendChild(list); b.appendChild(window.zpHub()); b.appendChild(premTerms()); cta.addEventListener('click', function () { startPremiumCheckout(plan, cta); }); b.appendChild(cta);
+        b.appendChild(list); b.appendChild(premTerms()); cta.addEventListener('click', function () { startPremiumCheckout(plan, cta); }); b.appendChild(cta);
         b.addEventListener('scroll', function () { ttl.textContent = b.scrollTop > 150 ? 'Zanply Premium' : ''; }, { passive: true });
       });
     }
@@ -5995,7 +5995,7 @@ ZW|Zimbabwe|263`;
     function stkTab(t) {
       Array.prototype.forEach.call(document.querySelectorAll('.stk-tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === t); });
       var h = '';
-      if (t === 'p') { var pk = window.zpStickerPack || []; h = '<h4>Premium Stickers (' + pk.length + ')' + (window.zIsPremium && window.zIsPremium() ? '' : ' \uD83D\uDD12') + '</h4><div class="stk-g">' + pk.map(function (e) { return '<button data-e="' + e + '" data-p="1">' + e + '</button>'; }).join('') + '</div>'; }
+      if (t === 'p') { var pk = window.zpStickerPack || []; h = '<h4>Premium Stickers (' + pk.length + ')</h4><div class="stk-g">' + pk.map(function (e) { return '<button data-e="' + e + '" data-p="1">' + e + '</button>'; }).join('') + '</div>'; }
       else if (t === 'e') h = '<div class="stk-g">' + EMOJIS.map(function (e) { return '<button data-e="' + e + '">' + e + '</button>'; }).join('') + '</div>';
       else {
         var d = new Date(), tm = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2), dt = d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
