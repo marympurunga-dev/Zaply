@@ -672,7 +672,7 @@
     .zpm-plan .badge{background:#3b82f6;border-radius:8px;font-size:12px;padding:2px 6px;margin-left:6px}
     .zpm-f{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;width:100%;background:none;border:0;color:inherit;text-align:left;cursor:pointer}
     .zpm-f+.zpm-f{border-top:1px solid var(--zp-line)}
-    .zpm-f .ic{width:36px;height:36px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .zpm-f .ic svg{display:block}.zpm-f .ic{width:36px;height:36px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:18px}
     .zpm-f .tx{flex:1}.zpm-f .tx small{display:block;opacity:.6;margin-top:3px;line-height:1.35;font-size:14px;font-weight:400}
     .zpm-f .ch{opacity:.55;align-self:center}
     .zpm-cta{position:sticky;bottom:14px;margin:8px 14px 14px;height:56px;border-radius:28px;border:0;color:#fff;font-size:17px;width:calc(100% - 28px);background:linear-gradient(90deg,#6c8cff,#c25cf0 60%,#ff6fb5);cursor:pointer}
@@ -3531,7 +3531,7 @@ ZW|Zimbabwe|263`;
         var card1 = mk('div', 'zcard fcard'); card1.appendChild(mk('div', 'fl', 'Folder name'));
         var rw = mk('div', 'zline'), nm = zin('Folder name', 'text', 24); nm.value = F.name; var em = mk('button', 'femo', F.emoji || '\ud83d\ude42');
         rw.appendChild(nm); rw.appendChild(em); card1.appendChild(rw); b.appendChild(card1);
-        var EM = ['\ud83d\udcc1', '\ud83d\udcbc', '\ud83c\udfe0', '\u2764\ufe0f', '\ud83d\udc65', '\u2b50', '\ud83c\udf93', '\u2708\ufe0f', '\ud83c\udfae', '\ud83d\uded2', '\ud83d\udcb0', '\ud83d\ude42'];
+        var EM = ['files', '\ud83d\udcbc', '\ud83c\udfe0', '\u2764\ufe0f', '\ud83d\udc65', '\u2b50', '\ud83c\udf93', '\u2708\ufe0f', '\ud83c\udfae', '\ud83d\uded2', '\ud83d\udcb0', '\ud83d\ude42'];
         em.addEventListener('click', function () { zsheet('Folder icon', EM.map(function (e) { return [e, function () { F.emoji = e; em.textContent = e; }]; })); });
         function sumOf(inc, exc, types, labels) {
           var parts = []; Object.keys(types || {}).forEach(function (k) { if (types[k]) parts.push(labels[k]); });
@@ -4329,7 +4329,7 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'globe', 'App language', langName(), openLanguage);
         zrow2(list, 'invite', 'Invite a friend', 'Share Zanply with your contacts', invite);
         list.appendChild(mk('div', 'zsep'));
-        zrow2(list, 'diamond', 'Zanply Premium', '12 features: more Status, bigger files, backup, AI', openPremium);
+        zrow2(list, 'diamond', 'Zanply Premium', '13 features: more Status, bigger files, backup, AI', openPremium);
         var vr = zrow2(list, 'verified', 'Verification badge', 'Get the blue verified badge', openVerification); vr.querySelector('svg').style.color = VERIFIED_BLUE;
         zrow2(list, 'store', 'Zanply Business', 'Business profile and auto replies', openBusiness);
         var hh = mk('div', 'zsec', 'Help'); hh.style.color = '#3b9cf5'; hh.setAttribute('data-hdr', '1'); list.appendChild(hh);
@@ -4403,31 +4403,52 @@ ZW|Zimbabwe|263`;
       six: { label: '6 Months', usd: PREM_USD.six, per: '6 months' },
       annual: { label: 'Annual', usd: PREM_USD.annual, per: 'year', best: true }
     };
+    var PICON = {
+      story: '<circle cx="12" cy="12" r="9"/><path d="M10 8.5l5 3.5-5 3.5z"/>',
+      limits: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+      colors: '<path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-4-4-7.2-9-7.2z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="14.5" cy="7" r="1"/>',
+      icons: '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+      ai: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>',
+      wall: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.7"/><path d="M21 16l-5-5-8 9"/>',
+      stealth: '<path d="M3 3l18 18"/><path d="M10.6 5.1A9.7 9.7 0 0 1 12 5c5 0 8.5 4.5 9.5 7a12 12 0 0 1-2.7 3.8M6.5 6.7A12 12 0 0 0 2.5 12C3.5 14.500 7 19 12 19c1.4 0 2.700-.3 3.800-.9"/><path d="M9.9 9.900a3 3 0 0 0 4.200 4.200"/>',
+      files: '<path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M12 16v-5M9.500 13.500L12 11l2.500 2.500"/>',
+      stickers: '<path d="M20 12a8 8 0 1 0-8 8h1.500a6.500 6.500 0 0 0 6.500-6.500z"/><path d="M20 13.500c-3.500.5-6 .5-6.500 6.500"/><path d="M9 10v.5M15 10v.5M8.800 14c.8.9 1.900 1.400 3.200 1.400"/>',
+      sched: '<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.500 2M9 3h6"/>',
+      backup: '<path d="M7 18a4.500 4.500 0 0 1-.6-8.960A6 6 0 0 1 18 9.500a4 4 0 0 1-.5 8.500z"/><path d="M12 17v-6M9.500 13.500L12 11l2.500 2.500"/>',
+      translate: '<path d="M4 5h10M9 3v2M6 5c.5 3 2.500 5.500 6 7.500M12 5c-.5 3-3 6-8 8"/><path d="M13 20l4-9 4 9M14.500 17h5"/>',
+      live: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15c3-3 5 3 9 0s6 3 9 0"/><circle cx="16.500" cy="9.500" r="1.200"/>',
+      crown: '<path d="M3 8l4.500 4L12 5l4.500 7L21 8l-2 11H5z"/>'
+    };
+    function psvg(k, sz, col) {
+      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="' + sz + '" height="' + sz + '" fill="none" stroke="' + (col || '#fff') + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + PICON[k] + '</svg>';
+    }
     var PREM_FEATS = [
-      ['\u25b6', 'Stories (Status)', 'Post up to 13 Status a day and keep each one up to 96 hours.', '#b8893b', 'story',
+      ['story', 'Stories (Status)', 'Post up to 13 Status a day and keep each one up to 96 hours.', '#b8893b', 'story',
         'Stories are the photos, videos and texts you share on your Status.', 'Pick a Status, choose how long it stays (48, 72 or 96 hours with Premium) and post. You can post up to 13 a day.', 'Share your whole day or promote your business without hitting a limit.', '2 Status per day, each lasts 24 hours', 'Up to 13 Status per day, lasting up to 96 hours'],
-      ['\u00d72', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups.', '#a86f4f', 'limits',
+      ['limits', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups.', '#a86f4f', 'limits',
         'Run more communities with higher creation limits.', 'Subscribe and the limits lift. Create from New group and New channel.', 'Built for people who manage several communities, classes, shops or clubs.', 'Up to 2 Channels and 2 Groups', 'Up to 10+ Channels and 10+ Groups'],
-      ['\ud83c\udfa8', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#8e6aa8', 'colors',
+      ['colors', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#8e6aa8', 'colors',
         'Personalise how your name and profile look.', 'Open Profile, tap Name style or Profile colour, preview and apply. Others see it in chats and groups.', 'Stand out and be easy to recognise in busy chats.', 'Standard name and colour', 'Name styles and exclusive profile colours'],
-      ['\ud83d\udd37', 'Premium App Icons', 'Unlock exclusive Zanply app icons.', '#5f7fb8', 'icons',
+      ['icons', 'Premium App Icons', 'Unlock exclusive Zanply app icons.', '#5f7fb8', 'icons',
         'Special Zanply icons for your home screen.', 'Go to Settings > Appearance > App Icons, preview the icons and tap your favourite.', 'Make Zanply match your style.', 'Default icon only', 'All exclusive app icons'],
-      ['\u2728', 'Unlimited AI Usage', 'Use Zanply AI without reaching a limit.', '#4f9a8a', 'ai',
+      ['ai', 'Unlimited AI Usage', 'Use Zanply AI without reaching a limit.', '#4f9a8a', 'ai',
         'Zanply AI helps you write, create images and answer questions.', 'Premium removes the daily AI limit, checked on our server against your subscription.', 'No interruptions in the middle of your work.', 'Limited daily AI usage', 'Unlimited AI usage'],
-      ['\ud83d\uddbc', 'Wallpaper for Both Sides', 'Your wallpaper shows to the other person too.', '#b4607a', 'wall',
+      ['wall', 'Wallpaper for Both Sides', 'Your wallpaper shows to the other person too.', '#b4607a', 'wall',
         'Set one wallpaper that both people see in your conversation.', 'If User A (Premium) sets a wallpaper in the chat with User B, User B sees it in that chat only. User B can change their own wallpaper.', 'Makes a conversation feel shared and personal.', 'Wallpaper shows only on your phone', 'Wallpaper also shows to the other person in that chat'],
-      ['\ud83d\udd75', 'Privacy Stealth Mode', 'Hide online, typing, read receipts and last seen.', '#6b7a8f', 'stealth',
+      ['stealth', 'Privacy Stealth Mode', 'Hide online, typing, read receipts and last seen.', '#6b7a8f', 'stealth',
         'Advanced privacy: hide your Online status, Typing indicator, Read receipts (blue ticks) and Last seen, each with its own toggle.', 'Turn each switch on or off in Settings > Privacy. You can still see other people\u2019s status, subject to the app\u2019s privacy rules.', 'Read and reply on your own time without pressure.', 'Standard privacy settings', 'Individual stealth toggles for all four'],
       ['\ud83d\udcc1', 'Bigger Files & Faster Uploads', 'Send files up to 2 GB with faster uploads.', '#a3793a', 'files',
         'Send large videos, documents and apps.', 'The maximum size is shown before you upload. Premium files use priority upload.', 'Share big files without compressing or splitting them.', 'Up to 100 MB, normal speed', 'Up to 2 GB, faster uploads'],
-      ['\ud83d\ude00', 'Stickers, Themes & Bubbles', '500+ animated stickers, chat themes and bubble colours.', '#9a6fb0', 'stickers',
+      ['stickers', 'Stickers, Themes & Bubbles', '500+ animated stickers, chat themes and bubble colours.', '#9a6fb0', 'stickers',
         'Exclusive animated stickers, chat themes and custom bubble colours, in categories.', 'Browse categories, preview a design and apply it. Premium designs are locked for free users.', 'Chat in your own style.', 'Basic stickers and themes', '500+ animated stickers, exclusive themes, custom bubbles'],
-      ['\u23f0', 'Scheduled Messages & Auto-Reply', 'Send messages later and reply automatically when busy.', '#5d8a6e', 'sched',
+      ['sched', 'Scheduled Messages & Auto-Reply', 'Send messages later and reply automatically when busy.', '#5d8a6e', 'sched',
         'Write a message and choose a date and time for delivery, for example Happy Birthday at midnight. Auto-reply answers for you when you are busy.', 'Delivery runs on our server, so it is sent even if the app is closed. You can switch auto-reply on or off, edit it and choose when it runs.', 'Never miss a birthday or leave people waiting.', 'Not available', 'Scheduled messages and auto-reply'],
-      ['\u2601', 'Cloud Backup & Priority Support', 'Back up chats, photos and videos with priority support.', '#5f7fb8', 'backup',
+      ['backup', 'Cloud Backup & Priority Support', 'Back up chats, photos and videos with priority support.', '#5f7fb8', 'backup',
         'Back up your chats, photos and videos and restore them on a new phone.', 'A backup page shows your backup status, last backup and restore options.', 'Never lose your chats when you change or lose a phone.', 'Limited backup', 'Chat, photo and video backup, priority support'],
-      ['\ud83c\udf10', 'Voice-to-Text & AI Translation', 'Turn voice notes into text and translate in one tap.', '#4f8fa0', 'translate',
-        'Voice notes become readable text, and messages or chats can be translated into your language, such as English to Swahili.', 'Tap a voice note to read it, or tap Translate on a message or chat.', 'Great for long voice notes and talking across countries.', 'Not available', 'Voice-to-text and one-tap translation']
+      ['translate', 'Voice-to-Text & AI Translation', 'Turn voice notes into text and translate in one tap.', '#4f8fa0', 'translate',
+        'Voice notes become readable text, and messages or chats can be translated into your language, such as English to Swahili.', 'Tap a voice note to read it, or tap Translate on a message or chat.', 'Great for long voice notes and talking across countries.', 'Not available', 'Voice-to-text and one-tap translation'],
+      ['live', 'Live Wallpapers + Camera', 'Animated wallpapers in chats and in the Camera.', '#c06a4a', 'live',
+        'Use live, moving wallpapers in your chats and as your Camera background for Status. The other person also sees your live wallpaper in your chat with them.', 'Go to Chat Wallpaper > Live Wallpapers and choose a video or animated wallpaper. For Camera, open Camera > Live Wallpaper.', 'Makes chats look alive, beautiful and premium instead of boring.', 'Static wallpapers only', 'Live wallpapers in chats and Camera']
     ];
     function premDemo(k) {
       var d = '';
@@ -4438,11 +4459,12 @@ ZW|Zimbabwe|263`;
       else if (k === 'ai') d = '<div class="pd-chat"><span>Write a message for my customers</span><span>Done! Ask me anything, no limit \u221e</span></div>';
       else if (k === 'stealth') d = '<div class="pd-tg"><span>Online</span><i></i></div><div class="pd-tg"><span>Typing</span><i></i></div><div class="pd-tg"><span>Read receipts</span><i></i></div><div class="pd-tg"><span>Last seen</span><i></i></div>';
       else if (k === 'files') d = '<div class="pd-fl"><span>Free \u2013 100 MB</span><u><i style="--w:12%"></i></u><span>Premium \u2013 2 GB</span><u><i style="--w:90%"></i></u></div>';
-      else if (k === 'stickers') d = '<div class="pd-ic pd-em"><i>\ud83d\ude0d</i><i>\ud83d\udd25</i><i>\ud83c\udf89</i></div>';
-      else if (k === 'sched') d = '<div style="font-size:46px;animation:pdp 2s infinite">\u23f0</div><div class="pd-note">Happy Birthday! \u2192 00:00</div>';
-      else if (k === 'backup') d = '<div style="font-size:46px;animation:pdp 2s infinite">\u2601\ufe0f</div><div class="pd-fl"><u><i style="--w:95%"></i></u></div><div class="pd-note">Chats \u00b7 Photos \u00b7 Videos</div>';
+      else if (k === 'stickers') d = '<div class="pd-ic pd-em"><i>' + psvg('stickers', 44, 'currentColor') + '</i><i>' + psvg('ai', 44, 'currentColor') + '</i><i>' + psvg('wall', 44, 'currentColor') + '</i></div>';
+      else if (k === 'sched') d = '<div style="animation:pdp 2s infinite;display:flex;justify-content:center">' + psvg('sched', 46, 'currentColor') + '</div><div class="pd-note">Happy Birthday! \u2192 00:00</div>';
+      else if (k === 'backup') d = '<div style="animation:pdp 2s infinite;display:flex;justify-content:center">' + psvg('backup', 46, 'currentColor') + '</div><div class="pd-fl"><u><i style="--w:95%"></i></u></div><div class="pd-note">Chats \u00b7 Photos \u00b7 Videos</div>';
+      else if (k === 'live') d = '<div style="position:absolute;inset:0;background:linear-gradient(180deg,#0b3a6b,#1b78b8,#0b3a6b);background-size:100% 300%;animation:pdlv 4s ease-in-out infinite alternate"></div><div style="position:relative;animation:pdp 2s infinite">' + psvg('live', 56, '#fff') + '</div><div class="pd-note" style="position:relative">Waves \u00b7 Rain \u00b7 Stars \u00b7 Fire</div>';
       else if (k === 'translate') d = '<div class="pd-chat"><span>Habari za asubuhi</span><span>Good morning</span></div>';
-      else d = '<div class="pd-ph<div class="a">You</div><div class="b">Friend</div></div>';
+      else d = '<div class="pd-ph"><div class="a">You</div><div class="b">Friend</div></div>';
       return '<div class="pd-demo pd-' + k + '">' + d + '</div>';
     }
     (function () {
@@ -4455,7 +4477,7 @@ ZW|Zimbabwe|263`;
         '.pd-ic{display:flex;gap:16px}.pd-ic i{width:58px;height:58px;border-radius:16px;background:#4ade80;animation:pdr 3s infinite}.pd-ic i:nth-child(2){background:#f59e0b;animation-delay:.4s}.pd-ic i:nth-child(3){background:#a855f7;animation-delay:.8s}' +
         '.pd-chat{display:flex;flex-direction:column;gap:10px;width:80%}.pd-chat span{padding:9px 12px;border-radius:14px;background:#2b3a55;font-size:13px;opacity:0;animation:pdf 5s infinite}.pd-chat span+span{background:#1f8f5f;align-self:flex-end;animation-delay:1.5s}' +
         '.pd-ph{display:flex;gap:26px}.pd-ph div{width:76px;height:130px;border-radius:14px;background:#222;font-size:11px;padding:6px;text-align:center}.pd-ph .a{background:linear-gradient(160deg,#4ade80,#0e7490)}.pd-ph .b{animation:pdw 4s infinite}' +
-        '@keyframes pdp{50%{transform:scale(1.1)}}@keyframes pdt{0%,3%{opacity:0}8%,22%{opacity:1}28%,100%{opacity:0}}@keyframes pdg{from{transform:scaleY(.4);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}' +
+        '@keyframes pdlv{from{background-position:0 0}to{background-position:0 100%}}@keyframes pdp{50%{transform:scale(1.1)}}@keyframes pdt{0%,3%{opacity:0}8%,22%{opacity:1}28%,100%{opacity:0}}@keyframes pdg{from{transform:scaleY(.4);transform-origin:bottom}to{transform:scaleY(1);transform-origin:bottom}}' +
         '@keyframes pdc{0%{color:#fff}25%{color:#f59e0b}50%{color:#4ade80}75%{color:#60a5fa}100%{color:#fff}}@keyframes pdr{50%{transform:rotate(12deg) scale(1.12)}}@keyframes pdf{0%{opacity:0}15%,80%{opacity:1}100%{opacity:0}}@keyframes pdw{0%,40%{background:#222}60%,100%{background:linear-gradient(160deg,#4ade80,#0e7490)}}' +
         '.pd-sec{margin:12px 18px;line-height:1.45}.pd-sec h3{margin:14px 0 4px;font-size:16px}.pd-sec p{margin:0;opacity:.9}';
       document.head.appendChild(s);
@@ -4476,7 +4498,7 @@ ZW|Zimbabwe|263`;
       zOpenPage('Zanply Premium', function (b) {
         var pg = b.parentNode; pg.classList.add('zprem'); var ttl = pg.querySelector('.zpg-h span'); ttl.textContent = '';
         var plan = 'annual', hero = mk('div', 'zpm-hero');
-        hero.innerHTML = '<div style="font-size:64px">\ud83d\udc51</div><h2></h2><p></p>';
+        hero.innerHTML = '<div style="display:flex;justify-content:center">' + psvg('crown', 64, '#e0b04a') + '</div><h2></h2><p></p>';
         hero.querySelector('h2').textContent = 'Zanply Premium'; hero.querySelector('p').textContent = 'Go beyond with dozens of exclusive features by subscribing to Zanply Premium.'; b.appendChild(hero);
         var plans = mk('div', 'zpm-plans'), cta = mk('button', 'zpm-cta', premCta(plan));
         function drawPlans() {
@@ -4490,11 +4512,11 @@ ZW|Zimbabwe|263`;
           });
         }
         var stc = mk('div', 'pd-st'); stc.style.display = 'none'; b.appendChild(stc); premStatus(function (r) { if (!window.zIsPremium()) return; stc.style.display = ''; var d = r.expires ? new Date(r.expires).toLocaleDateString() : ''; stc.textContent = 'Premium is active' + (d ? (r.renew === false ? ' until ' : ' \u2013 renews on ') + d : '') + '.'; var ab = mk('button', '', r.renew === false ? 'Turn auto-renewal ON' : 'Turn auto-renewal OFF'); ab.addEventListener('click', function () { chatCall('premium_autorenew', { on: r.renew === false }).then(function () { toast('Auto-renewal updated', true); openPremium(); }, function () { toast('Could not change auto-renewal. Try again.'); }); }); stc.appendChild(document.createElement('br')); stc.appendChild(ab); });
-        var one = mk('div', 'pd-sec'); one.style.textAlign = 'center'; one.innerHTML = '<b>ONE Zanply Premium bundle \u2013 all 12 features included.</b><br><span style="opacity:.8">Pick how long you want to subscribe. The features are the same on every plan.</span>'; b.appendChild(one); drawPlans(); b.appendChild(plans);
+        var one = mk('div', 'pd-sec'); one.style.textAlign = 'center'; one.innerHTML = '<b>ONE Zanply Premium bundle \u2013 all 13 features included.</b><br><span style="opacity:.8">Pick how long you want to subscribe. The features are the same on every plan.</span>'; b.appendChild(one); drawPlans(); b.appendChild(plans);
         var list = mk('div', 'zpm-list');
         PREM_FEATS.forEach(function (f) {
           var r = mk('button', 'zpm-f'); r.innerHTML = '<span class="ic"></span><span class="tx"><b></b><small></small></span><span class="ch">\u203a</span>';
-          var ic = r.querySelector('.ic'); ic.textContent = f[0]; ic.style.background = f[3]; r.querySelector('b').textContent = f[1]; r.querySelector('small').textContent = f[2];
+          var ic = r.querySelector('.ic'); ic.innerHTML = psvg(f[4], 22); ic.style.background = f[3]; r.querySelector('b').textContent = f[1]; r.querySelector('small').textContent = f[2];
           r.addEventListener('click', function () {
             zOpenPage(f[1], function (c) {
               c.parentNode.classList.add('zprem');
