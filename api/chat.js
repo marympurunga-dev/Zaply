@@ -238,7 +238,7 @@ const NAME_STYLES = ['bold', 'italic', 'serif', 'script', 'mono', 'grad'];
 function parseExtra(raw) {
   let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch (e) { o = {}; }
   return { acct: o.acct === 'business' ? 'business' : 'personal', biz: o.biz && typeof o.biz === 'object' ? o.biz : null,
-    pstyle: NAME_STYLES.indexOf(o.pstyle) > -1 ? o.pstyle : '', pcolor: /^#[0-9a-f]{6}$/i.test(String(o.pcolor || '')) ? String(o.pcolor) : '' };
+    pstyle: NAME_STYLES.indexOf(o.pstyle) > -1 ? o.pstyle : '', pcolor: /^#[0-9a-f]{6}$/i.test(String(o.pcolor || '')) ? String(o.pcolor) : '', pset: o.pset && typeof o.pset === 'object' ? o.pset : {} };
 }
 const cleanRow = (r) => Object.assign({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '', links: r.links || '', photo_url: r.photo_url || '' }, parseExtra(r.extra));
 // trims, and cuts to a number of characters (emoji count as one)
@@ -305,7 +305,8 @@ function cleanProfile(b) {
   return { name, username, email, address: clip(b.address, 120), bio: clip(b.bio, 114), birthday, pet: clip(b.pet, 40), links: linkList.join('\n'), acct, biz: biz.biz };
 }
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
-const MAX_GROUP = 10000; // 10,000 members (more with Zanply Premium later)
+const MAX_GROUP = 100000; // free: 100,000 members
+const MAX_GROUP_PREM = 1000000; // Premium: 1M members
 const MEDIA_MAX = 10 * 1024 * 1024; // Cloudinary free plan allows 10 MB per raw file
 const isGroup = (x) => typeof x === 'string' && /^g:\d{1,9}$/.test(x);
 const gid = (x) => Number(x.slice(2));
@@ -900,6 +901,35 @@ module.exports = async (req, res) => {
     }
 
     // Zanply Premium. Real payments are not connected yet: activation only works while PREMIUM_TEST_MODE=1 is set in Vercel.
+    if (b.action === 'premium_status') { const i = await premInfo(me); return res.json(Object.assign({}, i, { expires: i.until })); }
+    if (b.action === 'premium_autorenew') {
+      await premTable(); await db().query('UPDATE premium SET renew = ? WHERE phone = ?', [b.on ? 1 : 0, me]);
+      const i = await premInfo(me); return res.json(Object.assign({}, i, { expires: i.until }));
+    }
+    // Premium checkout (Paystack: cards + M-Pesa in Kenya). Needs PAYSTACK_SECRET_KEY (and optional PAYSTACK_CALLBACK) in Vercel.
+    if (b.action === 'premium_checkout') {
+      const usd = { monthly: 3.99, six: 19.99, annual: 29.99 }[b.plan];
+      if (!usd) return res.status(400).json({ error: 'Bad request.' });
+      if (!process.env.PAYSTACK_SECRET_KEY) return res.status(402).json({ error: 'Payments are being connected. No charge was made.' });
+      const rate = { KES: 129, NGN: 1600, GHS: 15, ZAR: 18, USD: 1 }, cur = rate[b.currency] ? b.currency : 'USD';
+      const em = await db().query('SELECT email FROM profiles WHERE phone = ?', [me]).then((r) => (r[0][0] && r[0][0].email) || '').catch(() => '');
+      const r = await fetch('https://api.paystack.co/transaction/initialize', { method: 'POST', headers: { Authorization: 'Bearer ' + process.env.PAYSTACK_SECRET_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: em || (me + '@zanply.app'), amount: Math.round(usd * rate[cur] * 100), currency: cur, callback_url: process.env.PAYSTACK_CALLBACK || undefined, metadata: { phone: me, plan: b.plan } }) });
+      const j = await r.json().catch(() => ({}));
+      if (!j.status || !j.data) return res.status(502).json({ error: 'Could not start payment. No charge was made.' });
+      return res.json({ url: j.data.authorization_url });
+    }
+    // Stealth / auto-reply / backup settings. Typing "contacts"/"nobody" is free; everything else here is Premium.
+    if (b.action === 'premium_setting') {
+      const K = ['typ_see', 'typ_view', 'hide_online', 'hide_typing', 'hide_ticks', 'hide_seen', 'ar_on', 'ar_msg', 'ar_when', 'cloud_unlimited'];
+      const key = String(b.key || ''); if (K.indexOf(key) < 0) return res.status(400).json({ error: 'Bad request.' });
+      let val = b.value; if (key === 'ar_msg') val = String(val || '').slice(0, 500); else if (key === 'ar_when') val = ['Always', 'When Busy', 'When Offline'].indexOf(val) > -1 ? val : 'Always'; else if (/^typ_/.test(key)) val = ['Everyone', 'Contacts', 'Nobody'].indexOf(val) > -1 ? val : 'Contacts'; else val = !!val;
+      if (!(/^typ_/.test(key) && val !== 'Everyone') && !(await isPremium(me))) return res.status(403).json({ error: 'This is part of Zanply Premium.', premium: true });
+      let ex = parseExtra(null); try { const [cur] = await db().query('SELECT extra FROM profiles WHERE phone = ?', [me]); ex = parseExtra(cur && cur[0] && cur[0].extra); } catch (e) {}
+      ex.pset[key] = val;
+      await db().query('INSERT INTO profiles (phone, extra) VALUES (?, ?) ON DUPLICATE KEY UPDATE extra = VALUES(extra)', [me, JSON.stringify(ex)]);
+      return res.json({ ok: true, pset: ex.pset });
+    }
     if (b.action === 'premium_get') return res.json(await premInfo(me));
     if (b.action === 'premium_renew') {
       await premTable(); await db().query('UPDATE premium SET renew = ? WHERE phone = ?', [b.renew ? 1 : 0, me]);
@@ -969,7 +999,7 @@ module.exports = async (req, res) => {
       const name = Array.from(String(b.name || '').trim()).slice(0, 250).join('');
       if (!name) return res.status(400).json({ error: 'Give the group a name.' });
       { const lim = (await isPremium(me)) ? 10 : 2; const [og] = await db().query('SELECT COUNT(*) AS n FROM chat_groups WHERE creator = ?', [me]); if (Number(og[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'Free accounts can create 2 groups. Go Premium to create up to 10.' : 'You reached the limit of 10 groups.', premium: true }); }
-      const wanted = Array.from(new Set((Array.isArray(b.members) ? b.members : []).filter((p) => phoneOk(p) && p !== me))).slice(0, MAX_GROUP - 1);
+      const wanted = Array.from(new Set((Array.isArray(b.members) ? b.members : []).filter((p) => phoneOk(p) && p !== me))).slice(0, ((await isPremium(me)) ? MAX_GROUP_PREM : MAX_GROUP) - 1);
       if (!wanted.length) return res.status(400).json({ error: 'Add at least one member.' });
       const [found] = await db().query('SELECT phone FROM users WHERE phone IN (?)', [wanted]);
       const members = found.map((x) => x.phone);
@@ -1006,7 +1036,7 @@ module.exports = async (req, res) => {
       const to = String(b.to || '');
       const size = Number(b.size) || 0;
       if (size < 1) return res.status(400).json({ error: 'Bad request.' });
-      if (size > MEDIA_MAX) return res.status(413).json({ error: 'That file is too big. The limit is 10 MB.' });
+      { const prem = await isPremium(me), cap = (prem ? 150 : 30) * 1024 * 1024; if (size > cap) return res.status(413).json({ error: prem ? 'That file is too big. The limit is 150 MB.' : 'To send a file above 30 MB you have to subscribe to Zanply Premium', premium: !prem }); }
       if (isGroup(to)) {
         if (!(await isMember(gid(to), me))) return res.status(403).json({ error: 'You are not in this group.' });
       } else {
@@ -1165,9 +1195,11 @@ module.exports = async (req, res) => {
         if (!(cloudOn() && music.length <= 300 && music.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/video/upload/') === 0)) return res.status(400).json({ error: 'Bad request.' });
         musicName = Array.from(String(b.music_name || '').trim()).slice(0, 100).join('');
       }
-      const [cnt] = await db().query('SELECT COUNT(*) AS n FROM statuses WHERE owner = ? AND expires_at > NOW()', [me]);
+      const premU = await isPremium(me); let hrs = [24, 48, 72, 96].indexOf(Number(b.hours)) > -1 ? Number(b.hours) : 24;
+      if (hrs > 24 && !premU) return res.status(403).json({ error: 'To use 48h+ Status duration you need Zanply Premium', premium: true });
+      const [cnt] = await db().query('SELECT COUNT(*) AS n FROM statuses WHERE owner = ? AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)', [me]).catch(() => db().query('SELECT COUNT(*) AS n FROM statuses WHERE owner = ? AND expires_at > NOW()', [me]));
       { const lim = (await isPremium(me)) ? 13 : 2; if (Number(cnt[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'Free accounts can share 2 Status per day. Go Premium to share up to 13.' : 'You reached 13 Status for today.', premium: true }); }
-      const [r] = await db().query('INSERT INTO statuses (owner, type, text, bg, url, music, music_name, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))', [me, type, text, bg, url, music, musicName]);
+      const [r] = await db().query('INSERT INTO statuses (owner, type, text, bg, url, music, music_name, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? HOUR))', [me, type, text, bg, url, music, musicName, hrs]);
       /* tidy up: remove updates that expired more than a day ago, with their views and likes */
       db().query('DELETE FROM status_views WHERE status_id IN (SELECT id FROM statuses WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY))').catch(() => {});
       db().query('DELETE FROM status_likes WHERE status_id IN (SELECT id FROM statuses WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY))').catch(() => {});
