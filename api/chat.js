@@ -434,6 +434,33 @@ async function relation(owner, viewer) {
 }
 function rulePass(rule, rel) { return rule === 'everyone' ? rel.chat : rule === 'contacts' ? rel.saved : false; }
 /* what may `viewer` see about `owner`? */
+/* Premium stealth: a Premium person can hide Online and Last Seen from everyone else (they still see others). */
+async function stealthOf(phone, extraRaw) {
+  try {
+    const s = parseExtra(extraRaw).pset || {};
+    if (!(s.hide_online || s.hide_seen)) return {};
+    if (!(await isPremium(phone))) return {};
+    return { online: !!s.hide_online, seen: !!s.hide_seen || !!s.hide_online };
+  } catch (e) { return {}; }
+}
+/* Premium auto-reply: answers a new message for the receiver (Always / When Offline-or-Busy), once per person every 12 hours. */
+async function autoReplyFor(sender, owner) {
+  try {
+    const [pr] = await db().query('SELECT extra, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS online FROM profiles WHERE phone = ?', [owner]);
+    if (!pr[0]) return;
+    const st = parseExtra(pr[0].extra).pset || {}, msg = String(st.ar_msg || '').trim();
+    if (!st.ar_on || !msg) return;
+    if (!(await isPremium(owner))) return;
+    if ((st.ar_when || 'Always') !== 'Always' && Number(pr[0].online) === 1) return;
+    const [dup] = await db().query('SELECT 1 FROM messages WHERE sender = ? AND receiver = ? AND body = ? AND created_at > NOW() - INTERVAL 12 HOUR LIMIT 1', [owner, sender, msg]);
+    if (dup.length) return;
+    await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [owner, sender, msg]);
+    await rt.signal([sender], 'msg', { from: owner });
+  } catch (e) {}
+}
+async function ticksHidden(phone) {
+  try { const [r] = await db().query('SELECT extra FROM profiles WHERE phone = ?', [phone]); if (!r[0]) return false; const st = parseExtra(r[0].extra).pset || {}; return !!st.hide_ticks && (await isPremium(phone)); } catch (e) { return false; }
+}
 async function presenceAccess(owner, ownerPrivacyRaw, viewer) {
   const pv = parsePv(ownerPrivacyRaw), rel = await relation(owner, viewer), lr = lsRule(pv), or = onRule(pv);
   const canLast = rulePass(lr, rel);
@@ -485,10 +512,11 @@ module.exports = async (req, res) => {
         const [un] = await db().query('SELECT phone, username, extra FROM profiles WHERE phone IN (?) AND username IS NOT NULL', [others]).catch(() => [[]]);
         un.forEach((x) => { if (parseExtra(x.extra).acct !== 'business') unames[x.phone] = x.username; });
       }
+      const hideT = {}; for (const o of others) { if (!(o in hideT)) hideT[o] = await ticksHidden(o); }
       const chats = last.map((m, i) => ({
         phone: others[i], name: names[others[i]] || '', username: unames[others[i]] || '', last: m.body,
         mine: m.sender === me, at: m.created_at,
-        st: m.sender === me ? (m.read_at ? 3 : m.delivered_at ? 2 : 1) : 0 }));
+        st: m.sender === me ? (m.read_at && !hideT[others[i]] ? 3 : m.delivered_at ? 2 : 1) : 0 }));
       const [gs] = await db().query(
         `SELECT g.id, g.name, g.created_at,
            (SELECT body FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS body,
@@ -532,12 +560,13 @@ module.exports = async (req, res) => {
       const upd = await db().query(
         'UPDATE messages SET delivered_at = COALESCE(delivered_at, NOW()), read_at = NOW() WHERE receiver = ? AND sender = ? AND read_at IS NULL',
         [me, b.with]).catch(() => null);
-      if (upd && upd[0] && upd[0].affectedRows) await rt.signal([b.with], 'tick', { from: me });
+      if (upd && upd[0] && upd[0].affectedRows && !(await ticksHidden(me))) await rt.signal([b.with], 'tick', { from: me });
       const [rows] = await db().query(
         `SELECT id, sender, body, created_at, delivered_at, read_at FROM messages
          WHERE id > ? AND ((sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?))
          ORDER BY id ASC LIMIT 200`, [after, me, b.with, b.with, me]);
-      const stOf = (m) => (m.read_at ? 3 : m.delivered_at ? 2 : 1);
+      const hideTk = await ticksHidden(b.with);
+      const stOf = (m) => (m.read_at && !hideTk ? 3 : m.delivered_at ? 2 : 1);
       /* new tick state for my earlier messages the app is still tracking */
       let ticks = {};
       const track = (Array.isArray(b.track) ? b.track : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 100);
@@ -547,6 +576,49 @@ module.exports = async (req, res) => {
       }
       return res.json({ ticks, messages: rows.map((m) => ({
         id: m.id, mine: m.sender === me, body: m.body, at: m.created_at, st: m.sender === me ? stOf(m) : 0 })) });
+    }
+
+    if (b.action === 'typing') {
+      if (!phoneOk(b.to) || b.to === me) return res.json({ ok: true });
+      try {
+        const [pr] = await db().query('SELECT phone, extra FROM profiles WHERE phone IN (?)', [[me, b.to]]);
+        const ps = {}; pr.forEach((r) => { ps[r.phone] = parseExtra(r.extra).pset || {}; });
+        const mine = ps[me] || {}, theirs = ps[b.to] || {};
+        if (mine.hide_typing && (await isPremium(me))) return res.json({ ok: true });
+        const low = (v) => String(v || 'Contacts').toLowerCase();
+        if (!rulePass(low(mine.typ_see), await relation(me, b.to))) return res.json({ ok: true });
+        if (!rulePass(low(theirs.typ_view), await relation(b.to, me))) return res.json({ ok: true });
+        await rt.signal([b.to], 'typing', { from: me });
+      } catch (e) {}
+      return res.json({ ok: true });
+    }
+    if (b.action === 'backup_info') {
+      await db().query('CREATE TABLE IF NOT EXISTS chat_backups (phone VARCHAR(24) PRIMARY KEY, data LONGTEXT, msg_count INT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)').catch(() => {});
+      const [r] = await db().query('SELECT msg_count, updated_at FROM chat_backups WHERE phone = ?', [me]).catch(() => [[]]);
+      return res.json({ backup: r[0] ? { count: r[0].msg_count, at: r[0].updated_at } : null, premium: await isPremium(me) });
+    }
+    if (b.action === 'backup_now') {
+      const prem = await isPremium(me);
+      if (b.auto && !prem) return res.status(403).json({ error: 'Automatic backup is part of Zanply Premium.', premium: true });
+      await db().query('CREATE TABLE IF NOT EXISTS chat_backups (phone VARCHAR(24) PRIMARY KEY, data LONGTEXT, msg_count INT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)').catch(() => {});
+      const cap = prem ? 20000 : 500;
+      const [rows] = await db().query('SELECT id, sender, receiver, body, created_at, delivered_at, read_at FROM messages WHERE sender = ? OR receiver = ? ORDER BY id DESC LIMIT ?', [me, me, cap]);
+      const data = JSON.stringify(rows);
+      await db().query('INSERT INTO chat_backups (phone, data, msg_count) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE data = VALUES(data), msg_count = VALUES(msg_count)', [me, data, rows.length]);
+      return res.json({ ok: true, count: rows.length, limited: !prem });
+    }
+    if (b.action === 'backup_restore') {
+      const [r] = await db().query('SELECT data FROM chat_backups WHERE phone = ?', [me]).catch(() => [[]]);
+      if (!r[0]) return res.status(404).json({ error: 'No backup found for this account yet.' });
+      let rows = []; try { rows = JSON.parse(r[0].data); } catch (e) {}
+      let added = 0;
+      for (let i = 0; i < rows.length; i += 200) {
+        const part = rows.slice(i, i + 200).filter((m) => m.sender === me || m.receiver === me).map((m) => [m.id, m.sender, m.receiver, m.body, new Date(m.created_at), m.delivered_at ? new Date(m.delivered_at) : null, m.read_at ? new Date(m.read_at) : null]);
+        if (!part.length) continue;
+        const [ins] = await db().query('INSERT IGNORE INTO messages (id, sender, receiver, body, created_at, delivered_at, read_at) VALUES ?', [part]);
+        added += ins.affectedRows || 0;
+      }
+      return res.json({ ok: true, restored: added, total: rows.length });
     }
 
     if (b.action === 'send') {
@@ -572,6 +644,7 @@ module.exports = async (req, res) => {
       const [r] = await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [me, b.to, body]);
       await rt.signal([b.to], 'msg', { from: me });
       await notify(me, b.to, body);
+      await autoReplyFor(me, b.to);
       return res.json({ message: { id: r.insertId, mine: true, body, at: new Date().toISOString(), st: 1 } });
     }
 
@@ -654,10 +727,11 @@ module.exports = async (req, res) => {
       if (bs.iBlocked || bs.blockedMe) return res.json({ hidden: true });
       const [mine] = await db().query('SELECT privacy FROM profiles WHERE phone = ?', [me]);
       const myLast = lsRule(parsePv(mine[0] && mine[0].privacy)) !== 'nobody'; /* if I hide my own last seen, I can't see other people's last seen either (online is still shown) */
-      const [rows] = await db().query('SELECT privacy, last_active, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS online FROM profiles WHERE phone = ?', [who]);
+      const [rows] = await db().query('SELECT privacy, extra, last_active, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS online FROM profiles WHERE phone = ?', [who]);
       const r = rows[0];
       if (!r || !r.last_active) return res.json({ hidden: false, online: false, last: null });
       const acc = await presenceAccess(who, r.privacy, me);
+      { const sh = await stealthOf(who, r.extra); if (sh.online) acc.canOnline = false; if (sh.seen) acc.canLast = false; }
       const online = acc.canOnline && Number(r.online) === 1;
       return res.json({ hidden: false, online, last: acc.canLast && myLast && !online ? r.last_active : null });
     }
@@ -665,12 +739,13 @@ module.exports = async (req, res) => {
     if (b.action === 'presence_bulk') {
       const list = Array.from(new Set((Array.isArray(b.phones) ? b.phones : []).filter(phoneOk))).filter((p) => p !== me).slice(0, 80);
       if (!list.length) return res.json({ online: {} });
-      const [rows] = await db().query('SELECT phone, privacy FROM profiles WHERE phone IN (?) AND is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND', [list]);
+      const [rows] = await db().query('SELECT phone, privacy, extra FROM profiles WHERE phone IN (?) AND is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND', [list]);
       const out = {};
       await Promise.all(rows.map(async (r) => {
         const bs = await blockState(me, r.phone); if (bs.iBlocked || bs.blockedMe) return;
         const acc = await presenceAccess(r.phone, r.privacy, me);
-        if (acc.canOnline) out[r.phone] = 1;
+        const sh = await stealthOf(r.phone, r.extra);
+        if (acc.canOnline && !sh.online) out[r.phone] = 1;
       }));
       return res.json({ online: out });
     }
@@ -948,7 +1023,7 @@ module.exports = async (req, res) => {
     if (b.action === 'channel_create') {
       const name = Array.from(String(b.name || '').trim()).slice(0, 100).join('');
       if (!name) return res.status(400).json({ error: 'Give the channel a name.' });
-      { const lim = (await isPremium(me)) ? 10 : 2; const [oc] = await db().query('SELECT COUNT(*) AS n FROM channels WHERE owner = ?', [me]); if (Number(oc[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'Free accounts can create 2 channels. Go Premium to create up to 10.' : 'You reached the limit of 10 channels.', premium: true }); }
+      { const lim = (await isPremium(me)) ? 10 : 2; const [oc] = await db().query('SELECT COUNT(*) AS n FROM channels WHERE owner = ?', [me]); if (Number(oc[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'To create a 3rd Channel you have to subscribe to Zanply Premium' : 'You reached the limit of 10 channels.', premium: true }); }
       const description = Array.from(String(b.description || '').trim()).slice(0, 255).join('');
       const url = String(b.photo_url || '');
       const photo = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/' + 'image' + '/upload/') === 0 ? url : '';
@@ -998,7 +1073,7 @@ module.exports = async (req, res) => {
     if (b.action === 'group_create') {
       const name = Array.from(String(b.name || '').trim()).slice(0, 250).join('');
       if (!name) return res.status(400).json({ error: 'Give the group a name.' });
-      { const lim = (await isPremium(me)) ? 10 : 2; const [og] = await db().query('SELECT COUNT(*) AS n FROM chat_groups WHERE creator = ?', [me]); if (Number(og[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'Free accounts can create 2 groups. Go Premium to create up to 10.' : 'You reached the limit of 10 groups.', premium: true }); }
+      { const lim = (await isPremium(me)) ? 10 : 2; const [og] = await db().query('SELECT COUNT(*) AS n FROM chat_groups WHERE creator = ?', [me]); if (Number(og[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'To create a 3rd Group you have to subscribe to Zanply Premium' : 'You reached the limit of 10 groups.', premium: true }); }
       const wanted = Array.from(new Set((Array.isArray(b.members) ? b.members : []).filter((p) => phoneOk(p) && p !== me))).slice(0, ((await isPremium(me)) ? MAX_GROUP_PREM : MAX_GROUP) - 1);
       if (!wanted.length) return res.status(400).json({ error: 'Add at least one member.' });
       const [found] = await db().query('SELECT phone FROM users WHERE phone IN (?)', [wanted]);
@@ -1198,7 +1273,7 @@ module.exports = async (req, res) => {
       const premU = await isPremium(me); let hrs = [24, 48, 72, 96].indexOf(Number(b.hours)) > -1 ? Number(b.hours) : 24;
       if (hrs > 24 && !premU) return res.status(403).json({ error: 'To use 48h+ Status duration you need Zanply Premium', premium: true });
       const [cnt] = await db().query('SELECT COUNT(*) AS n FROM statuses WHERE owner = ? AND created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)', [me]).catch(() => db().query('SELECT COUNT(*) AS n FROM statuses WHERE owner = ? AND expires_at > NOW()', [me]));
-      { const lim = (await isPremium(me)) ? 13 : 2; if (Number(cnt[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'Free accounts can share 2 Status per day. Go Premium to share up to 13.' : 'You reached 13 Status for today.', premium: true }); }
+      { const lim = (await isPremium(me)) ? 13 : 2; if (Number(cnt[0].n) >= lim) return res.status(403).json({ error: lim === 2 ? 'To post a 3rd Status you need to subscribe to Zanply Premium' : 'You reached 13 Status for today.', premium: true }); }
       const [r] = await db().query('INSERT INTO statuses (owner, type, text, bg, url, music, music_name, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL ? HOUR))', [me, type, text, bg, url, music, musicName, hrs]);
       /* tidy up: remove updates that expired more than a day ago, with their views and likes */
       db().query('DELETE FROM status_views WHERE status_id IN (SELECT id FROM statuses WHERE expires_at < DATE_SUB(NOW(), INTERVAL 1 DAY))').catch(() => {});
