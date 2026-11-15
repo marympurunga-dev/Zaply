@@ -498,6 +498,31 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const b = req.body || {};
+    /* Passkey login (no token yet): the phone signs a short-lived challenge with the key kept in its Keystore */
+    if (b.action === 'pk_challenge' || b.action === 'pk_login') {
+      const keyId = String(b.keyId || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40), phone = String(b.phone || '');
+      if (!phoneOk(phone) || !keyId) return res.status(400).json({ error: 'Bad request.' });
+      const mac = (r, e) => crypto.createHmac('sha256', SECRET).update('pk|' + r + '|' + e + '|' + phone + '|' + keyId).digest('base64url');
+      if (b.action === 'pk_challenge') { const r = crypto.randomBytes(24).toString('base64url'), e = Date.now() + 120000; return res.json({ challenge: r + '.' + e + '.' + mac(r, e) }); }
+      const fails = (global.__pkFail = global.__pkFail || {}), used = (global.__pkUsed = global.__pkUsed || {});
+      if ((fails[phone] || 0) >= 10) return res.status(429).json({ error: 'Too many tries. Try again later.' });
+      const bad = (msg, gone) => { fails[phone] = (fails[phone] || 0) + 1; setTimeout(() => { fails[phone] = Math.max(0, (fails[phone] || 1) - 1); }, 3600000); return res.status(403).json({ error: msg, gone: !!gone }); };
+      const chal = String(b.challenge || ''), parts = chal.split('.');
+      if (parts.length !== 3 || !(Number(parts[1]) > Date.now())) return bad('This login expired. Try again.');
+      const want = mac(parts[0], parts[1]);
+      if (want.length !== parts[2].length || !crypto.timingSafeEqual(Buffer.from(want), Buffer.from(parts[2]))) return bad('This login is not valid. Try again.');
+      if (used[chal]) return bad('This login was already used. Try again.');
+      await db().query('CREATE TABLE IF NOT EXISTS passkeys (id BIGINT AUTO_INCREMENT PRIMARY KEY, phone VARCHAR(20) NOT NULL, key_id VARCHAR(40) NOT NULL, pub TEXT NOT NULL, label VARCHAR(60) NOT NULL DEFAULT \'\', created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uq_pk (phone, key_id))');
+      const [k] = await db().query('SELECT pub FROM passkeys WHERE phone = ? AND key_id = ?', [phone, keyId]);
+      if (!k[0]) return bad('This passkey is no longer valid. Log in with your number.', true);
+      let ok = false;
+      try { ok = crypto.verify('sha256', Buffer.from(chal, 'utf8'), { key: crypto.createPublicKey({ key: Buffer.from(k[0].pub, 'base64'), format: 'der', type: 'spki' }), dsaEncoding: 'der' }, Buffer.from(String(b.sig || ''), 'base64')); } catch (e) { ok = false; }
+      if (!ok) return bad('Passkey check failed.');
+      const [u] = await db().query('SELECT phone FROM users WHERE phone = ?', [phone]);
+      if (!u[0]) return bad('This account no longer exists.', true);
+      used[chal] = 1; setTimeout(() => { delete used[chal]; }, 180000); fails[phone] = 0;
+      return res.json({ ok: true, token: mintToken(phone), phone });
+    }
     const me = readToken(b.token);
     if (!me) return res.status(401).json({ error: 'Session expired. Please sign in again.' });
     await ensureTable();
@@ -592,6 +617,107 @@ module.exports = async (req, res) => {
       await db().query('UPDATE messages SET delivered_at = COALESCE(delivered_at, NOW()), read_at = NOW() WHERE receiver = ? AND read_at IS NULL', [me]).catch(() => {});
       if (un.length && !(await ticksHidden(me))) await rt.signal(un.map((r) => r.sender), 'tick', { from: me });
       return res.json({ ok: true });
+    }
+    /* ---- chat backup by email: find the account that owns this email, prove it is yours (two-step PIN, or a code sent to the email), then bring its chats in ---- */
+    if (b.action === 'backup_lookup' || b.action === 'backup_claim') {
+      const em = String(b.email || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em) || em.length > 120) return res.status(400).json({ error: 'Enter a valid email address.' });
+      const [pr] = await db().query('SELECT phone FROM profiles WHERE LOWER(email) = ? ORDER BY last_active DESC LIMIT 1', [em]);
+      if (!pr[0]) return res.json({ found: false });
+      const old = pr[0].phone;
+      if (old === me) return res.json({ found: true, same: true });
+      const [ts] = await db().query('SELECT salt, hash FROM two_step WHERE phone = ?', [old]);
+      const mode = ts[0] ? 'pin' : 'code';
+      if (b.action === 'backup_lookup') {
+        if (mode === 'code') {
+          await db().query(`CREATE TABLE IF NOT EXISTS email_otps (id BIGINT AUTO_INCREMENT PRIMARY KEY, owner VARCHAR(20) NOT NULL, email VARCHAR(120) NOT NULL, code_hash CHAR(64) NOT NULL, tries INT NOT NULL DEFAULT 0, used TINYINT NOT NULL DEFAULT 0, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, expires_at TIMESTAMP NOT NULL, INDEX idx_o (owner))`);
+          const [cnt] = await db().query('SELECT COUNT(*) AS n FROM email_otps WHERE owner = ? AND created_at > (NOW() - INTERVAL 1 DAY)', [me]);
+          if (cnt[0].n >= 8) return res.status(429).json({ error: 'You have reached today\u2019s limit for code requests. Try again tomorrow.' });
+          const code = String(crypto.randomInt(100000, 1000000));
+          try { await sendCodeEmail(em, code); } catch (e) { return res.status(502).json({ error: e.message || 'Could not send the code.' }); }
+          await db().query('INSERT INTO email_otps (owner, email, code_hash, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL 10 MINUTE)', [me, 'bk:' + em, sha(code + SECRET)]);
+        }
+        return res.json({ found: true, mode, email: em });
+      }
+      const secret = String(b.secret || '').trim();
+      if (!/^\d{6}$/.test(secret)) return res.status(400).json({ error: mode === 'pin' ? 'Enter the 6-digit two-step verification PIN.' : 'Enter the 6-digit code from your email.' });
+      if (mode === 'pin') {
+        const tries = (global.__bkTries = global.__bkTries || {}); const k = me + '>' + old; tries[k] = (tries[k] || 0);
+        if (tries[k] >= 8) return res.status(429).json({ error: 'Too many wrong tries. Try again later.' });
+        if (crypto.scryptSync(secret, ts[0].salt, 32).toString('hex') !== ts[0].hash) { tries[k]++; setTimeout(() => { tries[k] = 0; }, 3600000); return res.status(400).json({ error: 'Wrong PIN. Try again.' }); }
+      } else {
+        const [rows] = await db().query('SELECT id, code_hash, tries, TIMESTAMPDIFF(SECOND, NOW(), expires_at) AS secs FROM email_otps WHERE owner = ? AND email = ? AND used = 0 ORDER BY id DESC LIMIT 1', [me, 'bk:' + em]);
+        const o = rows[0];
+        if (!o) return res.status(400).json({ error: 'Go back and enter the email again to get a new code.' });
+        if (o.secs <= 0) return res.status(400).json({ error: 'That code has expired. Go back and enter the email again.' });
+        if (o.tries >= 5) return res.status(429).json({ error: 'Too many wrong tries. Go back and enter the email again.' });
+        if (sha(secret + SECRET) !== o.code_hash) { await db().query('UPDATE email_otps SET tries = tries + 1 WHERE id = ?', [o.id]); return res.status(400).json({ error: 'Wrong code. Try again.' }); }
+        await db().query('UPDATE email_otps SET used = 1 WHERE id = ?', [o.id]);
+      }
+      const [ins] = await db().query(
+        `INSERT INTO messages (sender, receiver, body, created_at, delivered_at, read_at)
+         SELECT IF(m.sender = ?, ?, m.sender), IF(m.receiver = ?, ?, m.receiver), m.body, m.created_at, COALESCE(m.delivered_at, m.created_at), COALESCE(m.read_at, m.created_at)
+         FROM messages m
+         WHERE (m.sender = ? OR m.receiver = ?) AND NOT ((m.sender = ? AND m.receiver = ?) OR (m.sender = ? AND m.receiver = ?))
+           AND NOT EXISTS (SELECT 1 FROM messages x WHERE x.sender = IF(m.sender = ?, ?, m.sender) AND x.receiver = IF(m.receiver = ?, ?, m.receiver) AND x.created_at = m.created_at AND x.body = m.body)
+         ORDER BY m.id LIMIT 20000`,
+        [old, me, old, me, old, old, old, me, me, old, old, me, old, me]);
+      return res.json({ ok: true, count: ins.affectedRows || 0 });
+    }
+
+    /* ---- transfer chats to another account (found by email, or by a QR / pairing code shown on that account) ---- */
+    if (b.action === 'transfer_code_new') {
+      await db().query('CREATE TABLE IF NOT EXISTS transfer_codes (code VARCHAR(12) PRIMARY KEY, owner VARCHAR(20) NOT NULL, expires_at TIMESTAMP NOT NULL, INDEX idx_o (owner))').catch(() => {});
+      await db().query('DELETE FROM transfer_codes WHERE owner = ? OR expires_at < NOW()', [me]).catch(() => {});
+      const code = crypto.randomBytes(5).toString('hex').toUpperCase().slice(0, 8);
+      await db().query('INSERT INTO transfer_codes (code, owner, expires_at) VALUES (?, ?, NOW() + INTERVAL 10 MINUTE)', [code, me]);
+      return res.json({ code });
+    }
+    if (b.action === 'transfer_lookup' || b.action === 'transfer_chat') {
+      let target = '';
+      if (b.code) {
+        await db().query('CREATE TABLE IF NOT EXISTS transfer_codes (code VARCHAR(12) PRIMARY KEY, owner VARCHAR(20) NOT NULL, expires_at TIMESTAMP NOT NULL, INDEX idx_o (owner))').catch(() => {});
+        const [c] = await db().query('SELECT owner FROM transfer_codes WHERE code = ? AND expires_at > NOW()', [String(b.code).trim().toUpperCase().slice(0, 12)]);
+        target = c[0] ? c[0].owner : '';
+      } else {
+        const em = String(b.email || '').trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em) || em.length > 120) return res.status(400).json({ error: 'Enter a valid email address.' });
+        const [pr] = await db().query('SELECT phone FROM profiles WHERE LOWER(email) = ? ORDER BY last_active DESC LIMIT 1', [em]);
+        target = pr[0] ? pr[0].phone : '';
+      }
+      if (!target) return res.json({ found: false });
+      if (target === me) return res.json({ found: false, self: true });
+      if (b.action === 'transfer_lookup') return res.json({ found: true });
+      if (!phoneOk(b.peer) || b.peer === me) return res.status(400).json({ error: 'Bad request.' });
+      if (b.peer === target) return res.json({ ok: true, count: 0 });
+      const [ins] = await db().query(
+        `INSERT INTO messages (sender, receiver, body, created_at, delivered_at, read_at)
+         SELECT IF(m.sender = ?, ?, m.sender), IF(m.receiver = ?, ?, m.receiver), m.body, m.created_at, COALESCE(m.delivered_at, m.created_at), COALESCE(m.read_at, m.created_at)
+         FROM messages m
+         WHERE ((m.sender = ? AND m.receiver = ?) OR (m.sender = ? AND m.receiver = ?))
+           AND NOT EXISTS (SELECT 1 FROM messages x WHERE x.sender = IF(m.sender = ?, ?, m.sender) AND x.receiver = IF(m.receiver = ?, ?, m.receiver) AND x.created_at = m.created_at AND x.body = m.body)
+         ORDER BY m.id LIMIT 20000`,
+        [me, target, me, target, me, b.peer, b.peer, me, me, target, me, target]);
+      return res.json({ ok: true, count: ins.affectedRows || 0 });
+    }
+
+    if (b.action === 'pk_register') {
+      const keyId = String(b.keyId || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40);
+      let pubDer; try { pubDer = Buffer.from(String(b.pub || ''), 'base64'); const k = crypto.createPublicKey({ key: pubDer, format: 'der', type: 'spki' }); if (k.asymmetricKeyType !== 'ec' || (k.asymmetricKeyDetails || {}).namedCurve !== 'prime256v1') throw new Error('bad'); } catch (e) { return res.status(400).json({ error: 'That passkey could not be created.' }); }
+      if (!keyId) return res.status(400).json({ error: 'Bad request.' });
+      await db().query('CREATE TABLE IF NOT EXISTS passkeys (id BIGINT AUTO_INCREMENT PRIMARY KEY, phone VARCHAR(20) NOT NULL, key_id VARCHAR(40) NOT NULL, pub TEXT NOT NULL, label VARCHAR(60) NOT NULL DEFAULT \'\', created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE KEY uq_pk (phone, key_id))');
+      const [cnt] = await db().query('SELECT COUNT(*) AS n FROM passkeys WHERE phone = ?', [me]);
+      if (cnt[0].n >= 5) return res.status(400).json({ error: 'You can keep up to 5 passkeys. Remove one first.' });
+      await db().query('INSERT INTO passkeys (phone, key_id, pub, label) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE pub = VALUES(pub), label = VALUES(label)', [me, keyId, pubDer.toString('base64'), String(b.label || '').slice(0, 60)]);
+      return res.json({ ok: true });
+    }
+    if (b.action === 'pk_remove') {
+      await db().query('DELETE FROM passkeys WHERE phone = ? AND key_id = ?', [me, String(b.keyId || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40)]).catch(() => {});
+      return res.json({ ok: true });
+    }
+    if (b.action === 'pk_list') {
+      const [r] = await db().query('SELECT key_id, label, created_at FROM passkeys WHERE phone = ? ORDER BY id', [me]).catch(() => [[]]);
+      return res.json({ keys: r });
     }
     if (b.action === 'typing') {
       if (!phoneOk(b.to) || b.to === me) return res.json({ ok: true });
@@ -1126,7 +1252,7 @@ module.exports = async (req, res) => {
         ['DELETE FROM blocks WHERE blocker = ? OR blocked = ?', [me, me]], ['DELETE FROM saved_contacts WHERE owner = ? OR phone = ?', [me, me]],
         ['DELETE FROM chat_walls WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM media WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM cloud_media WHERE owner = ? OR peer = ?', [me, me]],
         ['DELETE FROM push_subs WHERE phone = ?', [me]], ['DELETE FROM fcm_tokens WHERE phone = ?', [me]], ['DELETE FROM user_keys WHERE phone = ?', [me]], ['DELETE FROM two_step WHERE phone = ?', [me]],
-        ['DELETE FROM premium WHERE phone = ?', [me]], ['DELETE FROM chat_backups WHERE phone = ?', [me]], ['DELETE FROM email_otps WHERE owner = ?', [me]], ['DELETE FROM phone_otps WHERE owner = ?', [me]],
+        ['DELETE FROM premium WHERE phone = ?', [me]], ['DELETE FROM chat_backups WHERE phone = ?', [me]], ['DELETE FROM passkeys WHERE phone = ?', [me]], ['DELETE FROM email_otps WHERE owner = ?', [me]], ['DELETE FROM phone_otps WHERE owner = ?', [me]],
         ['DELETE FROM reports WHERE reporter = ?', [me]], ['DELETE FROM profiles WHERE phone = ?', [me]], ['DELETE FROM users WHERE phone = ?', [me]]];
       for (const [q, p] of jobs) await run(q, p);
       return res.json({ ok: true });
