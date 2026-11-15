@@ -1381,6 +1381,33 @@ html.islight #infoView #inAv{border-color:#25d366!important}
 .zver{text-align:center;color:var(--muted);font-size:13px;padding:22px 0 30px}
 .zlogo{width:84px;height:84px;margin:0 auto;border-radius:22px;background:linear-gradient(135deg,#25d366,#128c4a);color:#fff;font-size:46px;font-weight:800;display:flex;align-items:center;justify-content:center}
 </style>
+
+<style id="zfix">
+/* chat-folder cards follow the app theme (light/dark) */
+.zcard.fcard{background:var(--card)!important;border:1px solid var(--border)!important;box-shadow:none!important;border-radius:16px!important;padding:14px 16px!important;margin:0 16px 16px!important;color:var(--text)}
+.zcard.fcard .fl{color:var(--acc,#21c063)}
+.zcard.fcard .zrow{color:var(--acc,#21c063);padding:10px 0;font-weight:600}
+.zcard.fcard .fsum{color:var(--muted)}
+.zcard.fcard .zline{display:flex;gap:10px;align-items:center}
+.zcard.fcard .femo{background:var(--bg);border:1px solid var(--border);color:var(--text)}
+html.islight .zcard.fcard{background:#fff!important;border-color:#e1e5e8!important}
+html.islight .zcard.fcard .zin{background:#fff;color:#111b21}
+/* premium crown badge + selected tick */
+.zcrown{position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#ffe27a,#f5a623);display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.4);z-index:2}
+.zcrown svg{width:15px;height:15px;fill:#4a2f00}
+.zic-ck{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.zic-ck i{width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center}
+.zic-ck svg{width:22px;height:22px}
+/* live wallpaper video behind the chat */
+#zpLiveVid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;background:#000}
+html.zlive #msgs{position:relative;z-index:1}
+html.zlive #threadView .th-head,html.zlive #comp{position:relative;z-index:2}
+/* animation settings: switching a kind off really stops it */
+html.noanim-msg #msgs *,html.noanim-msg .zpg,html.noanim-msg .zpg *,html.noanim-msg .toast{animation:none!important;transition:none!important}
+html.noanim-msg #msgs{scroll-behavior:auto!important}
+html.noanim-emoji #emojiBox,html.noanim-emoji #emojiBox *,html.noanim-emoji #plusMenu,html.noanim-emoji #plusMenu *,html.noanim-emoji #msgs .bub.emo,html.noanim-emoji [class*="react"] *{animation:none!important;transition:none!important}
+html.noanim-stk .stkbar,html.noanim-stk .stkbar *,html.noanim-stk #msgs .bub.stk,html.noanim-stk #msgs .bub.stk *{animation:none!important;transition:none!important}
+</style>
 </head>
 <body>
   <div class="app">
@@ -3945,9 +3972,9 @@ ZW|Zimbabwe|263`;
       var m = $('msgs'); if (!m) return; var w = lsGet('zaply_wall', null), bg = '';
       var usedDef = false;
       if (w && w.css) bg = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; else if (t.bg) bg = t.bg; else { bg = defaultChatBg(); usedDef = true; }
-      m.style.background = bg; m.style.backgroundBlendMode = (usedDef && window.__defBlend) ? window.__defBlend : '';
+      if (document.documentElement.classList.contains('zlive')) bg = 'transparent'; m.style.setProperty('background', bg, 'important'); m.style.backgroundBlendMode = (usedDef && window.__defBlend && bg !== 'transparent') ? window.__defBlend : '';
     }
-    function setWall(w) { try { if (openWith) ZP.set('wallown_' + openWith, 1); } catch (e) {} if (w) { if (!lsSet('zaply_wall', w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_wall'); } catch (e) {} } applyTheme(); return true; }
+    function setWall(w) { try { if (w) window.zpClearPrem && window.zpClearPrem(); } catch (e) {} try { if (openWith) ZP.set('wallown_' + openWith, 1); } catch (e) {} if (w) { if (!lsSet('zaply_wall', w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_wall'); } catch (e) {} } applyTheme(); return true; }
     function openWallpaper() {
       zOpenPage('Wallpaper', function (b) {
         var hd = b.parentNode.querySelector('.zpg-h'), more = mk('button'); more.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>';
@@ -4011,36 +4038,12 @@ ZW|Zimbabwe|263`;
 
     /* ---------- Appearance ---------- */
     /* ---------- App icon + App theme ---------- */
-    var ICONS = [['Royal gold', '#1a1405', '#f5d27a', '#b8860b'], ['Black diamond', '#050505', '#e5e7eb', '#6b7280'], ['Platinum', '#e5e7eb', '#111827', '#9ca3af'], ['Rose gold', '#3b1d1d', '#f4c2b8', '#b76e79'], ['Emerald', '#052e1c', '#86efac', '#059669'], ['Sapphire', '#0b1b4d', '#93c5fd', '#2563eb'],
-      ['Ruby', '#3b0a14', '#fca5a5', '#be123c'], ['Amethyst', '#2e1065', '#d8b4fe', '#7e22ce'], ['Champagne', '#f6e7c8', '#7c5a14', '#d4a64a'], ['Onyx gold', '#0a0a0a', '#facc15', '#a16207'], ['Pearl', '#fdf7ee', '#4b5563', '#d6c3a5'], ['Midnight', '#020617', '#7dd3fc', '#1d4ed8'],
-      ['Bronze', '#2a1608', '#fdba74', '#9a3412'], ['Ice', '#e0f2fe', '#075985', '#38bdf8'], ['Zanply green', '#052e16', '#4ade80', '#16a34a']];
-    function iconUri(i) {
-      var c = ICONS[i] || ICONS[0], svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[1] + '"/><stop offset="1" stop-color="' + c[3] + '" stop-opacity=".55"/></linearGradient><linearGradient id="z" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + c[2] + '"/><stop offset="1" stop-color="' + c[3] + '"/></linearGradient></defs><rect width="192" height="192" rx="44" fill="url(#g)"/><rect x="8" y="8" width="176" height="176" rx="38" fill="none" stroke="url(#z)" stroke-width="3" opacity=".8"/><path d="M52 58h88l-62 76h64" fill="none" stroke="url(#z)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/><path d="M146 36l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="url(#z)"/></svg>';
-      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-    }
-    function applyIcon() {
-      var i = lsGet('zaply_icon', null); if (i == null) return; var u = iconUri(i);
-      ['icon', 'apple-touch-icon'].forEach(function (r) { var l = document.querySelector('link[rel="' + r + '"]'); if (l) { l.removeAttribute('type'); l.href = u; } });
-    }
-    function openAppIcons() {
-      zOpenPage('App icon', function (b) {
-        var g = mk('div'); g.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:22px 12px;padding:22px 24px;justify-items:center'; b.appendChild(g);
-        var cur = lsGet('zaply_icon', 0);
-        ICONS.forEach(function (c, i) {
-          var x = mk('button'); x.setAttribute('aria-label', c[0]); x.style.cssText = 'width:84px;height:84px;border-radius:22px;border:' + (i === cur ? '3px solid #fff' : '3px solid transparent') + ';padding:0;background:url("' + iconUri(i) + '") center/cover;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.35)';
-          if (i === cur) x.innerHTML = '<span style="position:absolute;right:-6px;bottom:-6px;width:24px;height:24px;border-radius:12px;background:#222;color:#fff;font-size:14px;line-height:24px">\u2713</span>';
-          x.addEventListener('click', function () { lsSet('zaply_icon', i); applyIcon(); toast(c[0] + ' icon set', true); closeOv(); setTimeout(openAppIcons, 80); });
-          g.appendChild(x);
-        });
-        b.appendChild(mk('div', 'zfoot', 'The icon changes in the app and in browser tabs now. On the Play Store and Galaxy Store build it also changes the launcher icon.'));
-      });
-    }
     var ACCENTS = [['Zanply green', '#21c063'], ['Emerald', '#059669'], ['Mint', '#10b981'], ['Teal', '#0d9488'], ['Cyan', '#06b6d4'], ['Sky', '#0ea5e9'], ['Blue', '#3b82f6'], ['Royal', '#2563eb'], ['Indigo', '#4f46e5'], ['Violet', '#7c3aed'],
       ['Purple', '#9333ea'], ['Orchid', '#c026d3'], ['Magenta', '#db2777'], ['Rose', '#e11d48'], ['Red', '#ef4444'], ['Coral', '#f97316'], ['Orange', '#ea580c'], ['Amber', '#f59e0b'], ['Gold', '#ca8a04'], ['Lime', '#65a30d'],
       ['Olive', '#4d7c0f'], ['Forest', '#15803d'], ['Jade', '#00a86b'], ['Ocean', '#0369a1'], ['Navy', '#1e3a8a'], ['Plum', '#86198f'], ['Wine', '#9f1239'], ['Brown', '#92400e'], ['Slate', '#475569'], ['Graphite', '#374151']];
     function applyAccent() { var a = lsGet('zaply_accent', null); if (a) document.documentElement.style.setProperty('--acc', a); else document.documentElement.style.removeProperty('--acc'); }
     function openAppColors() {
-      zOpenPage('App theme', function (b) {
+      zOpenPage('Text theme', function (b) {
         var g = mk('div'); g.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:16px 10px;padding:20px;justify-items:center'; b.appendChild(g);
         var cur = lsGet('zaply_accent', '#21c063');
         ACCENTS.forEach(function (c) {
@@ -4055,8 +4058,8 @@ ZW|Zimbabwe|263`;
       zOpenPage('Appearance', function (b) {
         zrows(b, [['palette', 'Default chat theme', openThemes], ['palette', 'Premium Themes', function () { window.zpOpen.themes(); }]]);
         b.appendChild(mk('div', 'zsep')); var h = mk('div', 'zsec'); h.innerHTML = '<span style="color:#21c063">\u25c6</span> Zanply Plus'; b.appendChild(h);
-        zrows(b, [['smile', 'App icon', openAppIcons], ['palette', 'App theme', openAppColors]]);
-        var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Premium to unlock exclusive app icons and more. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
+        zrows(b, [['smile', 'App icon', openAppIcons], ['image', 'Wallpaper for both sides', function () { window.zpOpen.wpBoth(); }], ['anim', 'Live wallpapers', function () { window.zpOpen.liveWp(); }], ['palette', 'Text theme', openAppColors]]);
+        var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Premium to unlock exclusive app icons, wallpapers for both sides and live wallpapers. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
         f.querySelector('a').addEventListener('click', function (e) { e.preventDefault(); soon('Zanply Plus')(); }); b.appendChild(f);
       });
     }
@@ -4065,7 +4068,7 @@ ZW|Zimbabwe|263`;
         b.appendChild(mk('div', 'zsec', 'Themes')); var g = mk('div', 'zth'); b.appendChild(g);
         THEMES.forEach(function (t) {
           var x = mk('button', t.id === curTheme().id ? 'on' : ''); x.style.background = t.bg || defaultChatBg(); x.style.setProperty('--mc', t.mine); x.setAttribute('aria-label', t.n); x.appendChild(mk('i')); x.appendChild(mk('i', 'm'));
-          x.addEventListener('click', function () { try { localStorage.setItem('zaply_theme', t.id); localStorage.removeItem('zaply_wall'); localStorage.removeItem('zaply_bubble'); } catch (e) {} applyTheme(); Array.prototype.forEach.call(g.children, function (y) { y.classList.remove('on'); }); x.classList.add('on'); });
+          x.addEventListener('click', function () { try { window.zpClearPrem && window.zpClearPrem(); } catch (e) {} try { localStorage.setItem('zaply_theme', t.id); localStorage.removeItem('zaply_wall'); localStorage.removeItem('zaply_bubble'); } catch (e) {} applyTheme(); Array.prototype.forEach.call(g.children, function (y) { y.classList.remove('on'); }); x.classList.add('on'); });
           g.appendChild(x);
         });
         b.appendChild(mk('div', 'zfoot', 'The chat bubble and wallpaper will both change.'));
@@ -4326,14 +4329,19 @@ ZW|Zimbabwe|263`;
     function accSave(k, v) { var s = accSet(); s[k] = v; lsSet('zaply_acc', s); applyAcc(); }
     function applyAcc() {
       var a = accSet(), h = document.documentElement.classList;
-      h.toggle('hc', !!a.contrast); h.toggle('noanim-msg', !a.msgs); h.toggle('noanim-emoji', !a.emoji); h.toggle('noanim-stk', !a.stickers);
+      h.toggle('hc', !!a.contrast); h.toggle('noanim-msg', !a.msgs); h.toggle('noanim-emoji', !a.emoji); h.toggle('noanim-stk', !a.stickers); try { applyGifs(); } catch (e) {}
+    }
+    function gifFreezeNow(img) {
+      try { if (img._gsrc || !img.naturalWidth) return; var c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext('2d').drawImage(img, 0, 0); var o = img.src; img._gsrc = o; img.src = c.toDataURL('image/png'); } catch (e) {}
     }
     function gifFreeze(img, meta) {
-      if (accSet().gifs) return; if (!(meta && (meta.m === 'image/gif' || /\.gif$/i.test(meta.n || '')))) return;
-      img.addEventListener('load', function once() {
-        img.removeEventListener('load', once);
-        try { var c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight; c.getContext('2d').drawImage(img, 0, 0); img.src = c.toDataURL('image/png'); } catch (e) {}
-      });
+      if (!(meta && (meta.m === 'image/gif' || /\.gif$/i.test(meta.n || '')))) return; img.setAttribute('data-gif', '1');
+      if (accSet().gifs) return;
+      img.addEventListener('load', function once() { img.removeEventListener('load', once); if (!accSet().gifs) gifFreezeNow(img); });
+    }
+    function applyGifs() {
+      var on = accSet().gifs;
+      Array.prototype.forEach.call(document.querySelectorAll('img[data-gif]'), function (im) { if (on) { if (im._gsrc) { im.src = im._gsrc; im._gsrc = null; } } else gifFreezeNow(im); });
     }
     function openAccess() {
       zOpenPage('Accessibility', function (b) {
@@ -4387,7 +4395,7 @@ ZW|Zimbabwe|263`;
         zoptRow(b, 'Media upload quality', function () { return stSet().upHD ? 'HD quality' : 'Standard quality'; }, function (ref) { zpick('Media upload quality', [['std', 'Standard quality'], ['hd', 'HD quality']], stSet().upHD ? 'hd' : 'std', function (v) { stSave('upHD', v === 'hd'); ref(); }); });
         b.appendChild(mk('div', 'zsec', 'Media auto-download'));
         b.appendChild(mk('div', 'zfoot', 'Choose which media downloads by itself on each connection. Anything not downloaded loads when you tap it.'));
-        zoptRow(b, 'Connection type', function () { return { auto: 'Detect automatically', mobile: 'Mobile data', wifi: 'Wi-Fi' }[stSet().net] || 'Detect automatically'; }, function (ref) { zpick('Connection type', [['auto', 'Detect automatically'], ['mobile', 'Mobile data'], ['wifi', 'Wi-Fi']], stSet().net, function (v) { stSave('net', v); ref(); }); });
+        zoptRow(b, 'Connection type', function () { var n = stSet().net; return n === 'mobile' ? 'Mobile data' : n === 'wifi' ? 'Wi-Fi' : 'Detect automatically (now: ' + netNow() + ')'; }, function (ref) { zpick('Connection type', [['auto', 'Detect automatically'], ['mobile', 'Mobile data'], ['wifi', 'Wi-Fi']], stSet().net, function (v) { stSave('net', v); ref(); }); });
         [['mobile', 'When using mobile data'], ['wifi', 'When connected on Wi-Fi'], ['roaming', 'When roaming']].forEach(function (x) {
           function lab() { var on = DL_KINDS.filter(function (k) { return stSet().dl[x[0]][k[0]]; }).map(function (k) { return k[1]; }); return on.length ? on.join(', ') : 'No media'; }
           zoptRow(b, x[1], lab, function (ref) {
@@ -4549,7 +4557,54 @@ ZW|Zimbabwe|263`;
       var url = 'mailto:admin@zaply.app?subject=' + encodeURIComponent('Zanply question') + '&body=' + encodeURIComponent('\n\n(My Zanply number: ' + p + ')');
       window.location.href = url;
     }
-    function invite() { var t = 'Join me on Zanply: ' + location.origin; if (navigator.share) navigator.share({ text: t }).catch(function () {}); else if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { toast('Invite link copied', true); }); else toast('Link: ' + location.origin); }
+    function invite() {
+      var url = location.origin, txt = 'Join me on Zanply! Chat, connect and belong: ' + url;
+      function copy(msg) { if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () { toast(msg || 'Invite link copied', true); }, function () { toast('Link: ' + url); }); else toast('Link: ' + url); }
+      function irow(box, iconHtml, title, desc, fn) {
+        var r = mk('button', 'zrow zrow2'); r.innerHTML = iconHtml + '<div class="rt"><span></span><small></small></div>';
+        r.querySelector('.rt span').textContent = title; var s = r.querySelector('small'); if (desc) s.textContent = desc; else s.remove(); r.addEventListener('click', fn); box.appendChild(r); return r;
+      }
+      var st = document.getElementById('zinvCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zinvCss' }));
+      st.textContent = '.zinv-ic{flex:none;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}.zinv-ic svg{width:24px;height:24px;fill:#fff}';
+      function ico(bg, path) { return '<span class="zinv-ic" style="background:' + bg + '"><svg viewBox="0 0 24 24"><path d="' + path + '"/></svg></span>'; }
+      function plain(bg, t) { return '<span class="zinv-ic" style="background:' + bg + ';font-weight:800;font-size:22px">' + t + '</span>'; }
+      var P = { link: 'M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z',
+        mail: 'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z', send: 'M2.01 21L23 12 2.01 3 2 10l15 2-15 2z', chat: 'M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z',
+        wa: 'M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.2 13.9c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l2 1c.3.1.5.2.5.3.1.1.1.6-.1 1.2z',
+        ig: 'M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zm5.2-3.2a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z' };
+      var igBg = 'linear-gradient(45deg,#f9ce34,#ee2a7b 55%,#6228d7)';
+      function openIG() { var go = function () { try { window.open('https://www.instagram.com/direct/new/', '_blank'); } catch (e) {} }; if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () { toast('Invite copied. Paste it in your Instagram message.', true, 4000); go(); }, go); else go(); }
+      function openShare() {
+        zOpenPage('Share link', function (b) {
+          var u = encodeURIComponent(url), t = encodeURIComponent(txt);
+          function go(href) { return function () { try { window.open(href, '_blank'); } catch (e) { location.href = href; } }; }
+          irow(b, ico('#25d366', P.wa), 'WhatsApp', '', go('https://wa.me/?text=' + t));
+          irow(b, plain('#1877f2', 'f'), 'Facebook', '', go('https://www.facebook.com/sharer/sharer.php?u=' + u));
+          irow(b, ico('linear-gradient(135deg,#00b2ff,#006aff 50%,#a033ff)', P.chat), 'Messenger', '', function () { location.href = 'fb-messenger://share?link=' + u; setTimeout(go('https://www.facebook.com/sharer/sharer.php?u=' + u), 1200); });
+          irow(b, ico('#27a7e7', P.send), 'Telegram', '', go('https://t.me/share/url?url=' + u + '&text=' + encodeURIComponent('Join me on Zanply!')));
+          irow(b, plain('#000', 'X'), 'X (Twitter)', '', go('https://twitter.com/intent/tweet?text=' + t));
+          irow(b, ico('#34c759', P.chat), 'Messages (SMS)', '', function () { location.href = 'sms:?&body=' + t; });
+          irow(b, ico('#6b7280', P.mail), 'Email', '', function () { location.href = 'mailto:?subject=' + encodeURIComponent('Join me on Zanply') + '&body=' + t; });
+          irow(b, ico('#475569', P.link), 'Copy link', '', function () { copy('Link copied'); });
+          if (navigator.share) irow(b, ico('#21c063', P.send), 'More apps\u2026', '', function () { navigator.share({ title: 'Zanply', text: txt, url: url }).catch(function () {}); });
+        });
+      }
+      function fromContacts() {
+        if (navigator.contacts && navigator.contacts.select) {
+          navigator.contacts.select(['name', 'tel'], { multiple: true }).then(function (list) {
+            var nums = []; (list || []).forEach(function (c) { (c.tel || []).slice(0, 1).forEach(function (n) { nums.push(String(n).replace(/[^\d+]/g, '')); }); });
+            if (!nums.length) return; location.href = 'sms:' + nums.join(',') + '?&body=' + encodeURIComponent(txt);
+          }).catch(function () {});
+        } else if (navigator.share) { navigator.share({ title: 'Zanply', text: txt, url: url }).catch(function () {}); }
+        else copy('Contact picking is not supported here. Invite link copied.');
+      }
+      zOpenPage('Invite a friend', function (b) {
+        irow(b, ico(igBg, P.ig), 'Invite from Instagram', 'Anyone you invite can see your number when they join Zanply', openIG);
+        irow(b, ico('#21c063', P.link), 'Share link', 'WhatsApp, Facebook, Messenger, Telegram, copy link and more', openShare);
+        b.appendChild(mk('div', 'zsec', 'Invite'));
+        irow(b, ico('#3b82f6', ZI.invite), 'Invite from contacts', 'Choose friends from your phone contacts', fromContacts);
+      });
+    }
 
     /* ---------- Settings home ---------- */
     /* ---------- Zanply Premium / Stars / Business / Send a gift ---------- */
@@ -4648,7 +4703,7 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'lock', 'Security & privacy', 'Last seen, blocked users, app lock, auto-delete', openPrivacy);
         zrow2(list, 'chat', 'Chats', 'Enter is send, font size, archived chats', openChats);
         zrow2(list, 'folder', 'Chat folders', 'Organise your chats into folders', openFolders);
-        zrow2(list, 'palette', 'Appearance', 'Chat theme, wallpaper, app icon, app theme', openAppearance);
+        zrow2(list, 'palette', 'Appearance', 'Chat theme, wallpaper, live wallpaper, app icon, text theme', openAppearance);
         zrow2(list, 'chat', 'Auto-Reply', 'Reply automatically (Premium)', function () { window.zpOpen.autoReply(); });
         zrow2(list, 'account', 'Name colour', 'Choose your name colour (Premium)', function () { window.zpOpen.nameColour(); });
         zrow2(list, 'bell', 'Notifications', 'Message, group & call tones', openNotif);
@@ -4708,14 +4763,21 @@ ZW|Zimbabwe|263`;
     }
 
     /* ---------- Connection used for auto-download ---------- */
+    var NETT = '';
+    (function () {
+      try { var N = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Network;
+        if (N) { N.getStatus().then(function (s) { NETT = s.connectionType || ''; }); if (N.addListener) N.addListener('networkStatusChange', function (s) { NETT = s.connectionType || ''; }); } } catch (e) {}
+    })();
     function netKind() {
       if (localStorage.getItem('zaply_roam') === '1') return 'roaming';
       var m = stSet().net; if (m === 'mobile' || m === 'wifi') return m;
-      var c = navigator.connection, ty = c && c.type;
-      if (ty === 'cellular') return 'mobile'; if (ty === 'wifi' || ty === 'ethernet') return 'wifi';
+      var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection, ty = NETT || (c && c.type) || '';
+      if (ty === 'wifi' || ty === 'ethernet') return 'wifi';
+      if (/^(cellular|[2-5]g|wimax)$/.test(ty)) return 'mobile';
       if (c && (c.saveData || /^(slow-2g|2g|3g)$/.test(c.effectiveType || ''))) return 'mobile';
       return 'wifi';
     }
+    function netNow() { return { wifi: 'Wi-Fi', mobile: 'Mobile data', roaming: 'Roaming' }[netKind()]; }
 
     /* ---------- Zanply Premium: ONE bundle, 3 plans, 6 features with animated demos ---------- */
     var PREM_USD = { monthly: 3.99, six: 19.99, annual: 29.99 };
@@ -4910,13 +4972,13 @@ ZW|Zimbabwe|263`;
     function premTerms() { return mk('div', 'pd-sec', 'You can cancel anytime. You can turn auto-renewal ON or OFF.'); }
     /* ---- Premium gate: lock icon + popup (Cancel / Subscribe) ---- */
     premStatus(function () {});
-    window.zLockSvg = '<svg viewBox="0 0 24 24" width="14" height="14"><defs><linearGradient id="zpgd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#f5a623"/></linearGradient></defs><path fill="url(#zpgd)" d="M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z"/></svg>';
+    window.zLockSvg = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="#f5b32a" d="M3 7l4.5 4.2L12 4l4.5 7.2L21 7l-1.6 11H4.6L3 7zm1.6 13h14.8v2H4.6v-2z"/></svg>';
     window.zLockBadge = function (el) { if (window.zIsPremium() || !el) return; el.style.position = 'relative'; var b = document.createElement('span'); b.className = 'zpgold'; b.innerHTML = window.zLockSvg; b.style.cssText = 'position:absolute;top:-4px;right:-4px;background:#1b1b1b;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid #8a6a1f'; el.appendChild(b); };
     window.zPremGate = function (msg, extra) {
       if (window.zIsPremium()) return false;
       var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
       var c = mk('div'); c.style.cssText = 'background:#1f2430;color:#fff;border-radius:18px;padding:20px;max-width:340px;width:100%;text-align:center';
-      c.innerHTML = '<div style="margin-bottom:8px">' + window.zLockSvg.replace(/14/g, '34') + '</div>';
+      c.innerHTML = '<div style="margin-bottom:8px">' + window.zLockSvg.replace('width="14" height="14"', 'width="34" height="34"') + '</div>';
       c.appendChild(mk('div', '', msg)).style.cssText = 'font-size:15px;line-height:1.4;margin-bottom:14px';
       function btn(t, fn, pri) { var b = mk('button', '', t); b.style.cssText = 'display:block;width:100%;margin:6px 0;padding:11px;border-radius:12px;border:0;font-weight:700;font-size:14px;' + (pri ? 'background:#f5b32a;color:#000' : 'background:#2d3445;color:#fff'); b.addEventListener('click', function () { o.remove(); if (fn) fn(); }); c.appendChild(b); }
       if (extra) { btn('Subscribe to Zanply Premium', openPremium, true); btn(extra.label, extra.fn); btn('Cancel'); }
@@ -4954,35 +5016,140 @@ ZW|Zimbabwe|263`;
     var ZP_NC = { blue: '#1d6bff', purple: '#9b5de5', gold: '#f5b32a', rainbow: 'linear-gradient(90deg,red,orange,yellow,green,blue,violet)', green: '#21c063' };
     function zpApplyName(id) { var c = ZP_NC[id]; var st = document.getElementById('zpNameCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zpNameCss' })); st.textContent = c ? (c.indexOf('gradient') > -1 ? '.zname-me{background:' + c + ';-webkit-background-clip:text;color:transparent!important}' : '.zname-me{color:' + c + '!important}') : ''; try { var hx = { blue: '#1d6bff', purple: '#9b5de5', gold: '#f5b32a', green: '#21c063' }[id]; chatCall('profile_style_set', { pstyle: id === 'rainbow' ? 'grad' : '', pcolor: hx || '' }).catch(function () {}); } catch (e) {} }
     function openNameColour() { zpGrid('Select Name Colour', zpLocked([['blue', 'Pure Blue', '#1d6bff'], ['purple', 'Purple', '#9b5de5'], ['gold', 'Gold', '#f5b32a'], ['rainbow', 'Rainbow', G(3)], ['green', 'Green', '#21c063']]), 'namecolour', 'You need to subscribe to Zanply Premium to get Name Colours', zpApplyName); }
-    /* 4 app icons (16) */
-    var ZP_IC = ['Default', 'Golden', 'Ruby', 'Black', 'Neon', 'Rainbow', 'Rose', 'Ocean', 'Sunset', 'Violet', 'Graphite', 'Flame', 'Emerald', 'Midnight', 'Aurora', 'Royal'];
-    function openAppIcons() { zpGrid('App Icon', ZP_IC.map(function (n, i) { return [n.toLowerCase(), n, i ? G(i - 1) : 'linear-gradient(135deg,#21c063,#0b6b3a)', 'Z', i > 0 && !window.zIsPremium()]; }), 'appicon', 'To set a Premium App Icon you need to subscribe to Zanply Premium', function (id) { try { var i = ZP_IC.map(function (x) { return x.toLowerCase(); }).indexOf(id), c = document.createElement('canvas'); c.width = c.height = 192; var x = c.getContext('2d'), cs = (i ? ZP_GRAD[(i - 1) % 15] : '#21c063,#0b6b3a').split(','), gr = x.createLinearGradient(0, 0, 192, 192); cs.forEach(function (k, j) { gr.addColorStop(j / Math.max(1, cs.length - 1), k); }); x.fillStyle = gr; x.fillRect(0, 0, 192, 192); x.fillStyle = '#fff'; x.font = '800 110px sans-serif'; x.textAlign = 'center'; x.fillText('Z', 96, 135); var u = c.toDataURL(); document.querySelectorAll('link[rel*=icon]').forEach(function (l) { l.href = u; }); } catch (e) {} toast('App icon changed. On Android, the home-screen icon updates in the installed app.', true, 3500); }, 4); }
-    /* 6 wallpaper both sides + 13 live wallpapers */
-    var zpKf = document.getElementById('zpLiveCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zpLiveCss' })); zpKf.textContent = '@keyframes zplive{0%{background-position:0 0}100%{background-position:100% 100%}}';
-    function zpWallCss(kind, id) { var n = parseInt(String(id).replace(/\D/g, ''), 10) || 0; return G(n + (kind === 'live' ? 6 : 3)); }
-    window.zpPaintWall = function (css, kind) { var m = document.getElementById('msgs'); if (!m) return; m.style.background = css; if (kind === 'live') { m.style.backgroundSize = '300% 300%'; m.style.animation = 'zplive 12s linear infinite alternate'; } else { m.style.backgroundSize = ''; m.style.animation = ''; } };
+    /* 4 app icons: 15 (first = the current Zanply icon, other 14 are Premium) */
+    var ZI_PAL = [['Gold', '#2a2008', '#0d0a03', '#ffe9a6', '#d9a520'], ['Obsidian', '#2b2f36', '#0a0b0d', '#f3f4f6', '#9aa0a8'], ['Platinum', '#f4f5f7', '#c9ced6', '#2b3038', '#5b6470'], ['Rose Gold', '#f6d3c8', '#d9967f', '#5a2a22', '#8a4a3b'],
+      ['Emerald', '#0f5a3a', '#052a1a', '#b9ffd9', '#3ddc97'], ['Sapphire', '#1e4fb3', '#0a1f55', '#d6e6ff', '#7fb0ff'], ['Ruby', '#b3123a', '#4a0716', '#ffd5de', '#ff8aa3'], ['Amethyst', '#6d2fc9', '#2a0e57', '#ecdcff', '#c39bff'],
+      ['Midnight', '#1b2a4e', '#070b17', '#bfe3ff', '#5ab0f5'], ['Copper', '#c8743a', '#5a2a10', '#fff0e0', '#ffc08a'], ['Aurora', '#14b8a6', '#4338ca', '#ffffff', '#c7f9ee'], ['Ocean', '#0ea5c6', '#0b3d6b', '#ffffff', '#a5ecff'],
+      ['Sunset', '#ff7a45', '#b0225e', '#fff3e6', '#ffd0a8'], ['Graphite', '#4b5563', '#14181d', '#e5e7eb', '#9ca3af']];
+    function zIconSvg(i) {
+      var p = ZI_PAL[i - 1];
+      return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + p[1] + '"/><stop offset="1" stop-color="' + p[2] + '"/></linearGradient><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + p[3] + '"/><stop offset="1" stop-color="' + p[4] + '"/></linearGradient><linearGradient id="h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient><clipPath id="c"><rect width="192" height="192" rx="44"/></clipPath></defs><rect width="192" height="192" rx="44" fill="url(#b)"/><g clip-path="url(#c)"><ellipse cx="96" cy="10" rx="130" ry="80" fill="url(#h)"/></g><rect x="7" y="7" width="178" height="178" rx="38" fill="none" stroke="url(#g)" stroke-width="2.5" opacity=".45"/><g transform="translate(34 32) scale(2)"><path d="M6 8h50v11L24 43h32v13H6V45l32-24H6z" fill="url(#g)"/></g></svg>';
+    }
+    function zIconUri(i) { return i ? 'data:image/svg+xml;utf8,' + encodeURIComponent(zIconSvg(i)) : '/icon-192.png'; }
+    function zCrownBadge() { var s = mk('span', 'zcrown'); s.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3 7l4.5 4.2L12 4l4.5 7.2L21 7l-1.6 11H4.6L3 7zm1.6 13h14.8v2H4.6v-2z"/></svg>'; return s; }
+    function applyIcon() {
+      try {
+        var i = ZP.get('appicon_i', 0), links = document.querySelectorAll('link[rel="icon"],link[rel="apple-touch-icon"]');
+        function put(u, t) { Array.prototype.forEach.call(links, function (l) { l.type = t; l.href = u; }); }
+        if (!i) { put('/icon-192.png', 'image/png'); return; }
+        var im = new Image(); im.onload = function () { try { var cv = document.createElement('canvas'); cv.width = cv.height = 192; cv.getContext('2d').drawImage(im, 0, 0, 192, 192); put(cv.toDataURL('image/png'), 'image/png'); } catch (e) { put(zIconUri(i), 'image/svg+xml'); } };
+        im.onerror = function () { put(zIconUri(i), 'image/svg+xml'); }; im.src = zIconUri(i);
+      } catch (e) {}
+    }
+    function openAppIcons() {
+      zOpenPage('App icon', function (b) {
+        var g = mk('div'); g.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:26px 14px;padding:24px 22px;justify-items:center'; b.appendChild(g);
+        function draw() {
+          g.innerHTML = ''; var cur = ZP.get('appicon_i', 0), pr = window.zIsPremium();
+          for (var i = 0; i < 15; i++) (function (i) {
+            var w = mk('button'), nm = i ? ZI_PAL[i - 1][0] : 'Default'; w.style.cssText = 'position:relative;width:92px;padding:0;border:0;background:none;text-align:center;color:var(--text)'; w.setAttribute('aria-label', nm + ' icon');
+            var t = mk('div'); t.style.cssText = 'position:relative;width:84px;height:84px;margin:0 auto;border-radius:22px;background:url("' + zIconUri(i) + '") center/cover no-repeat;box-shadow:0 3px 12px rgba(0,0,0,.35);' + (cur === i ? 'outline:3px solid var(--acc,#21c063);outline-offset:3px' : '');
+            if (cur === i) t.innerHTML = '<span class="zic-ck"><i>' + zico('check') + '</i></span>';
+            if (i && !pr) t.appendChild(zCrownBadge());
+            w.appendChild(t); var n = mk('div', '', nm); n.style.cssText = 'font-size:12px;margin-top:9px;opacity:.85'; w.appendChild(n);
+            w.addEventListener('click', function () {
+              if (i && !window.zIsPremium()) { window.zPremGate('To set a Premium App Icon you need to subscribe to Zanply Premium'); return; }
+              ZP.set('appicon_i', i); applyIcon(); draw(); toast('App icon changed. On Android the home-screen icon updates in the installed app.', true, 3500);
+            });
+            g.appendChild(w);
+          })(i);
+        }
+        draw();
+        b.appendChild(mk('div', 'zfoot', 'The icon changes in the app and in the browser tab right away.'));
+        if (!window.zIsPremium()) { var s = mk('button', 'zpm-cta', 'Subscribe to Zanply Premium'); s.addEventListener('click', openPremium); b.appendChild(s); }
+      });
+    }
+    applyIcon();
+    /* 6 wallpaper for both sides + 13 live wallpapers (15 videos: /live/live1.mp4 ... /live/live15.mp4) */
+    var LIVE_DIR = '/live/', LIVE_N = 15;
+    function liveSrc(n) { return LIVE_DIR + 'live' + n + '.mp4'; }
+    window.zpLive = function (n) {
+      var th = document.getElementById('threadView'), v = document.getElementById('zpLiveVid'), root = document.documentElement;
+      if (!n) { if (v) { try { v.pause(); } catch (e) {} v.remove(); } root.classList.remove('zlive'); return; }
+      if (!th) return;
+      if (!v) { v = document.createElement('video'); v.id = 'zpLiveVid'; v.muted = true; v.defaultMuted = true; v.loop = true; v.autoplay = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', ''); v.preload = 'auto'; th.insertBefore(v, th.firstChild); }
+      if (v.getAttribute('data-n') !== String(n)) { v.setAttribute('data-n', String(n)); v.onerror = function () { root.classList.remove('zlive'); v.remove(); try { applyTheme(); } catch (e) {} toast('This live wallpaper is not available yet'); }; v.src = liveSrc(n); }
+      root.classList.add('zlive'); try { v.play().catch(function () {}); } catch (e) {}
+    };
+    window.zpPaintWall = function (css, kind) {
+      var m = document.getElementById('msgs'); if (!m) return;
+      if (kind === 'live') { var n = parseInt(String(css).replace(/\D/g, ''), 10) || 1; window.zpLive(n); try { applyTheme(); } catch (e) {} return; }
+      window.zpLive(0); m.style.setProperty('background', css, 'important'); m.style.backgroundBlendMode = '';
+    };
+    function zpPush(phone, css, k) {
+      if (!phone || !window.zIsPremium()) return; var key = 'wallsent_' + phone; if (ZP.get(key, '') === css) return;
+      chatCall('wall_set', { to: phone, css: css, k: k }).then(function () { ZP.set(key, css); }, function () {});
+    }
+    function zpPushAll(css, k) { try { (allChats || []).forEach(function (c) { if (!c.group) zpPush(c.phone, css, k); }); } catch (e) {} }
+    window.zpUnshare = function () {
+      try { var ks = []; for (var i = 0; i < localStorage.length; i++) { var q = localStorage.key(i); if (q && q.indexOf('zp_wallsent_') === 0) ks.push(q); }
+        ks.forEach(function (q) { var ph = q.slice(12); try { localStorage.removeItem(q); } catch (e) {} chatCall('wall_set', { to: ph, css: '', k: '' }).catch(function () {}); }); } catch (e) {}
+    };
+    window.zpClearPrem = function () { if (ZP.get('both_def', null) || ZP.get('live_def', 0)) { ZP.set('both_def', null); ZP.set('live_def', 0); window.zpUnshare(); window.zpLive(0); } };
     window.zpPeerWall = function (phone) {
       setTimeout(function () {
         try {
-          var m = document.getElementById('msgs'); if (m) { m.style.animation = ''; m.style.backgroundSize = ''; } if (typeof applyTheme === 'function') applyTheme();
-          var mine = ZP.get('wallmine_' + phone, null);
-          if (mine && mine.css && window.zIsPremium()) { window.zpPaintWall(mine.css, mine.k); return; }
+          window.zpLive(0); if (typeof applyTheme === 'function') applyTheme();
+          var pr = window.zIsPremium(), live = ZP.get('live_def', 0), both = ZP.get('both_def', null);
+          if (pr && live) { window.zpPaintWall('live:' + live, 'live'); zpPush(phone, 'live:' + live, 'live'); return; }
+          if (pr && both && both.css) { window.zpPaintWall(both.css, 'both'); zpPush(phone, both.css, 'both'); return; }
           if (ZP.get('wallown_' + phone, 0)) return;
-          chatCall('wall_get', { peer: phone }).then(function (r) { if (r && r.wall && window.zpChatApi && window.zpChatApi.cur() === phone) window.zpPaintWall(r.wall.css, r.wall.k === 'live' ? 'live' : 'both'); }, function () {});
+          chatCall('wall_get', { peer: phone }).then(function (r) {
+            if (r && r.wall && window.zpChatApi && window.zpChatApi.cur() === phone) window.zpPaintWall(r.wall.css, r.wall.k === 'live' ? 'live' : 'both');
+          }, function () {});
         } catch (e) {}
       }, 250);
     };
-    function zpWpApply(kind) {
-      return function (id) {
-        var api = window.zpChatApi, to = (api && api.cur && api.cur()) || window.zpLastChat;
-        if (!to) { toast('Open a chat first, then pick the wallpaper again. It is set for that chat only.', false, 4000); return; }
-        var css = zpWallCss(kind, id); ZP.set('wallown_' + to, 0); ZP.set('wallmine_' + to, { css: css, k: kind });
-        if (api && api.cur && api.cur() === to) window.zpPaintWall(css, kind);
-        chatCall('wall_set', { to: to, css: css, k: kind === 'live' ? 'live' : 'both' }).then(function () { toast('The other person now sees this wallpaper in your chat', true, 3000); }, function (e) { toast((e && e.message) || 'Could not share the wallpaper'); });
-      };
+    function zpTile(extra) { var t = mk('button'); t.style.cssText = 'position:relative;aspect-ratio:3/4;border-radius:14px;border:0;padding:0;overflow:visible;background:#1f2937 center/cover no-repeat;' + extra; return t; }
+    function zpRemoveRow(b, fn) { var r = mk('button', 'zbtn2', 'Remove wallpaper'); r.addEventListener('click', fn); b.appendChild(r); }
+    function openWpBoth() {
+      zOpenPage('Wallpaper for both sides', function (b) {
+        b.appendChild(mk('div', 'zfoot', 'Pick a wallpaper for your chats. The people you chat with will see it too. Zanply Premium only.'));
+        var g = mk('div'); g.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:6px 16px 20px'; b.appendChild(g);
+        function draw() {
+          g.innerHTML = ''; var cur = (ZP.get('both_def', null) || {}).id, pr = window.zIsPremium();
+          WALLS.forEach(function (w, k) {
+            var t = zpTile(cur === k ? 'outline:3px solid var(--acc,#21c063);outline-offset:2px' : ''); t._w = w; wallThumb(t);
+            if (cur === k) { var ck = mk('span', 'zic-ck'); ck.innerHTML = '<i>' + zico('check') + '</i>'; t.appendChild(ck); }
+            if (!pr) t.appendChild(zCrownBadge());
+            t.addEventListener('click', function () {
+              if (!window.zIsPremium()) { window.zPremGate('To use Wallpaper For Both Sides you need to subscribe to Zanply Premium'); return; }
+              ZP.set('both_def', { id: k, css: w.css }); ZP.set('live_def', 0); window.zpUnshare(); zpPushAll(w.css, 'both'); draw();
+              toast('Wallpaper set. Your chat partners will see it too.', true, 3000);
+            });
+            g.appendChild(t);
+          });
+        }
+        draw();
+        zpRemoveRow(b, function () { window.zpClearPrem(); draw(); toast('Wallpaper removed', true); });
+        if (!window.zIsPremium()) { var s = mk('button', 'zpm-cta', 'Subscribe to Zanply Premium'); s.addEventListener('click', openPremium); b.appendChild(s); }
+      });
     }
-    function openWpBoth() { zpGrid('Wallpaper For Both Sides', zpLocked(['Sky', 'Forest', 'Rose', 'Night', 'Sand', 'Ruby', 'Mint', 'Plum', 'Slate'].map(function (n, i) { return ['wb' + i, n, G(i + 3)]; })), 'wpboth', 'To use Wallpaper For Both Sides you need to subscribe to Zanply Premium', zpWpApply('both')); }
-    function openLiveWp() { zpGrid('Live Wallpapers', zpLocked(['Ocean Waves', 'Rain', 'Stars', 'Fire', 'Aurora', 'Snow'].map(function (n, i) { return ['lw' + i, n, G(i + 6)]; })), 'livewp', 'To use Live Wallpapers you need to subscribe to Zanply Premium', zpWpApply('live'), 2); }
+    function openLiveWp() {
+      zOpenPage('Live wallpapers', function (b) {
+        b.appendChild(mk('div', 'zfoot', 'A short video plays behind your messages while you chat. Zanply Premium only.'));
+        var g = mk('div'); g.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:6px 16px 20px'; b.appendChild(g);
+        function draw() {
+          g.innerHTML = ''; var cur = ZP.get('live_def', 0), pr = window.zIsPremium();
+          for (var n = 1; n <= LIVE_N; n++) (function (n) {
+            var t = zpTile('background:linear-gradient(160deg,#1f2937,#4b5563);' + (cur === n ? 'outline:3px solid var(--acc,#21c063);outline-offset:2px' : '')), v = document.createElement('video');
+            v.muted = true; v.loop = true; v.playsInline = true; v.setAttribute('playsinline', ''); v.preload = 'metadata'; v.src = liveSrc(n) + '#t=0.5'; v.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:14px;pointer-events:none'; v.onerror = function () { v.remove(); };
+            t.appendChild(v); var lb = mk('span', '', 'Live ' + n); lb.style.cssText = 'position:absolute;left:8px;bottom:6px;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000'; t.appendChild(lb);
+            if (cur === n) { var ck = mk('span', 'zic-ck'); ck.innerHTML = '<i>' + zico('check') + '</i>'; t.appendChild(ck); }
+            if (!pr) t.appendChild(zCrownBadge());
+            t.addEventListener('click', function () {
+              if (!window.zIsPremium()) { window.zPremGate('To use Live Wallpapers you need to subscribe to Zanply Premium'); return; }
+              ZP.set('live_def', n); ZP.set('both_def', null); window.zpUnshare(); zpPushAll('live:' + n, 'live'); draw();
+              toast('Live wallpaper set. Open a chat to see it.', true, 3000);
+            });
+            g.appendChild(t);
+          })(n);
+        }
+        draw();
+        zpRemoveRow(b, function () { window.zpClearPrem(); draw(); toast('Live wallpaper removed', true); });
+        if (!window.zIsPremium()) { var s = mk('button', 'zpm-cta', 'Subscribe to Zanply Premium'); s.addEventListener('click', openPremium); b.appendChild(s); }
+      });
+    }
     /* 9 premium themes */
     function openPremThemes() { zpGrid('Premium Themes', zpLocked([['blue', 'Blue', '#1d6bff'], ['purple', 'Purple', '#9b5de5'], ['green', 'Green', '#21c063'], ['gold', 'Gold', '#f5b32a'], ['ruby', 'Ruby', '#e63946'], ['rose', 'Rose', '#ff7eb3']]), 'premtheme', 'To use Premium Themes you need to subscribe to Zanply Premium', function (id) { document.documentElement.style.setProperty('--zp-accent', ({ blue: '#1d6bff', purple: '#9b5de5', green: '#21c063', gold: '#f5b32a', ruby: '#e63946', rose: '#ff7eb3' })[id]); document.documentElement.setAttribute('data-premtheme', id); }); }
     /* 1 status duration */
@@ -7950,7 +8117,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     }
     /* ---------- Whole-app translation: every screen, any language in the list ---------- */
     var ZTR = (function () {
-      var GM = { he: 'iw', fil: 'tl', jv: 'jw', nb: 'no', zh: 'zh-CN' }, cache = {}, cl = '', waiting = [], timer = 0, busy = false, lnames = null, obs = null;
+      var GM = { he: 'iw', fil: 'tl', jv: 'jw', nb: 'no', zh: 'zh-CN', yue: 'zh-TW', wuu: 'zh-CN', bo: 'zh-CN', dz: 'ne', mni: 'mni-Mtei', rn: 'rw', wo: 'fr', ff: 'fr', ss: 'zu', nd: 'zu', ve: 'st', tn: 'st', kg: 'ln', lu: 'lg', sg: 'fr', ki: 'sw', luo: 'sw', kam: 'sw', gaa: 'ak', br: 'fr', oc: 'ca', fo: 'da', sc: 'it', rm: 'de', an: 'es', ast: 'es', ba: 'ru', cv: 'ru', sah: 'ru', ce: 'ru', os: 'ru', ab: 'ka', kl: 'da', se: 'no', to: 'sm', fj: 'sm', ty: 'mi', ch: 'sm', mh: 'sm', tpi: 'en', bi: 'en', pap: 'es', nah: 'es', nv: 'en', iu: 'en', chr: 'en', oj: 'en', cr: 'en', ia: 'es', vo: 'de', io: 'eo', pi: 'sa', mwr: 'hi', raj: 'hi', sat: 'hi', ks: 'ur', brx: 'hi', tcy: 'kn', kha: 'en', war: 'ceb', pam: 'tl', min: 'id', ban: 'id', ace: 'id', mad: 'id', bug: 'id', tet: 'pt', shn: 'th', zgh: 'ar', kab: 'fr' }, cache = {}, cl = '', waiting = [], timer = 0, busy = false, lnames = null, obs = null;
       var SKIP = '#msgs,#chatList,#msgInput,.bub,.av,.zav,.znm,.zhead .sub,script,style,textarea,input,select,option,code,pre,svg,[data-notr],[contenteditable="true"]';
       function tl() { return GM[lang] || GM[lang.split('-')[0]] || lang; }
       function isEn() { return lang === 'en' || lang.indexOf('en-') === 0; }
@@ -7986,7 +8153,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       }
       function gt(texts) {
         var url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=' + encodeURIComponent(tl()) + '&dt=t&q=' + encodeURIComponent(texts.join('\n'));
-        return fetch(url).catch(function () { var er = new Error('net'); er.net = 1; throw er; }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) { var out = (j[0] || []).map(function (x) { return x[0] || ''; }).join(''), parts = out.replace(/\n+$/, '').split('\n'); if (parts.length !== texts.length) throw 0; return parts.map(function (s) { return s.trim(); }); });
+        return fetch(url).catch(function () { try { if (!window.__ztn) { window.__ztn = 1; toast('No internet. The language will switch as soon as you are online.'); setTimeout(function () { window.__ztn = 0; }, 15000); } } catch (e2) {} var er = new Error('net'); er.net = 1; throw er; }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (j) { var out = (j[0] || []).map(function (x) { return x[0] || ''; }).join(''), parts = out.replace(/\n+$/, '').split('\n'); if (parts.length !== texts.length) throw 0; return parts.map(function (s) { return s.trim(); }); });
       }
       function one(t) { return gt([t]).then(function (a) { return a[0]; }).catch(function () { return null; }); }
       function flush() {
@@ -8011,6 +8178,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       };
       return api;
     })();
+    window.addEventListener('online', function () { try { ZTR.apply(); } catch (e) {} });
     var langSel = $('lang');
     LANGS.forEach(function (l) { var o = document.createElement('option'); o.value = l.c; o.textContent = l.n; langSel.appendChild(o); });
     try { var sv = localStorage.getItem('zaply_lang'); if (sv && LANGS.some(function (l) { return l.c === sv; })) lang = sv; } catch (e) {}
