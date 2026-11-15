@@ -4694,10 +4694,24 @@ ZW|Zimbabwe|263`;
         ['Control', 'Disappearing messages, auto-delete, app lock, blocked users and two-step verification.'], ['Make it yours', 'Light, dark or system theme, font size, many languages and accessibility options.']]);
     }
     function openPolicy() {
-      textPage('Privacy Policy', [['What we keep', 'Your phone number, name and the profile details you choose to add are stored so people can find and message you.'],
-        ['Your messages', 'One-to-one messages are end-to-end encrypted. Groups, photos and files are stored on our servers so they can be delivered to everyone in the chat.'],
-        ['Your choices', 'You decide who sees your last seen, profile picture and phone number from Settings \u203a Security & privacy, and you can block anyone.'],
-        ['Deleting data', 'You can log out at any time. To ask us to delete your account, use Settings \u203a Ask a Question.']]);
+      textPage('Privacy Policy', [
+        ['', 'Last updated: November 2026. This Privacy Policy explains what information Zanply collects, why we collect it, how we use and protect it, and the choices you have. By using Zanply you agree to this policy. If you do not agree, please do not use the app.'],
+        ['1. Information we collect', 'Account information: your phone number, your name, and optionally your email address, about text and profile picture. Content you create: messages, voice messages, photos, videos, files, locations, status updates and group or channel details. Contacts: if you allow it, the phone numbers in your address book, used only to show you which of your contacts are on Zanply. Device and usage information: device type, operating system, app version, language, IP address, time zone, crash reports, and basic activity such as when you were last online (if you choose to show it). Payment information: if you buy Zanply Premium, payments are handled by the store or payment provider you use; we do not see or store your full card details. Verification information: if you apply for a Verification badge, the identity details or documents you submit.'],
+        ['2. How we use your information', 'To create and secure your account and confirm your phone number or email with one-time codes. To deliver your messages, calls, files and status updates to the people you choose. To help friends and contacts find you. To provide features such as backup, AI tools, scheduled messages and Premium benefits. To send service messages such as security alerts, notifications and policy updates. To prevent spam, fraud, abuse and impersonation. To fix bugs, measure performance and improve Zanply. To follow the law and respond to valid legal requests.'],
+        ['3. Your messages', 'One-to-one messages are end-to-end encrypted, which means only you and the person you are chatting with can read them. Groups, channels, photos, videos and files are stored on our servers so they can be delivered to everyone in the chat and shown on all your devices. If you turn on backup, your backed-up content is stored in encrypted form. Messages that cannot be delivered right away may be kept on our servers for a limited time until they are delivered. We do not read your end-to-end encrypted messages, and we do not use your private chats to show you ads.'],
+        ['4. Who we share information with', 'Other users: your name, profile picture, about text and (depending on your settings) last seen and online status are visible to other users. Anything you send in a group or channel is visible to its members. Service providers: trusted companies that help us run Zanply, such as hosting, phone and email verification, real-time messaging delivery, image storage, push notifications, analytics and payment processing. They may only use your information to provide their services to us. Legal and safety: we may share information when the law requires it, to enforce our Terms, or to protect the rights, safety and property of our users, the public or Zanply. Business changes: if Zanply is involved in a merger, acquisition or sale of assets, your information may be transferred, and we will tell you before it becomes subject to a different policy. We do not sell your personal information.'],
+        ['5. Your privacy choices', 'In Settings \u203a Security & privacy you can choose who can see your last seen, profile picture, about and phone number. You can block users, report abuse, turn read receipts on or off, use disappearing messages and auto-delete, and lock the app with a PIN, fingerprint or passkey. You can turn on two-step verification to protect your account. You can change notification settings and manage contact access in your phone settings at any time.'],
+        ['6. Disappearing messages and deletion', 'When you delete a message for everyone or a disappearing message expires, we remove it from our servers. Copies that other people have already saved, forwarded or backed up are outside our control. When you delete your account, your profile and the messages tied to your account are removed from our servers, and this cannot be undone. Some information may remain for a short time in secure backups, or longer where we must keep it to meet legal obligations, resolve disputes or prevent abuse.'],
+        ['7. How long we keep information', 'We keep your account information for as long as your account is active. Server-stored content is kept until you or the chat members delete it, or until it expires. Verification documents are used only to review your request and are deleted once the review is complete unless the law requires us to keep them longer. Security and abuse-prevention records are kept only as long as needed for those purposes.'],
+        ['8. Security', 'We use encryption in transit, encryption for one-to-one messages, access controls and monitoring to protect your information. No system is completely secure, so please keep your device locked, never share your verification codes or PIN with anyone, and tell us straight away if you think your account has been accessed without your permission.'],
+        ['9. Verification badge and identity checks', 'The blue Verification badge is given to accounts that pass an identity check. The information you submit is used only to confirm who you are and to protect against impersonation. It is not shown to other users, and we do not use it for advertising.'],
+        ['10. AI features', 'If you use AI features in Zanply, the text you choose to send to the AI tool is processed to produce a reply. Please do not enter sensitive personal information into AI tools. Your end-to-end encrypted private chats are not sent to AI tools unless you choose to share them.'],
+        ['11. Children', 'Zanply is not for children under 13, or under the minimum age required in your country. We do not knowingly collect information from children below that age. If you believe a child has given us personal information, contact us and we will delete it.'],
+        ['12. International transfers', 'Zanply uses service providers around the world, so your information may be processed in countries other than your own. Where we do this, we take steps to protect your information in line with this policy and with applicable law.'],
+        ['13. Your rights', 'Depending on where you live, you may have the right to access, correct, download or delete your personal information, to object to or restrict certain uses, and to withdraw consent you have given. Many of these can be done directly in the app. For anything else, contact us and we will respond within a reasonable time. You may also complain to your local data protection authority.'],
+        ['14. Cookies and similar technologies', 'The Zanply web app may use local storage and similar technologies to keep you signed in, remember your settings, theme and language, and keep the app working properly. You can clear this data in your browser or device settings, but some features may stop working.'],
+        ['15. Changes to this policy', 'We may update this policy from time to time. If we make important changes we will tell you in the app before they take effect. The date at the top shows when it was last updated. Continuing to use Zanply after a change means you accept the updated policy.'],
+        ['16. Contact us', 'Questions about this policy or your data? Go to Settings \u203a Ask a Question, or email admin@zaply.app.']]);
     }
     function askQuestion() {
       var p = (function () { try { return (lsGet('zaply_user', {}) || {}).phone || ''; } catch (e) { return ''; } })();
@@ -5293,7 +5307,7 @@ ZW|Zimbabwe|263`;
           var pr = window.zIsPremium(), live = ZP.get('live_def', 0), both = ZP.get('both_def', null);
           if (pr && live) { window.zpPaintWall('live:' + live, 'live'); zpPush(phone, 'live:' + live, 'live'); return; }
           if (pr && both && both.css) { window.zpPaintWall(both.css, 'both'); zpPush(phone, both.css, 'both'); return; }
-          if (ZP.get('wallown_' + phone, 0)) return;
+          if (ZP.get('wallown_' + phone, 0) || lsGet('zaply_wall', null)) return; /* the user's own wallpaper wins over the other person's */
           chatCall('wall_get', { peer: phone }).then(function (r) {
             if (r && r.wall && window.zpChatApi && window.zpChatApi.cur() === phone) window.zpPaintWall(r.wall.css, r.wall.k === 'live' ? 'live' : 'both');
           }, function () {});
@@ -9114,7 +9128,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     /* ---------- Zanply Business (switch account type here; the business inputs then appear in Profile) ---------- */
     function switchAcct(to, after) {
       needNet(function run() {
-        myProf().then(function (P) { return saveProfile(P, { acct: to }).then(function (r) { mergeProfile(P, r); }); }).then(function () {
+        myProf().then(function (P) { return saveProfile(P, { acct: to }).then(function (r) { mergeProfile(P, r); }); }).then(function () { return bizResetDefaults(); }).then(function () {
           try { localStorage.setItem('zaply_acct_type', to); } catch (e) {} toast(to === 'business' ? 'Switched to Business account' : 'Switched to Personal account', true); if (after) after();
         }).catch(function (e) { if (isOffErr(e)) noNet(run); else toast((e && e.message) || 'Could not switch.'); });
       });
@@ -9134,12 +9148,22 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       '@keyframes zvPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}'
     ].join('\n'));
 
+    /* Every time the account is switched (to Business or back to Personal) ALL business data is erased, so the next Business account starts empty: business details (name, username, email, address, link, about, category, links, social links, cover) and the Zanply Business settings (greeting, away message, open days, open 24 hours, open hours). */
+    function bizResetDefaults() {
+      try { localStorage.setItem('zaply_biz', JSON.stringify({ name: '', cat: '', addr: '', hours: '', greet: false, greetText: '', away: false, awayText: '', days: [], from: '', to: '', open24: false })); } catch (e) {}
+      ['zaply_bizauto_since', 'zaply_bizauto_h', 'zaply_bizauto_g', 'zaply_bizauto_a'].forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+      return myProf().then(function (P0) {
+        var B2 = { name: '', username: '', email: '', address: '', link: '', bio: '', cat: '', catOther: '', links: [], social: {}, cover: '', cover_url: '',
+          greet: false, greetText: '', away: false, awayText: '', days: [], from: '', to: '', open24: false };
+        return saveProfile(P0, { biz: B2 }).then(function (r) { mergeProfile(P0, r); });
+      }).catch(function () {});
+    }
     /* Switching between Personal and Business: a full-screen loader (5 s to Business, 4 s back to Personal), then "Switched successfully" or "Something went wrong" */
     function bizSwitch(to, after) {
       var back = to === 'personal', ms = back ? 4000 : 5000, ov = mk('div', 'zbsw'), ic = mk('div', 'sp'), tx = mk('div', 'tx', back ? 'Switching back to personal account..' : 'Switching...');
       ov.appendChild(ic); ov.appendChild(tx); document.body.appendChild(ov);
       var real = myProf().then(function (P) { return saveProfile(P, { acct: to }).then(function (r) { mergeProfile(P, r); }); })
-        .then(function () { try { localStorage.setItem('zaply_acct_type', to); } catch (e) {} return true; }, function () { return false; });
+        .then(function () { try { localStorage.setItem('zaply_acct_type', to); } catch (e) {} return bizResetDefaults().then(function () { return true; }); }, function () { return false; });
       var wait = new Promise(function (r) { setTimeout(r, ms); });
       Promise.all([real, wait]).then(function (a) {
         if (a[0]) {
@@ -9647,11 +9671,11 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   /* per-chat wallpaper */
   var _at = applyTheme;
   applyTheme = function () {
-    _at(); try { var w = openWith && lsGet('zaply_cwall_' + openWith, null), m = $('msgs'); if (w && w.css) { m.style.background = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; m.style.backgroundBlendMode = ''; } } catch (e) {}
+    _at(); try { var w = openWith && lsGet('zaply_cwall_' + openWith, null), m = $('msgs'); if (w && w.css && !document.documentElement.classList.contains('zlive')) { m.style.setProperty('background', (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css, 'important'); m.style.backgroundBlendMode = ''; } } catch (e) {}
   };
   var _sw = setWall;
   setWall = function (w) {
-    if (window.__cw) { if (w) { if (!lsSet('zaply_cwall_' + window.__cw, w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_cwall_' + window.__cw); } catch (e) {} } applyTheme(); return true; }
+    if (window.__cw) { if (w) { if (!lsSet('zaply_cwall_' + window.__cw, w)) { toast('Not enough space to save that wallpaper'); return false; } try { window.zpLive && window.zpLive(0); } catch (e) {} } else { try { localStorage.removeItem('zaply_cwall_' + window.__cw); } catch (e) {} } applyTheme(); return true; }
     return _sw(w);
   };
   var _oa = openAppearance; openAppearance = function () { window.__cw = null; return _oa.apply(this, arguments); };
