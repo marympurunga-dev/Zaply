@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Link this computer to Zanply</title>
+<style>
+:root{--paper:#fff;--wash:#f7f8f9;--ink:#111b21;--mut:#5b6770;--line:#e3e7ea;--brand:#128a47;--brand-d:#0e6f3a;--tint:#e8f5ee;--err:#b4301f;--ring:#8fd0aa}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;display:flex;flex-direction:column}main{flex:1;width:100%}
+body{font-family:"Segoe UI",Inter,system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+header{border-bottom:1px solid var(--line);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 32px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;letter-spacing:-.01em}
+.brand svg{display:block}
+header span{color:var(--mut);font-size:14px}
+main{max-width:1000px;margin:0 auto;padding:64px 32px 80px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:72px;align-items:start}
+h1{font-size:28px;line-height:1.2;letter-spacing:-.02em;margin:0 0 12px;font-weight:700;text-wrap:balance}
+.lead{color:var(--mut);margin:0 0 32px;font-size:16px;max-width:42ch}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;padding:3px;background:var(--wash);margin-bottom:24px}
+.seg button{border:0;background:transparent;padding:10px 12px;border-radius:8px;font:inherit;font-size:14px;font-weight:600;color:var(--mut);cursor:pointer}
+.seg button[aria-selected=true]{background:var(--paper);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+label{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
+input{width:100%;height:48px;border:1px solid #c9d0d5;border-radius:10px;padding:0 14px;font:inherit;font-size:16px;color:var(--ink);background:var(--paper)}
+input::placeholder{color:#8a959c}
+input:hover{border-color:#aab3b9}
+.hint{font-size:13px;color:var(--mut);margin:8px 0 0}
+.err{color:var(--err);font-size:14px;min-height:22px;margin:10px 0 6px}
+.cta{width:100%;height:48px;border:0;border-radius:10px;background:var(--brand);color:#fff;font:inherit;font-weight:600;font-size:16px;cursor:pointer}
+.cta:hover{background:var(--brand-d)}
+.cta:disabled{opacity:.65;cursor:default}
+.link{background:none;border:0;padding:0;font:inherit;font-size:14px;color:var(--brand);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+.panel{border:1px solid var(--line);border-radius:16px;background:var(--paper);padding:36px}
+.panel h2{font-size:18px;margin:0 0 20px;letter-spacing:-.01em}
+ol{margin:0;padding:0;list-style:none;counter-reset:s}
+li{counter-increment:s;display:flex;gap:14px;padding:12px 0;color:var(--ink)}
+li+li{border-top:1px solid var(--line)}
+li:before{content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:var(--tint);color:var(--brand-d);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+li b{font-weight:600}
+.result{text-align:center;padding-bottom:28px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.result .cap{color:var(--mut);font-size:14px;margin-bottom:16px}
+.digits{display:flex;gap:10px;justify-content:center}
+.digits i{font-style:normal;width:52px;height:68px;border:1px solid var(--line);border-radius:10px;background:var(--wash);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;font-variant-numeric:tabular-nums}
+#qr{display:inline-block;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff;line-height:0}
+.timer{margin-top:16px;font-size:13px;color:var(--mut)}
+.state{text-align:center;padding:24px 0}
+.state .tick{width:56px;height:56px;border-radius:50%;background:var(--tint);color:var(--brand);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.state h2{margin:0 0 6px}.state p{margin:0;color:var(--mut)}
+.hidden{display:none!important}
+footer{border-top:1px solid var(--line);color:var(--mut);font-size:13px;padding:20px 32px;text-align:center}
+@media(max-width:860px){main{grid-template-columns:1fr;gap:40px;padding:40px 20px 56px}header{padding:0 20px}.panel{padding:24px}.digits i{width:44px;height:58px;font-size:28px}}
+@media(prefers-reduced-motion:no-preference){.cta,.seg button,input{transition:background .15s,border-color .15s,box-shadow .15s}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#128a47"/><path d="M8 9.5A2.5 2.5 0 0 1 10.5 7h9A2.5 2.5 0 0 1 22 9.5v6a2.5 2.5 0 0 1-2.5 2.5H14l-4 3.5V18h-.5A1.5 1.5 0 0 1 8 16.5z" fill="#fff"/></svg>
+    Zanply
+  </div>
+  <span>Link a device</span>
+</header>
+
+<main>
+  <section id="left" aria-labelledby="ttl">
+    <div id="formView">
+      <h1 id="ttl">Link this computer to Zanply</h1>
+      <p class="lead">Enter the email or phone number on your account. You will confirm the link on your phone.</p>
+      <div class="seg" role="tablist" aria-label="Linking method">
+        <button id="tCode" role="tab" aria-selected="true">Request code</button>
+        <button id="tQr" role="tab" aria-selected="false">Request QR code</button>
+      </div>
+      <label for="ident">Email or phone number</label>
+      <input id="ident" placeholder="name@example.com or +233 24 000 0000" autocomplete="username" inputmode="email">
+      <p class="hint">Use the email or number saved in your Zanply profile.</p>
+      <div class="err" id="err" role="alert"></div>
+      <button class="cta" id="go">Request code</button>
+    </div>
+    <div id="doneView" class="state hidden">
+      <div class="tick"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
+      <h2>Device linked</h2>
+      <p>Opening your chats…</p>
+    </div>
+  </section>
+
+  <aside class="panel" aria-live="polite">
+    <div id="result" class="result hidden">
+      <div id="codeBox"><div class="cap">Enter this code in Zanply on your phone</div><div class="digits" id="digits"></div></div>
+      <div id="qrBox" class="hidden"><div class="cap">Scan this QR code with Zanply on your phone</div><div id="qr"></div></div>
+      <div class="timer"><span id="left2"></span> <button class="link hidden" id="again">Request a new one</button></div>
+    </div>
+    <h2 id="stepsTitle">How linking works</h2>
+    <ol id="steps"></ol>
+  </aside>
+</main>
+
+<footer>Your messages stay end-to-end encrypted on your phone. Only link devices you trust.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(function(){
+  var mode='code',poll=0,tick=0,$=function(i){return document.getElementById(i)},API=location.origin+'/api/chat';
+  function call(a,d){return fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({action:a},d||{}))}).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error(j.error||'Something went wrong. Try again.');return j;});});}
+  function steps(){
+    var last=mode==='code'?'Tap <b>Add device with Code</b> and enter the code shown here.':'Tap <b>Scan QR to add device</b> and point your camera at the QR code.';
+    $('steps').innerHTML='<li><span>Open <b>Zanply</b> on your phone.</span></li><li><span>Go to <b>Settings › Devices › Add device</b>.</span></li><li><span>'+last+'</span></li>';
+  }
+  function setMode(m){mode=m;$('tCode').setAttribute('aria-selected',m==='code');$('tQr').setAttribute('aria-selected',m==='qr');$('go').textContent=m==='code'?'Request code':'Request QR code';steps();}
+  function stop(){clearInterval(poll);clearInterval(tick);}
+  function reset(){stop();$('result').classList.add('hidden');$('stepsTitle').textContent='How linking works';$('formView').classList.remove('hidden');$('go').disabled=false;setMode(mode);$('ident').focus();}
+  $('tCode').onclick=function(){setMode('code')};$('tQr').onclick=function(){setMode('qr')};
+  $('ident').addEventListener('keydown',function(e){if(e.key==='Enter')$('go').click();});
+  $('again').onclick=reset;
+  $('go').onclick=function(){
+    var v=$('ident').value.trim();$('err').textContent='';
+    if(!v){$('err').textContent='Enter the email or phone number on your account.';$('ident').focus();return;}
+    stop();$('go').disabled=true;$('go').textContent='Requesting…';
+    call('link_request',{ident:v}).then(function(r){
+      $('result').classList.remove('hidden');$('stepsTitle').textContent='Finish on your phone';
+      $('codeBox').classList.toggle('hidden',mode!=='code');$('qrBox').classList.toggle('hidden',mode!=='qr');$('again').classList.add('hidden');
+      if(mode==='code'){$('digits').innerHTML=String(r.code).split('').map(function(d){return'<i>'+d+'</i>'}).join('');}
+      else{$('qr').innerHTML='';try{new QRCode($('qr'),{text:r.qr,width:196,height:196,correctLevel:QRCode.CorrectLevel.M});}catch(e){$('qr').textContent=r.qr;}}
+      steps();
+      var end=Date.now()+(r.expires||600)*1000;
+      function expire(){stop();$('left2').textContent='This '+(mode==='code'?'code':'QR code')+' has expired.';$('again').classList.remove('hidden');}
+      tick=setInterval(function(){var s=Math.max(0,Math.round((end-Date.now())/1000));if(!s)return expire();$('left2').textContent='Expires in '+Math.floor(s/60)+':'+('0'+s%60).slice(-2);},1000);
+      poll=setInterval(function(){call('link_status',{sid:r.sid}).then(function(s){
+        if(s.status==='linked'){stop();try{['zaply_user','zaply_chats','zaply_out','zaply_screen'].forEach(function(k){localStorage.removeItem(k)});localStorage.setItem('zaply_token',s.token);localStorage.setItem('zaply_linked_dev',s.token);}catch(e){}
+          $('formView').classList.add('hidden');$('doneView').classList.remove('hidden');$('result').classList.add('hidden');$('stepsTitle').textContent='All set';setTimeout(function(){location.href='/';},1200);}
+        else if(s.status==='expired')expire();
+      }).catch(function(){});},2000);
+      $('go').disabled=false;$('go').textContent=mode==='code'?'Request a new code':'Request a new QR code';
+    }).catch(function(e){$('err').textContent=e.message;$('go').disabled=false;setMode(mode);});
+  };
+  setMode('code');
+})();
+</script>
+</body>
+</html>
