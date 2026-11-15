@@ -1047,7 +1047,7 @@ module.exports = async (req, res) => {
       const css = String(b.css || '');
       if (!css) { await db().query('DELETE FROM chat_walls WHERE owner = ? AND peer = ?', [me, to]); return res.json({ ok: true }); }
       if (css.length > 200000) return res.status(413).json({ error: 'That wallpaper is too large to share. Pick a preset or a smaller picture.' });
-      if (/url\(\s*['"]?\s*(?!data:image\/)/i.test(css) || /[<>]|expression|javascript:/i.test(css)) return res.status(400).json({ error: 'That wallpaper cannot be shared.' });
+      if (/url\(\s*['"]?\s*(?!data:image\/|\/wallpapers\/[\w.\-]+['\"]?\s*\))/i.test(css) || /[<>]|expression|javascript:/i.test(css)) return res.status(400).json({ error: 'That wallpaper cannot be shared.' });
       await db().query('INSERT INTO chat_walls (owner, peer, css, kind) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE css = VALUES(css), kind = VALUES(kind)', [me, to, css, String(b.k || '').slice(0, 12)]);
       return res.json({ ok: true });
     }
