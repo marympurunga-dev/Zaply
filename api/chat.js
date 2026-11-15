@@ -1218,8 +1218,12 @@ module.exports = async (req, res) => {
       if (p.error) return res.status(400).json({ error: p.error });
       let ex = { acct: 'personal', biz: null };
       try { const [cur] = await db().query('SELECT extra FROM profiles WHERE phone = ?', [me]); ex = parseExtra(cur && cur[0] && cur[0].extra); } catch (e) {}
+      const prevAcct = ex.acct;
       if (p.acct !== undefined) ex.acct = p.acct;
       if (p.biz !== undefined) ex.biz = p.biz;
+      // switching between Personal and Business (either way) erases ALL business data on the server:
+      // business details, greeting / away messages, open days and hours. The next Business account starts empty.
+      if (p.acct !== undefined && p.acct !== prevAcct) ex.biz = null;
       try {
         await db().query(
           `INSERT INTO profiles (phone, username, email, address, bio, birthday, pet, links, extra) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
