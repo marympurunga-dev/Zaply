@@ -1700,6 +1700,23 @@ module.exports = async (req, res) => {
         at: r.created_at, expires: r.expires_at, likes: Number(r.likes) || 0, views: Number(r.views) || 0,
         liked: !!Number(r.liked), seen: !!Number(r.seen), mine: r.owner === me })) });
     }
+    // ---- Send feedback: a note plus up to 3 screenshots / videos (stored in the "feedback" table) ----
+    if (b.action === 'feedback_sign') {
+      if (!cloudOn()) return res.status(500).json({ error: 'File storage is not set up on the server yet.' });
+      const publicId = 'zucket/feedback/' + crypto.randomBytes(12).toString('hex');
+      const timestamp = Math.floor(Date.now() / 1000);
+      const signature = cloud().utils.api_sign_request({ public_id: publicId, timestamp }, process.env.CLOUDINARY_API_SECRET);
+      return res.json({ cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, timestamp, signature, public_id: publicId });
+    }
+    if (b.action === 'feedback_send') {
+      const text = clip(b.text, 1500);
+      const base = cloudOn() ? 'https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/' : '';
+      const files = (Array.isArray(b.files) ? b.files : []).slice(0, 3).map(String).filter((u) => base && u.length <= 300 && u.indexOf(base) === 0);
+      if (!text && !files.length) return res.status(400).json({ error: 'Write your feedback or attach a file.' });
+      await db().query('CREATE TABLE IF NOT EXISTS feedback (id INT AUTO_INCREMENT PRIMARY KEY, phone VARCHAR(32) NOT NULL, body TEXT, version VARCHAR(16), files TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)');
+      await db().query('INSERT INTO feedback (phone, body, version, files) VALUES (?, ?, ?, ?)', [me, text, clip(b.version, 16), JSON.stringify(files)]);
+      return res.json({ ok: true });
+    }
     if (b.action === 'status_sign') {
       if (!cloudOn()) return res.status(500).json({ error: 'File storage is not set up on the server yet.' });
       const publicId = 'zucket/status/' + crypto.randomBytes(12).toString('hex');
