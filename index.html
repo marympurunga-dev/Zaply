@@ -196,7 +196,7 @@
     .menubox{position:absolute;right:0;top:100%;z-index:20;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:6px;display:flex;flex-direction:column;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
     .menubox button{border:none;text-align:left;border-radius:8px;padding:10px 12px}
     .searchbox input{margin:0 0 12px;border-radius:999px;padding:14px 20px;background:var(--card);font-size:16px}
-    .tabs4{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto}
+    .tabs4{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto!important;flex-wrap:nowrap;min-width:0;max-width:100%;touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch;scrollbar-width:none}.tabs4::-webkit-scrollbar{display:none}.tabs4 button{flex:none!important}
     .tabs4 button{flex:1;white-space:nowrap;padding:9px 10px;font-size:14px}
     .row .av{width:56px;height:56px;color:#fff}
     .fabr{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:60px;height:60px;padding:0;border-radius:50%;border:none;background:var(--acc,#21c063);color:#06140c;font-size:34px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.4);z-index:7}
@@ -2676,6 +2676,7 @@ ZW|Zimbabwe|263`;
         }).then(function (pair) {
           return subtle.exportKey('raw', pair.publicKey).then(function (raw) {
             mine = { pair: pair, pub: b64(raw) };
+            try { if (localStorage.getItem('zaply_linked_dev') && localStorage.getItem('zaply_linked_dev') === getToken()) return null; } catch (e) {} /* a linked browser must not replace the phone\u2019s key */
             return chatCall('setkey', { key: mine.pub });
           });
         }).then(function () { return true; }, function (e) { initP = null; mine = null; throw e; });
@@ -2931,6 +2932,56 @@ ZW|Zimbabwe|263`;
       box.focus = function () { ins[0].focus(); };
       return box;
     }
+    function zpEmailFlow(done) {
+      function okMail(x) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x); }
+      function codePage(mm) {
+        zOpenPage('Enter verification code', function (b) {
+          var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+          w.appendChild(mk('div', 'sub', 'Enter verification code we just sent to ' + mm));
+          var code = otpBoxes(6), cm = mk('div', 'zmsg'), vf = mk('button', 'primary', 'Verify'), rs = mk('button', '', ''), tm = 0, left = 60;
+          vf.style.marginTop = '12px'; rs.style.cssText = 'margin-top:10px;width:100%'; cm.style.color = '#ef4444';
+          w.appendChild(code); w.appendChild(cm); w.appendChild(vf); w.appendChild(rs);
+          function used() { return parseInt(localStorage.getItem('zaply_em_n') || '0', 10); }
+          function lock() { return parseInt(localStorage.getItem('zaply_em_lock') || '0', 10); }
+          function paint() {
+            if (lock() > Date.now()) { rs.disabled = true; rs.textContent = 'Resend code in 2 hours'; clearInterval(tm); return; }
+            if (left > 0) { rs.disabled = true; rs.textContent = 'Resend code in ' + left + ' sec'; } else { rs.disabled = false; rs.textContent = 'Resend code'; clearInterval(tm); }
+          }
+          function start() { clearInterval(tm); left = 60; paint(); tm = setInterval(function () { left--; paint(); }, 1000); }
+          rs.addEventListener('click', function () {
+            rs.disabled = true; rs.textContent = 'Sending code\u2026';
+            chatCall('email_change_send', { email: mm }).then(function () {
+              var n = used() + 1; try { localStorage.setItem('zaply_em_n', String(n)); if (n >= 2) { localStorage.setItem('zaply_em_lock', String(Date.now() + 7200000)); localStorage.setItem('zaply_em_n', '0'); } } catch (e) {}
+              toast('Code sent', true); start();
+            }).catch(function (e) { toast((e && e.message) || 'Could not send the code.'); left = 0; paint(); });
+          });
+          vf.addEventListener('click', function () {
+            cm.textContent = ''; var c = code.value.trim();
+            if (!/^\d{6}$/.test(c)) { cm.textContent = 'Incorrect code'; return; }
+            vf.disabled = true; vf.textContent = 'Verifying code\u2026';
+            chatCall('email_change_verify', { email: mm, code: c }).then(function () {
+              vf.textContent = '\u2713 Verified'; vf.style.background = '#21c063'; try { localStorage.removeItem('zaply_em_n'); localStorage.removeItem('zaply_em_lock'); } catch (e) {}
+              setTimeout(function () { closeOv(); closeOv(); toast('Email verified', true); if (done) done(mm); }, 1100);
+            }).catch(function () { vf.disabled = false; vf.textContent = 'Verify'; cm.textContent = 'Incorrect code'; });
+          });
+          start(); setTimeout(function () { try { code.focus(); } catch (e) {} }, 100);
+        }, function () {});
+      }
+      zOpenPage('Enter email address', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        w.appendChild(mk('div', 'sub', 'We will need to verify this email by sending a verification code to your email to confirm it belongs to you.'));
+        var inp = zin('Email address', 'email', 120), m = mk('div', 'zmsg'), go = mk('button', 'primary', 'Send verification code'); go.style.marginTop = '12px'; m.style.color = '#ef4444';
+        w.appendChild(inp); w.appendChild(m); w.appendChild(go);
+        go.addEventListener('click', function () {
+          var mm = inp.value.trim(); m.textContent = '';
+          if (!okMail(mm)) { m.textContent = 'That email address doesn\u2019t look right.'; return; }
+          if (!navigator.onLine) { m.textContent = 'You are offline. Connect to the internet and try again.'; return; }
+          go.disabled = true; go.textContent = 'Sending code\u2026';
+          chatCall('email_change_send', { email: mm }).then(function () { go.disabled = false; go.textContent = 'Send verification code'; codePage(mm); })
+            .catch(function (e) { go.disabled = false; go.textContent = 'Send verification code'; m.textContent = (e && e.message) || 'Could not send the code.'; });
+        });
+      });
+    }
     function emailPage(P, done, resumeMail) {
       var had = !!P.email;
       zOpenPage('Email', function (b) {
@@ -3025,7 +3076,7 @@ ZW|Zimbabwe|263`;
       var p = mk('div', 'zpop'), d = mk('div'); d.appendChild(mk('div', '', 'Please add your email address to be able to add Two-Step-Verification.')); var l = mk('div', 'zline'), a = mk('button', 'primary', 'Add email'), bk = mk('button', '', 'Back');
       l.appendChild(bk); l.appendChild(a); d.appendChild(l); p.appendChild(d); document.body.appendChild(p);
       bk.addEventListener('click', function () { p.remove(); });
-      a.addEventListener('click', function () { p.remove(); closeOv(); setTimeout(openDetails, 60); });
+      a.addEventListener('click', function () { p.remove(); zpEmailFlow(function () { toast('Now you can turn on two-step verification', true); }); });
     }
     function maskEmail(e) { e = String(e || ''); var p = e.split('@'); return p.length < 2 ? e : p[0].slice(0, 2) + '***@' + p[1]; }
     function openTwoStep() {
@@ -3046,7 +3097,7 @@ ZW|Zimbabwe|263`;
         }
         function needEmail() {
           body.innerHTML = ''; body.appendChild(head('To use two-step verification you must first add an email address to this account. We send a 6-digit code to it to confirm it is yours.'));
-          var bt = mk('button', 'primary', 'Add email'); body.appendChild(bt); bt.addEventListener('click', function () { closeOv(); setTimeout(openDetails, 60); });
+          var bt = mk('button', 'primary', 'Add email'); body.appendChild(bt); bt.addEventListener('click', function () { zpEmailFlow(function () { closeOv(); setTimeout(openTwoStep, 80); }); });
         }
         function off() { body.innerHTML = ''; body.appendChild(head('Two-step verification is off. Turn it on to protect your chats with a 6-digit PIN.')); var bt = mk('button', 'primary', 'Turn on two-step verification'); body.appendChild(bt); bt.addEventListener('click', function () { if (!email) return needEmail(); pinStep(); }); }
         function added() {
@@ -3329,13 +3380,25 @@ ZW|Zimbabwe|263`;
         var tgt = kind === 'email' ? zin('Email of the other account', 'text', 120) : zin('Code from the other account', 'text', 12);
         if (kind === 'email') { tgt.type = 'email'; tgt.autocomplete = 'email'; } else tgt.style.textTransform = 'uppercase'; tgt.style.marginBottom = '10px'; w.appendChild(tgt);
         if (kind === 'qr') { var sc = mk('button', '', 'Scan QR code'); sc.style.marginBottom = '12px'; sc.addEventListener('click', function () { scanTransferCode(function (c) { tgt.value = c; toast('Code scanned', true, 1800); }); }); w.appendChild(sc); }
-        var hd = mk('div', '', 'Choose chats to transfer'); hd.style.cssText = 'font-weight:700;margin:6px 0 8px'; w.appendChild(hd);
-        var list = (typeof allChats !== 'undefined' ? allChats : []).filter(function (c) { return c && !c.group && /^\+\d{7,15}$/.test(c.phone || ''); }), picks = {};
-        var all = mk('label'); all.style.cssText = 'display:flex;gap:10px;align-items:center;padding:8px 0;font-weight:600'; var ac = document.createElement('input'); ac.type = 'checkbox'; all.appendChild(ac); all.appendChild(mk('span', '', 'Select all')); w.appendChild(all);
-        var boxes = [];
-        list.forEach(function (c) { var r = mk('label'); r.style.cssText = 'display:flex;gap:10px;align-items:center;padding:8px 0'; var cb = document.createElement('input'); cb.type = 'checkbox'; cb.addEventListener('change', function () { if (cb.checked) picks[c.phone] = 1; else delete picks[c.phone]; }); boxes.push([cb, c.phone]); r.appendChild(cb); r.appendChild(mk('span', '', labelOf(c) || c.phone)); w.appendChild(r); });
-        if (!list.length) w.appendChild(mk('div', '', 'You have no chats to transfer yet.')).style.opacity = '.7';
-        ac.addEventListener('change', function () { boxes.forEach(function (p) { p[0].checked = ac.checked; if (ac.checked) picks[p[1]] = 1; else delete picks[p[1]]; }); });
+        var hd = mk('div', '', 'Choose chats to transfer'); hd.style.cssText = 'font-weight:700;font-size:16px;margin:10px 0 8px'; w.appendChild(hd);
+        var list = (typeof allChats !== 'undefined' ? allChats : []).filter(function (c) { return c && !c.group && /^\+\d{7,15}$/.test(c.phone || ''); }), picks = {}, boxes = [];
+        function ckBox(on) { var x = mk('span'); x.style.cssText = 'flex:none;width:24px;height:24px;border-radius:6px;border:2px solid ' + (on ? '#21c063' : '#8a9aa3') + ';background:' + (on ? '#21c063' : 'transparent') + ';color:#04160b;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px'; x.textContent = on ? '\u2713' : ''; return x; }
+        var card = mk('div'); card.style.cssText = 'border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)'; w.appendChild(card);
+        var allRow = mk('div'); allRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);font-weight:700;cursor:pointer'; var cnt = mk('span', '', 'Select all'); allRow.appendChild(cnt); card.appendChild(allRow);
+        function paint() {
+          var n = Object.keys(picks).length, on = list.length > 0 && n === list.length; cnt.textContent = n ? 'Select all \u2022 ' + n + ' selected' : 'Select all';
+          if (allRow._b) allRow._b.remove(); allRow._b = ckBox(on); allRow.appendChild(allRow._b);
+          boxes.forEach(function (p) { var o = p.row._b; if (o) o.remove(); p.row._b = ckBox(!!picks[p.ph]); p.row.appendChild(p.row._b); });
+        }
+        allRow.addEventListener('click', function () { var every = list.length && Object.keys(picks).length === list.length; list.forEach(function (c) { if (every) delete picks[c.phone]; else picks[c.phone] = 1; }); paint(); });
+        list.forEach(function (c) {
+          var r = mk('div'); r.style.cssText = 'display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer';
+          var av = avatar(c); av.style.cssText += ';width:42px;height:42px;font-size:18px;flex:none'; var nm = mk('div', '', labelOf(c) || c.phone); nm.style.cssText = 'flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+          r.appendChild(av); r.appendChild(nm); boxes.push({ row: r, ph: c.phone });
+          r.addEventListener('click', function () { if (picks[c.phone]) delete picks[c.phone]; else picks[c.phone] = 1; paint(); }); card.appendChild(r);
+        });
+        if (!list.length) { var em = mk('div', '', 'You have no chats to transfer yet.'); em.style.cssText = 'padding:16px;opacity:.7'; card.appendChild(em); }
+        paint();
         var go = mk('button', 'primary', 'Transfer'); go.style.marginTop = '16px'; w.appendChild(go);
         go.addEventListener('click', function () {
           var v = tgt.value.trim(); if (kind === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return toast('Enter a valid email address.'); if (kind === 'qr' && !/^[A-Za-z0-9]{4,12}$/.test(v)) return toast('Scan or type the code first.');
@@ -3355,14 +3418,26 @@ ZW|Zimbabwe|263`;
       Promise.all([look, wait]).then(function () {
         if (res.e) return msg('Could not find the account', (res.e && res.e.message) || 'Try again.');
         if (!res.r.found) return msg(res.r.self ? 'That is this account' : 'No account found', res.r.self ? 'Use the email or code of your other account.' : (kind === 'email' ? 'This email doesn\u2019t have account added.' : 'This code is not valid or has expired.'));
+        if (res.r.needPin && !who.pin) {
+          d.innerHTML = ''; var ph = mk('div', '', 'Two-step verification'); ph.style.cssText = 'font-size:17px;font-weight:700;margin-bottom:6px'; d.appendChild(ph);
+          d.appendChild(mk('div', '', 'This account is protected. Enter its 6-digit two-step verification PIN to continue.')).style.opacity = '.75';
+          var pin = zin('6-digit PIN', 'password', 6); pin.inputMode = 'numeric'; pin.style.margin = '12px 0 6px'; d.appendChild(pin); var pe = mk('div', 'zmsg'); pe.style.color = '#ef4444'; d.appendChild(pe);
+          var pg = mk('button', 'primary', 'Continue'); pg.style.cssText = 'width:100%;margin-top:8px'; d.appendChild(pg); var pc2 = mk('button', '', 'Cancel'); pc2.style.cssText = 'width:100%;margin-top:8px'; pc2.addEventListener('click', function () { board.remove(); }); d.appendChild(pc2);
+          pg.addEventListener('click', function () { if (!/^\d{6}$/.test(pin.value.trim())) { pe.textContent = 'Enter the 6-digit PIN.'; return; } who.pin = pin.value.trim(); pg.disabled = true; pg.textContent = 'Checking\u2026';
+            chatCall('transfer_chat', Object.assign({ peer: peers[0] }, who)).then(function () { startTransfer(true); }, function (e) { pg.disabled = false; pg.textContent = 'Continue'; delete who.pin; pe.textContent = (e && e.message) || 'Wrong PIN. Try again.'; }); });
+          return;
+        }
+        startTransfer(false);
+        function startTransfer(firstDone) {
         d.innerHTML = ''; var t = mk('div', '', 'Transferring chat'); t.style.cssText = 'font-weight:600;margin-bottom:12px'; d.appendChild(t);
         var track = mk('div'); track.style.cssText = 'height:12px;border-radius:99px;background:rgba(128,128,128,.3);overflow:hidden'; var fill = mk('div'); fill.style.cssText = 'height:100%;width:0;background:#21c063;border-radius:99px;transition:width .35s ease'; track.appendChild(fill); d.appendChild(track);
         var pc = mk('div', '', '0%'); pc.style.cssText = 'margin-top:8px;opacity:.7;font-size:13px'; d.appendChild(pc);
-        var i = 0, failed = 0;
+        var i = firstDone ? 1 : 0, failed = 0;
         (function next() {
           if (i >= peers.length) { fill.style.width = '100%'; pc.textContent = '100%'; return setTimeout(function () { failed ? msg('Chats transferred', failed + ' chat(s) could not be transferred.') : msg('Successfully chat transferred', ''); }, 500); }
           chatCall('transfer_chat', Object.assign({ peer: peers[i] }, who)).then(function () {}, function () { failed++; }).then(function () { i++; var p = Math.round(i / peers.length * 100); fill.style.width = p + '%'; pc.textContent = p + '%'; setTimeout(next, 350); });
         })();
+        }
       });
     }
     function openAccount() {
@@ -3594,17 +3669,22 @@ ZW|Zimbabwe|263`;
     }
     function openChatHistory() {
       zOpenPage('Chat history', function (b) {
-        var N = window.ZanplyNative, can = !!(N && N.saveTextFile);
+        var N = window.ZanplyNative, can = true;
         var chats = (allChats || []).filter(function (c) { return c && c.phone && !acpOn(c.phone); });
         b.appendChild(mk('div', 'zfoot', 'Your messages are end-to-end encrypted, so only this phone can read them. ' + (can ? 'Tap a chat to save a readable copy on this phone (Downloads \u203a Zanply).' : 'Tap a chat to open it.')));
         if (!chats.length) { zempty(b, 'You have no chats yet.'); return; }
+        b.appendChild(mk('div', 'zsec', 'Manage all chats'));
+        zrow2(b, 'archive', 'Archive all chats', 'Move every chat to Archived chats', function () { zconfirm('Archive all ' + chats.length + ' chats?', function () { chats.forEach(function (c) { setArchived(c.phone, true); }); renderChats(); toast('All chats archived', true); }); });
+        zrow2(b, 'clear', 'Clear all chats', 'Remove the messages but keep the chats', function () { zconfirm('Clear all messages in every chat on this phone?', function () { var m = lsGet('zaply_cleared', {}); chats.forEach(function (c) { m[c.phone] = Date.now(); try { localStorage.removeItem('zaply_th_' + c.phone); } catch (e) {} }); lsSet('zaply_cleared', m); renderChats(); toast('All chats cleared', true); }); });
+        zrow2(b, 'delete', 'Delete all chats', 'Remove every chat from this phone', function () { zconfirm('Delete all chats from this phone? A chat comes back if a new message arrives.', function () { var m = lsGet('zaply_hidden', {}); chats.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_hidden', m); renderChats(); toast('All chats deleted', true); closeOv(); }); });
+        b.appendChild(mk('div', 'zsep'));
         var busy = false;
         function save(list, fname, label) {
           if (busy) return toast('Please wait, still saving\u2026'); busy = true; toast('Saving ' + label + '\u2026');
           var parts = [], i = 0, total = 0;
           (function next() {
             if (i >= list.length) {
-              busy = false; var where = ''; try { where = N.saveTextFile(fname, parts.join('\n\n----------------------------------------\n\n')); } catch (e) {}
+              busy = false; var where = ''; var tx = parts.join('\n\n----------------------------------------\n\n'); try { if (N && N.saveTextFile) where = N.saveTextFile(fname, tx); else { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([tx], { type: 'text/plain' })); a.download = fname; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 500); where = 'your Downloads'; } } catch (e) {}
               return where ? toast('Saved ' + total + ' messages to ' + where, true, 7000) : toast('Could not save the file on this phone');
             }
             chatToText(list[i++]).then(function (r) { parts.push(r.text); total += r.count; next(); }).catch(function (e) { busy = false; toast(e && e.offline ? 'No internet connection. Try again.' : 'Could not read that chat. Try again.'); });
@@ -3901,6 +3981,13 @@ ZW|Zimbabwe|263`;
         }
         drawCols(); b.appendChild(mk('div', 'zfoot', 'Choose a colour for the tag of this folder.'));
         var msg = mk('div', 'zmsg'); msg.style.margin = '0 20px'; b.appendChild(msg);
+        var lk = mk('button', 'zbtn2', 'Create invitation link'); b.appendChild(lk);
+        lk.addEventListener('click', function () {
+          var nme = (nm.value || '').trim(); if (!nme) return toast('Give the folder a name first');
+          var link = location.origin + '/#folder=' + encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({ n: nme, e: F.emoji || '', c: F.color || '' })))));
+          var tx = 'Add my \u201c' + nme + '\u201d chat folder on Zanply: ' + link;
+          if (navigator.share) navigator.share({ title: nme, text: tx }).catch(function () {}); else if (navigator.clipboard) navigator.clipboard.writeText(tx).then(function () { toast('Invitation link copied', true); }, function () { toast(link); }); else toast(link);
+        });
         var save = mk('button', 'primary zbtn2', 'Save folder'); b.appendChild(save);
         save.addEventListener('click', function () {
           F.name = nm.value.trim(); if (!F.name) { msg.textContent = 'Give the folder a name.'; return; }
@@ -3915,19 +4002,38 @@ ZW|Zimbabwe|263`;
     }
     function pickFolderChats(title, F, listKey, typeKey, types, after) {
       zOpenPage(title, function (b) {
-        b.appendChild(mk('div', 'zsec', 'Chat types'));
-        F[typeKey] = F[typeKey] || {};
-        types.forEach(function (t) { zswitchRow(b, t[1], '', !!F[typeKey][t[0]], function (v) { F[typeKey][t[0]] = v; }); });
-        b.appendChild(mk('div', 'zsec', 'Chats'));
-        var list = (allChats || []).slice();
-        if (!list.length) b.appendChild(mk('div', 'zfoot', 'No chats yet. Start a chat first.'));
-        list.forEach(function (c) {
-          var on = F[listKey].indexOf(c.phone) > -1, r = mk('div', 'zir'), av = avatar(c); av.style.width = av.style.height = '40px'; av.style.fontSize = '17px'; av.style.flex = 'none';
-          var t = mk('div', 'zt', savedName(c.phone) || c.name || c.phone), sw = mk('button', 'zsw' + (on ? ' on' : ''));
-          sw.addEventListener('click', function () { var i = F[listKey].indexOf(c.phone); if (i > -1) F[listKey].splice(i, 1); else F[listKey].push(c.phone); sw.classList.toggle('on', i < 0); });
-          r.appendChild(av); r.appendChild(t); r.appendChild(sw); b.appendChild(r);
-        });
+        var cat = 'contacts', list = (allChats || []).filter(function (c) { return c && c.phone; });
+        function kind(c) { return (window.isChan && isChan(c)) ? 'channels' : (c.group ? 'groups' : 'contacts'); }
+        var tabs = mk('div'); tabs.style.cssText = 'display:flex;gap:8px;padding:10px 16px;overflow-x:auto'; b.appendChild(tabs);
+        var holder = mk('div'); b.appendChild(holder);
+        function box(on) { var x = mk('span'); x.style.cssText = 'flex:none;width:24px;height:24px;border-radius:6px;border:2px solid ' + (on ? '#21c063' : '#8a9aa3') + ';background:' + (on ? '#21c063' : 'transparent') + ';color:#04160b;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px'; x.textContent = on ? '\u2713' : ''; return x; }
+        function draw() {
+          tabs.innerHTML = ''; holder.innerHTML = '';
+          [['contacts', 'Contacts'], ['groups', 'Groups'], ['channels', 'Channels']].forEach(function (t) {
+            var tb = mk('button', '', t[1]); tb.style.cssText = 'flex:none;padding:8px 18px;border-radius:999px;border:1px solid var(--border);background:' + (cat === t[0] ? '#103629' : 'transparent') + ';color:' + (cat === t[0] ? '#25d366' : 'var(--muted)'); tb.addEventListener('click', function () { cat = t[0]; draw(); }); tabs.appendChild(tb);
+          });
+          var rows = list.filter(function (c) { return kind(c) === cat; });
+          if (!rows.length) { holder.appendChild(mk('div', 'zfoot', cat === 'channels' ? 'You are not in any channels yet.' : cat === 'groups' ? 'You are not in any groups yet.' : 'No contacts yet. Start a chat first.')); return; }
+          var allOn = rows.every(function (c) { return F[listKey].indexOf(c.phone) > -1; });
+          var sa = mk('div', 'zir'); sa.style.cursor = 'pointer'; sa.appendChild(mk('div', 'zt', 'Select all')); sa.appendChild(box(allOn));
+          sa.addEventListener('click', function () { rows.forEach(function (c) { var i = F[listKey].indexOf(c.phone); if (allOn) { if (i > -1) F[listKey].splice(i, 1); } else if (i < 0) F[listKey].push(c.phone); }); draw(); }); holder.appendChild(sa);
+          rows.forEach(function (c) {
+            var on = F[listKey].indexOf(c.phone) > -1, r = mk('div', 'zir'), av = avatar(c); av.style.width = av.style.height = '40px'; av.style.fontSize = '17px'; av.style.flex = 'none'; r.style.cursor = 'pointer';
+            r.appendChild(av); r.appendChild(mk('div', 'zt', savedName(c.phone) || c.name || c.phone)); r.appendChild(box(on));
+            r.addEventListener('click', function () { var i = F[listKey].indexOf(c.phone); if (i > -1) F[listKey].splice(i, 1); else F[listKey].push(c.phone); draw(); }); holder.appendChild(r);
+          });
+        }
+        draw();
       }, after);
+    }
+    function zpFolderImport() {
+      var m = /^#folder=(.+)$/.exec(location.hash || ''); if (!m) return;
+      var d; try { d = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1]))))); } catch (e) { return; }
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+      if (!d || !d.n) return;
+      zconfirm('Add the folder \u201c' + String(d.n).slice(0, 24) + '\u201d to your chats?', function () {
+        var fl = folders(); fl.push({ id: 'f' + Date.now(), name: String(d.n).slice(0, 24), emoji: d.e || '', color: d.c || '', inc: [], exc: [], it: {}, et: {} }); saveFolders(fl); renderChats(); toast('Folder added', true);
+      }, 'Add');
     }
 
     /* ---------- Wallpapers (90 ready-made + gallery + colour + AI) ---------- */
@@ -3969,12 +4075,12 @@ ZW|Zimbabwe|263`;
     function applyTheme() {
       applyAccent(); applyIcon();
       var t = curTheme(), r = document.documentElement.style; r.setProperty('--thmine', t.mine); r.setProperty('--thtxt', t.txt); var bc = lsGet('zaply_bubble', null); if (bc && bc.c) { r.setProperty('--thmine', bc.c); r.setProperty('--thtxt', bc.t); }
-      var m = $('msgs'); if (!m) return; var w = lsGet('zaply_wall', null), bg = '';
+      var m = $('msgs'); if (!m) return; var w = (openWith && lsGet('zaply_cwall_' + openWith, null)) || lsGet('zaply_wall', null), bg = '';
       var usedDef = false;
       if (w && w.css) bg = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; else if (t.bg) bg = t.bg; else { bg = defaultChatBg(); usedDef = true; }
       if (document.documentElement.classList.contains('zlive')) bg = 'transparent'; m.style.setProperty('background', bg, 'important'); m.style.backgroundBlendMode = (usedDef && window.__defBlend && bg !== 'transparent') ? window.__defBlend : '';
     }
-    function setWall(w) { try { if (w) window.zpClearPrem && window.zpClearPrem(); } catch (e) {} try { if (openWith) ZP.set('wallown_' + openWith, 1); } catch (e) {} if (w) { if (!lsSet('zaply_wall', w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem('zaply_wall'); } catch (e) {} } applyTheme(); return true; }
+    function setWall(w) { var wk = window.__cw ? 'zaply_cwall_' + window.__cw : 'zaply_wall'; try { if (w && !window.__cw) window.zpClearPrem && window.zpClearPrem(); } catch (e) {} try { if (window.__cw || openWith) ZP.set('wallown_' + (window.__cw || openWith), 1); } catch (e) {} if (w) { if (!lsSet(wk, w)) { toast('Not enough space to save that wallpaper'); return false; } } else { try { localStorage.removeItem(wk); } catch (e) {} } applyTheme(); try { if (window.__cw && w && window.zpChatApi) {} } catch (e) {} return true; }
     function openWallpaper() {
       zOpenPage('Wallpaper', function (b) {
         var hd = b.parentNode.querySelector('.zpg-h'), more = mk('button'); more.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>';
@@ -4056,9 +4162,9 @@ ZW|Zimbabwe|263`;
     }
     function openAppearance() {
       zOpenPage('Appearance', function (b) {
-        zrows(b, [['palette', 'Default chat theme', openThemes], ['palette', 'Premium Themes', function () { window.zpOpen.themes(); }]]);
+        zrows(b, [['palette', 'Default chat theme', openThemes]]);
         b.appendChild(mk('div', 'zsep')); var h = mk('div', 'zsec'); h.innerHTML = '<span style="color:#21c063">\u25c6</span> Zanply Plus'; b.appendChild(h);
-        zrows(b, [['smile', 'App icon', openAppIcons], ['image', 'Wallpaper for both sides', function () { window.zpOpen.wpBoth(); }], ['anim', 'Live wallpapers', function () { window.zpOpen.liveWp(); }], ['palette', 'Text theme', openAppColors]]);
+        zrows(b, [['smile', 'App icon', openAppIcons], ['image', 'Wallpaper for both sides', function () { window.zpOpen.wpBoth(); }], ['anim', 'Live wallpapers', function () { window.zpOpen.liveWp(); }], ['palette', 'Premium Themes', function () { window.zpOpen.themes(); }], ['palette', 'Text theme', openAppColors]]);
         var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Premium to unlock exclusive app icons, wallpapers for both sides and live wallpapers. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
         f.querySelector('a').addEventListener('click', function (e) { e.preventDefault(); soon('Zanply Plus')(); }); b.appendChild(f);
       });
@@ -4072,7 +4178,7 @@ ZW|Zimbabwe|263`;
           g.appendChild(x);
         });
         b.appendChild(mk('div', 'zfoot', 'The chat bubble and wallpaper will both change.'));
-        b.appendChild(mk('div', 'zsec', 'Customise')); zrows(b, [['chat', 'Chat bubble', openBubble], ['palette', 'Wallpaper', openWallpaper], ['smile', 'Wallpaper For Both Sides', function () { window.zpOpen.wpBoth(); }], ['palette', 'Live Wallpapers', function () { window.zpOpen.liveWp(); }]]);
+        b.appendChild(mk('div', 'zsec', 'Customise')); zrows(b, [['chat', 'Chat bubble', openBubble], ['palette', 'Wallpaper', openWallpaper]]);
       });
     }
 
@@ -4521,7 +4627,7 @@ ZW|Zimbabwe|263`;
     function openLanguage() {
       zOpenPage('App language', function (b) {
         b.setAttribute('data-notr', '1'); zradios(b, '', LANGS.map(function (l) { return [l.c, l.n]; }), lang, function (v) {
-          lang = v; try { langSel.value = v; l2.value = v; } catch (e) {} try { localStorage.setItem('zaply_lang', v); } catch (e) {} applyLang();
+          lang = v; var FBK = { wo: 'French', ff: 'French', sg: 'French', br: 'French', oc: 'Catalan', fo: 'Danish', sc: 'Italian', rm: 'German', ss: 'Zulu', nd: 'Zulu', ve: 'Sesotho', tn: 'Sesotho', kg: 'Lingala', lu: 'Luganda', ki: 'Swahili', luo: 'Swahili', kam: 'Swahili', gaa: 'Akan', dz: 'Nepali', rn: 'Kinyarwanda', bo: 'Chinese', wuu: 'Chinese' }; if (FBK[v]) toast('This language is not fully available yet. The app will show ' + FBK[v] + ' for now.', false, 4500); try { langSel.value = v; l2.value = v; } catch (e) {} try { localStorage.setItem('zaply_lang', v); } catch (e) {} applyLang();
         });
       });
     }
@@ -4558,7 +4664,7 @@ ZW|Zimbabwe|263`;
       window.location.href = url;
     }
     function invite() {
-      var url = location.origin, txt = 'Join me on Zanply! Chat, connect and belong: ' + url;
+      var url = location.origin, txt = 'Let\u2019s chat on Zanply! It\u2019s fast, simple, secure messaging and calling for free. This invite expires soon. ' + url;
       function copy(msg) { if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () { toast(msg || 'Invite link copied', true); }, function () { toast('Link: ' + url); }); else toast('Link: ' + url); }
       function irow(box, iconHtml, title, desc, fn) {
         var r = mk('button', 'zrow zrow2'); r.innerHTML = iconHtml + '<div class="rt"><span></span><small></small></div>';
@@ -4589,12 +4695,21 @@ ZW|Zimbabwe|263`;
           if (navigator.share) irow(b, ico('#21c063', P.send), 'More apps\u2026', '', function () { navigator.share({ title: 'Zanply', text: txt, url: url }).catch(function () {}); });
         });
       }
+      function smsTo(num) { location.href = 'sms:' + num + (/iPhone|iPad/.test(navigator.userAgent) ? '&' : '?') + 'body=' + encodeURIComponent(txt); }
       function fromContacts() {
         if (navigator.contacts && navigator.contacts.select) {
           navigator.contacts.select(['name', 'tel'], { multiple: true }).then(function (list) {
-            var nums = []; (list || []).forEach(function (c) { (c.tel || []).slice(0, 1).forEach(function (n) { nums.push(String(n).replace(/[^\d+]/g, '')); }); });
-            if (!nums.length) return; location.href = 'sms:' + nums.join(',') + '?&body=' + encodeURIComponent(txt);
-          }).catch(function () {});
+            var rows = []; (list || []).forEach(function (c) { var n = (c.tel || [])[0]; if (n) rows.push({ name: (c.name || [])[0] || n, num: String(n).replace(/[^\d+]/g, '') }); });
+            if (!rows.length) return toast('No contacts selected');
+            zOpenPage('Invite from contacts', function (b) {
+              rows.forEach(function (r) {
+                var row = mk('div', 'row'); row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px';
+                var l = mk('div'); l.appendChild(mk('b', '', r.name)); var sm = mk('div', 'sub', r.num); l.appendChild(sm);
+                var bt = mk('button', 'primary', 'Invite'); bt.style.cssText = 'padding:8px 18px;border-radius:999px'; bt.addEventListener('click', function () { smsTo(r.num); });
+                row.appendChild(l); row.appendChild(bt); b.appendChild(row);
+              });
+            });
+          }).catch(function () { toast('Allow contacts access to invite friends'); });
         } else if (navigator.share) { navigator.share({ title: 'Zanply', text: txt, url: url }).catch(function () {}); }
         else copy('Contact picking is not supported here. Invite link copied.');
       }
@@ -5095,6 +5210,7 @@ ZW|Zimbabwe|263`;
       setTimeout(function () {
         try {
           window.zpLive(0); if (typeof applyTheme === 'function') applyTheme();
+          if (lsGet('zaply_cwall_' + phone, null)) return; /* this chat has its own wallpaper: it wins */
           var pr = window.zIsPremium(), live = ZP.get('live_def', 0), both = ZP.get('both_def', null);
           if (pr && live) { window.zpPaintWall('live:' + live, 'live'); zpPush(phone, 'live:' + live, 'live'); return; }
           if (pr && both && both.css) { window.zpPaintWall(both.css, 'both'); zpPush(phone, both.css, 'both'); return; }
@@ -5358,7 +5474,8 @@ ZW|Zimbabwe|263`;
       });
     })();
     /* ===== 11 chat backup: real backup on the server, restore in 1 tap, auto-backup every 24h for Premium ===== */
-    function zpBackupRun(auto) { return chatCall('backup_now', { auto: !!auto }).then(function (r) { ZP.set('bk_last', Date.now()); return r; }); }
+    function zpFileMsgIds() { var ids = []; try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (k && k.indexOf('zaply_th_') === 0) { JSON.parse(localStorage.getItem(k) || '[]').forEach(function (m) { if (m && typeof m.id === 'number' && typeof m.body === 'string' && m.body.indexOf('__media__') === 0) ids.push(m.id); }); } } } catch (e) {} return ids; }
+    function zpBackupRun(auto) { return chatCall('backup_now', { auto: !!auto, skip: window.zIsPremium() ? [] : zpFileMsgIds() }).then(function (r) { ZP.set('bk_last', Date.now()); return r; }); }
     function openBackupPage() {
       zOpenPage('Chat Backup', function (b) {
         backupWithEmail(b);
@@ -5366,13 +5483,13 @@ ZW|Zimbabwe|263`;
         function refresh() { chatCall('backup_info', {}).then(function (r) { info.textContent = r.backup ? 'Last backup: ' + new Date(r.backup.at).toLocaleString() + ' \u2022 ' + r.backup.count + ' messages' : 'No backup yet.'; }, function () { info.textContent = 'Could not read backup status.'; }); }
         refresh();
         var bb = mk('button', 'zpm-cta', 'Back up now');
-        bb.addEventListener('click', function () { bb.disabled = true; bb.textContent = 'Backing up\u2026'; zpBackupRun(false).then(function (r) { toast('Backed up ' + r.count + ' messages' + (r.limited ? ' (free backup keeps your latest 500)' : ''), true, 3500); refresh(); }, function (e) { toast((e && e.message) || 'Backup failed'); }).then(function () { bb.disabled = false; bb.textContent = 'Back up now'; }); });
+        bb.addEventListener('click', function () { bb.disabled = true; bb.textContent = 'Backing up\u2026'; zpBackupRun(false).then(function (r) { toast('Backed up ' + r.count + ' messages' + (r.limited ? ' (free backup keeps your latest 480 texts, no files)' : ' (everything, including files)'), true, 3500); refresh(); }, function (e) { toast((e && e.message) || 'Backup failed'); }).then(function () { bb.disabled = false; bb.textContent = 'Back up now'; }); });
         b.appendChild(bb);
         var rb = mk('button', 'zpm-cta', 'Restore from backup'); rb.style.marginTop = '10px';
         rb.addEventListener('click', function () { rb.disabled = true; chatCall('backup_restore', {}).then(function (r) { toast('Restored ' + r.restored + ' missing messages', true, 3500); try { loadChats(); } catch (e) {} }, function (e) { toast((e && e.message) || 'Restore failed'); }).then(function () { rb.disabled = false; }); });
         b.appendChild(rb);
         zpToggle(b, 'cloud_unlimited', 'Unlimited Cloud Backup (auto-backup every day)', 'To use Unlimited Cloud Backup you need to subscribe to Zanply Premium');
-        b.appendChild(mk('div', 'pd-sec', window.zIsPremium() ? 'Premium: up to 20,000 messages, automatic daily backup. Priority Support: replies in under 1 hour.' : 'Free: manual backup only, latest 500 messages.'));
+        b.appendChild(mk('div', 'pd-sec', window.zIsPremium() ? 'Premium: up to 20,000 messages, automatic daily backup. Priority Support: replies in under 1 hour.' : 'Free: manual backup of your latest 480 text messages, without files. Premium backs up everything, including files.'));
       });
     }
     window.zpOpen.backup = openBackupPage;
@@ -6048,6 +6165,7 @@ ZW|Zimbabwe|263`;
       try { renderChats(); } catch (e) {}
     }
     function queueMsg(to, body) {
+      try { if (localStorage.getItem('zaply_linked_dev') && localStorage.getItem('zaply_linked_dev') === getToken()) return toast('Sending from a linked browser is not available yet. Use your phone.'); } catch (e) {}
       var it = { t: Date.now() + '_' + Math.random().toString(36).slice(2), to: to, body: body };
       var a = outbox(); a.push(it); setOutbox(a); pendBubble(it); try { renderChats(); } catch (e) {} flushOutbox();
     }
@@ -7939,7 +8057,7 @@ ZW|Zimbabwe|263`;
       setTimeout(nativeCheck, 700);
     }
     function startApp(user) {
-      var savedScr = null; try { savedScr = localStorage.getItem('zaply_screen'); } catch (e) {} /* showTab() below overwrites it, so grab it first */
+      setTimeout(function () { try { zpFolderImport(); } catch (e) {} }, 1500); var savedScr = null; try { savedScr = localStorage.getItem('zaply_screen'); } catch (e) {} /* showTab() below overwrites it, so grab it first */
       clearAuthStep();
       myPhone = user.phone; E2E.init(user.phone).catch(function () {}); try { RT.start(user.phone); } catch (e) {}
       try { allChats = JSON.parse(localStorage.getItem('zaply_chats') || '[]'); } catch (e) {}
@@ -8566,7 +8684,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
             var B = P.biz || {}, cb = mk('div', 'zcard'); cb.appendChild(mk('div', 'zsec', 'Business profile'));
             function br(icon, label, val, empty, key) { row(cb, icon, label, val, empty, function () { bizPage(key, P, after); }); }
             br('brief', 'Business name', B.name, 'Add business name', 'name'); br('at', 'Business username', B.username ? '@' + B.username : '', 'Add business username', 'username');
-            br('mail', 'Business email', B.email, 'Add business email', 'email'); br('pin', 'Business address', B.address, 'Add business address', 'address');
+            br('mail', 'Business email', B.email, 'info@business.com', 'email'); br('pin', 'Business address', B.address, 'Add business address', 'address');
             br('link', 'Business link', B.link, 'Add business link', 'link'); br('info', 'What does the business do', B.bio, 'Explain what your business does', 'bio');
             br('link', 'Links', (B.links || []).join(', '), 'Add up to 5 links', 'links'); br('person', 'Social media links', Object.keys(B.social || {}).length ? Object.keys(B.social).length + ' added' : '', 'Add social media links', 'social');
             list.appendChild(cb);
@@ -8753,7 +8871,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     })();
     ZI.verified = 'M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z';
     var VERIFIED_BLUE = '#1877F2';
-    var DEVICE_LINKS = ['desktop.applink', 'web.applink'];   // replace with your real desktop and web addresses when pairing is set up
+    var DEVICE_LINKS = [location.origin + '/desktop.html', location.origin + '/desktop.html'];   // replace with your real desktop and web addresses when pairing is set up
     function nowOn() { return !!navigator.onLine; }
 
     /* ---------- labels: the name you saved, otherwise @username, otherwise the name ---------- */
@@ -8859,20 +8977,24 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     function openAddDevice() {
       zOpenPage('Add device', function (b) {
         var w = mk('div', 'zdev'); b.appendChild(w); w.appendChild(deviceArt());
-        w.appendChild(mk('p', '', 'Go to ' + DEVICE_LINKS[0] + ' or ' + DEVICE_LINKS[1] + ' to get a pairing code or QR code.'));
+        w.appendChild(mk('p', '', 'On your computer, open the link below, enter your email or phone number, then choose \u201cRequest code\u201d or \u201cRequest QR code\u201d.'));
+        var lnk = mk('a', '', DEVICE_LINKS[0]); lnk.href = DEVICE_LINKS[0]; lnk.target = '_blank'; lnk.rel = 'noopener'; lnk.style.cssText = 'display:block;word-break:break-all;color:#21c063;font-weight:600;margin:6px 0 4px'; w.appendChild(lnk);
+        var cp = mk('button', '', 'Copy link'); cp.style.marginBottom = '8px'; cp.addEventListener('click', function () { if (navigator.clipboard) navigator.clipboard.writeText(DEVICE_LINKS[0]).then(function () { toast('Link copied', true); }); else toast(DEVICE_LINKS[0]); }); w.appendChild(cp);
         var c = mk('button', 'gbtn', 'Add device with Code'), q = mk('button', 'gbtn', 'Scan QR to add device'); c.style.cssText += ';margin-top:20px;background:#21c063'; q.style.cssText += ';margin-top:12px;background:#21c063';
         c.addEventListener('click', openDeviceCode); q.addEventListener('click', openDeviceQR); w.appendChild(c); w.appendChild(q);
       });
     }
     /* pairing is not built on the server yet, so this says so plainly instead of pretending */
-    function linkingBoard() {
+    function linkingBoard(code) {
       wboard(function (d, close) {
         d.appendChild(mk('div', 'zspin')); var t = mk('div', '', 'Linking device'); t.style.fontWeight = '600'; d.appendChild(t);
-        setTimeout(function () {
-          d.innerHTML = ''; var h = mk('div', '', 'Couldn\u2019t link the device'); h.style.cssText = 'font-size:17px;font-weight:600;margin-bottom:6px'; d.appendChild(h);
-          d.appendChild(mk('div', '', 'Desktop and web pairing is not switched on yet. It is being set up.')).style.opacity = '.7';
-          var ok = mk('button', 'primary', 'OK'); ok.style.cssText = 'width:100%;margin-top:16px'; ok.addEventListener('click', close); d.appendChild(ok);
-        }, 3000);
+        function show(ok, h, msg) {
+          d.innerHTML = ''; var hh = mk('div', '', (ok ? '\u2713 ' : '') + h); hh.style.cssText = 'font-size:17px;font-weight:600;margin-bottom:6px;color:' + (ok ? '#21c063' : 'inherit'); d.appendChild(hh);
+          d.appendChild(mk('div', '', msg)).style.opacity = '.7';
+          var ok2 = mk('button', 'primary', 'OK'); ok2.style.cssText = 'width:100%;margin-top:16px'; ok2.addEventListener('click', function () { close(); if (ok) { try { closeOv(); closeOv(); } catch (e) {} } }); d.appendChild(ok2);
+        }
+        chatCall('link_approve', { code: code }).then(function () { show(true, 'Device linked successfully', 'Your computer or browser is now signed in to this account.'); })
+          .catch(function (e) { show(false, 'Couldn\u2019t link the device', (e && e.message) || 'Something went wrong. Check your internet and try again.'); });
       });
     }
     function openDeviceCode() {
@@ -8889,7 +9011,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
           x.addEventListener('paste', function (e) { var t = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\D/g, '').slice(0, 6); if (!t) return; e.preventDefault(); for (var k = 0; k < 6; k++) ins[k].value = t[k] || ''; ins[Math.min(t.length, 5)].focus(); sync(); });
         })(i);
         w.appendChild(go); setTimeout(function () { ins[0].focus(); }, 100);
-        go.addEventListener('click', function () { if (val().length === 6) needNet(linkingBoard); });
+        go.addEventListener('click', function () { var cd = val(); if (cd.length === 6) needNet(function () { linkingBoard(cd); }); });
       });
     }
     function openDeviceQR() {
@@ -8905,7 +9027,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
           if (stopped) { s.getTracks().forEach(function (t) { t.stop(); }); return; } stream = s; v.srcObject = s;
           if (!('BarcodeDetector' in window)) { m.textContent = 'QR scanning is not supported on this phone yet. Use "Add device with Code" instead.'; return; }
           var det = new BarcodeDetector({ formats: ['qr_code'] });
-          (function tick() { if (stopped) return; det.detect(v).then(function (r) { if (r && r.length) { stop(); closeOv(); needNet(linkingBoard); } else setTimeout(tick, 300); }).catch(function () { setTimeout(tick, 500); }); })();
+          (function tick() { if (stopped) return; det.detect(v).then(function (r) { if (r && r.length) { var raw = String(r[0].rawValue || ''), mm = /^zanply-link:[a-f0-9]+:(\d{6})$/.exec(raw); if (!mm) { m.textContent = 'That is not a Zanply link code. Scan the QR code on desktop.html.'; setTimeout(tick, 1200); return; } stop(); closeOv(); needNet(function () { linkingBoard(mm[1]); }); } else setTimeout(tick, 300); }).catch(function () { setTimeout(tick, 500); }); })();
         }).catch(function () { m.textContent = 'Camera is not allowed. Turn on Camera for Zanply in your phone settings.'; });
       }, stop);
     }
@@ -9288,7 +9410,6 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       items = [['New group', function () { openNewGroup(ph); }, 'sep'],
         [isSaved ? 'View contact' : 'Add to contacts', function () { openSave(); }],
         ['Search', function () { chatSearch(); }],
-        ['Catch me up (AI)', function () { window.zpCatchUp(); }],
         ['Media, links, and docs', function () { zsheet('Media, links and docs', [['Media', openMediaGrid], ['Links', openLinks], ['Docs', openDocs]]); }],
         [isMuted(ph) ? 'Unmute notifications' : 'Mute notifications', muteToggle],
         ['Disappearing messages', function () { var v = 'off'; try { v = localStorage.getItem('zaply_dis_' + ph) || 'off'; } catch (e) {} Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.checked = r.value === v; }); openPage('disapView'); }],
