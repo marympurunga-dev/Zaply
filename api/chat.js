@@ -631,6 +631,32 @@ module.exports = async (req, res) => {
       try { const ref = b && b.data && b.data.reference; if (b.event === 'charge.success' && ref) await payVerify(ref); } catch (e) {}
       return res.status(200).json({ ok: true });
     }
+    /* Link a desktop / web browser: the browser asks for a code (with the email or phone of the account), the phone enters or scans it */
+    if (b.action === 'link_request' || b.action === 'link_status') {
+      await db().query('CREATE TABLE IF NOT EXISTS link_sessions (sid VARCHAR(40) PRIMARY KEY, code VARCHAR(8) NOT NULL, phone VARCHAR(24) NOT NULL, token TEXT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX (code))').catch(() => {});
+      if (b.action === 'link_request') {
+        const raw = String(b.ident || '').trim().toLowerCase(), ph = raw.replace(/[\s()-]/g, '');
+        const isMail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(raw), isPh = /^\+\d{7,15}$/.test(ph);
+        if (!isMail && !isPh) return res.status(400).json({ error: 'Enter the email or phone number linked to your account.' });
+        const [acc] = isMail ? await db().query('SELECT phone FROM profiles WHERE LOWER(email) = ? ORDER BY last_active DESC LIMIT 1', [raw]) : await db().query('SELECT phone FROM users WHERE phone = ? LIMIT 1', [ph]);
+        if (!acc[0]) return res.status(404).json({ error: 'No Zanply account is linked to that ' + (isMail ? 'email address' : 'phone number') + '.' });
+        const owner = acc[0].phone;
+        const [cnt] = await db().query('SELECT COUNT(*) AS n FROM link_sessions WHERE phone = ? AND created_at > (NOW() - INTERVAL 1 HOUR)', [owner]);
+        if (cnt[0].n >= 8) return res.status(429).json({ error: 'Too many link requests. Try again in an hour.' });
+        let code = '';
+        for (let i = 0; i < 6; i++) { const c = String(crypto.randomInt(0, 1000000)).padStart(6, '0'); const [dup] = await db().query('SELECT sid FROM link_sessions WHERE code = ? AND token IS NULL AND created_at > (NOW() - INTERVAL 10 MINUTE) LIMIT 1', [c]); if (!dup[0]) { code = c; break; } }
+        if (!code) return res.status(503).json({ error: 'Try again in a moment.' });
+        const sid = crypto.randomBytes(16).toString('hex');
+        await db().query('INSERT INTO link_sessions (sid, code, phone) VALUES (?, ?, ?)', [sid, code, owner]);
+        return res.json({ ok: true, sid, code, qr: 'zanply-link:' + sid + ':' + code, expires: 600 });
+      }
+      const sid = String(b.sid || '').replace(/[^a-f0-9]/g, '').slice(0, 40);
+      const [r] = await db().query('SELECT token, TIMESTAMPDIFF(SECOND, created_at, NOW()) AS age FROM link_sessions WHERE sid = ?', [sid]);
+      if (!r[0] || r[0].age > 600) return res.json({ status: 'expired' });
+      if (!r[0].token) return res.json({ status: 'pending' });
+      await db().query('DELETE FROM link_sessions WHERE sid = ?', [sid]);
+      return res.json({ status: 'linked', token: r[0].token });
+    }
     /* Passkey login (no token yet): the phone signs a short-lived challenge with the key kept in its Keystore */
     if (b.action === 'pk_challenge' || b.action === 'pk_login') {
       const keyId = String(b.keyId || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40), phone = String(b.phone || '');
@@ -659,6 +685,16 @@ module.exports = async (req, res) => {
     const me = readToken(b.token);
     if (!me) return res.status(401).json({ error: 'Session expired. Please sign in again.' });
     await ensureTable();
+    if (b.action === 'link_approve') {
+      const code = String(b.code || '').replace(/\D/g, '').slice(0, 6);
+      if (code.length !== 6) return res.status(400).json({ error: 'Enter the 6-digit code shown on your computer.' });
+      await db().query('CREATE TABLE IF NOT EXISTS link_sessions (sid VARCHAR(40) PRIMARY KEY, code VARCHAR(8) NOT NULL, phone VARCHAR(24) NOT NULL, token TEXT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, INDEX (code))').catch(() => {});
+      const [r] = await db().query('SELECT sid, phone FROM link_sessions WHERE code = ? AND token IS NULL AND created_at > (NOW() - INTERVAL 10 MINUTE) ORDER BY created_at DESC LIMIT 1', [code]);
+      if (!r[0]) return res.status(400).json({ error: 'That code is wrong or has expired. Request a new one on your computer.' });
+      if (r[0].phone !== me) return res.status(403).json({ error: 'This code was requested for a different Zanply account.' });
+      await db().query('UPDATE link_sessions SET token = ? WHERE sid = ?', [mintToken(me), r[0].sid]);
+      return res.json({ ok: true });
+    }
 
     if (b.action === 'list') {
       /* the app is open, so everything waiting for me counts as delivered (two grey ticks for the sender) */
@@ -820,7 +856,20 @@ module.exports = async (req, res) => {
       }
       if (!target) return res.json({ found: false });
       if (target === me) return res.json({ found: false, self: true });
-      if (b.action === 'transfer_lookup') return res.json({ found: true });
+      let needPin = false;
+      if (!b.code) {
+        const [t2] = await db().query('SELECT salt, hash FROM two_step WHERE phone = ?', [target]);
+        if (t2[0]) {
+          needPin = true;
+          if (b.action === 'transfer_chat') {
+            const pin = String(b.pin || '').trim(), tries = (global.__trTries = global.__trTries || {}), k = me + '>' + target; tries[k] = tries[k] || 0;
+            if (!/^\d{6}$/.test(pin)) return res.status(400).json({ error: 'Enter the 6-digit two-step verification PIN.' });
+            if (tries[k] >= 8) return res.status(429).json({ error: 'Too many wrong tries. Try again later.' });
+            if (crypto.scryptSync(pin, t2[0].salt, 32).toString('hex') !== t2[0].hash) { tries[k]++; setTimeout(() => { tries[k] = 0; }, 3600000); return res.status(400).json({ error: 'Wrong PIN. Try again.' }); }
+          }
+        }
+      }
+      if (b.action === 'transfer_lookup') return res.json({ found: true, needPin });
       if (!phoneOk(b.peer) || b.peer === me) return res.status(400).json({ error: 'Bad request.' });
       if (b.peer === target) return res.json({ ok: true, count: 0 });
       const [ins] = await db().query(
@@ -875,8 +924,9 @@ module.exports = async (req, res) => {
       const prem = await isPremium(me);
       if (b.auto && !prem) return res.status(403).json({ error: 'Automatic backup is part of Zanply Premium.', premium: true });
       await db().query('CREATE TABLE IF NOT EXISTS chat_backups (phone VARCHAR(24) PRIMARY KEY, data LONGTEXT, msg_count INT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)').catch(() => {});
-      const cap = prem ? 20000 : 500;
-      const [rows] = await db().query('SELECT id, sender, receiver, body, created_at, delivered_at, read_at FROM messages WHERE sender = ? OR receiver = ? ORDER BY id DESC LIMIT ?', [me, me, cap]);
+      const cap = prem ? 20000 : 480;
+      const skip = (!prem && Array.isArray(b.skip)) ? b.skip.map(Number).filter((n) => Number.isFinite(n)).slice(0, 5000) : [];
+      const [rows] = await db().query('SELECT id, sender, receiver, body, created_at, delivered_at, read_at FROM messages WHERE (sender = ? OR receiver = ?)' + (skip.length ? ' AND id NOT IN (?)' : '') + ' ORDER BY id DESC LIMIT ?', skip.length ? [me, me, skip, cap] : [me, me, cap]);
       const data = JSON.stringify(rows);
       await db().query('INSERT INTO chat_backups (phone, data, msg_count) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE data = VALUES(data), msg_count = VALUES(msg_count)', [me, data, rows.length]);
       return res.json({ ok: true, count: rows.length, limited: !prem });
