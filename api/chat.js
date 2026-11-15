@@ -239,7 +239,7 @@ const NAME_STYLES = ['bold', 'italic', 'serif', 'script', 'mono', 'grad'];
 function parseExtra(raw) {
   let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch (e) { o = {}; }
   return { acct: o.acct === 'business' ? 'business' : 'personal', biz: o.biz && typeof o.biz === 'object' ? o.biz : null,
-    pstyle: NAME_STYLES.indexOf(o.pstyle) > -1 ? o.pstyle : '', pcolor: /^#[0-9a-f]{6}$/i.test(String(o.pcolor || '')) ? String(o.pcolor) : '', pset: o.pset && typeof o.pset === 'object' ? o.pset : {} };
+    social: o.social && typeof o.social === 'object' ? o.social : {}, pstyle: NAME_STYLES.indexOf(o.pstyle) > -1 ? o.pstyle : '', pcolor: /^#[0-9a-f]{6}$/i.test(String(o.pcolor || '')) ? String(o.pcolor) : '', pset: o.pset && typeof o.pset === 'object' ? o.pset : {} };
 }
 const cleanRow = (r) => Object.assign({ username: r.username || '', email: r.email || '', address: r.address || '', bio: r.bio || '', birthday: r.birthday || '', pet: r.pet || '', links: r.links || '', photo_url: r.photo_url || '' }, parseExtra(r.extra));
 // trims, and cuts to a number of characters (emoji count as one)
@@ -256,6 +256,16 @@ function cleanLink(v, max) {
 function cleanName(v) {
   const t = String(v == null ? '' : v).replace(/[^\p{L}\s]/gu, '').replace(/\s+/g, ' ').trim();
   return Array.from(t).slice(0, 40).join('').split(' ').map((w) => { const a = Array.from(w.toLowerCase()); return a.length ? a[0].toUpperCase() + a.slice(1).join('') : ''; }).join(' ');
+}
+// personal social media links (key -> https link), same rules as the business ones
+function cleanSocial(b) {
+  if (b === undefined) return { social: undefined };
+  const soc = b && typeof b === 'object' ? b : {}, out = {};
+  for (const k of Object.keys(soc).slice(0, 40)) {
+    if (!/^[a-z0-9_]{2,20}$/.test(k) || !String(soc[k] || '').trim()) continue;
+    const l = cleanLink(soc[k]); if (l === null) return { error: 'One of the social media links doesn\u2019t look right.' }; out[k] = l;
+  }
+  return { social: out };
 }
 function cleanBiz(b) {
   if (b === null) return { biz: null };
@@ -333,8 +343,9 @@ function cleanProfile(b) {
     const l = cleanLink(raw); if (l === null) return { error: 'One of the links doesn’t look right.' }; linkList.push(l);
   }
   const biz = cleanBiz(b.biz); if (biz.error) return { error: biz.error };
+  const social = cleanSocial(b.social); if (social.error) return { error: social.error };
   const acct = b.acct === undefined ? undefined : (b.acct === 'business' ? 'business' : 'personal');
-  return { name, username, email, address: clip(b.address, 120), bio: clip(b.bio, 114), birthday, pet: clip(b.pet, 40), links: linkList.join('\n'), acct, biz: biz.biz };
+  return { name, username, email, address: clip(b.address, 120), bio: clip(b.bio, 114), birthday, pet: clip(b.pet, 40), links: linkList.join('\n'), acct, biz: biz.biz, social: social.social };
 }
 const sha = (x) => crypto.createHash('sha256').update(String(x)).digest('hex');
 const MAX_GROUP = 100000; // free: 100,000 members
@@ -1221,6 +1232,7 @@ module.exports = async (req, res) => {
       const prevAcct = ex.acct;
       if (p.acct !== undefined) ex.acct = p.acct;
       if (p.biz !== undefined) ex.biz = p.biz;
+      if (p.social !== undefined) ex.social = p.social;
       // switching between Personal and Business (either way) erases ALL business data on the server:
       // business details, greeting / away messages, open days and hours. The next Business account starts empty.
       if (p.acct !== undefined && p.acct !== prevAcct) ex.biz = null;
@@ -1236,7 +1248,7 @@ module.exports = async (req, res) => {
         throw e;
       }
       const [nm2] = await db().query('SELECT name FROM users WHERE phone = ?', [me]);
-      return res.json({ profile: { name: nm2[0] ? nm2[0].name || '' : '', username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet, links: p.links, acct: ex.acct, biz: ex.biz } });
+      return res.json({ profile: { name: nm2[0] ? nm2[0].name || '' : '', username: p.username, email: p.email, address: p.address, bio: p.bio, birthday: p.birthday, pet: p.pet, links: p.links, acct: ex.acct, biz: ex.biz, social: ex.social || {} } });
     }
 
     // ---- Premium effects: verified badge + name style/colour for many phones, wallpaper for both sides ----
