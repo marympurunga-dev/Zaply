@@ -267,7 +267,9 @@ function cleanBiz(b) {
     days: (Array.isArray(b.days) ? b.days : []).filter((d, i, a) => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].includes(d) && a.indexOf(d) === i),
     from: /^([01]\d|2[0-3]):[0-5]\d$/.test(String(b.from || '')) ? String(b.from) : '',
     to: /^([01]\d|2[0-3]):[0-5]\d$/.test(String(b.to || '')) ? String(b.to) : '',
-    open24: !!b.open24 };
+    open24: !!b.open24,
+    // Zanply Business auto replies (sent by the server, so they also work when the app is closed)
+    greet: !!b.greet, greetText: clip(b.greetText, 300), away: !!b.away, awayText: clip(b.awayText, 300) };
   if (out.username && !/^[a-z0-9.]{3,30}$/.test(out.username)) return { error: 'Business username must be 3 to 30 letters, numbers or dots.' };
   if (out.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(out.email)) return { error: 'That business email doesn’t look right.' };
   if (b.link) { const l = cleanLink(b.link); if (l === null) return { error: 'That business link doesn’t look right.' }; out.link = l; }
@@ -281,6 +283,35 @@ function cleanBiz(b) {
     const l = cleanLink(soc[k]); if (l === null) return { error: 'One of the social media links doesn’t look right.' }; out.social[k] = l;
   }
   return { biz: out };
+}
+// ---- Zanply Business auto replies ----
+// Greeting: sent only the FIRST time a person ever messages the business (no earlier messages between the two).
+// Away: sent when the business owner is offline / the app is closed, once for each time they go offline (not on every message).
+const DEFAULT_GREET = 'Hello! Thanks for contacting us.';
+const DEFAULT_AWAY = 'Thanks for your message! We are away right now and will reply as soon as we are back.';
+async function bizAutoReply(from, owner, msgId) {
+  try {
+    if (!from || !owner || from === owner) return;
+    const [pr] = await db().query('SELECT extra, last_active, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS live FROM profiles WHERE phone = ?', [owner]);
+    if (!pr[0]) return;
+    const x = parseExtra(pr[0].extra);
+    if (x.acct !== 'business' || !x.biz || (!x.biz.greet && !x.biz.away)) return;
+    const B = x.biz, out = [];
+    if (B.greet) {
+      const [cn] = await db().query('SELECT COUNT(*) AS c FROM messages WHERE ((sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)) AND id < ?', [from, owner, owner, from, msgId]);
+      if (!Number(cn[0].c)) out.push(B.greetText || DEFAULT_GREET);
+    }
+    if (B.away && Number(pr[0].live) !== 1) {
+      const [lm] = await db().query('SELECT MAX(created_at) AS t FROM messages WHERE sender = ? AND receiver = ? AND id < ?', [owner, from, msgId]);
+      const since = pr[0].last_active ? new Date(pr[0].last_active).getTime() : 0, last = lm[0] && lm[0].t ? new Date(lm[0].t).getTime() : 0;
+      if (!last || last < since) out.push(B.awayText || DEFAULT_AWAY);
+    }
+    for (const t of out) {
+      await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [owner, from, t]);
+      await rt.signal([from], 'msg', { from: owner });
+      try { await notify(owner, from, t); } catch (e) {}
+    }
+  } catch (e) { /* auto replies must never break sending */ }
 }
 function cleanProfile(b) {
   const username = clip(b.username, 31).replace(/^@/, '').toLowerCase();
@@ -968,6 +999,7 @@ module.exports = async (req, res) => {
       const [r] = await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [me, b.to, body]);
       await rt.signal([b.to], 'msg', { from: me });
       await notify(me, b.to, body);
+      await bizAutoReply(me, b.to, r.insertId);
       return res.json({ message: { id: r.insertId, mine: true, body, at: new Date().toISOString(), st: 1 } });
     }
 
