@@ -2537,6 +2537,8 @@ ZW|Zimbabwe|263`;
       });
     });
 
+    /* Premium feature page styles (Free / Premium comparison etc.): injected at start-up, not only when the Chart screen opens */
+    (function () { if (document.getElementById('zpdcss')) return; var s2 = document.createElement('style'); s2.id = 'zpdcss'; s2.textContent = '.pd-tg{display:flex;justify-content:space-between;align-items:center;width:70%;font-size:13px}.pd-tg i{width:34px;height:18px;border-radius:9px;background:#c9a24a;position:relative;animation:pdo 3s infinite}.pd-tg i:after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;animation:pdk 3s infinite}.pd-fl{width:80%;display:flex;flex-direction:column;gap:6px;font-size:12px}.pd-fl u{display:block;height:8px;border-radius:4px;background:#ffffff26;overflow:hidden}.pd-fl u i{display:block;height:100%;width:var(--w);background:#c9a24a;animation:pdw2 3s infinite alternate}.pd-em i{background:none;font-style:normal;font-size:44px;width:auto;height:auto}.pd-cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 18px}.pd-cmp div{padding:12px;border-radius:14px;background:var(--zp-card);font-size:13px;line-height:1.35}.pd-cmp div:last-child{border:1.5px solid #c9a24a}.pd-cmp b{display:block;margin-bottom:4px}.pd-st{margin:12px 14px;padding:14px;border-radius:16px;background:var(--zp-card);font-size:14px;line-height:1.4}.pd-st button{margin-top:8px;border:1.5px solid #c9a24a;background:none;color:inherit;border-radius:12px;padding:8px 14px}@keyframes pdo{0%,40%{background:#6b7280}50%,100%{background:#c9a24a}}@keyframes pdk{0%,40%{left:2px}50%,100%{left:18px}}@keyframes pdw2{from{transform:scaleX(.2);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}'; document.head.appendChild(s2); })();
     /* ---------- chart ---------- */
     var COLORS = ['#4f46e5', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
     var dark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -2557,7 +2559,6 @@ ZW|Zimbabwe|263`;
       };
       s.onerror = function () { chartWaiters = []; chartLoading = false; s.remove(); showStatus('Could not load the chart tools. Check your internet.', true); };
       document.head.appendChild(s);
-      var s2 = document.createElement('style'); s2.textContent = '.pd-tg{display:flex;justify-content:space-between;align-items:center;width:70%;font-size:13px}.pd-tg i{width:34px;height:18px;border-radius:9px;background:#c9a24a;position:relative;animation:pdo 3s infinite}.pd-tg i:after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;animation:pdk 3s infinite}.pd-fl{width:80%;display:flex;flex-direction:column;gap:6px;font-size:12px}.pd-fl u{display:block;height:8px;border-radius:4px;background:#ffffff26;overflow:hidden}.pd-fl u i{display:block;height:100%;width:var(--w);background:#c9a24a;animation:pdw2 3s infinite alternate}.pd-em i{background:none;font-style:normal;font-size:44px;width:auto;height:auto}.pd-cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 18px}.pd-cmp div{padding:12px;border-radius:14px;background:var(--zp-card);font-size:13px;line-height:1.35}.pd-cmp div:last-child{border:1.5px solid #c9a24a}.pd-cmp b{display:block;margin-bottom:4px}.pd-st{margin:12px 14px;padding:14px;border-radius:16px;background:var(--zp-card);font-size:14px;line-height:1.4}.pd-st button{margin-top:8px;border:1.5px solid #c9a24a;background:none;color:inherit;border-radius:12px;padding:8px 14px}@keyframes pdo{0%,40%{background:#6b7280}50%,100%{background:#c9a24a}}@keyframes pdk{0%,40%{left:2px}50%,100%{left:18px}}@keyframes pdw2{from{transform:scaleX(.2);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}'; document.head.appendChild(s2);
     }
 
     var chart = null, chartType = 'bar', rows = [];
@@ -3537,14 +3538,36 @@ ZW|Zimbabwe|263`;
         w.appendChild(mk('div', 'sub', 'Choose contacts from your phone so their names show in your chats.'));
         var last = 0; try { last = +localStorage.getItem('zaply_sync') || 0; } catch (e) {} if (last) w.appendChild(mk('div', 'sub', 'Last synced: ' + new Date(last).toLocaleString()));
         var go = mk('button', 'primary', 'Sync contacts'); go.style.marginTop = '12px'; w.appendChild(go);
+        /* Android app: use the same phone-contacts access as the New chat screen and sync every contact with a number */
+        function syncNative() {
+          var N = window.ZanplyNative, all = [];
+          try { all = JSON.parse(N.phoneContacts() || '[]'); } catch (e) { all = []; }
+          var a = contacts(), n = 0;
+          all.forEach(function (c) {
+            var nm = String(c.n || '').trim(), p = contactNum(c.p); if (!p || !nm) return;
+            var sp = nm.indexOf(' '); a[p] = { first: sp > -1 ? nm.slice(0, sp) : nm, last: sp > -1 ? nm.slice(sp + 1) : '', iso: '', number: p, cc: '' }; n++;
+          });
+          try { localStorage.setItem('zaply_contacts', JSON.stringify(a)); localStorage.setItem('zaply_sync', String(Date.now())); } catch (e) { toast('Not enough space to save your contacts'); return; }
+          syncSavedContacts(); toast(n ? n + ' contacts synced' : 'No contacts with a phone number were found', !!n); try { renderChats(); } catch (e) {}
+          go.textContent = 'Sync contacts'; go.disabled = false;
+          var ls = w.querySelector('.zlastsync'); if (!ls) { ls = mk('div', 'sub zlastsync'); w.insertBefore(ls, go); } ls.textContent = 'Last synced: ' + new Date().toLocaleString();
+        }
         go.addEventListener('click', function () {
+          var N = window.ZanplyNative;
+          if (N && typeof N.contactsGranted === 'function') {
+            var granted = false; try { granted = N.contactsGranted(); } catch (e) {}
+            go.disabled = true; go.textContent = 'Syncing\u2026';
+            if (granted) { setTimeout(syncNative, 50); return; }
+            askContactsThen(function (ok) { if (ok) syncNative(); else { go.disabled = false; go.textContent = 'Sync contacts'; toast('Contacts permission was not allowed'); } });
+            return;
+          }
           if (!(navigator.contacts && navigator.contacts.select)) return toast('This browser cannot share contacts. Open Zanply in Chrome on Android.');
           navigator.contacts.select(['name', 'tel'], { multiple: true }).then(function (list) {
             var a = contacts(), n = 0;
             list.forEach(function (c) { var nm = String((c.name && c.name[0]) || '').trim(); (c.tel || []).slice(0, 1).forEach(function (t) { var p = normPhone(t); if (p && nm) { var sp = nm.indexOf(' '); a[p] = { first: sp > -1 ? nm.slice(0, sp) : nm, last: sp > -1 ? nm.slice(sp + 1) : '', iso: '', number: p, cc: '' }; n++; } }); });
             try { localStorage.setItem('zaply_contacts', JSON.stringify(a)); localStorage.setItem('zaply_sync', String(Date.now())); } catch (e) {} syncSavedContacts();
             toast(n + ' contacts synced', true); try { renderChats(); } catch (e) {}
-          }).catch(function () {});
+          }).catch(function (e) { if (!e || e.name !== 'AbortError') toast('Could not read your contacts. Allow contacts access and try again.'); });
         });
       });
     }
@@ -4074,9 +4097,11 @@ ZW|Zimbabwe|263`;
       window.__defBlend = '';
       return 'url("' + doodleTile(d) + '") 0 0/480px 480px repeat,' + (d ? 'linear-gradient(170deg,#0e1b29,#0b1621 50%,#0f2031)' : 'linear-gradient(160deg,#dbe7f3,#eef3f8 55%,#d6e2ee)');
     }
+    /* Chat bubble colour / chat theme: beats the fixed green bubbles in the stylesheet (only when the person picked one) */
+    zInjectCss('zbubcss', 'html.zbubc #msgs .bub.mine,html.zbubc.islight #msgs .bub.mine,html.zbubc.isdark #msgs .bub.mine{background:var(--thmine)!important;color:var(--thtxt)!important}html.zbubc #msgs .bub.mine small,html.zbubc #msgs .bub.mine .tk,html.zbubc.islight #msgs .bub.mine small,html.zbubc.islight #msgs .bub.mine .tk{color:var(--thtxt)!important;opacity:.75}');
     function applyTheme() {
       applyAccent(); applyIcon();
-      var t = curTheme(), r = document.documentElement.style; r.setProperty('--thmine', t.mine); r.setProperty('--thtxt', t.txt); var bc = lsGet('zaply_bubble', null); if (bc && bc.c) { r.setProperty('--thmine', bc.c); r.setProperty('--thtxt', bc.t); }
+      var t = curTheme(), r = document.documentElement.style; r.setProperty('--thmine', t.mine); r.setProperty('--thtxt', t.txt); var bc = lsGet('zaply_bubble', null); if (bc && bc.c) { r.setProperty('--thmine', bc.c); r.setProperty('--thtxt', bc.t); } document.documentElement.classList.toggle('zbubc', !!((bc && bc.c) || t.id !== 'default'));
       var m = $('msgs'); if (!m) return; var w = (openWith && lsGet('zaply_cwall_' + openWith, null)) || lsGet('zaply_wall', null), bg = '';
       var usedDef = false;
       if (w && w.css) bg = (w.k === 'preset' && w.css.indexOf('svg+xml') > -1) ? 'linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),' + w.css : w.css; else if (t.bg) bg = t.bg; else { bg = defaultChatBg(); usedDef = true; }
@@ -4166,7 +4191,7 @@ ZW|Zimbabwe|263`;
       zOpenPage('Appearance', function (b) {
         zrows(b, [['palette', 'Default chat theme', openThemes]]);
         b.appendChild(mk('div', 'zsep')); var h = mk('div', 'zsec'); h.innerHTML = '<span style="color:#21c063">\u25c6</span> Zanply Plus'; b.appendChild(h);
-        zrows(b, [['smile', 'App icon', openAppIcons], ['image', 'Wallpaper for both sides', function () { window.zpOpen.wpBoth(); }], ['anim', 'Live wallpapers', function () { window.zpOpen.liveWp(); }], ['palette', 'Premium Themes', function () { window.zpOpen.themes(); }], ['palette', 'Text theme', openAppColors]]);
+        zrows(b, [['smile', 'App icon', openAppIcons], ['image', 'Wallpaper for both sides', function () { window.zpOpen.wpBoth(); }], ['anim', 'Live wallpapers', function () { window.zpOpen.liveWp(); }], ['palette', 'Premium Themes', function () { window.zpOpen.themes(); }]]);
         var f = mk('div', 'zfoot'); f.innerHTML = 'Subscribe to Zanply Premium to unlock exclusive app icons, wallpapers for both sides and live wallpapers. <a href="#" style="color:#21c063;font-weight:600;text-decoration:none">Explore benefits</a>';
         f.querySelector('a').addEventListener('click', function (e) { e.preventDefault(); soon('Zanply Plus')(); }); b.appendChild(f);
       });
@@ -4751,7 +4776,33 @@ ZW|Zimbabwe|263`;
         });
       }
       function smsTo(num) { location.href = 'sms:' + num + (/iPhone|iPad/.test(navigator.userAgent) ? '&' : '?') + 'body=' + encodeURIComponent(txt); }
+      /* In the Android app, use the same contacts permission as the New chat screen (so once allowed there, it works here too). */
+      function inviteNative() {
+        var N = window.ZanplyNative;
+        zOpenPage('Invite from contacts', function (b) {
+          var top = mk('div'); top.style.padding = '10px 16px 4px';
+          var q = mk('input', 'zin'); q.placeholder = 'Search your contacts'; top.appendChild(q); b.appendChild(top);
+          var list = mk('div'), all = null; b.appendChild(list);
+          function paint() {
+            list.innerHTML = '';
+            var granted = false; try { granted = N.contactsGranted(); } catch (e) {}
+            if (!granted) { zempty(list, 'Allow Zanply to see your phone contacts so you can invite friends from your address book.', 'Allow contacts', function () { askContactsThen(function (ok) { if (ok) paint(); else toast('Contacts permission was not allowed'); }); }); return; }
+            if (!all) { try { all = JSON.parse(N.phoneContacts() || '[]'); } catch (e) { all = []; } }
+            var t = q.value.trim().toLowerCase(), n = 0;
+            all.forEach(function (c) {
+              if (n >= 150) return; if (t && (c.n || '').toLowerCase().indexOf(t) < 0 && c.p.indexOf(t.replace(/\D/g, '') || '\u0000') < 0) return; n++;
+              var row = mk('div', 'row'); row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px';
+              var l = mk('div'); l.appendChild(mk('b', '', c.n || c.p)); if (c.n) l.appendChild(mk('div', 'sub', c.p));
+              var bt = mk('button', 'primary', 'Invite'); bt.style.cssText = 'padding:8px 18px;border-radius:999px'; bt.addEventListener('click', function () { smsTo(String(c.p).replace(/[^\d+]/g, '')); });
+              row.appendChild(l); row.appendChild(bt); list.appendChild(row);
+            });
+            if (!n) zempty(list, all.length ? 'No contact matches your search.' : 'No contacts with a phone number were found on this phone.');
+          }
+          q.addEventListener('input', paint); paint();
+        });
+      }
       function fromContacts() {
+        if (window.ZanplyNative && typeof window.ZanplyNative.contactsGranted === 'function') { inviteNative(); return; }
         if (navigator.contacts && navigator.contacts.select) {
           navigator.contacts.select(['name', 'tel'], { multiple: true }).then(function (list) {
             var rows = []; (list || []).forEach(function (c) { var n = (c.tel || [])[0]; if (n) rows.push({ name: (c.name || [])[0] || n, num: String(n).replace(/[^\d+]/g, '') }); });
@@ -4911,7 +4962,7 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'lock', 'Security & privacy', 'Last seen, blocked users, app lock, auto-delete', openPrivacy);
         zrow2(list, 'chat', 'Chats', 'Enter is send, font size, archived chats', openChats);
         zrow2(list, 'folder', 'Chat folders', 'Organise your chats into folders', openFolders);
-        zrow2(list, 'palette', 'Appearance', 'Chat theme, wallpaper, live wallpaper, app icon, text theme', openAppearance);
+        zrow2(list, 'palette', 'Appearance', 'Chat theme, wallpaper, live wallpaper, app icon', openAppearance);
         zrow2(list, 'bell', 'Notifications', 'Message, group & call tones', openNotif);
         zrow2(list, 'storage', 'Storage and data', 'Network usage, auto-download', openStorage);
         zrow2(list, 'access', 'Accessibility', 'Contrast, animation', openAccess);
@@ -8773,9 +8824,11 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
           row(c, 'cake', 'Birthday', fmtBday(P.birthday), 'DD/MM/YYYY', edit(D.birthday));
           row(c, 'paw', 'Pet', P.pet ? petIcon(P.pet) + '  ' + P.pet : '', 'Pet', edit(D.pet));
           row(c, 'link', 'Links', fmtLinks(P.links), 'http://url.com', edit(D.links));
+          if (!isBiz) { var nsoc = Object.keys(P.social || {}).length; row(c, 'person', 'Social media links', nsoc ? nsoc + ' added' : '', 'Add social media links', function () { socialPage(P, after); }); }
           if (!isBiz) list.appendChild(c);
           if (isBiz) {
             var B = P.biz || {}, cb = mk('div', 'zcard'); cb.appendChild(mk('div', 'zsec', 'Business profile'));
+            row(cb, 'phone', 'Phone', myPhone || '', '', function () { phonePage(P); }); if (ct) row(cb, 'pin', 'Country', flag(ct.iso) + '  ' + ct.name, '', null, '', true);
             function br(icon, label, val, empty, key) { row(cb, icon, label, val, empty, function () { bizPage(key, P, after); }); }
             br('brief', 'Business name', B.name, 'Add business name', 'name'); br('at', 'Business username', B.username ? '@' + B.username : '', 'Add business username', 'username');
             br('mail', 'Business email', B.email, 'info@business.com', 'email'); br('pin', 'Business address', B.address, 'Add business address', 'address');
@@ -8786,6 +8839,25 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         }
         paintAv(); render();
         myProf().then(function (p) { P = p; cacheMyProf(P); paintAv(); render(); }).catch(function () {});
+      });
+    }
+
+    /* Personal account: social media links (same inputs as the business page) */
+    function socialPage(P, done) {
+      zOpenPage('Social media links', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var cur = P.social || {}, ss = {};
+        SOCIALS.forEach(function (o) { var r = mk('div', 'zsoc'), ic = mk('i', '', o[1]), x = zin(o[2] + ' link', 'url', 200); x.value = cur[o[0]] || ''; x.setAttribute('autocapitalize', 'none'); ss[o[0]] = x; r.appendChild(ic); r.appendChild(x); w.appendChild(r); });
+        var m = mk('div', 'zerr'), sv = mk('button', 'primary', 'Save'); w.appendChild(m); sv.style.marginTop = '12px'; w.appendChild(sv);
+        sv.addEventListener('click', function () {
+          m.textContent = ''; var out = {}; for (var k in ss) if (ss[k].value.trim()) out[k] = ss[k].value.trim();
+          function go() {
+            sv.disabled = true;
+            saveProfile(P, { social: out }).then(function (r) { mergeProfile(P, r); toast('Saved', true); done(); closeOv(); })
+              .catch(function (e) { if (isOffErr(e)) noNet(go); else m.textContent = (e && e.message) || 'Could not save.'; }).then(function () { sv.disabled = false; });
+          }
+          needNet(go);
+        });
       });
     }
 
@@ -11132,7 +11204,6 @@ ZFAQ.push(["Appearance and themes",[
 ["What is Wallpaper for Both Sides?","In Premium, **your wallpaper also shows to the other person** in your chat."],
 ["How do I change app icons?","Open **Appearance › App icon** and pick one. Extra icons need Premium."],
 ["How many app icons are available?","There are **15 icons**. The first is the default and the other 14 are Premium."],
-["What is Text theme?","It changes the **colours of text in the app**. Open Appearance › Text theme."],
 ["What is a chat bubble?","The **shape and colour** of message bubbles. Change it in Appearance › Chat bubble."],
 ["What are Premium Themes?","Extra **chat themes and bubble colours** available with Premium."],
 ["Why do I see a lock on a theme?","It is a **Premium theme**. Subscribe to unlock it."],
@@ -11167,7 +11238,6 @@ ZFAQ.push(["Appearance and themes",[
 ["Is there a high contrast mode?","Yes. Turn on **Increase contrast** in Accessibility."],
 ["Will themes sync to my other phone?","Themes are stored **per device**. Set them again on the new phone."],
 ["Where do I find Choose theme?","It is in **Appearance**, along with themes and wallpapers."],
-["How do I change colours in the menu?","Use **Text theme** to change app colours."],
 ["Are there seasonal themes?","Some themes may be added over time. **Update Zanply** to see the latest."],
 ["How do I request a new theme?","Use **Send feedback** and tell us what you want."],
 ["Can I preview the app in another language?","Switch the language and the app updates. **Switch back whenever you want.**"]
