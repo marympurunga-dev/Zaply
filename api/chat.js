@@ -122,6 +122,10 @@ function ensureTable() {
       await db().query("ALTER TABLE messages ADD COLUMN delivered_at TIMESTAMP NULL")
         .then(() => db().query("UPDATE messages SET delivered_at = created_at, read_at = created_at WHERE read_at IS NULL")).catch(() => {});
       await db().query("ALTER TABLE messages ADD INDEX idx_rd (receiver, delivered_at)").catch(() => {});
+      /* deleted chats: upto_id = the last message that existed when this person deleted the chat. Anything up to it stays gone for good. */
+      await db().query(`CREATE TABLE IF NOT EXISTS chat_deleted (
+        owner VARCHAR(20) NOT NULL, peer VARCHAR(20) NOT NULL, upto_id BIGINT NOT NULL DEFAULT 0,
+        deleted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (owner, peer))`).catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN photo_url VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN links VARCHAR(300) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles MODIFY COLUMN links VARCHAR(700) NOT NULL DEFAULT ''").catch(() => {});
@@ -748,7 +752,8 @@ module.exports = async (req, res) => {
         `SELECT id, sender, receiver, body, created_at, delivered_at, read_at FROM messages
          WHERE id IN (SELECT MAX(id) FROM messages WHERE sender = ? OR receiver = ?
                       GROUP BY IF(sender = ?, receiver, sender))
-         ORDER BY id DESC LIMIT 100`, [me, me, me]);
+           AND id > COALESCE((SELECT d.upto_id FROM chat_deleted d WHERE d.owner = ? AND d.peer = IF(messages.sender = ?, messages.receiver, messages.sender)), 0)
+         ORDER BY id DESC LIMIT 100`, [me, me, me, me, me]);
       const others = last.map((m) => (m.sender === me ? m.receiver : m.sender));
       let names = {}, unames = {};
       if (others.length) {
@@ -762,12 +767,17 @@ module.exports = async (req, res) => {
         hid: !!hidMap[others[i]], phone: others[i], name: names[others[i]] || '', username: unames[others[i]] || '', last: m.body,
         mine: m.sender === me, at: m.created_at,
         st: m.sender === me ? (m.read_at && !hideT[others[i]] ? 3 : m.delivered_at ? 2 : 1) : 0 }));
-      const [gs] = await db().query(
+      const [gsAll] = await db().query(
         `SELECT g.id, g.name, g.created_at,
+           (SELECT id FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS mid,
            (SELECT body FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS body,
            (SELECT sender FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS sender,
            (SELECT created_at FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS mat
          FROM chat_groups g JOIN group_members m ON m.group_id = g.id WHERE m.phone = ?`, [me]);
+      /* groups this person deleted stay hidden until a newer message arrives */
+      const [dgs] = await db().query("SELECT peer, upto_id FROM chat_deleted WHERE owner = ? AND peer LIKE 'g:%'", [me]).catch(() => [[]]);
+      const gcut = {}; dgs.forEach((x) => { gcut[x.peer] = Number(x.upto_id) || 0; });
+      const gs = gsAll.filter((g) => !(('g:' + g.id) in gcut) || (Number(g.mid) || 0) > gcut['g:' + g.id]);
       let gnames = {};
       const senders = gs.map((g) => g.sender).filter(Boolean);
       if (senders.length) {
@@ -790,7 +800,9 @@ module.exports = async (req, res) => {
     }
 
     if (b.action === 'history') {
-      const after = Number(b.after) || 0;
+      /* messages from before this person deleted the chat are never sent again */
+      let after = Number(b.after) || 0;
+      { const [fl] = await db().query('SELECT upto_id FROM chat_deleted WHERE owner = ? AND peer = ?', [me, String(b.with || '')]).catch(() => [[]]); if (fl[0]) after = Math.max(after, Number(fl[0].upto_id) || 0); }
       if (isGroup(b.with)) {
         if (!(await isMember(gid(b.with), me))) return res.status(403).json({ error: 'You are not in this group.' });
         const [gr] = await db().query(
@@ -1457,6 +1469,33 @@ module.exports = async (req, res) => {
       await db().query('INSERT INTO channel_subs (channel_id, phone) VALUES (?, ?)', [c.insertId, me]);
       return res.json({ channel: { id: c.insertId, name, description, photo_url: photo, subscribers: 1 } });
     }
+    /* Delete chat / group chat / channel. The chat disappears from every list on every device of this account and its old messages never
+       come back. It returns only when a NEW message arrives. The other person keeps their own copy. A channel you own is deleted for everyone. */
+    if (b.action === 'chat_delete') {
+      const peers = [...new Set((Array.isArray(b.list) ? b.list : [b.with]).map((x) => String(x || '')))].filter(Boolean).slice(0, 200);
+      for (const p of peers) {
+        if (/^c:\d{1,9}$/.test(p)) {
+          const cid = Number(p.slice(2));
+          if (cid > 0 && cid < 2147483647) {
+            const [own] = await db().query('SELECT owner FROM channels WHERE id = ?', [cid]).catch(() => [[]]);
+            if (own[0] && own[0].owner === me) {
+              await db().query('DELETE FROM channel_subs WHERE channel_id = ?', [cid]).catch(() => {});
+              await db().query('DELETE FROM channels WHERE id = ?', [cid]).catch(() => {});
+            } else if (own[0]) {
+              const [del] = await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, me]).catch(() => [{}]);
+              if (del && del.affectedRows) await db().query('UPDATE channels SET subscribers = GREATEST(subscribers - 1, 0) WHERE id = ?', [cid]).catch(() => {});
+            }
+          }
+          continue;
+        }
+        let upto = 0;
+        if (isGroup(p)) { const [r] = await db().query('SELECT COALESCE(MAX(id), 0) AS m FROM group_messages WHERE group_id = ?', [gid(p)]); upto = Number(r[0].m) || 0; }
+        else if (phoneOk(p)) { const [r] = await db().query('SELECT COALESCE(MAX(id), 0) AS m FROM messages WHERE (sender = ? AND receiver = ?) OR (sender = ? AND receiver = ?)', [me, p, p, me]); upto = Number(r[0].m) || 0; }
+        else continue;
+        await db().query('INSERT INTO chat_deleted (owner, peer, upto_id) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE upto_id = GREATEST(upto_id, VALUES(upto_id)), deleted_at = NOW()', [me, p, upto]);
+      }
+      return res.json({ ok: true });
+    }
     // Stop following a channel (owners cannot unfollow their own channel).
     if (b.action === 'channel_unfollow') {
       const cid = parseInt(String(b.channel || '').replace(/^c:/, ''), 10);
@@ -1533,7 +1572,7 @@ module.exports = async (req, res) => {
         ['DELETE FROM messages WHERE sender = ? OR receiver = ?', [me, me]], ['DELETE FROM group_messages WHERE sender = ?', [me]], ['DELETE FROM group_members WHERE phone = ?', [me]],
         ['DELETE FROM channel_subs WHERE phone = ?', [me]], ['DELETE FROM statuses WHERE owner = ?', [me]], ['DELETE FROM status_likes WHERE viewer = ?', [me]], ['DELETE FROM status_views WHERE viewer = ?', [me]],
         ['DELETE FROM blocks WHERE blocker = ? OR blocked = ?', [me, me]], ['DELETE FROM saved_contacts WHERE owner = ? OR phone = ?', [me, me]],
-        ['DELETE FROM chat_walls WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM media WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM cloud_media WHERE owner = ? OR peer = ?', [me, me]],
+        ['DELETE FROM chat_walls WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM chat_deleted WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM media WHERE owner = ? OR peer = ?', [me, me]], ['DELETE FROM cloud_media WHERE owner = ? OR peer = ?', [me, me]],
         ['DELETE FROM push_subs WHERE phone = ?', [me]], ['DELETE FROM fcm_tokens WHERE phone = ?', [me]], ['DELETE FROM user_keys WHERE phone = ?', [me]], ['DELETE FROM two_step WHERE phone = ?', [me]],
         ['DELETE FROM premium WHERE phone = ?', [me]], ['DELETE FROM chat_backups WHERE phone = ?', [me]], ['DELETE FROM passkeys WHERE phone = ?', [me]], ['DELETE FROM email_otps WHERE owner = ?', [me]], ['DELETE FROM phone_otps WHERE owner = ?', [me]],
         ['DELETE FROM reports WHERE reporter = ?', [me]], ['DELETE FROM profiles WHERE phone = ?', [me]], ['DELETE FROM users WHERE phone = ?', [me]]];
