@@ -5833,6 +5833,7 @@ ZW|Zimbabwe|263`;
     }
     /* Zanply Business: greeting message and away message are sent automatically (while the app is open on this phone) */
     function bizAuto(chats) {
+      return; /* greeting + away replies are now sent by the server, so they also work when the app is closed */
       if (acctType() !== 'business') return;
       var s = bizSet(); if (!s.greet && !s.away) return;
       var since = lsGet('zaply_bizauto_since', 0), done = lsGet('zaply_bizauto_h', {}), greeted = lsGet('zaply_bizauto_g', {}), awayAt = lsGet('zaply_bizauto_a', {}), now = Date.now(), ch = false;
@@ -9040,36 +9041,172 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         }).catch(function (e) { if (isOffErr(e)) noNet(run); else toast((e && e.message) || 'Could not switch.'); });
       });
     }
+    function zInjectCss(id, css) { if (document.getElementById(id)) return; var st = document.createElement('style'); st.id = id; st.textContent = css; document.head.appendChild(st); }
+    zInjectCss('zbizcss', [
+      '.zbsw{position:fixed;inset:0;z-index:99999;background:rgba(8,12,20,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#fff;text-align:center;padding:24px}',
+      '.zbsw .sp{width:52px;height:52px;border-radius:50%;border:4px solid rgba(255,255,255,.2);border-top-color:#21c063;animation:zbspin .9s linear infinite}',
+      '.zbsw .ok{width:60px;height:60px;border-radius:50%;background:#21c063;display:flex;align-items:center;justify-content:center;font-size:34px;animation:zvPop .45s both}',
+      '.zbsw .er{width:60px;height:60px;border-radius:50%;background:#e5484d;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:700;animation:zvPop .45s both}',
+      '.zbsw .tx{font-size:18px;font-weight:600}',
+      '.zbsw button{min-width:150px;padding:11px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:15px;font-weight:600}',
+      '.zbsw button.pr{background:#21c063;border-color:#21c063}',
+      '@keyframes zbspin{to{transform:rotate(360deg)}}',
+      '.zbz{padding:18px 20px 34px;line-height:1.55;font-size:15px}.zbz h2{margin:0 0 6px;font-size:22px}.zbz h3{margin:22px 0 8px;font-size:17px}.zbz p{margin:0 0 10px;opacity:.88}.zbz ul{margin:0 0 10px;padding-left:20px}.zbz li{margin:0 0 8px;opacity:.88}.zbz li b{opacity:1}',
+      '.zbz .cta{width:100%;margin-top:22px}',
+      '@keyframes zvPop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}'
+    ].join('\n'));
+
+    /* Switching between Personal and Business: a full-screen loader (5 s to Business, 4 s back to Personal), then "Switched successfully" or "Something went wrong" */
+    function bizSwitch(to, after) {
+      var back = to === 'personal', ms = back ? 4000 : 5000, ov = mk('div', 'zbsw'), ic = mk('div', 'sp'), tx = mk('div', 'tx', back ? 'Switching back to personal account..' : 'Switching...');
+      ov.appendChild(ic); ov.appendChild(tx); document.body.appendChild(ov);
+      var real = myProf().then(function (P) { return saveProfile(P, { acct: to }).then(function (r) { mergeProfile(P, r); }); })
+        .then(function () { try { localStorage.setItem('zaply_acct_type', to); } catch (e) {} return true; }, function () { return false; });
+      var wait = new Promise(function (r) { setTimeout(r, ms); });
+      Promise.all([real, wait]).then(function (a) {
+        if (a[0]) {
+          ic.className = 'ok'; ic.textContent = '\u2713'; tx.textContent = 'Switched successfully';
+          setTimeout(function () { ov.remove(); if (after) after(); }, 1600);
+        } else {
+          ic.className = 'er'; ic.textContent = '!'; tx.textContent = 'Something went wrong';
+          var again = mk('button', 'pr', 'Try again'), close = mk('button', '', 'Close');
+          again.addEventListener('click', function () { ov.remove(); bizSwitch(to, after); }); close.addEventListener('click', function () { ov.remove(); });
+          ov.appendChild(again); ov.appendChild(close);
+        }
+      });
+    }
+    function bizSection(w, head, paras, bullets) {
+      w.appendChild(mk('h3', '', head));
+      (paras || []).forEach(function (t) { w.appendChild(mk('p', '', t)); });
+      if (bullets) { var ul = mk('ul'); bullets.forEach(function (b2) { var li = mk('li'); var bb = mk('b', '', b2[0]); li.appendChild(bb); li.appendChild(document.createTextNode(' ' + b2[1])); ul.appendChild(li); }); w.appendChild(ul); }
+    }
     function openBusiness() {
       zOpenPage('Zanply Business', function (b) {
-        var w = mk('div'); w.style.padding = '18px 20px 30px'; b.appendChild(w);
         var on = acctType() === 'business';
         if (!on) {
-          w.appendChild(mk('div', 'sub', 'Run your shop or service on Zanply. Switch to a Business account to add your business name, address, links and more to your profile, and to set greeting and away messages.'));
-          var sw = mk('button', 'primary', 'Switch to Business account'); sw.style.cssText = 'width:100%;margin-top:18px'; sw.addEventListener('click', function () { switchAcct('business', function () { closeOv(); setTimeout(openBusiness, 80); }); }); w.appendChild(sw); return;
+          var z = mk('div', 'zbz'); b.appendChild(z);
+          z.appendChild(mk('h2', '', 'Zanply Business'));
+          z.appendChild(mk('p', '', 'Zanply Business is a special account type for shops, services, brands and anyone who works with customers on Zanply. It turns your normal account into a professional business presence, so people can learn who you are, what you offer and when you are available, all inside the app they already use every day. Your chats, calls, groups and statuses keep working exactly as before. You simply get extra tools designed for doing business.'));
+          bizSection(z, 'How it is used', [
+            'Once you switch, your Profile gets business fields. Add your business name, what your business does, address, email, website and social links. Customers who message you will see your business name instead of your personal name, together with a clear Business Account label.',
+            'Next, open Zanply Business to set up your messages and opening times. Turn on a greeting message to welcome new customers, turn on an away message for the times you are offline, and choose the days and hours you are open, or select Open 24 hours.',
+            'Share your number with customers and let them chat with you directly. Use Status to show new products, offers and news.']);
+          bizSection(z, 'Who is it for?', ['Small shops and online sellers, tailors and designers, restaurants and caterers, schools and tutors, freelancers, clinics, event planners and any service that talks to customers every day. If people often ask you about prices, availability or orders, Zanply Business will save you time.']);
+          bizSection(z, 'Benefits', null, [
+            ['A professional first impression.', 'Your business name, category, cover photo and links make your profile look trusted and complete.'],
+            ['Faster replies without extra work.', 'The greeting message welcomes first-time customers instantly, and the away message lets people know you have received their message even when your app is closed.'],
+            ['Clear opening times.', 'Customers can see your open days and hours, or that you are open 24 hours, so nobody is left guessing.'],
+            ['Everything in one place.', 'Messages, voice and video calls, groups, channels and status all live in the same app, with no extra tools to learn.'],
+            ['Room to grow.', 'You can also get the Zanply verification badge to show customers that your business is real.'],
+            ['No lock-in.', 'You can switch back to a personal account whenever you like, and your chats stay safe.']]);
+          bizSection(z, 'Tips to get the most from it', ['Fill in every field in your profile, write a short and clear description of what you do, set honest opening hours and keep your greeting friendly and short. A complete profile builds trust quickly and helps customers decide to buy.']);
+          var sw = mk('button', 'primary cta', 'Switch to Business account'); sw.addEventListener('click', function () { bizSwitch('business', function () { closeOv(); setTimeout(openBusiness, 80); }); }); z.appendChild(sw);
+          return;
         }
+        var w = mk('div'); w.style.padding = '18px 20px 30px'; b.appendChild(w);
         var s = bizSet(); function sv() { lsSet('zaply_biz', s); }
         w.appendChild(mk('div', 'sub', 'Your business details are in Profile. Set your messages and opening times here.'));
-        zswitchRow(w, 'Greeting message', 'Send a welcome message to new customers.', s.greet, function (v) { s.greet = v; if (v) { lsSet('zaply_bizauto_since', Date.now()); var gd = lsGet('zaply_bizauto_g', {}); (allChats || []).forEach(function (c) { gd[c.phone] = 1; }); lsSet('zaply_bizauto_g', gd); } sv(); });
+        zswitchRow(w, 'Greeting message', 'Sent once, the first time a person messages you.', s.greet, function (v) { s.greet = v; sv(); });
         var g = zin('Hello! Thanks for contacting us.', 'text', 300); g.value = s.greetText || ''; g.addEventListener('input', function () { s.greetText = g.value; sv(); }); w.appendChild(g);
-        zswitchRow(w, 'Away message', 'Reply automatically when you are away.', s.away, function (v) { s.away = v; if (v) lsSet('zaply_bizauto_since', Date.now()); sv(); });
+        zswitchRow(w, 'Away message', 'Sent whenever you are offline and your app is closed.', s.away, function (v) { s.away = v; sv(); });
         var a = zin('Thanks! We will reply soon.', 'text', 300); a.value = s.awayText || ''; a.addEventListener('input', function () { s.awayText = a.value; sv(); }); w.appendChild(a);
         zlbl(w, 'Open days'); var dr = mk('div', 'zdays'); s.days = s.days || [];
         ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(function (d) { var x = mk('button', 'zday' + (s.days.indexOf(d) > -1 ? ' on' : ''), d); x.addEventListener('click', function () { var i = s.days.indexOf(d); if (i > -1) s.days.splice(i, 1); else s.days.push(d); x.classList.toggle('on'); sv(); }); dr.appendChild(x); }); w.appendChild(dr);
-        var pushT = 0, sv0 = sv; sv = function () { sv0(); clearTimeout(pushT); pushT = setTimeout(function () { try { myProf().then(function (P0) { var B2 = JSON.parse(JSON.stringify(P0.biz || {})); B2.days = s.days || []; B2.from = s.from || ''; B2.to = s.to || ''; B2.open24 = !!s.open24; return saveProfile(P0, { biz: B2 }); }).catch(function () {}); } catch (e) {} }, 900); };
-        zswitchRow(w, 'Open 24 hours', 'Customers will see that you are open all day.', s.open24, function (v) { s.open24 = v; sv(); });
-        sv();
-        zlbl(w, 'Open hours'); var hr = mk('div'); hr.style.cssText = 'display:flex;gap:10px;align-items:center';
+        /* settings are saved on the phone and also sent to the server, so greeting and away messages work when the app is closed */
+        var pushT = 0, sv0 = sv; sv = function () { sv0(); clearTimeout(pushT); pushT = setTimeout(function () { try { myProf().then(function (P0) { var B2 = JSON.parse(JSON.stringify(P0.biz || {})); B2.days = s.days || []; B2.from = s.from || ''; B2.to = s.to || ''; B2.open24 = !!s.open24; B2.greet = !!s.greet; B2.greetText = s.greetText || ''; B2.away = !!s.away; B2.awayText = s.awayText || ''; return saveProfile(P0, { biz: B2 }); }).catch(function () {}); } catch (e) {} }, 900); };
+        var hw = mk('div');
+        zswitchRow(w, 'Open 24 hours', 'Customers will see that you are open all day.', s.open24, function (v) { s.open24 = v; hw.style.display = v ? 'none' : ''; sv(); });
+        zlbl(hw, 'Open hours'); var hr = mk('div'); hr.style.cssText = 'display:flex;gap:10px;align-items:center';
         var f = zin('08:00', 'time'), t = zin('17:00', 'time'); f.value = s.from || ''; t.value = s.to || ''; f.addEventListener('input', function () { s.from = f.value; sv(); }); t.addEventListener('input', function () { s.to = t.value; sv(); });
-        hr.appendChild(f); hr.appendChild(mk('span', '', 'to')); hr.appendChild(t); w.appendChild(hr);
-        w.appendChild(mk('div', 'zfoot', 'Greeting and away messages are sent automatically while Zanply is open on this phone. Open days and hours are shown on your business profile.'));
-        var back = mk('button', '', 'Switch back to Personal account'); back.style.cssText = 'width:100%;margin-top:22px'; back.addEventListener('click', function () { switchAcct('personal', function () { closeOv(); setTimeout(openBusiness, 80); }); }); w.appendChild(back);
+        hr.appendChild(f); hr.appendChild(mk('span', '', 'to')); hr.appendChild(t); hw.appendChild(hr); w.appendChild(hw); hw.style.display = s.open24 ? 'none' : '';
+        w.appendChild(mk('div', 'zfoot', 'The greeting is sent only the first time someone messages you. The away message is sent when you are offline and Zanply is closed. Open days and hours are shown on your business profile.'));
+        var back = mk('button', '', 'Switch back to Personal account'); back.style.cssText = 'width:100%;margin-top:22px'; back.addEventListener('click', function () { bizSwitch('personal', function () { closeOv(); setTimeout(openBusiness, 80); }); }); w.appendChild(back);
       });
     }
+
+    /* ---------- Verification badge: 15 second clip, then "Get Trial" ---------- */
+    zInjectCss('zvcss', [
+      '.zvwrap{padding:16px 16px 30px}',
+      '.zvc{position:relative;width:100%;aspect-ratio:16/10;border-radius:18px;overflow:hidden;background:linear-gradient(145deg,#0b1220,#13233f 60%,#0e1a30);color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.35)}',
+      '.zvc .sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;opacity:0;transition:opacity .5s;padding:14px 14px 50px;text-align:center}',
+      '.zvc .sc.on{opacity:1}',
+      '.zvc .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 14px 11px;background:linear-gradient(transparent,rgba(0,0,0,.65));font-size:14px;font-weight:600;text-align:center}',
+      '.zvc .av{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#4aa3ff,#7b5cff);display:flex;align-items:center;justify-content:center;font-size:27px;font-weight:700}',
+      '.zvc .nm{display:flex;align-items:center;gap:7px;font-size:20px;font-weight:700}',
+      '.zvc .bd{width:24px;height:24px;display:inline-block;position:relative}.zvc .bd svg{width:100%;height:100%;display:block}',
+      '.zvc .ring{position:absolute;inset:0;border-radius:50%;border:2px solid #4aa3ff}',
+      '.zvc .sm{font-size:12.5px;opacity:.7}',
+      '.zvc .idc{position:relative;width:200px;height:118px;border-radius:12px;background:#f4f7fb;color:#13233f;padding:12px;display:flex;gap:10px;text-align:left;overflow:hidden}',
+      '.zvc .idc .ph{width:42px;height:54px;border-radius:6px;background:#c9d6ea}.zvc .idc .ln{height:7px;border-radius:4px;background:#c9d6ea;margin-bottom:8px}.zvc .idc b{font-size:11px;display:block;margin-bottom:8px}',
+      '.zvc .scan{position:absolute;left:0;right:0;top:6%;height:3px;background:#21c063;box-shadow:0 0 12px 3px rgba(33,192,99,.7)}',
+      '.zvc .tick{background:#21c063;color:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:700}',
+      '.zvc .chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border-radius:12px;padding:9px 14px;font-size:15px;font-weight:600;min-width:210px}',
+      '.zvc .chip .a2{width:30px;height:30px;border-radius:50%;background:#7b5cff;display:flex;align-items:center;justify-content:center;font-size:14px}',
+      '.zvc .chip em{margin-left:auto;font-style:normal;font-size:11px;font-weight:700;color:#ff7b7f}',
+      '.zvc .bub{max-width:78%;padding:8px 12px;border-radius:14px;font-size:13.5px;text-align:left}.zvc .me{align-self:flex-end;background:#2b5fd9}.zvc .hu{align-self:flex-start;background:rgba(255,255,255,.14)}',
+      '.zvc .chat{display:flex;flex-direction:column;gap:8px;width:88%}',
+      '.zvc .rp{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(8,12,20,.6);border:0;color:#fff;font-size:16px;font-weight:700;flex-direction:column;gap:8px}.zvc .rp.on{display:flex}',
+      '.zvc .rp i{width:56px;height:56px;border-radius:50%;background:#4aa3ff;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:24px}',
+      '.zvp{display:flex;align-items:center;gap:10px;margin:10px 2px 0;font-size:12px;opacity:.8}.zvp .tr{flex:1;height:4px;border-radius:3px;background:rgba(128,128,128,.35);overflow:hidden}.zvp .fl{height:100%;width:0;background:#4aa3ff}',
+      '.zvc .sc.on .pop{animation:zvPop .7s .5s cubic-bezier(.2,1.6,.4,1) both}',
+      '.zvc .sc.on .ring{animation:zvRing 1.5s .7s ease-out both}',
+      '.zvc .sc.on .scan{animation:zvScan 1.6s .3s ease-in-out both}',
+      '.zvc .sc.on .tick{animation:zvPop .5s 2s both}',
+      '.zvc .sc.on .fake{animation:zvFake .9s 1.3s forwards}',
+      '.zvc .sc.on .rm{animation:zvIn .4s 1.5s both}',
+      '.zvc .sc.on .d1{animation:zvIn .5s .3s both}.zvc .sc.on .d2{animation:zvIn .5s 1.1s both}.zvc .sc.on .d3{animation:zvIn .5s 1.9s both}',
+      '@keyframes zvRing{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.8);opacity:0}}',
+      '@keyframes zvScan{0%{top:6%}100%{top:90%}}',
+      '@keyframes zvIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}',
+      '@keyframes zvFake{to{opacity:.3;filter:grayscale(1)}}'
+    ].join('\n'));
+    function vSvg() { return '<svg viewBox="0 0 24 24" fill="' + VERIFIED_BLUE + '"><path d="' + ZI.verified + '"/></svg>'; }
+    function vScene(stage, html, cap) { var sc = mk('div', 'sc'); sc.innerHTML = html + '<div class="cap">' + cap + '</div>'; stage.appendChild(sc); return sc; }
     function openVerification() {
+      var timer = 0;
       zOpenPage('Verification badge', function (b) {
-        var w = mk('div', 'zdev'); b.appendChild(w); var i = mk('div'); i.innerHTML = '<svg viewBox="0 0 24 24" width="120" height="120" fill="' + VERIFIED_BLUE + '"><path d="' + ZI.verified + '"/></svg>'; w.appendChild(i);
-        w.appendChild(mk('h2', '', 'Zanply verification')); w.appendChild(mk('p', '', 'A blue badge shows that an account is real. Verification is being set up and will be available soon.'));
+        var w = mk('div', 'zvwrap'); b.appendChild(w);
+        var stage = mk('div', 'zvc'); w.appendChild(stage);
+        var scenes = [
+          vScene(stage, '<div class="av">A</div><div class="nm">Amina Okoye</div><div class="sm">Anyone can copy a name and a photo</div>', 'Your profile'),
+          vScene(stage, '<div class="idc"><div class="ph"></div><div style="flex:1"><b>IDENTITY CARD</b><div class="ln"></div><div class="ln" style="width:70%"></div><div class="ln" style="width:50%"></div><div class="scan"></div></div></div><div class="tick">\u2713 Name matches your profile</div>', 'Zanply checks your ID'),
+          vScene(stage, '<div class="av">A</div><div class="nm">Amina Okoye <span class="bd"><span class="ring"></span><span class="pop" style="display:block;width:100%;height:100%">' + vSvg() + '</span></span></div><div class="sm">Verified account</div>', 'The blue check appears next to your name'),
+          vScene(stage, '<div class="chip fake d1"><span class="a2">A</span>Amina Okoye<em class="rm">REMOVED</em></div><div class="chip d2"><span class="a2" style="background:#4aa3ff">A</span>Amina Okoye <span class="bd" style="width:18px;height:18px">' + vSvg() + '</span></div>', 'Fake copies of your account are removed faster'),
+          vScene(stage, '<div class="chat"><div class="bub me d1">My account was hacked.</div><div class="bub hu d2">Hi Amina, I am on it. Securing your account now.</div><div class="bub hu d3">All fixed \u2713 You are safe again.</div></div>', '24/7 chat with a real person')
+        ];
+        var rp = mk('button', 'rp'); rp.innerHTML = '<i>\u21BA</i>Replay'; stage.appendChild(rp);
+        var bar = mk('div', 'zvp'), tr = mk('div', 'tr'), fl = mk('div', 'fl'), tm = mk('span', '', '0:00 / 0:15'); tr.appendChild(fl); bar.appendChild(tr); bar.appendChild(tm); w.appendChild(bar);
+        function play() {
+          clearInterval(timer); rp.classList.remove('on'); var t0 = Date.now(), cur = -1;
+          timer = setInterval(function () {
+            if (!document.body.contains(stage)) { clearInterval(timer); return; }
+            var el = Date.now() - t0, i = Math.min(4, Math.floor(el / 3000));
+            if (i !== cur) { cur = i; scenes.forEach(function (sc, k) { sc.classList.toggle('on', k === i); }); }
+            fl.style.width = Math.min(100, el / 150) + '%'; tm.textContent = '0:' + ('0' + Math.min(15, Math.floor(el / 1000))).slice(-2) + ' / 0:15';
+            if (el >= 15000) { clearInterval(timer); rp.classList.add('on'); }
+          }, 100);
+        }
+        rp.addEventListener('click', play); play();
+        var info = mk('p', 'sub', 'See how the blue check mark appears on your account and what it does for you.'); info.style.margin = '16px 2px 0'; w.appendChild(info);
+        var go = mk('button', 'primary', 'Get Trial'); go.style.cssText = 'width:100%;margin-top:14px'; go.addEventListener('click', openVerificationInfo); w.appendChild(go);
+      }, function () { clearInterval(timer); });
+    }
+    function openVerificationInfo() {
+      zOpenPage('Verification badge', function (b) {
+        var z = mk('div', 'zbz'); b.appendChild(z);
+        var hd = mk('h2'); hd.innerHTML = 'Zanply verification badge '; var bi = mk('span'); bi.innerHTML = vSvg(); bi.style.cssText = 'display:inline-block;width:22px;height:22px;vertical-align:-3px'; hd.appendChild(bi); z.appendChild(hd);
+        var sub = mk('p', '', 'The blue check mark is Zanply verification badge.'); sub.style.fontWeight = '600'; z.appendChild(sub);
+        z.appendChild(mk('p', '', 'It appears next to your name on your profile and in your chats, so everyone who talks to you can see that your account is genuine.'));
+        bizSection(z, '1. What is special about it?', null, [
+          ['It proves it\u2019s really you.', 'Zanply checks your Government ID, such as a passport or National ID, and makes sure your profile name matches it. So people know it\u2019s not a fake account.'],
+          ['Protection from impersonators.', 'Zanply actively watches for fake accounts copying your name and photo, and removes them faster.'],
+          ['Real human support.', 'Normal users get only automated forms. With the blue check, you get 24/7 chat with a real human. If your account gets hacked, it gets fixed fast.']]);
+        bizSection(z, '2. What you need to get the verification badge', null, [
+          ['Age:', 'be 18 years or older.'],
+          ['ID:', 'a Government ID that matches your profile name, such as a driving licence or church card.'],
+          ['Fee:', 'a verification fee of $8.90.']]);
+        z.appendChild(mk('p', '', 'If you turned your account into a business account, you also need a Business certificate.'));
+        var nx = mk('button', 'primary cta', 'Next'); nx.addEventListener('click', function () { toast('This step is coming soon'); }); z.appendChild(nx);
       });
     }
 
