@@ -4710,8 +4710,6 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'globe', 'App language', langName(), openLanguage);
         zrow2(list, 'invite', 'Invite a friend', 'Share Zanply with your contacts', invite);
         list.appendChild(mk('div', 'zsep'));
-        zrow2(list, 'chat', 'Zanply AI', 'Ask anything. 5 free a day, no limit with Premium', function () { window.zpOpen.ask(); });
-        zrow2(list, 'chat', 'Quick replies', 'Type / in a chat to send saved replies', function () { window.zpOpen.quick(); });
         zrow2(list, 'diamond', 'Zanply Premium', PREM_FEATS.length + ' features: more Status, bigger files, backup, AI', openPremium);
         var vr = zrow2(list, 'verified', 'Verification badge', 'Get the blue verified badge', openVerification); vr.querySelector('svg').style.color = VERIFIED_BLUE;
         zrow2(list, 'store', 'Zanply Business', 'Business profile and auto replies', openBusiness);
@@ -4847,11 +4845,7 @@ ZW|Zimbabwe|263`;
       ['translate', 'Voice-to-Text & AI Translation', 'Turn voice notes into text and translate in one tap.', '#4f8fa0', 'translate',
         'Convert voice notes to text automatically. Translate any chat to your language with one tap using AI.', 'Long press a voice note > Transcribe. Long press a message > Translate.', 'For long voice notes and chatting with people from other countries.', 'Not available', 'Voice-to-text and one-tap translation'],
       ['live', 'Live Wallpapers + Camera Live Wallpapers', 'Animated wallpapers in chats and in the Camera.', '#c06a4a', 'live',
-        'Without Premium, only static wallpapers. With Premium, use Live Wallpapers: animated, moving wallpapers in chats and in the Camera. Set a live video as your chat wallpaper or as your Camera background for Status. The other person also sees your live wallpaper in your chat with them.', 'Go to Chat Wallpaper > Live Wallpapers and choose a video or animated wallpaper. For Camera, open Camera > Live Wallpaper.', 'Makes chats look alive, beautiful and premium, not boring.', 'Static wallpapers only', 'Live wallpapers in chats and Camera'],
-      ['summary', 'AI Chat Summary & Ask Zanply AI', 'Catch up on long chats in one tap.', '#4f9a8a', 'ai',
-        'Long group chat? Tap Catch me up and Zanply AI tells you what happened and what needs your answer. Premium also removes the daily limit on Ask Zanply AI.', 'Open a chat, tap the three dots, then Catch me up (AI).', 'Never scroll through hundreds of messages again.', 'No summaries, 5 AI questions a day', 'AI summaries and unlimited AI questions'],
-      ['quick', 'Quick Replies', 'Save replies and send them by typing /.', '#a3793a', 'bolt',
-        'Save the replies you send again and again, like prices or opening hours. In any chat type / and pick one.', 'Settings > Quick replies > Add. In a chat type / and tap a reply.', 'Great for business owners, support and busy people.', 'Type every reply again', 'Up to 20 saved replies, sent with /']
+        'Without Premium, only static wallpapers. With Premium, use Live Wallpapers: animated, moving wallpapers in chats and in the Camera. Set a live video as your chat wallpaper or as your Camera background for Status. The other person also sees your live wallpaper in your chat with them.', 'Go to Chat Wallpaper > Live Wallpapers and choose a video or animated wallpaper. For Camera, open Camera > Live Wallpaper.', 'Makes chats look alive, beautiful and premium, not boring.', 'Static wallpapers only', 'Live wallpapers in chats and Camera']
     ];
     var PVCSS = '.pv{position:relative;width:min(320px,90%);height:190px;margin:14px auto;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#1d2a44,#3a2a5c);color:#fff;font-size:13px}.pv-e{position:absolute;white-space:nowrap;pointer-events:none}' +
       '.pv-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-weight:600;font-size:12.5px}.pv-row{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;background:rgba(255,255,255,.16);font-size:12.5px}' +
@@ -4941,10 +4935,6 @@ ZW|Zimbabwe|263`;
           E(0, 76, 'left:8%;top:22%', '<div class="pv-b">Hi! Look at this</div>') + E(0, 76, 'right:8%;top:42%', '<div class="pv-b u">Love the wallpaper</div>') + E(76, 100, C(50, 38), psvg('camera', 48)) +
           E(0, 28, C(50, 86), pill('Chat · Ocean waves', 'rgba(0,0,0,.45)')) + E(28, 52, C(50, 86), pill('Chat · Rain', 'rgba(0,0,0,.45)')) + E(52, 76, C(50, 86), pill('Chat · Stars', 'rgba(0,0,0,.45)')) + E(76, 100, C(50, 86), pill('Camera · Fire', 'rgba(0,0,0,.45)')) +
           E(0, 100, C(50, 10), pill(psvg('eye', 14) + ' Your friend sees it too', 'rgba(0,0,0,.45)'));
-      } else if (k === 'summary') {
-        d = E(0, 100, 'left:8%;top:10%', '<div class="pv-b">120 new messages</div>') + E(30, 100, C(50, 50), pill(psvg('ai', 15) + ' Catch me up', '#4f9a8a')) + E(52, 100, 'left:8%;right:8%;top:66%', '<div class="pv-b">Meeting moved to 3pm. Bring the report.</div>');
-      } else if (k === 'quick') {
-        d = E(0, 100, 'right:8%;top:14%', '<div class="pv-b u">/hours</div>') + E(34, 100, 'left:8%;right:8%;top:42%', '<div class="pv-b">We are open Mon to Sat, 8am to 6pm.</div>') + E(60, 100, C(50, 82), pill(ok + ' Sent in one tap', GRN));
       }
       var kf = Object.keys(PV.kf).map(function (n) { return PV.kf[n]; }).join('');
       return '<style>' + PVCSS + kf + '</style><div class="pv">' + d + '</div>';
@@ -5340,7 +5330,7 @@ ZW|Zimbabwe|263`;
     premStatus(function () { if (window.zIsPremium()) { zpSchedMigrate(); zpSchedSync(); } });
     window.zpOpen.scheduled = zpSchedList;
 
-    /* ===== extra Premium features: Catch me up (AI summary), Ask Zanply AI, Quick replies ===== */
+    /* ===== Catch me up (AI summary) ===== */
     function zpTextDialog(title, text) {
       var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
       var c = mk('div'); c.style.cssText = 'background:#1f2430;color:#fff;border-radius:18px;padding:18px;max-width:360px;width:100%;max-height:80vh;overflow:auto';
@@ -5357,66 +5347,6 @@ ZW|Zimbabwe|263`;
       toast('Reading the chat\u2026', true, 2500);
       chatCall('ai_summary', { messages: msgs }).then(function (r) { zpTextDialog('Catch me up', r.text || 'Nothing to report.'); }, zpAIErr);
     };
-    function openAskAI() {
-      zOpenPage('Zanply AI', function (b) {
-        var ta = mk('textarea'); ta.placeholder = 'Ask anything, or ask me to write a message'; ta.maxLength = 2000; ta.style.cssText = 'display:block;width:calc(100% - 36px);margin:16px 18px 8px;min-height:90px;border-radius:12px;padding:10px;box-sizing:border-box'; b.appendChild(ta);
-        var go = mk('button', 'zpm-cta', 'Ask'); b.appendChild(go);
-        var out = mk('div', 'pd-sec'); out.style.cssText += ';white-space:pre-wrap;user-select:text'; b.appendChild(out);
-        b.appendChild(mk('div', 'zfoot', window.zIsPremium() ? 'Premium: use AI as much as you want.' : 'Free: 5 questions a day. Premium: no daily limit.'));
-        go.addEventListener('click', function () {
-          var q = ta.value.trim(); if (!q) return; go.disabled = true; go.textContent = 'Thinking\u2026'; out.textContent = '';
-          chatCall('ai_ask', { prompt: q }).then(function (r) { out.textContent = r.text || ''; }, zpAIErr).then(function () { go.disabled = false; go.textContent = 'Ask'; });
-        });
-      });
-    }
-    window.zpOpen.ask = openAskAI;
-    function zpQR() { return ZP.get('qr', []); }
-    function zpQRDialog(done) {
-      var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
-      var c = mk('div'); c.style.cssText = 'background:#1f2430;color:#fff;border-radius:18px;padding:18px;max-width:340px;width:100%';
-      c.appendChild(mk('div', '', 'New quick reply')).style.cssText = 'font-weight:700;font-size:16px;margin-bottom:10px';
-      var k = document.createElement('input'); k.placeholder = 'Shortcut, e.g. hours'; k.maxLength = 16; k.style.cssText = 'width:100%;padding:10px;border-radius:12px;box-sizing:border-box;margin-bottom:8px'; c.appendChild(k);
-      var t = mk('textarea'); t.placeholder = 'The message to send'; t.maxLength = 500; t.style.cssText = 'width:100%;min-height:80px;border-radius:12px;padding:10px;box-sizing:border-box'; c.appendChild(t);
-      function btn(l, fn, pri) { var x = mk('button', '', l); x.style.cssText = 'display:block;width:100%;margin:8px 0 0;padding:11px;border-radius:12px;border:0;font-weight:700;' + (pri ? 'background:#f5b32a;color:#000' : 'background:#2d3445;color:#fff'); x.addEventListener('click', fn); c.appendChild(x); }
-      btn('Save', function () { var key = k.value.trim().replace(/[^A-Za-z0-9_-]/g, '').slice(0, 16), txt = t.value.trim(); if (!key || !txt) return toast('Add a shortcut and a message'); if (zpQR().some(function (q) { return q.k.toLowerCase() === key.toLowerCase(); })) return toast('That shortcut already exists'); o.remove(); done({ k: key, t: txt }); }, true);
-      btn('Cancel', function () { o.remove(); });
-      o.appendChild(c); document.body.appendChild(o);
-    }
-    function openQuick() {
-      zOpenPage('Quick replies', function (b) {
-        function draw() {
-          b.innerHTML = ''; b.appendChild(mk('div', 'pd-sec', 'Type / in a chat, then tap a reply to use it. Up to 20 replies.'));
-          zpQR().forEach(function (q, i) {
-            var r = mk('div', 'pd-sec'); r.style.cssText += ';display:flex;gap:8px;align-items:center';
-            var tx = mk('div'); tx.style.flex = '1'; tx.appendChild(mk('div', '', '/' + q.k)).style.fontWeight = '700'; tx.appendChild(mk('div', '', q.t.slice(0, 120))); r.appendChild(tx);
-            var d = mk('button', '', 'Delete'); d.style.cssText = 'padding:6px 12px;border-radius:99px;border:0;background:#2d3445;color:#fff;font-weight:600'; d.addEventListener('click', function () { var a = zpQR(); a.splice(i, 1); ZP.set('qr', a); draw(); }); r.appendChild(d); b.appendChild(r);
-          });
-          var add = mk('button', 'zpm-cta', 'Add quick reply');
-          add.addEventListener('click', function () { if (window.zPremGate('To use Quick Replies you need to subscribe to Zanply Premium')) return; if (zpQR().length >= 20) return toast('You can keep up to 20 quick replies.'); zpQRDialog(function (q) { var a = zpQR(); a.push(q); ZP.set('qr', a); draw(); }); });
-          b.appendChild(add);
-        }
-        draw();
-      });
-    }
-    window.zpOpen.quick = openQuick;
-    (function () {
-      var inp = document.getElementById('msgInput'); if (!inp) return; var bar = null;
-      function hide() { if (bar) { bar.remove(); bar = null; } }
-      inp.addEventListener('input', function () {
-        var v = inp.value; hide(); if (v.charAt(0) !== '/' || v.length > 20 || !window.zIsPremium()) return;
-        var q = v.slice(1).toLowerCase(), L = zpQR().filter(function (x) { return x.k.toLowerCase().indexOf(q) === 0; }).slice(0, 5); if (!L.length) return;
-        bar = mk('div'); bar.style.cssText = 'position:fixed;left:8px;right:8px;z-index:60;background:#1f2430;color:#fff;border-radius:14px;padding:6px;box-shadow:0 4px 18px rgba(0,0,0,.4)';
-        var cp = document.getElementById('comp'), top = cp ? cp.getBoundingClientRect().top : window.innerHeight - 70; bar.style.bottom = Math.max(70, window.innerHeight - top + 6) + 'px';
-        L.forEach(function (x) {
-          var r = mk('button'); r.style.cssText = 'display:block;width:100%;text-align:left;padding:9px 10px;border:0;background:none;color:#fff;border-radius:10px'; r.innerHTML = '<b></b> <span style="opacity:.8"></span>'; r.firstChild.textContent = '/' + x.k; r.lastChild.textContent = x.t.slice(0, 60);
-          r.addEventListener('mousedown', function (e) { e.preventDefault(); });
-          r.addEventListener('click', function () { inp.value = x.t; hide(); try { inp.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} inp.focus(); });
-          bar.appendChild(r);
-        });
-        document.body.appendChild(bar);
-      });
-      inp.addEventListener('blur', function () { setTimeout(hide, 200); });
-    })();
 
     /* ===== typing indicator (sent while typing, respects the Stealth settings on the server) ===== */
     (function () {
@@ -5608,7 +5538,7 @@ ZW|Zimbabwe|263`;
     $('menuBtn').addEventListener('click', function (e) { e.stopPropagation(); $('menuBox').classList.toggle('hidden'); });
     document.addEventListener('click', function () { $('menuBox').classList.add('hidden'); });
 
-    var chatSig = null, loadErr = '', allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
+    var chatSig = null, loadErr = '', listLoaded = false, allChats = [], AVC = ['#21c063', '#3b82f6', '#ef4444', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6'];
     var ONL = {}, onlLoaded = false;
     function avatar(c) {
       var n = c.name || c.phone || '#', a = mk('div', 'av', n.charAt(0).toUpperCase());
@@ -5689,7 +5619,8 @@ ZW|Zimbabwe|263`;
       });
       var box = $('chatList'), cb = $('contactList'); box.innerHTML = ''; cb.innerHTML = '';
       var emptyMsg = q ? 'No results.' : /^f:/.test(filt) ? 'No chats in this folder yet.' : filt === 'unread' ? 'No unread messages.' : filt === 'fav' ? 'No favourites yet. Tap \u2606 on a chat to add it.' : filt === 'channels' ? 'No channels yet. Tap + then New channel.' : filt === 'groups' ? 'No groups yet. Tap + then Create group.' : 'No chats yet. Tap + and enter a friend\u2019s phone number. They must be registered on Zanply.';
-      if (!allChats.length && filt === 'all' && !q) box.innerHTML = '<div class="start"><svg viewBox="0 0 120 100" width="170"><circle cx="60" cy="52" r="30" fill="#25d366"/><path d="M30 52h60M60 22v60M38 36q22 10 44 0M38 68q22-10 44 0" stroke="#0b141a" fill="none" stroke-width="2"/><path d="M12 70 40 28l-6 24z" fill="#fff"/><rect x="80" y="20" width="34" height="26" rx="10" fill="#e8e8e8"/></svg><h3>' + (loadErr ? 'Couldn\u2019t load chats' : 'Start chatting') + '</h3><p>' + (loadErr ? loadErr + '. Check your internet and try again.' : 'Zanply is better with friends. Use the button below to invite your contacts.') + '</p><button id="' + (loadErr ? 'btnRetry' : 'btnInvite') + '" class="inv">' + (loadErr ? 'Try again' : 'Invite a friend') + '</button></div>';
+      if (!allChats.length && !listLoaded && !loadErr && filt === 'all' && !q) box.innerHTML = '<div class="empty">Loading\u2026</div>';
+      else if (!allChats.length && filt === 'all' && !q) box.innerHTML = '<div class="start"><svg viewBox="0 0 120 100" width="170"><circle cx="60" cy="52" r="30" fill="#25d366"/><path d="M30 52h60M60 22v60M38 36q22 10 44 0M38 68q22-10 44 0" stroke="#0b141a" fill="none" stroke-width="2"/><path d="M12 70 40 28l-6 24z" fill="#fff"/><rect x="80" y="20" width="34" height="26" rx="10" fill="#e8e8e8"/></svg><h3>' + (loadErr ? 'Couldn\u2019t load chats' : 'Start chatting') + '</h3><p>' + (loadErr ? loadErr + '. Check your internet and try again.' : 'Zanply is better with friends. Use the button below to invite your contacts.') + '</p><button id="' + (loadErr ? 'btnRetry' : 'btnInvite') + '" class="inv">' + (loadErr ? 'Try again' : 'Invite a friend') + '</button></div>';
       else if (!shown.length) box.appendChild(mk('div', 'empty', emptyMsg));
       if (!base.length) cb.appendChild(mk('div', 'empty', q ? 'No results.' : 'No contacts yet.'));
       function row(c, withChat) {
@@ -5729,12 +5660,35 @@ ZW|Zimbabwe|263`;
       base.filter(function (c) { return !c.group; }).forEach(function (c) { cb.appendChild(row(c, false)); });
     }
     /* If the server's list leaves out a one-to-one chat we already had (a slow or partial answer), keep it for up to 20 answers so the row does not vanish */
+    /* Chat-list cache: localStorage can be full (wallpapers, photos, histories) and then setItem fails silently, leaving an OLD list that
+       makes chats vanish and reappear. So the list is also mirrored in IndexedDB (no tiny quota) and read from there on start. */
+    var CCDB = null;
+    function ccOpen() {
+      return new Promise(function (res, rej) {
+        if (CCDB) return res(CCDB);
+        try { var q = indexedDB.open('zanply-chatlist', 1); q.onupgradeneeded = function () { q.result.createObjectStore('c'); }; q.onsuccess = function () { CCDB = q.result; res(CCDB); }; q.onerror = function () { rej(q.error); }; } catch (e) { rej(e); }
+      });
+    }
+    function ccSave(list) {
+      var s; try { s = JSON.stringify(list); } catch (e) { return; }
+      try { localStorage.setItem('zaply_chats', s); } catch (e) {
+        try { localStorage.removeItem('zaply_photos'); PH = {}; } catch (x) {} /* safe to re-download; frees space */
+        try { localStorage.setItem('zaply_chats', s); } catch (x) {}
+      }
+      ccOpen().then(function (d) { d.transaction('c', 'readwrite').objectStore('c').put({ phone: myPhone, list: list }, 'list'); }).catch(function () {});
+    }
+    function ccLoad() {
+      return ccOpen().then(function (d) {
+        return new Promise(function (res) { var r = d.transaction('c').objectStore('c').get('list'); r.onsuccess = function () { var v = r.result; res(v && v.phone === myPhone && Array.isArray(v.list) ? v.list : null); }; r.onerror = function () { res(null); }; });
+      }).catch(function () { return null; });
+    }
     var chatMiss = {};
     function keepMissing(chats) {
       var have = {}, added = false; chats.forEach(function (c) { have[c.phone] = 1; delete chatMiss[c.phone]; });
       (allChats || []).forEach(function (o) {
-        if (!o || o.group || have[o.phone]) return;
+        if (!o || have[o.phone]) return;
         chatMiss[o.phone] = (chatMiss[o.phone] || 0) + 1;
+        if (o.group && chatMiss[o.phone] > 3) return; /* a group the server stopped listing (left / removed) goes after 3 answers */
         try { if (window.zLog) window.zLog('Server list left out ' + (o.name || o.phone) + ' (miss ' + chatMiss[o.phone] + ')', true); } catch (e) {}
         chats.push(o); added = true; /* never drop a single chat just because one server list left it out */
       });
@@ -5752,7 +5706,7 @@ ZW|Zimbabwe|263`;
         chats = keepMissing(chats);
         var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0, c.st || 0]; }));
         try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = ''; try { RT.watchChats(allChats); } catch (e) {}
-        try { localStorage.setItem('zaply_chats', JSON.stringify(allChats)); } catch (e) {}
+        listLoaded = true; ccSave(allChats);
         try { warmProfiles(); } catch (e) {}
         try { bizAuto(chats); } catch (e) {}
         try { countUnread(); } catch (e) {}
@@ -7988,6 +7942,7 @@ ZW|Zimbabwe|263`;
       clearAuthStep();
       myPhone = user.phone; E2E.init(user.phone).catch(function () {}); try { RT.start(user.phone); } catch (e) {}
       try { allChats = JSON.parse(localStorage.getItem('zaply_chats') || '[]'); } catch (e) {}
+      ccLoad().then(function (l) { if (l && !listLoaded && l.length > (allChats || []).length) { allChats = l; try { renderChats(); } catch (e) {} } });
       $('hello').textContent = 'Signed in as ' + user.name;
       $('pfName').textContent = user.name || ''; $('pfPhone').textContent = user.phone || ''; $('pfAv').textContent = (user.name || '#').charAt(0).toUpperCase();
       $('welcomeView').classList.add('hidden');
