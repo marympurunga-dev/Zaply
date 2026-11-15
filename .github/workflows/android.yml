@@ -98,6 +98,7 @@ jobs:
               <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
               <uses-permission android:name="android.permission.READ_CONTACTS" />
               <uses-permission android:name="android.permission.WRITE_CONTACTS" />
+          <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
               <uses-feature android:name="android.hardware.camera" android:required="false" />
               <uses-feature android:name="android.hardware.microphone" android:required="false" />
@@ -786,6 +787,111 @@ jobs:
 
               /** What the web page can call: window.ZanplyNative.xxx() */
               private final class Bridge {
+                            /** Fingerprint, face or screen lock through the phone itself. A WebView cannot do passkeys, so the page asks the phone. */
+                            @JavascriptInterface public String bioState() {
+                                try {
+                                    if (Build.VERSION.SDK_INT < 28) return "unsupported";
+                                    if (Build.VERSION.SDK_INT >= 30) {
+                                        android.hardware.biometrics.BiometricManager bm = MainActivity.this.getSystemService(android.hardware.biometrics.BiometricManager.class);
+                                        if (bm == null) return "unsupported";
+                                        int r = bm.canAuthenticate(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK | android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+                                        return r == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS ? "ok" : "none";
+                                    }
+                                    return "ok";
+                                } catch (Throwable t) { return "unsupported"; }
+                            }
+
+                            @JavascriptInterface public void bioAuth(final String title, final String id) {
+                                MainActivity.this.runOnUiThread(new Runnable() { @Override public void run() {
+                                    try {
+                                        android.hardware.biometrics.BiometricPrompt.Builder bb = new android.hardware.biometrics.BiometricPrompt.Builder(MainActivity.this).setTitle(title == null || title.isEmpty() ? "Zanply" : title);
+                                        if (Build.VERSION.SDK_INT >= 30) {
+                                            bb.setAllowedAuthenticators(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK | android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+                                        } else {
+                                            bb.setNegativeButton("Cancel", MainActivity.this.getMainExecutor(), new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) { bioResult(id, "cancel"); } });
+                                        }
+                                        android.hardware.biometrics.BiometricPrompt p = bb.build();
+                                        p.authenticate(new android.os.CancellationSignal(), MainActivity.this.getMainExecutor(), new android.hardware.biometrics.BiometricPrompt.AuthenticationCallback() {
+                                            @Override public void onAuthenticationSucceeded(android.hardware.biometrics.BiometricPrompt.AuthenticationResult r) { bioResult(id, "ok"); }
+                                            @Override public void onAuthenticationError(int code, CharSequence msg) { bioResult(id, (code == 10 || code == 5) ? "cancel" : (code == 7 || code == 9) ? "lockout" : (code == 11 || code == 12 || code == 14) ? "none" : "error"); }
+                                        });
+                                    } catch (Throwable t) { bioResult(id, "error"); }
+                                } });
+                            }
+
+                            /** Passkey: a private key that never leaves the phone (Android Keystore). Every use needs fingerprint, face or screen lock. */
+                            @JavascriptInterface public boolean pkSupported() { return Build.VERSION.SDK_INT >= 28; }
+
+                            @JavascriptInterface public String pkState() {
+                                try {
+                                    if (Build.VERSION.SDK_INT < 28) return "unsupported";
+                                    if (Build.VERSION.SDK_INT >= 30) {
+                                        android.hardware.biometrics.BiometricManager bm = MainActivity.this.getSystemService(android.hardware.biometrics.BiometricManager.class);
+                                        if (bm == null) return "unsupported";
+                                        int r = bm.canAuthenticate(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG | android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+                                        return r == android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS ? "ok" : "none";
+                                    }
+                                    return "ok";
+                                } catch (Throwable t) { return "unsupported"; }
+                            }
+
+                            @JavascriptInterface public String pkCreate(String keyId) {
+                                try {
+                                    String alias = "zpk_" + (keyId == null ? "" : keyId.replaceAll("[^A-Za-z0-9]", ""));
+                                    java.security.KeyPairGenerator kpg = java.security.KeyPairGenerator.getInstance(android.security.keystore.KeyProperties.KEY_ALGORITHM_EC, "AndroidKeyStore");
+                                    android.security.keystore.KeyGenParameterSpec.Builder sb = new android.security.keystore.KeyGenParameterSpec.Builder(alias, android.security.keystore.KeyProperties.PURPOSE_SIGN)
+                                        .setAlgorithmParameterSpec(new java.security.spec.ECGenParameterSpec("secp256r1"))
+                                        .setDigests(android.security.keystore.KeyProperties.DIGEST_SHA256)
+                                        .setUserAuthenticationRequired(true);
+                                    if (Build.VERSION.SDK_INT >= 30) sb.setUserAuthenticationParameters(0, android.security.keystore.KeyProperties.AUTH_BIOMETRIC_STRONG | android.security.keystore.KeyProperties.AUTH_DEVICE_CREDENTIAL);
+                                    kpg.initialize(sb.build());
+                                    java.security.KeyPair kp = kpg.generateKeyPair();
+                                    return android.util.Base64.encodeToString(kp.getPublic().getEncoded(), android.util.Base64.NO_WRAP);
+                                } catch (Throwable t) { return ""; }
+                            }
+
+                            @JavascriptInterface public void pkDelete(String keyId) {
+                                try {
+                                    java.security.KeyStore ks = java.security.KeyStore.getInstance("AndroidKeyStore"); ks.load(null);
+                                    ks.deleteEntry("zpk_" + (keyId == null ? "" : keyId.replaceAll("[^A-Za-z0-9]", "")));
+                                } catch (Throwable ignored) { }
+                            }
+
+                            @JavascriptInterface public void pkSign(final String keyId, final String data, final String id) {
+                                MainActivity.this.runOnUiThread(new Runnable() { @Override public void run() {
+                                    try {
+                                        java.security.KeyStore ks = java.security.KeyStore.getInstance("AndroidKeyStore"); ks.load(null);
+                                        java.security.PrivateKey pk = (java.security.PrivateKey) ks.getKey("zpk_" + (keyId == null ? "" : keyId.replaceAll("[^A-Za-z0-9]", "")), null);
+                                        if (pk == null) { bioResult(id, "invalid"); return; }
+                                        final java.security.Signature sg = java.security.Signature.getInstance("SHA256withECDSA");
+                                        sg.initSign(pk);
+                                        android.hardware.biometrics.BiometricPrompt.Builder bb = new android.hardware.biometrics.BiometricPrompt.Builder(MainActivity.this).setTitle("Log in with passkey");
+                                        if (Build.VERSION.SDK_INT >= 30) {
+                                            bb.setAllowedAuthenticators(android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG | android.hardware.biometrics.BiometricManager.Authenticators.DEVICE_CREDENTIAL);
+                                        } else {
+                                            bb.setNegativeButton("Cancel", MainActivity.this.getMainExecutor(), new android.content.DialogInterface.OnClickListener() { @Override public void onClick(android.content.DialogInterface d, int w) { bioResult(id, "cancel"); } });
+                                        }
+                                        bb.build().authenticate(new android.hardware.biometrics.BiometricPrompt.CryptoObject(sg), new android.os.CancellationSignal(), MainActivity.this.getMainExecutor(), new android.hardware.biometrics.BiometricPrompt.AuthenticationCallback() {
+                                            @Override public void onAuthenticationSucceeded(android.hardware.biometrics.BiometricPrompt.AuthenticationResult r) {
+                                                try {
+                                                    java.security.Signature s2 = r.getCryptoObject().getSignature();
+                                                    s2.update(data.getBytes("UTF-8"));
+                                                    bioResult(id, "ok:" + android.util.Base64.encodeToString(s2.sign(), android.util.Base64.NO_WRAP));
+                                                } catch (Throwable t) { bioResult(id, "error"); }
+                                            }
+                                            @Override public void onAuthenticationError(int code, CharSequence msg) { bioResult(id, (code == 10 || code == 5) ? "cancel" : (code == 7 || code == 9) ? "lockout" : (code == 11 || code == 12 || code == 14) ? "none" : "error"); }
+                                        });
+                                    } catch (android.security.keystore.KeyPermanentlyInvalidatedException e) { bioResult(id, "invalid");
+                                    } catch (Throwable t) { bioResult(id, "error"); }
+                                } });
+                            }
+
+                            private void bioResult(String id, String r) {
+                                final String key = id == null ? "" : id.replaceAll("[^A-Za-z0-9_]", "");
+                                final String js = "window.__zBioCb&&window.__zBioCb['" + key + "']&&window.__zBioCb['" + key + "']('" + r + "')";
+                                MainActivity.this.runOnUiThread(new Runnable() { @Override public void run() { try { if (web != null) web.evaluateJavascript(js, null); } catch (Throwable ignored) { } } });
+                            }
+
                   @JavascriptInterface public String fcmToken() { return Store.token(MainActivity.this); }
 
                   @JavascriptInterface public String handled() { return Store.handledJson(MainActivity.this); }
