@@ -3344,10 +3344,57 @@ ZW|Zimbabwe|263`;
         });
       });
     }
+    /* ---------- Transfer chats: step 1 = choose the type of the new phone, step 2 = choose how to find the other account ---------- */
+    zInjectCss('ztrcss', [
+      '.ztr{display:flex;flex-direction:column;align-items:center;flex:1 0 auto;padding:8px 22px calc(18px + env(safe-area-inset-bottom,0px));box-sizing:border-box;text-align:center}',
+      '.ztr .art{margin:clamp(12px,6vh,56px) 0 clamp(16px,5vh,40px)}',
+      '.ztr h2{margin:0 0 10px;font-size:25px;line-height:1.25;font-weight:700}',
+      '.ztr .sub2{margin:0 0 26px;color:var(--muted);font-size:15px;line-height:1.45}',
+      '.ztr .opt{display:flex;align-items:center;gap:16px;width:100%;box-sizing:border-box;text-align:left;padding:16px 18px;margin-bottom:12px;border-radius:18px;border:1.5px solid var(--border);background:var(--card);color:inherit;font:inherit}',
+      '.ztr .opt .rd{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--muted);display:flex;align-items:center;justify-content:center}',
+      '.ztr .opt.on{border-color:var(--acc,#21c063);box-shadow:0 0 0 1px var(--acc,#21c063) inset}',
+      '.ztr .opt.on .rd{border-color:var(--acc,#21c063)}.ztr .opt.on .rd:after{content:"";width:11px;height:11px;border-radius:50%;background:var(--acc,#21c063)}',
+      '.ztr .opt b{display:block;font-size:17px;font-weight:600}.ztr .opt small{display:block;margin-top:2px;color:var(--muted);font-size:14px}',
+      '.ztr .sp{flex:1}',
+      '.ztr .note{margin:22px 0 14px;color:var(--muted);font-size:13.5px;line-height:1.4}',
+      '.ztr .go{width:100%;padding:15px;border-radius:999px;border:0;background:var(--acc,#21c063);color:#06140c;font-size:16px;font-weight:700}'
+    ].join('\n'));
+    function transferArt() {
+      return '<svg viewBox="0 0 220 120" width="220" height="120" fill="none" aria-hidden="true">' +
+        '<rect x="14" y="14" width="56" height="96" rx="12" stroke="var(--acc,#21c063)" stroke-width="4"/><rect x="24" y="28" width="36" height="58" rx="5" fill="var(--acc,#21c063)" opacity=".22"/><circle cx="42" cy="98" r="3" fill="var(--acc,#21c063)"/>' +
+        '<rect x="150" y="14" width="56" height="96" rx="12" stroke="var(--acc,#21c063)" stroke-width="4"/><rect x="160" y="28" width="36" height="58" rx="5" fill="var(--acc,#21c063)" opacity=".22"/><circle cx="178" cy="98" r="3" fill="var(--acc,#21c063)"/>' +
+        '<path d="M84 50h40m0 0-9-9m9 9-9 9" stroke="var(--acc,#21c063)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M136 78H96m0 0 9-9m-9 9 9 9" stroke="var(--acc,#21c063)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/>' +
+        '<path d="M32 40h20v12h-9l-5 5v-5h-6z" fill="var(--acc,#21c063)"/><path d="M168 40h20v12h-9l-5 5v-5h-6z" fill="var(--acc,#21c063)" opacity=".7"/></svg>';
+    }
     function openTransfer() {
-      zOpenPage('Transfer chats', function (b) {
+      var kind = 'android';
+      var pg = zOpenPage('Transfer chats', function (b) {
+        var hd = b.parentNode.querySelector('.zpg-h'), more = mk('button'); hd.style.borderBottom = '0'; hd.querySelector('span').textContent = '';
+        more.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>';
+        more.setAttribute('aria-label', 'More options'); more.style.marginLeft = 'auto'; hd.appendChild(more);
+        more.addEventListener('click', function () { zsheet('Transfer chats', [['Transfer with QR code', function () { transferPick('qr'); }], ['Receive chats on this account (show QR)', openReceive]]); });
+        b.style.cssText = 'display:flex;flex-direction:column;padding:0'; var w = mk('div', 'ztr'); b.appendChild(w);
+        var art = mk('div', 'art'); art.innerHTML = transferArt(); w.appendChild(art);
+        w.appendChild(mk('h2', '', 'Move your chats to a new phone'));
+        w.appendChild(mk('div', 'sub2', 'Which kind of phone are you moving to?'));
+        var opts = [['android', 'Android', 'Samsung, Pixel, Xiaomi and more'], ['ios', 'iPhone', 'Any iPhone model']], els = {};
+        opts.forEach(function (o) {
+          var r = mk('button', 'opt' + (o[0] === kind ? ' on' : '')), rd = mk('span', 'rd'), tx = mk('div');
+          tx.appendChild(mk('b', '', o[1])); tx.appendChild(mk('small', '', o[2])); r.appendChild(rd); r.appendChild(tx); els[o[0]] = r;
+          r.addEventListener('click', function () { kind = o[0]; for (var k in els) els[k].classList.toggle('on', k === kind); });
+          w.appendChild(r);
+        });
+        w.appendChild(mk('div', 'sp'));
+        w.appendChild(mk('div', 'note', 'You will be asked to allow a few permissions on the next step.'));
+        var go = mk('button', 'go', 'Continue'); w.appendChild(go);
+        go.addEventListener('click', function () { transferPick('email'); });
+      });
+    }
+    function transferMethods(kind) {
+      zOpenPage('Choose how to transfer', function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
-        var t = mk('div', 'ai-res'); t.style.cssText = 'line-height:1.5;margin-bottom:16px'; t.textContent = 'Move chats to another Zanply account. All of the chat history since this account was created is moved. Choose how to find the other account.'; w.appendChild(t);
+        var t = mk('div', 'ai-res'); t.style.cssText = 'line-height:1.5;margin-bottom:16px';
+        t.textContent = 'Moving to ' + (kind === 'ios' ? 'an iPhone' : 'an Android phone') + '. Install Zanply on the new phone and sign in there first. All of the chat history since this account was created is moved. Choose how to find the other account.'; w.appendChild(t);
         var be = mk('button', 'primary', 'Transfer with email'), bq = mk('button', 'primary', 'Transfer with QR code'), br = mk('button', '', 'Receive chats on this account (show QR)');
         bq.style.marginTop = '10px'; br.style.marginTop = '10px'; [be, bq, br].forEach(function (x) { w.appendChild(x); });
         be.addEventListener('click', function () { transferPick('email'); }); bq.addEventListener('click', function () { transferPick('qr'); }); br.addEventListener('click', openReceive);
@@ -3380,6 +3427,7 @@ ZW|Zimbabwe|263`;
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
         var tgt = kind === 'email' ? zin('Email of the other account', 'text', 120) : zin('Code from the other account', 'text', 12);
         if (kind === 'email') { tgt.type = 'email'; tgt.autocomplete = 'email'; } else tgt.style.textTransform = 'uppercase'; tgt.style.marginBottom = '10px'; w.appendChild(tgt);
+        if (kind === 'email') { var alt = mk('button', '', 'Use a QR code instead'); alt.style.cssText = 'display:block;margin:0 0 12px;padding:0;background:none;border:0;color:var(--acc,#21c063);font-weight:600;font-size:14px'; alt.addEventListener('click', function () { closeOv(); setTimeout(function () { transferPick('qr'); }, 80); }); w.appendChild(alt); }
         if (kind === 'qr') { var sc = mk('button', '', 'Scan QR code'); sc.style.marginBottom = '12px'; sc.addEventListener('click', function () { scanTransferCode(function (c) { tgt.value = c; toast('Code scanned', true, 1800); }); }); w.appendChild(sc); }
         var hd = mk('div', '', 'Choose chats to transfer'); hd.style.cssText = 'font-weight:700;font-size:16px;margin:10px 0 8px'; w.appendChild(hd);
         var list = (typeof allChats !== 'undefined' ? allChats : []).filter(function (c) { return c && !c.group && /^\+\d{7,15}$/.test(c.phone || ''); }), picks = {}, boxes = [];
@@ -3691,36 +3739,35 @@ ZW|Zimbabwe|263`;
       });
     }
     function openChatHistory() {
+      /* only three actions; the chat list is read fresh when a button is tapped, locked chats are never touched */
+      function pool(kind) {
+        return (allChats || []).filter(function (c) {
+          if (!c || !c.phone || isLocked(c.phone)) return false;
+          if (kind === 'archive') return !isArchived(c) && !isHidden(c);
+          return !isHidden(c);
+        });
+      }
+      function done(msg) { try { renderChats(); } catch (e) {} try { updateCounts(); } catch (e) {} toast(msg, true); closeOv(); }
       zOpenPage('Chat history', function (b) {
-        var N = window.ZanplyNative, can = true;
-        var chats = (allChats || []).filter(function (c) { return c && c.phone && !acpOn(c.phone); });
-        b.appendChild(mk('div', 'zfoot', 'Your messages are end-to-end encrypted, so only this phone can read them. ' + (can ? 'Tap a chat to save a readable copy on this phone (Downloads \u203a Zanply).' : 'Tap a chat to open it.')));
-        if (!chats.length) { zempty(b, 'You have no chats yet.'); return; }
-        b.appendChild(mk('div', 'zsec', 'Manage all chats'));
-        zrow2(b, 'archive', 'Archive all chats', 'Move every chat to Archived chats', function () { zconfirm('Archive all ' + chats.length + ' chats?', function () { chats.forEach(function (c) { setArchived(c.phone, true); }); renderChats(); toast('All chats archived', true); }); });
-        zrow2(b, 'clear', 'Clear all chats', 'Remove the messages but keep the chats', function () { zconfirm('Clear all messages in every chat on this phone?', function () { var m = lsGet('zaply_cleared', {}); chats.forEach(function (c) { m[c.phone] = Date.now(); try { localStorage.removeItem('zaply_th_' + c.phone); } catch (e) {} }); lsSet('zaply_cleared', m); renderChats(); toast('All chats cleared', true); }); });
-        zrow2(b, 'delete', 'Delete all chats', 'Remove every chat from this phone', function () { zconfirm('Delete all chats from this phone? A chat comes back if a new message arrives.', function () { var m = lsGet('zaply_hidden', {}); chats.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_hidden', m); renderChats(); toast('All chats deleted', true); closeOv(); }); });
-        b.appendChild(mk('div', 'zsep'));
-        var busy = false;
-        function save(list, fname, label) {
-          if (busy) return toast('Please wait, still saving\u2026'); busy = true; toast('Saving ' + label + '\u2026');
-          var parts = [], i = 0, total = 0;
-          (function next() {
-            if (i >= list.length) {
-              busy = false; var where = ''; var tx = parts.join('\n\n----------------------------------------\n\n'); try { if (N && N.saveTextFile) where = N.saveTextFile(fname, tx); else { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([tx], { type: 'text/plain' })); a.download = fname; document.body.appendChild(a); a.click(); setTimeout(function () { a.remove(); }, 500); where = 'your Downloads'; } } catch (e) {}
-              return where ? toast('Saved ' + total + ' messages to ' + where, true, 7000) : toast('Could not save the file on this phone');
-            }
-            chatToText(list[i++]).then(function (r) { parts.push(r.text); total += r.count; next(); }).catch(function (e) { busy = false; toast(e && e.offline ? 'No internet connection. Try again.' : 'Could not read that chat. Try again.'); });
-          })();
-        }
-        if (can) zrow2(b, 'storage', 'Save all chats on this phone', chats.length + (chats.length === 1 ? ' chat' : ' chats'), function () { save(chats, 'Zanply all chats.txt', 'all chats'); });
-        b.appendChild(mk('div', 'zsep'));
-        chats.forEach(function (c) {
-          var when = c.at ? new Date(c.at).toLocaleString() : '';
-          zrow2(b, c.group ? 'person' : 'chat', c.name || c.phone, when, function () {
-            if (can) save([c], 'Zanply chat - ' + (c.name || c.phone) + '.txt', c.name || c.phone);
-            else { closeOv(); setTimeout(function () { openChatWith(c.phone); }, 80); }
-          });
+        zrow2(b, 'archive', 'Archive all chats', 'Move every chat to Archived chats', function () {
+          var l = pool('archive'); if (!l.length) return toast('There are no chats to archive');
+          zconfirm('Archive all ' + l.length + (l.length === 1 ? ' chat?' : ' chats?'), function () { l.forEach(function (c) { setArchived(c.phone, true); }); done('All chats archived'); }, 'Archive');
+        });
+        zrow2(b, 'clear', 'Clear all chats', 'Remove the messages but keep the chats', function () {
+          var l = pool('clear'); if (!l.length) return toast('There are no chats to clear');
+          zconfirm('Clear all messages in every chat on this phone?', function () {
+            var m = lsGet('zaply_cleared', {}), now = Date.now();
+            l.forEach(function (c) { m[c.phone] = now; try { localStorage.removeItem('zaply_th_' + c.phone); } catch (e) {} });
+            lsSet('zaply_cleared', m);
+            try { if (openUser && m[openUser.phone] === now) { thCache = []; $('msgs').innerHTML = ''; } } catch (e) {}
+            done('All chats cleared');
+          }, 'Clear');
+        });
+        zrow2(b, 'delete', 'Delete all chats', 'Remove every chat from this phone', function () {
+          var l = pool('delete'); if (!l.length) return toast('There are no chats to delete');
+          zconfirm('Delete all chats? They are removed from your account and a chat comes back only if a new message arrives.', function () {
+            deleteChats(l, function () { done('All chats deleted'); });
+          }, 'Delete');
         });
       });
     }
@@ -3768,6 +3815,8 @@ ZW|Zimbabwe|263`;
     ZI.archive = 'M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z';
     ZI.trash = 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z';
     ZI.delivery = 'M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z';
+    ZI.clear = 'M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z';
+    ZI.delete = ZI.trash;
     ZI.verified = 'M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z';
     var VERIFIED_BLUE = '#1877F2';
 
@@ -5966,7 +6015,7 @@ ZW|Zimbabwe|263`;
         try { if (window.zLog) window.zLog('Server returned ' + chats.length + ' chats: ' + chats.map(function (c) { return c.name || c.phone; }).join(', ')); } catch (e) {}
         chats = keepMissing(chats);
         var wasErr = !!loadErr, sig = JSON.stringify(chats.map(function (c) { return [c.phone, c.name, c.last, c.mine, c.at, c.group ? 1 : 0, c.st || 0]; }));
-        try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = ''; try { RT.watchChats(allChats); } catch (e) {}
+        try { chatListFx(chats); } catch (e) {} allChats = chats; loadErr = ''; try { RT.watchChats(allChats); } catch (e) {} try { migrateHidden(); } catch (e) {}
         listLoaded = true; ccSave(allChats);
         try { warmProfiles(); } catch (e) {}
         try { bizAuto(chats); } catch (e) {}
@@ -7560,7 +7609,43 @@ ZW|Zimbabwe|263`;
     function pinsGet() { var a = lsGet('zaply_pins', []); return Array.isArray(a) ? a : []; }
     function togglePin(ph) { var a = pinsGet(), i = a.indexOf(ph); if (i > -1) a.splice(i, 1); else a.unshift(ph); lsSet('zaply_pins', a); renderChats(); toast(i > -1 ? 'Chat unpinned' : 'Chat pinned', true); }
     function isHidden(c) { var m = lsGet('zaply_hidden', {}), t = m[c.phone]; return !!t && (new Date(c.at).getTime() || 0) <= t; }
-    function hideChat(c) { var m = lsGet('zaply_hidden', {}); m[c.phone] = Date.now(); lsSet('zaply_hidden', m); renderChats(); toast('Chat deleted from this phone', true); }
+    /* Delete = delete on the server first (so it is gone on every device and in every list), then forget it here. It returns only if a NEW message arrives. */
+    function delText(l) {
+      var n = l.length, ch = l.filter(function (c) { return c && c.channel && c.owner && c.owner === myPhone; }).length;
+      if (ch && ch === n) return n > 1 ? 'Delete these channels? All posts are removed for everyone.' : 'Delete this channel? All posts are removed for everyone.';
+      return 'Delete ' + (n > 1 ? n + ' chats' : 'this chat') + '? ' + (n > 1 ? 'They are' : 'It is') + ' removed from your account and ' + (n > 1 ? 'come' : 'comes') + ' back only if a new message arrives.' + (ch ? ' Channels you own are deleted for everyone.' : '');
+    }
+    function forgetChats(keys) {
+      var gone = {}; keys.forEach(function (k) { gone[k] = 1; delete chatMiss[k]; });
+      allChats = (allChats || []).filter(function (c) { return !gone[c.phone]; });
+      var ch = lsGet('zaply_channels', {}); keys.forEach(function (k) { delete ch[k]; try { localStorage.removeItem('zaply_th_' + k); } catch (e) {} }); lsSet('zaply_channels', ch);
+      var hm = lsGet('zaply_hidden', {}); keys.forEach(function (k) { delete hm[k]; }); lsSet('zaply_hidden', hm);
+      try { lsSet('zaply_pins', pinsGet().filter(function (k) { return !gone[k]; })); } catch (e) {}
+      try { ccSave(allChats); } catch (e) {}
+      renderChats();
+    }
+    function deleteChats(list, after) {
+      list = (list || []).filter(Boolean); if (!list.length) return;
+      if (!navigator.onLine) return toast('No internet connection. Connect to delete chats.');
+      var keys = list.map(function (c) { return c.phone; });
+      chatCall('chat_delete', { list: keys }).then(function () {
+        forgetChats(keys); if (after) after(); else toast(keys.length > 1 ? 'Chats deleted' : 'Chat deleted', true);
+      }).catch(function (e) { toast((e && e.message) || 'Could not delete. Please try again.'); });
+    }
+    function hideChat(c) { deleteChats([c]); }
+    /* chats that were "deleted" by older versions of the app only on this phone: delete them on the server now */
+    var zMigDone = false;
+    function migrateHidden() {
+      if (zMigDone) return; var m = lsGet('zaply_hidden', {}), ks = Object.keys(m || {}); if (!ks.length) { zMigDone = true; return; }
+      if (!navigator.onLine) return; zMigDone = true;
+      var chans = lsGet('zaply_channels', {}), del = [];
+      ks.forEach(function (k) {
+        var c = (allChats || []).filter(function (x) { return x.phone === k; })[0];
+        if (c) { if (isHidden(c)) del.push(k); } else if (chans[k]) del.push(k);
+      });
+      if (!del.length) { lsSet('zaply_hidden', {}); return; }
+      chatCall('chat_delete', { list: del }).then(function () { forgetChats(del); lsSet('zaply_hidden', {}); }).catch(function () { zMigDone = false; });
+    }
     var SV = {
       dots: '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
       pin: '<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor"><path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z"/></svg>',
@@ -7572,7 +7657,7 @@ ZW|Zimbabwe|263`;
       function btn(cls, label, svg, fn) { var b = mk('button', cls); b.innerHTML = svg + '<span>' + label + '</span>'; b.addEventListener('click', function (e) { e.stopPropagation(); close(); fn(); }); return b; }
       a.appendChild(btn('sa-more', 'More', SV.dots, function () { chatActions(c); }));
       a.appendChild(btn('sa-pin', pinned ? 'Unpin' : 'Pin', SV.pin, function () { togglePin(c.phone); }));
-      a.appendChild(btn('sa-del', 'Delete', SV.trash, function () { zconfirm('Delete this chat from this phone? It comes back if a new message arrives.', function () { hideChat(c); }, 'Delete'); }));
+      a.appendChild(btn('sa-del', 'Delete', SV.trash, function () { zconfirm(delText([c]), function () { hideChat(c); }, 'Delete'); }));
       w.appendChild(a); w.appendChild(r);
       r.addEventListener('touchstart', function (e) { var t = e.touches[0]; sx = t.clientX; sy = t.clientY; dx = 0; drag = false; r.style.transition = 'none'; }, { passive: true });
       r.addEventListener('touchmove', function (e) { var t = e.touches[0], mx = t.clientX - sx, my = t.clientY - sy; if (!drag) { if (Math.abs(mx) > 10 && Math.abs(mx) > Math.abs(my) * 1.5) drag = true; else return; } dx = Math.max(-W, Math.min(0, (open ? -W : 0) + mx)); r.style.transform = 'translateX(' + dx + 'px)'; }, { passive: true });
@@ -7647,7 +7732,7 @@ ZW|Zimbabwe|263`;
     };
     $('selBack').addEventListener('click', selClear);
     $('selPin').addEventListener('click', function () { var l = selList(), a = pinsGet(), allP = l.every(function (c) { return a.indexOf(c.phone) > -1; }); l.slice().reverse().forEach(function (c) { var i = a.indexOf(c.phone); if (allP) { if (i > -1) a.splice(i, 1); } else if (i < 0) a.unshift(c.phone); }); lsSet('zaply_pins', a); selClear(); renderChats(); toast(allP ? 'Unpinned' : 'Pinned', true); });
-    $('selDel').addEventListener('click', function () { var l = selList(); zconfirm('Delete ' + (l.length > 1 ? l.length + ' chats' : 'this chat') + ' from this phone? ' + (l.length > 1 ? 'They come' : 'It comes') + ' back if a new message arrives.', function () { var m = lsGet('zaply_hidden', {}); l.forEach(function (c) { m[c.phone] = Date.now(); }); lsSet('zaply_hidden', m); selClear(); renderChats(); toast('Deleted from this phone', true); }, 'Delete'); });
+    $('selDel').addEventListener('click', function () { var l = selList(); zconfirm(delText(l), function () { selClear(); deleteChats(l); }, 'Delete'); });
     $('selMute').addEventListener('click', function () { var l = selList(), allM = l.every(function (c) { return isMuted(c.phone); }); if (allM) { l.forEach(function (c) { setMute(c.phone, 0); }); selClear(); renderChats(); toast('Notifications on', true); } else if (l.length === 1) { var c0 = l[0]; selClear(); muteChoose(c0); } else { l.forEach(function (c) { setMute(c.phone, -1); }); selClear(); renderChats(); toast('Muted', true); } });
     $('selArch').addEventListener('click', function () { var l = selList(); l.forEach(function (c) { setArchived(c.phone, !isArchived(c)); }); selClear(); renderChats(); toast('Archived', true); });
     $('selMore').addEventListener('click', function (e) {
@@ -8842,24 +8927,207 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       });
     }
 
-    /* Personal account: social media links (same inputs as the business page) */
-    function socialPage(P, done) {
-      zOpenPage('Social media links', function (b) {
-        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
-        var cur = P.social || {}, ss = {};
-        SOCIALS.forEach(function (o) { var r = mk('div', 'zsoc'), ic = mk('i', '', o[1]), x = zin(o[2] + ' link', 'url', 200); x.value = cur[o[0]] || ''; x.setAttribute('autocapitalize', 'none'); ss[o[0]] = x; r.appendChild(ic); r.appendChild(x); w.appendChild(r); });
-        var m = mk('div', 'zerr'), sv = mk('button', 'primary', 'Save'); w.appendChild(m); sv.style.marginTop = '12px'; w.appendChild(sv);
+    /* =============================== SOCIAL MEDIA LINKS (personal + business) ===============================
+       Screen 1: your added links + Add button.  Screen 2: platform picker sheet.  Screen 3: username / number entry. */
+    var ZSM_BR = {"wa": ["#25D366", "M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-1.4-.7-2.4-1.3-3.3-2.9-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.7.8-1 1.600-1 2.600.1 1.200.6 2.300 1.300 3.200 1.300 1.700 3 3 5.200 3.800 1.900.7 2.600.6 3.500.5.700-.1 1.800-.7 2-1.400.3-.7.3-1.300.2-1.400-.1-.1-.3-.2-.6-.3z"], "fb": ["#1877F2", "M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"], "ig": ["linear-gradient(45deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)", "M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2zm-.2 2A3.6 3.6 0 0 0 4 7.6v8.8A3.6 3.6 0 0 0 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6A3.6 3.6 0 0 0 16.4 4H7.6zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.2-3.2a1.2 1.2 0 1 1 0 2.400 1.200 1.200 0 0 1 0-2.400z"], "tt": ["#000000", "M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.59 2.59 0 0 1-2.59-2.59 2.59 2.59 0 0 1 2.59-2.59c.27 0 .53.04.77.12V9.68a5.7 5.7 0 0 0-.77-.05A5.68 5.68 0 0 0 4.18 15.3a5.68 5.68 0 0 0 5.68 5.68 5.68 5.68 0 0 0 5.68-5.68V9.01a7.35 7.35 0 0 0 4.28 1.37V7.3a4.3 4.3 0 0 1-3.22-1.48z"], "tg": ["#2AABEE", "M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"], "x": ["#000000", "M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"], "yt": ["#FF0000", "M23.5 6.2a3 3 0 0 0-2.1-2.1C19.500 3.600 12 3.600 12 3.600s-7.500 0-9.400.5A3 3 0 0 0 .5 6.200C0 8.100 0 12 0 12s0 3.900.5 5.800a3 3 0 0 0 2.100 2.100c1.900.5 9.400.5 9.400.5s7.500 0 9.400-.5a3 3 0 0 0 2.100-2.100c.5-1.900.5-5.800.5-5.800s0-3.900-.5-5.800zM9.600 15.600V8.400l6.200 3.600-6.200 3.600z"], "li": ["#0A66C2", "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 1 1 0-4.125 2.062 2.062 0 0 1 0 4.125zM7.119 20.452H3.555V9h3.564v11.452z"], "sc": ["#FFFC00", "M12 2c3 0 5 2.2 5 5v2.500c.3.200.8.300 1.300.300.400 0 .700.500.400.900-.4.500-1.100.800-1.800 1 .600 1.400 1.700 2.400 3.100 2.800.400.100.400.700 0 .900-.6.300-1.300.500-2 .600-.1.400-.3.800-.5 1.200-.2.400-.6.400-1.100.300-.7-.2-1.300-.200-2 .100-.800.400-1.400 1.200-2.400 1.200s-1.600-.8-2.400-1.200c-.700-.3-1.300-.3-2-.1-.500.100-.900.100-1.100-.3-.2-.4-.4-.8-.5-1.200-.7-.1-1.400-.3-2-.6-.4-.2-.4-.8 0-.9 1.400-.4 2.500-1.400 3.100-2.800-.700-.2-1.400-.5-1.800-1-.3-.4 0-.9.400-.9.500 0 1-.1 1.300-.3V7c0-2.800 2-5 5-5z"]};
+    var ZSM = [
+      { k: 'instagram', n: 'Instagram', b: 'ig', u: 'instagram.com/', t: 'user' },
+      { k: 'whatsapp', n: 'WhatsApp', b: 'wa', u: 'wa.me/', t: 'phone' },
+      { k: 'facebook', n: 'Facebook', b: 'fb', u: 'facebook.com/', t: 'user' },
+      { k: 'tiktok', n: 'TikTok', b: 'tt', u: 'tiktok.com/@', t: 'user' },
+      { k: 'youtube', n: 'YouTube', b: 'yt', u: 'youtube.com/@', t: 'user' },
+      { k: 'x', n: 'X', b: 'x', u: 'x.com/', t: 'user' },
+      { k: 'telegram', n: 'Telegram', b: 'tg', u: 't.me/', t: 'user' },
+      { k: 'linkedin', n: 'LinkedIn', b: 'li', u: 'linkedin.com/in/', t: 'user' },
+      { k: 'snapchat', n: 'Snapchat', b: 'sc', u: 'snapchat.com/add/', t: 'user' },
+      { k: 'threads', n: 'Threads', m: '@', c: '#101010', u: 'threads.net/@', t: 'user' },
+      { k: 'pinterest', n: 'Pinterest', m: 'P', c: '#E60023', u: 'pinterest.com/', t: 'user' },
+      { k: 'reddit', n: 'Reddit', m: 'R', c: '#FF4500', u: 'reddit.com/user/', t: 'user' },
+      { k: 'discord', n: 'Discord', m: 'D', c: '#5865F2', u: '', t: 'raw' },
+      { k: 'twitch', n: 'Twitch', m: 'T', c: '#9146FF', u: 'twitch.tv/', t: 'user' },
+      { k: 'spotify', n: 'Spotify', m: 'S', c: '#1DB954', u: 'open.spotify.com/user/', t: 'user' },
+      { k: 'soundcloud', n: 'SoundCloud', m: 'S', c: '#FF5500', u: 'soundcloud.com/', t: 'user' },
+      { k: 'tumblr', n: 'Tumblr', m: 't', c: '#001935', u: 'tumblr.com/', t: 'user' },
+      { k: 'medium', n: 'Medium', m: 'M', c: '#101010', u: 'medium.com/@', t: 'user' },
+      { k: 'github', n: 'GitHub', m: 'G', c: '#24292F', u: 'github.com/', t: 'user' },
+      { k: 'behance', n: 'Behance', m: 'Be', c: '#1769FF', u: 'behance.net/', t: 'user' },
+      { k: 'dribbble', n: 'Dribbble', m: 'D', c: '#EA4C89', u: 'dribbble.com/', t: 'user' },
+      { k: 'vimeo', n: 'Vimeo', m: 'V', c: '#1AB7EA', u: 'vimeo.com/', t: 'user' },
+      { k: 'wechat', n: 'WeChat', m: 'W', c: '#07C160', u: '', t: 'raw' },
+      { k: 'line', n: 'LINE', m: 'L', c: '#06C755', u: 'line.me/ti/p/~', t: 'user' },
+      { k: 'viber', n: 'Viber', m: 'V', c: '#7360F2', u: '', t: 'phone' },
+      { k: 'signal', n: 'Signal', m: 'S', c: '#3A76F0', u: '', t: 'phone' },
+      { k: 'kakaotalk', n: 'KakaoTalk', m: 'K', c: '#FEE500', f: '#191919', u: '', t: 'raw' },
+      { k: 'vk', n: 'VK', m: 'VK', c: '#0077FF', u: 'vk.com/', t: 'user' },
+      { k: 'quora', n: 'Quora', m: 'Q', c: '#B92B27', u: 'quora.com/profile/', t: 'user' },
+      { k: 'flickr', n: 'Flickr', m: 'F', c: '#0063DC', u: 'flickr.com/people/', t: 'user' }
+    ];
+    function zsmEsc(x) { return String(x == null ? '' : x).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function zsmBy(k) { for (var i = 0; i < ZSM.length; i++) if (ZSM[i].k === k) return ZSM[i]; return null; }
+    function zsmTile(p) {
+      var o = ZSM_BR[p.b];
+      if (o) return '<span class="zsm-bi" style="background:' + o[0] + ';color:' + (p.b === 'sc' ? '#000' : '#fff') + '"><svg viewBox="0 0 24 24" fill="currentColor"><path d="' + o[1] + '"/></svg></span>';
+      return '<span class="zsm-bi" style="background:' + (p.c || '#667') + ';color:' + (p.f || '#fff') + '">' + zsmEsc(p.m || p.n.charAt(0)) + '</span>';
+    }
+    function zsmShort(v) { return String(v || '').replace(/^https?:\/\/(www\.)?/i, '').replace(/\/+$/, ''); }
+    function zsmHandle(p, v) {
+      var t = zsmShort(v);
+      if (p.u && t.toLowerCase().indexOf(p.u.toLowerCase()) === 0) t = t.slice(p.u.length);
+      return p.t === 'phone' && /^\d+$/.test(t) ? '+' + t : t;
+    }
+    function zsmLabel(p) { return p.t === 'phone' ? 'Phone number' : (p.t === 'raw' ? 'Username or ID' : 'Username'); }
+    function zsmHint(p) { return p.t === 'phone' ? '+254 700 000 000' : (p.t === 'raw' ? 'Username or ID' : 'username'); }
+    /* turns what the person typed (a username, a number or a pasted link) into the value we store */
+    function zsmBuild(p, raw) {
+      var v = String(raw || '').trim();
+      if (!v) return { err: 'Enter ' + zsmLabel(p).toLowerCase() + '.' };
+      if (/^https?:\/\//i.test(v) || /^[\w-]+(\.[\w-]+)+\/\S+/.test(v)) return { value: /^https?:\/\//i.test(v) ? v : 'https://' + v, show: zsmShort(v) };
+      if (p.t === 'phone') {
+        var d = v.replace(/\D/g, '');
+        if (d.length < 7 || d.length > 15) return { err: 'Enter the full number with country code.' };
+        return p.k === 'whatsapp' ? { value: 'https://wa.me/' + d, show: 'wa.me/' + d } : { value: '+' + d, show: '+' + d };
+      }
+      var h = v.replace(/^@+/, '').replace(/\s+/g, '');
+      if (!h) return { err: 'Enter ' + zsmLabel(p).toLowerCase() + '.' };
+      if (p.t === 'raw') return h.length > 80 ? { err: 'That is too long.' } : { value: h, show: h };
+      if (!/^[\w.\-~%]+$/.test(h)) return { err: 'Use only letters, numbers, dots, dashes and underscores.' };
+      if (h.length > 100) return { err: 'That is too long.' };
+      return { value: 'https://' + p.u + h, show: p.u + h };
+    }
+    function zsmCss() {
+      if (document.getElementById('zsmCss')) return;
+      var st = document.createElement('style'); st.id = 'zsmCss';
+      st.textContent =
+        '.zsm{padding:4px 16px 8px}.zsm-h{margin:20px 4px 8px;font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}' +
+        '.zsm-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}' +
+        '.zsm-row{display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}' +
+        '.zsm-row+.zsm-row{border-top:1px solid var(--border)}.zsm-row:active{background:rgba(127,127,127,.12)}' +
+        '.zsm-bi{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;font-weight:800;font-size:17px;letter-spacing:-.3px}.zsm-bi svg{width:24px;height:24px}' +
+        '.zsm-tx{flex:1;min-width:0}.zsm-tx b{display:block;font-size:16px;font-weight:600}.zsm-tx small{display:block;font-size:13.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+        '.zsm-x{flex:none;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center}.zsm-x:active{background:rgba(127,127,127,.2)}' +
+        '.zsm-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;padding:14px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--acc,#21c063);font:inherit;font-size:16px;font-weight:600;cursor:pointer}' +
+        '.zsm-add svg{width:20px;height:20px}' +
+        '.zsm-bar{position:sticky;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--border)}' +
+        '.zsm-save{width:100%;padding:14px;border:0;border-radius:999px;background:var(--acc,#21c063);color:#06140c;font:inherit;font-size:16px;font-weight:700;cursor:pointer}.zsm-save:disabled{background:var(--card);color:var(--muted);box-shadow:inset 0 0 0 1px var(--border);cursor:default}' +
+        '.zsm-bg{position:fixed;inset:0;z-index:95;background:rgba(0,0,0,.55);display:flex;align-items:flex-end}' +
+        '.zsm-sheet{width:100%;max-height:86vh;display:flex;flex-direction:column;background:var(--card);color:var(--text);border-radius:24px 24px 0 0;padding:8px 0 calc(10px + env(safe-area-inset-bottom,0px));animation:zsmup .22s ease both}@keyframes zsmup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}' +
+        '.zsm-grab{width:40px;height:4px;border-radius:3px;background:rgba(128,128,128,.5);margin:4px auto 6px}' +
+        '.zsm-sh{display:flex;align-items:center;padding:8px 16px}.zsm-sh b{flex:1;font-size:18px}.zsm-sh button{border:0;background:transparent;color:inherit;padding:6px;display:flex}' +
+        '.zsm-q{margin:4px 16px 8px;width:calc(100% - 32px)}' +
+        '.zsm-list{overflow-y:auto;padding:0 6px}.zsm-opt{display:flex;align-items:center;gap:16px;width:100%;padding:10px 12px;border:0;border-radius:12px;background:transparent;color:inherit;font:inherit;font-size:16px;font-weight:500;text-align:left;cursor:pointer}.zsm-opt:active{background:rgba(127,127,127,.14)}' +
+        '.zsm-opt[disabled]{opacity:.5;cursor:default}.zsm-opt span.s{margin-left:auto;font-size:13px;color:var(--muted);font-weight:500}' +
+        '.zsm-none{padding:24px;text-align:center;color:var(--muted)}' +
+        '.zsm-f{padding:16px}.zsm-plat{display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--card);color:inherit;font:inherit;text-align:left}.zsm-plat .zsm-tx small{font-size:12.5px}' +
+        '.zsm-lb{margin:20px 4px 8px;font-size:14px;color:var(--muted);font-weight:600}.zsm-prev{margin:10px 4px 0;font-size:13.5px;color:var(--muted);word-break:break-all;min-height:20px}.zsm-prev b{color:var(--text);font-weight:600}' +
+        '.zsm-rm{display:block;width:100%;margin-top:28px;padding:13px;border:1px solid rgba(229,57,53,.45);border-radius:14px;background:transparent;color:#e53935;font:inherit;font-size:15px;font-weight:600;cursor:pointer}' +
+        '.zsm-next{margin-left:auto;padding:6px 8px!important;font-size:16px;font-weight:700;color:var(--acc,#21c063)!important}.zsm-next:disabled{color:var(--muted)!important;opacity:.6}';
+      document.head.appendChild(st);
+    }
+    var ZSM_PLUS = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>';
+    var ZSM_CLOSE = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+    var ZSM_DOWN = '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" style="flex:none;opacity:.7"><path d="M7 10l5 5 5-5z"/></svg>';
+
+    /* screen 2: bottom sheet with every platform and its icon */
+    function zsmPicker(taken, onPick) {
+      var bg = mk('div', 'zsm-bg'), sh = mk('div', 'zsm-sheet'), list = mk('div', 'zsm-list');
+      function close() { bg.remove(); }
+      bg.addEventListener('click', function (e) { if (e.target === bg) close(); });
+      sh.appendChild(mk('div', 'zsm-grab'));
+      var h = mk('div', 'zsm-sh'), x = mk('button'); h.appendChild(mk('b', '', 'Select platform')); x.innerHTML = ZSM_CLOSE; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', close); h.appendChild(x); sh.appendChild(h);
+      var q = zin('Search platforms', 'search', 30); q.className = 'zin zsm-q'; q.setAttribute('autocomplete', 'off'); sh.appendChild(q); sh.appendChild(list);
+      function paint() {
+        list.innerHTML = ''; var t = q.value.toLowerCase().trim(), n = 0;
+        ZSM.forEach(function (p) {
+          if (t && p.n.toLowerCase().indexOf(t) < 0) return; n++;
+          var b = mk('button', 'zsm-opt'), has = !!(taken && taken[p.k]);
+          b.innerHTML = zsmTile(p) + '<span>' + zsmEsc(p.n) + '</span>' + (has ? '<span class="s">Added</span>' : '');
+          if (has) b.disabled = true; else b.addEventListener('click', function () { close(); onPick(p); });
+          list.appendChild(b);
+        });
+        if (!n) list.appendChild(mk('div', 'zsm-none', 'No platform found.'));
+      }
+      q.addEventListener('input', paint); paint(); bg.appendChild(sh); document.body.appendChild(bg);
+    }
+
+    /* screen 3: username / number entry for the chosen platform (also used to edit or remove a link) */
+    function zsmEntry(draft, p0, editing, rerender) {
+      var p = p0, inp, form, nxt, prev, err;
+      zOpenPage('Social media', function (b) {
+        var hd = b.parentNode.querySelector('.zpg-h'); nxt = mk('button', 'zsm-next', editing ? 'Done' : 'Add'); nxt.disabled = true; hd.appendChild(nxt);
+        form = mk('div', 'zsm-f'); b.appendChild(form);
+        function draw(keep) {
+          form.innerHTML = '';
+          var pb = mk('button', 'zsm-plat'); pb.innerHTML = zsmTile(p) + '<span class="zsm-tx"><small>Platform</small><b>' + zsmEsc(p.n) + '</b></span>' + (editing ? '' : ZSM_DOWN);
+          if (editing) pb.style.cursor = 'default'; else pb.addEventListener('click', function () { var cur = inp ? inp.value : ''; zsmPicker(draft, function (np) { p = np; draw(''); }); });
+          form.appendChild(pb);
+          form.appendChild(mk('div', 'zsm-lb', zsmLabel(p)));
+          inp = zin(zsmHint(p), p.t === 'phone' ? 'tel' : 'text', 200); inp.setAttribute('autocapitalize', 'none'); inp.setAttribute('autocomplete', 'off'); inp.setAttribute('autocorrect', 'off'); inp.setAttribute('spellcheck', 'false');
+          if (p.t === 'phone') inp.setAttribute('inputmode', 'tel');
+          inp.value = keep != null ? keep : (editing && draft[p.k] ? zsmHandle(p, draft[p.k]) : '');
+          form.appendChild(inp);
+          prev = mk('div', 'zsm-prev'); form.appendChild(prev); err = mk('div', 'zerr'); form.appendChild(err);
+          if (editing) { var rm = mk('button', 'zsm-rm', 'Remove link'); rm.addEventListener('click', function () { delete draft[p.k]; rerender(); closeOv(); }); form.appendChild(rm); }
+          inp.addEventListener('input', check); inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); if (!nxt.disabled) nxt.click(); } });
+          check(); setTimeout(function () { try { inp.focus(); } catch (e) {} }, 350);
+        }
+        function check() {
+          var r = zsmBuild(p, inp.value); err.textContent = '';
+          nxt.disabled = !!r.err;
+          prev.innerHTML = r.err ? '' : 'Link: <b>' + zsmEsc(r.show) + '</b>';
+        }
+        nxt.addEventListener('click', function () {
+          var r = zsmBuild(p, inp.value); if (r.err) { err.textContent = r.err; return; }
+          draft[p.k] = r.value; rerender(); closeOv();
+        });
+        draw(null);
+      });
+    }
+
+    /* screen 1: the landing page. mode 'me' = personal profile, 'biz' = business profile */
+    function socialManager(P, mode, done) {
+      zsmCss();
+      var src = mode === 'biz' ? ((P.biz && P.biz.social) || {}) : (P.social || {}), draft = {}, body, sv, msg;
+      for (var k in src) if (src[k]) draft[k] = src[k];
+      function sig(o) { return JSON.stringify(Object.keys(o).sort().map(function (x) { return [x, o[x]]; })); }
+      var orig = sig(draft);
+      function render() {
+        body.innerHTML = '';
+        var wrap = mk('div', 'zsm'), keys = ZSM.filter(function (p) { return draft[p.k]; }), extra = Object.keys(draft).filter(function (x) { return !zsmBy(x); });
+        wrap.style.flex = '1';
+        if (keys.length || extra.length) {
+          wrap.appendChild(mk('div', 'zsm-h', 'Links on your profile'));
+          var card = mk('div', 'zsm-card');
+          keys.forEach(function (p) {
+            var r = mk('div', 'zsm-row'), x = mk('button', 'zsm-x');
+            r.setAttribute('role', 'button'); r.tabIndex = 0;
+            r.innerHTML = zsmTile(p) + '<span class="zsm-tx"><b>' + zsmEsc(p.n) + '</b><small>' + zsmEsc(zsmHandle(p, draft[p.k])) + '</small></span>';
+            x.innerHTML = ZSM_CLOSE; x.setAttribute('aria-label', 'Remove ' + p.n);
+            x.addEventListener('click', function (e) { e.stopPropagation(); delete draft[p.k]; render(); });
+            r.appendChild(x); r.addEventListener('click', function () { zsmEntry(draft, p, true, render); });
+            card.appendChild(r);
+          });
+          wrap.appendChild(card);
+        }
+        var add = mk('button', 'zsm-add'); add.innerHTML = ZSM_PLUS + '<span>Add social link</span>';
+        add.addEventListener('click', function () { zsmPicker(draft, function (p) { zsmEntry(draft, p, false, render); }); });
+        wrap.appendChild(add); body.appendChild(wrap);
+        var bar = mk('div', 'zsm-bar'); msg = mk('div', 'zerr'); msg.style.textAlign = 'center'; bar.appendChild(msg);
+        sv = mk('button', 'zsm-save', 'Save'); sv.disabled = sig(draft) === orig; bar.appendChild(sv); body.appendChild(bar);
         sv.addEventListener('click', function () {
-          m.textContent = ''; var out = {}; for (var k in ss) if (ss[k].value.trim()) out[k] = ss[k].value.trim();
+          msg.textContent = '';
           function go() {
             sv.disabled = true;
-            saveProfile(P, { social: out }).then(function (r) { mergeProfile(P, r); toast('Saved', true); done(); closeOv(); })
-              .catch(function (e) { if (isOffErr(e)) noNet(go); else m.textContent = (e && e.message) || 'Could not save.'; }).then(function () { sv.disabled = false; });
+            var ex;
+            if (mode === 'biz') { var B = JSON.parse(JSON.stringify(P.biz || {})); B.links = B.links || []; B.social = draft; ex = { biz: B }; } else ex = { social: draft };
+            saveProfile(P, ex).then(function (r) { mergeProfile(P, r); toast('Saved', true); done(); closeOv(); })
+              .catch(function (e) { if (isOffErr(e)) noNet(go); else { msg.textContent = (e && e.message) || 'Could not save.'; sv.disabled = false; } });
           }
           needNet(go);
         });
-      });
+      }
+      zOpenPage('Social media', function (b) { body = b; b.style.display = 'flex'; b.style.flexDirection = 'column'; b.style.padding = '0'; render(); });
     }
+    function socialPage(P, done) { socialManager(P, 'me', done); }
 
     /* one edit page per field, each with its own placeholder and a Save button */
     function fieldPage(f, P, done) {
@@ -8938,6 +9206,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
 
     /* =============================== BUSINESS PROFILE =============================== */
     function bizPage(key, P, done) {
+      if (key === 'social') return socialManager(P, 'biz', done);
       var T = { name: 'Business name', username: 'Business username', email: 'Business email', address: 'Business address', link: 'Business link', bio: 'What does the business do', cat: 'What does the business do', links: 'Links', social: 'Social media links' };
       zOpenPage(T[key], function (b) {
         var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w); var B = JSON.parse(JSON.stringify(P.biz || {})); B.links = B.links || []; B.social = B.social || {};
