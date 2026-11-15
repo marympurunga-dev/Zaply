@@ -4704,15 +4704,15 @@ ZW|Zimbabwe|263`;
         zrow2(list, 'chat', 'Chats', 'Enter is send, font size, archived chats', openChats);
         zrow2(list, 'folder', 'Chat folders', 'Organise your chats into folders', openFolders);
         zrow2(list, 'palette', 'Appearance', 'Chat theme, wallpaper, live wallpaper, app icon, text theme', openAppearance);
-        zrow2(list, 'chat', 'Auto-Reply', 'Reply automatically (Premium)', function () { window.zpOpen.autoReply(); });
-        zrow2(list, 'account', 'Name colour', 'Choose your name colour (Premium)', function () { window.zpOpen.nameColour(); });
         zrow2(list, 'bell', 'Notifications', 'Message, group & call tones', openNotif);
         zrow2(list, 'storage', 'Storage and data', 'Network usage, auto-download', openStorage);
         zrow2(list, 'access', 'Accessibility', 'Contrast, animation', openAccess);
         zrow2(list, 'globe', 'App language', langName(), openLanguage);
         zrow2(list, 'invite', 'Invite a friend', 'Share Zanply with your contacts', invite);
         list.appendChild(mk('div', 'zsep'));
-        zrow2(list, 'diamond', 'Zanply Premium', '13 features: more Status, bigger files, backup, AI', openPremium);
+        zrow2(list, 'chat', 'Zanply AI', 'Ask anything. 5 free a day, no limit with Premium', function () { window.zpOpen.ask(); });
+        zrow2(list, 'chat', 'Quick replies', 'Type / in a chat to send saved replies', function () { window.zpOpen.quick(); });
+        zrow2(list, 'diamond', 'Zanply Premium', PREM_FEATS.length + ' features: more Status, bigger files, backup, AI', openPremium);
         var vr = zrow2(list, 'verified', 'Verification badge', 'Get the blue verified badge', openVerification); vr.querySelector('svg').style.color = VERIFIED_BLUE;
         zrow2(list, 'store', 'Zanply Business', 'Business profile and auto replies', openBusiness);
         var hh = mk('div', 'zsec', 'Help'); hh.style.color = '#3b9cf5'; hh.setAttribute('data-hdr', '1'); list.appendChild(hh);
@@ -4785,7 +4785,7 @@ ZW|Zimbabwe|263`;
     function premCur() {
       var p = ''; try { p = String((lsGet('zaply_user', {}) || {}).phone || '').replace(/\D/g, ''); } catch (e) {}
       var k = [3, 2, 1].map(function (n) { return p.slice(0, n); }).filter(function (x) { return PREM_CUR[x]; })[0];
-      return PREM_CUR[k] || PREM_CUR['1'];
+      var cc = PREM_CUR[k] || PREM_CUR['1']; return ({ NGN: 1, GHS: 1, ZAR: 1, KES: 1, USD: 1 })[cc[0]] ? cc : PREM_CUR['1'];
     }
     function premPrice(usd) { var c = premCur(), v = usd * c[1]; v = c[1] >= 50 ? Math.round(v / 10) * 10 : Math.round(v * 100) / 100; return c[2] + ' ' + v.toLocaleString(); }
     var PREM_PLANS = {
@@ -4828,8 +4828,6 @@ ZW|Zimbabwe|263`;
         'Without Premium, you can share only 2 Status per day. With Premium, you can post up to 13 Status per day. Share more moments, more photos, more videos, without waiting for tomorrow.', 'Post Status normally. Premium removes the limit to 13 per day.', 'For creators, businesses, and active users who post a lot.', '2 Status per day', 'Up to 13 Status per day'],
       ['limits', 'Doubled Limits', 'Create up to 10+ Channels and 10+ Groups.', '#a86f4f', 'limits',
         'Free users: Groups up to 100,000 members. Premium users: Groups from 1 to 1M members. Free: 2 Groups + 2 Channels. Premium: 10+ of each.', 'Create Channels and Groups normally. Premium unlocks the higher limit.', 'For businesses, churches, schools and creators who run many communities.', '2 Channels and 2 Groups', 'Up to 10+ Channels and 10+ Groups'],
-      ['colors', 'Names and Profile Colours', 'Change your name style and unlock exclusive profile colours.', '#8e6aa8', 'colors',
-        'Change your name style and unlock exclusive profile colours. Make your name bold, colourful, and unique.', 'Go to Profile > Name Colour. Choose from exclusive Premium colours and fonts.', 'Makes your profile stand out and look professional.', 'Standard name and colour', 'Exclusive name styles and colours'],
       ['icons', 'Premium App Icons', 'Unlock exclusive app icons.', '#5f7fb8', 'icons',
         'Unlock exclusive app icons. Change how Zanply looks on your home screen.', 'Go to Appearance > App Icons. Choose from Premium icons.', 'Personalise your phone and make it look cool and premium.', 'Default icon only', 'All exclusive app icons'],
       ['ai', 'Unlimited AI Usage', 'Use Zanply AI without a limit.', '#4f9a8a', 'ai',
@@ -4842,14 +4840,18 @@ ZW|Zimbabwe|263`;
         'Free: 30 MB. Premium: 150 MB + Faster Uploads.', 'Select any big file in a chat. Premium uploads it fast with a progress bar.', 'Send big videos, movies, school work and business files without splitting them.', 'Up to 30 MB, normal speed', 'Up to 150 MB, fast upload'],
       ['stickers', 'Premium Stickers, Themes & Chat Bubbles', '500+ animated stickers, chat themes and bubble colours.', '#9a6fb0', 'stickers',
         'Unlock 500+ exclusive animated stickers, custom chat themes and chat bubble colours that free users can’t use.', 'Open Stickers / Themes in a chat. Choose a Premium pack.', 'Makes chats fun, colourful and different from everyone else.', 'Basic stickers and themes', '500+ animated stickers, themes and bubble colours'],
-      ['sched', 'Scheduled Messages & Auto-Reply', 'Send messages later and reply automatically when busy.', '#5d8a6e', 'sched',
-        'Schedule a message to send later. Set Auto-Reply when you are busy.', 'Type a message, long press Send, then tap Schedule. For Auto-Reply: Settings > Auto-Reply > turn ON and type your reply.', 'Never forget birthdays. Businesses can reply even when closed.', 'Not available', 'Scheduled messages and Auto-Reply'],
+      ['sched', 'Scheduled Messages', 'Send messages later, at the time you choose.', '#5d8a6e', 'sched',
+        'Schedule a message to send later, at the time you choose.', 'Type a message, long press Send, then tap Schedule.', 'Never forget birthdays or important messages.', 'Not available', 'Scheduled messages'],
       ['backup', 'Cloud Backup + Priority Support', 'Unlimited cloud backup and replies in under 1 hour.', '#5f7fb8', 'backup',
         'Without Premium, backup is limited. With Premium, you get unlimited cloud backup for chats, photos and videos, so you never lose chats. Plus priority support: we reply in under 1 hour.', 'Settings > Backup > turn ON Unlimited Cloud Backup. For support, your ticket goes to the front.', 'Change phone without losing anything. Get help fast.', 'Limited backup', 'Unlimited backup and priority support'],
       ['translate', 'Voice-to-Text & AI Translation', 'Turn voice notes into text and translate in one tap.', '#4f8fa0', 'translate',
         'Convert voice notes to text automatically. Translate any chat to your language with one tap using AI.', 'Long press a voice note > Transcribe. Long press a message > Translate.', 'For long voice notes and chatting with people from other countries.', 'Not available', 'Voice-to-text and one-tap translation'],
       ['live', 'Live Wallpapers + Camera Live Wallpapers', 'Animated wallpapers in chats and in the Camera.', '#c06a4a', 'live',
-        'Without Premium, only static wallpapers. With Premium, use Live Wallpapers: animated, moving wallpapers in chats and in the Camera. Set a live video as your chat wallpaper or as your Camera background for Status. The other person also sees your live wallpaper in your chat with them.', 'Go to Chat Wallpaper > Live Wallpapers and choose a video or animated wallpaper. For Camera, open Camera > Live Wallpaper.', 'Makes chats look alive, beautiful and premium, not boring.', 'Static wallpapers only', 'Live wallpapers in chats and Camera']
+        'Without Premium, only static wallpapers. With Premium, use Live Wallpapers: animated, moving wallpapers in chats and in the Camera. Set a live video as your chat wallpaper or as your Camera background for Status. The other person also sees your live wallpaper in your chat with them.', 'Go to Chat Wallpaper > Live Wallpapers and choose a video or animated wallpaper. For Camera, open Camera > Live Wallpaper.', 'Makes chats look alive, beautiful and premium, not boring.', 'Static wallpapers only', 'Live wallpapers in chats and Camera'],
+      ['summary', 'AI Chat Summary & Ask Zanply AI', 'Catch up on long chats in one tap.', '#4f9a8a', 'ai',
+        'Long group chat? Tap Catch me up and Zanply AI tells you what happened and what needs your answer. Premium also removes the daily limit on Ask Zanply AI.', 'Open a chat, tap the three dots, then Catch me up (AI).', 'Never scroll through hundreds of messages again.', 'No summaries, 5 AI questions a day', 'AI summaries and unlimited AI questions'],
+      ['quick', 'Quick Replies', 'Save replies and send them by typing /.', '#a3793a', 'bolt',
+        'Save the replies you send again and again, like prices or opening hours. In any chat type / and pick one.', 'Settings > Quick replies > Add. In a chat type / and tap a reply.', 'Great for business owners, support and busy people.', 'Type every reply again', 'Up to 20 saved replies, sent with /']
     ];
     var PVCSS = '.pv{position:relative;width:min(320px,90%);height:190px;margin:14px auto;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#1d2a44,#3a2a5c);color:#fff;font-size:13px}.pv-e{position:absolute;white-space:nowrap;pointer-events:none}' +
       '.pv-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-weight:600;font-size:12.5px}.pv-row{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;background:rgba(255,255,255,.16);font-size:12.5px}' +
@@ -4939,6 +4941,10 @@ ZW|Zimbabwe|263`;
           E(0, 76, 'left:8%;top:22%', '<div class="pv-b">Hi! Look at this</div>') + E(0, 76, 'right:8%;top:42%', '<div class="pv-b u">Love the wallpaper</div>') + E(76, 100, C(50, 38), psvg('camera', 48)) +
           E(0, 28, C(50, 86), pill('Chat · Ocean waves', 'rgba(0,0,0,.45)')) + E(28, 52, C(50, 86), pill('Chat · Rain', 'rgba(0,0,0,.45)')) + E(52, 76, C(50, 86), pill('Chat · Stars', 'rgba(0,0,0,.45)')) + E(76, 100, C(50, 86), pill('Camera · Fire', 'rgba(0,0,0,.45)')) +
           E(0, 100, C(50, 10), pill(psvg('eye', 14) + ' Your friend sees it too', 'rgba(0,0,0,.45)'));
+      } else if (k === 'summary') {
+        d = E(0, 100, 'left:8%;top:10%', '<div class="pv-b">120 new messages</div>') + E(30, 100, C(50, 50), pill(psvg('ai', 15) + ' Catch me up', '#4f9a8a')) + E(52, 100, 'left:8%;right:8%;top:66%', '<div class="pv-b">Meeting moved to 3pm. Bring the report.</div>');
+      } else if (k === 'quick') {
+        d = E(0, 100, 'right:8%;top:14%', '<div class="pv-b u">/hours</div>') + E(34, 100, 'left:8%;right:8%;top:42%', '<div class="pv-b">We are open Mon to Sat, 8am to 6pm.</div>') + E(60, 100, C(50, 82), pill(ok + ' Sent in one tap', GRN));
       }
       var kf = Object.keys(PV.kf).map(function (n) { return PV.kf[n]; }).join('');
       return '<style>' + PVCSS + kf + '</style><div class="pv">' + d + '</div>';
@@ -4969,9 +4975,22 @@ ZW|Zimbabwe|263`;
       }).catch(function () { back(); toast('Payments are not available yet. No charge was made and Premium stays locked.'); });
     }
     function premCta(plan) { var P = PREM_PLANS[plan]; return 'Subscribe for ' + premPrice(P.usd) + ' / ' + P.per; }
-    function premTerms() { return mk('div', 'pd-sec', 'You can cancel anytime. You can turn auto-renewal ON or OFF.'); }
+    function premTerms() { return mk('div', 'pd-sec', 'You can cancel anytime. You can turn auto-renewal ON or OFF.' + (premCur()[0] === 'USD' ? ' Billed in US dollars.' : '')); }
     /* ---- Premium gate: lock icon + popup (Cancel / Subscribe) ---- */
     premStatus(function () {});
+    (function () {
+      try {
+        var q = new URLSearchParams(location.search), ref = q.get('reference') || q.get('trxref'); if (!ref || !/^zpr?_[0-9a-f]+$/.test(ref)) return;
+        try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) {}
+        var tries = 0;
+        (function go() {
+          chatCall('premium_verify', { ref: ref }).then(function (r) { PREM_ST = r || {}; toast('Zanply Premium is active. Thank you!', true, 4000); }, function (e) {
+            if (e && e.status !== 400 && e.status !== 403 && tries++ < 8) return setTimeout(go, 4000);
+            toast((e && e.message) || 'We could not confirm the payment yet. If you paid, Premium will unlock shortly.', false, 4500);
+          });
+        })();
+      } catch (e) {}
+    })();
     window.zLockSvg = '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="#f5b32a" d="M3 7l4.5 4.2L12 4l4.5 7.2L21 7l-1.6 11H4.6L3 7zm1.6 13h14.8v2H4.6v-2z"/></svg>';
     window.zLockBadge = function (el) { if (window.zIsPremium() || !el) return; el.style.position = 'relative'; var b = document.createElement('span'); b.className = 'zpgold'; b.innerHTML = window.zLockSvg; b.style.cssText = 'position:absolute;top:-4px;right:-4px;background:#1b1b1b;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:1px solid #8a6a1f'; el.appendChild(b); };
     window.zPremGate = function (msg, extra) {
@@ -5012,10 +5031,6 @@ ZW|Zimbabwe|263`;
     function zpLocked(arr) { var p = window.zIsPremium(); return arr.map(function (a, i) { return [a[0], a[1], a[2], a[3], !p && a[4] !== false]; }); }
     var ZP_GRAD = ['#1d9bf0,#0a4fc2', '#9b5de5,#5a189a', '#f5b32a,#b8860b', '#ff0000,#ff9900,#33cc33,#0099ff,#9900ff', '#21c063,#0b6b3a', '#e63946,#7a0010', '#111,#444', '#39ff14,#0a0', '#ff7eb3,#ff758c', '#00c9ff,#92fe9d', '#fc4a1a,#f7b733', '#8e2de2,#4a00e0', '#232526,#414345', '#ff512f,#dd2476', '#43cea2,#185a9d'];
     function G(i) { return 'linear-gradient(135deg,' + ZP_GRAD[i % ZP_GRAD.length] + ')'; }
-    /* 3 name colours */
-    var ZP_NC = { blue: '#1d6bff', purple: '#9b5de5', gold: '#f5b32a', rainbow: 'linear-gradient(90deg,red,orange,yellow,green,blue,violet)', green: '#21c063' };
-    function zpApplyName(id) { var c = ZP_NC[id]; var st = document.getElementById('zpNameCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zpNameCss' })); st.textContent = c ? (c.indexOf('gradient') > -1 ? '.zname-me{background:' + c + ';-webkit-background-clip:text;color:transparent!important}' : '.zname-me{color:' + c + '!important}') : ''; try { var hx = { blue: '#1d6bff', purple: '#9b5de5', gold: '#f5b32a', green: '#21c063' }[id]; chatCall('profile_style_set', { pstyle: id === 'rainbow' ? 'grad' : '', pcolor: hx || '' }).catch(function () {}); } catch (e) {} }
-    function openNameColour() { zpGrid('Select Name Colour', zpLocked([['blue', 'Pure Blue', '#1d6bff'], ['purple', 'Purple', '#9b5de5'], ['gold', 'Gold', '#f5b32a'], ['rainbow', 'Rainbow', G(3)], ['green', 'Green', '#21c063']]), 'namecolour', 'You need to subscribe to Zanply Premium to get Name Colours', zpApplyName); }
     /* 4 app icons: 15 (first = the current Zanply icon, other 14 are Premium) */
     var ZI_PAL = [['Gold', '#2a2008', '#0d0a03', '#ffe9a6', '#d9a520'], ['Obsidian', '#2b2f36', '#0a0b0d', '#f3f4f6', '#9aa0a8'], ['Platinum', '#f4f5f7', '#c9ced6', '#2b3038', '#5b6470'], ['Rose Gold', '#f6d3c8', '#d9967f', '#5a2a22', '#8a4a3b'],
       ['Emerald', '#0f5a3a', '#052a1a', '#b9ffd9', '#3ddc97'], ['Sapphire', '#1e4fb3', '#0a1f55', '#d6e6ff', '#7fb0ff'], ['Ruby', '#b3123a', '#4a0716', '#ffd5de', '#ff8aa3'], ['Amethyst', '#6d2fc9', '#2a0e57', '#ecdcff', '#c39bff'],
@@ -5153,7 +5168,26 @@ ZW|Zimbabwe|263`;
     /* 9 premium themes */
     function openPremThemes() { zpGrid('Premium Themes', zpLocked([['blue', 'Blue', '#1d6bff'], ['purple', 'Purple', '#9b5de5'], ['green', 'Green', '#21c063'], ['gold', 'Gold', '#f5b32a'], ['ruby', 'Ruby', '#e63946'], ['rose', 'Rose', '#ff7eb3']]), 'premtheme', 'To use Premium Themes you need to subscribe to Zanply Premium', function (id) { document.documentElement.style.setProperty('--zp-accent', ({ blue: '#1d6bff', purple: '#9b5de5', green: '#21c063', gold: '#f5b32a', ruby: '#e63946', rose: '#ff7eb3' })[id]); document.documentElement.setAttribute('data-premtheme', id); }); }
     /* 1 status duration */
-    function openStatusDuration() { zpGrid('Status duration', [['24', '24 hours', '#2d3445', '24h', false], ['48', '48 hours', '#2d3445', '48h', !window.zIsPremium()], ['72', '72 hours', '#2d3445', '72h', !window.zIsPremium()], ['96', '96 hours', '#2d3445', '96h', !window.zIsPremium()]], 'statushrs', 'To use 48h+ Status duration you need Zanply Premium', null, 4); }
+    function openStatusDuration() {
+      var old = document.getElementById('zpDurSheet'); if (old) old.remove();
+      var st = document.getElementById('zpDurCss') || document.head.appendChild(Object.assign(document.createElement('style'), { id: 'zpDurCss' }));
+      st.textContent = '#zpDurSheet{position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;animation:zdfade .18s ease}#zpDurSheet .zd{width:100%;background:#1c1f26;color:#fff;border-radius:24px 24px 0 0;padding:10px 18px calc(22px + env(safe-area-inset-bottom,0px));animation:zdup .22s ease}#zpDurSheet .zd-h{width:42px;height:5px;border-radius:3px;background:#4b5563;margin:4px auto 14px}#zpDurSheet h3{margin:0 0 4px;font-size:20px}#zpDurSheet p{margin:0 0 14px;color:#9ca3af;font-size:14px}#zpDurSheet .zd-o{display:flex;align-items:center;gap:14px;width:100%;padding:14px;margin-bottom:10px;border-radius:16px;border:1.5px solid #2f3541;background:#242933;color:#fff;text-align:left}#zpDurSheet .zd-o.on{border-color:#21c063;background:rgba(33,192,99,.12)}#zpDurSheet .zd-n{flex:none;width:52px;height:52px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px}#zpDurSheet .zd-o.on .zd-n{border-color:#21c063;color:#21c063}#zpDurSheet .zd-t{flex:1;min-width:0}#zpDurSheet .zd-t b{display:block;font-size:16px}#zpDurSheet .zd-t span{font-size:13px;color:#9ca3af}#zpDurSheet .zd-r{flex:none;position:relative;width:26px;height:26px}#zpDurSheet .zd-r .zcrown{top:0;right:0}#zpDurSheet .zd-ck{color:#21c063}@keyframes zdup{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}@keyframes zdfade{from{opacity:0}to{opacity:1}}';
+      var o = mk('div'); o.id = 'zpDurSheet'; var d = mk('div', 'zd'); o.appendChild(d);
+      d.appendChild(mk('div', 'zd-h')); d.appendChild(mk('h3', '', 'How long should your status stay?')); d.appendChild(mk('p', '', 'After this time your status disappears automatically.'));
+      var cur = String(ZP.get('statushrs', '24')), pr = window.zIsPremium();
+      [['24', '24 hours', '1 day'], ['48', '48 hours', '2 days'], ['72', '72 hours', '3 days'], ['96', '96 hours', '4 days']].forEach(function (x) {
+        var on = cur === x[0], lock = x[0] !== '24' && !pr, r = mk('button', 'zd-o' + (on ? ' on' : ''));
+        r.innerHTML = '<span class="zd-n">' + x[0] + 'h</span><span class="zd-t"><b></b><span></span></span><span class="zd-r"></span>';
+        r.querySelector('b').textContent = x[1]; r.querySelector('.zd-t span').textContent = x[2] + (lock ? ' \u2022 Premium' : '');
+        var rt = r.querySelector('.zd-r'); if (lock) rt.appendChild(zCrownBadge()); else if (on) { rt.className += ' zd-ck'; rt.innerHTML = zico('check'); }
+        r.addEventListener('click', function () {
+          if (lock) { o.remove(); window.zPremGate('To keep your Status for ' + x[1] + ' you need to subscribe to Zanply Premium'); return; }
+          ZP.set('statushrs', x[0]); o.remove(); toast('Status will stay for ' + x[1], true, 2500);
+        });
+        d.appendChild(r);
+      });
+      o.addEventListener('click', function (e) { if (e.target === o) o.remove(); }); document.body.appendChild(o);
+    }
     window.zpStatusDurationButton = function (host) { var b = mk('button', '', (ZP.get('statushrs', '24')) + 'h'); b.style.cssText = 'width:38px;height:38px;border-radius:50%;border:2px solid #fff;background:transparent;color:#fff;font-weight:700;font-size:12px'; b.addEventListener('click', openStatusDuration); if (host) host.appendChild(b); return b; };
     /* 7 privacy stealth */
     function openStealth() {
@@ -5168,12 +5202,11 @@ ZW|Zimbabwe|263`;
     }
     function zpToggle(b, k, label, msg, cb) { var row = mk('div', 'pd-sec'); row.style.cssText += ';display:flex;justify-content:space-between;align-items:center'; row.appendChild(mk('span', '', label)); var t = mk('button', '', ZP.get(k, false) ? 'ON' : 'OFF'); t.style.cssText = 'padding:6px 16px;border-radius:99px;border:0;font-weight:700;position:relative;background:' + (ZP.get(k, false) ? '#21c063' : '#2d3445') + ';color:#fff'; t.addEventListener('click', function () { if (window.zPremGate(msg)) return; var v = !ZP.get(k, false); ZP.set(k, v); t.textContent = v ? 'ON' : 'OFF'; t.style.background = v ? '#21c063' : '#2d3445'; try { chatCall('premium_setting', { key: k, value: v }).catch(function () {}); } catch (e) {} if (cb) cb(v); }); row.appendChild(t); b.appendChild(row); }
     /* 10 auto-reply */
-    function openAutoReply() { zOpenPage('Auto-Reply', function (b) { var m = 'To use Auto-Reply you need to subscribe to Zanply Premium'; zpToggle(b, 'ar_on', 'Auto-Reply', m); var ta = mk('textarea'); ta.placeholder = 'Type your reply message'; ta.value = ZP.get('ar_msg', ''); ta.style.cssText = 'display:block;width:calc(100% - 36px);margin:8px 18px;min-height:80px;border-radius:12px;padding:10px'; ta.addEventListener('change', function () { if (window.zPremGate(m)) return; ZP.set('ar_msg', ta.value); chatCall('premium_setting', { key: 'ar_msg', value: ta.value }).catch(function () {}); }); b.appendChild(ta); var sel = mk('select'); ['Always', 'When Busy', 'When Offline'].forEach(function (o) { sel.appendChild(Object.assign(mk('option'), { textContent: o })); }); sel.value = ZP.get('ar_when', 'Always'); sel.style.cssText = 'margin:8px 18px;padding:10px;border-radius:12px'; sel.addEventListener('change', function () { if (window.zPremGate(m)) { sel.value = ZP.get('ar_when', 'Always'); return; } ZP.set('ar_when', sel.value); chatCall('premium_setting', { key: 'ar_when', value: sel.value }).catch(function () {}); }); b.appendChild(sel); }); }
     /* 11 backup */
     function openBackupPage() { zOpenPage('Chat Backup', function (b) { var bb = mk('button', 'zpm-cta', 'Back up now (manual)'); bb.addEventListener('click', function () { try { chatCall('backup_now', {}); } catch (e) {} toast('Backup is being connected. Not saved yet.'); }); b.appendChild(bb); zpToggle(b, 'cloud_unlimited', 'Unlimited Cloud Backup (auto: chats, photos, videos)', 'To use Unlimited Cloud Backup you need to subscribe to Zanply Premium'); b.appendChild(mk('div', 'pd-sec', window.zIsPremium() ? 'Premium Support: your tickets go to the front of the queue, reply in under 1 hour.' : 'Free: limited backup, manual only.')); }); }
-    window.zpOpen = { stealth: openStealth, autoReply: openAutoReply, backup: openBackupPage, wpBoth: openWpBoth, liveWp: openLiveWp, themes: openPremThemes, nameColour: openNameColour, duration: openStatusDuration };
+    window.zpOpen = { stealth: openStealth, backup: openBackupPage, wpBoth: openWpBoth, liveWp: openLiveWp, themes: openPremThemes, duration: openStatusDuration };
     /* hub */
-    window.zpHub = function () { var w = mk('div'); [['Status duration', openStatusDuration], ['Name Colour', openNameColour], ['App Icon', openAppIcons], ['Wallpaper For Both Sides', openWpBoth], ['Live Wallpapers', openLiveWp], ['Premium Themes', openPremThemes], ['Last Seen & Online (Stealth)', openStealth], ['Auto-Reply', openAutoReply], ['Chat Backup & Support', openBackupPage]].forEach(function (r) { var x = mk('button', '', r[0] + '  \u203A'); x.style.cssText = 'display:block;width:calc(100% - 36px);margin:6px 18px;padding:13px;border-radius:12px;border:0;text-align:left;font-weight:600;background:#2d3445;color:#fff'; x.addEventListener('click', r[1]); w.appendChild(x); }); return w; };
+    window.zpHub = function () { var w = mk('div'); [['Status duration', openStatusDuration], ['App Icon', openAppIcons], ['Wallpaper For Both Sides', openWpBoth], ['Live Wallpapers', openLiveWp], ['Premium Themes', openPremThemes], ['Last Seen & Online (Stealth)', openStealth], ['Chat Backup & Support', openBackupPage]].forEach(function (r) { var x = mk('button', '', r[0] + '  \u203A'); x.style.cssText = 'display:block;width:calc(100% - 36px);margin:6px 18px;padding:13px;border-radius:12px;border:0;text-align:left;font-weight:600;background:#2d3445;color:#fff'; x.addEventListener('click', r[1]); w.appendChild(x); }); return w; };
     /* intercept server actions for limits (2 + 13 Status, 2 groups / channels, AI media) */
     try {
       var _cc = chatCall;
@@ -5236,46 +5269,154 @@ ZW|Zimbabwe|263`;
       }
       toast('Only photos and videos can be cut to 30 MB.');
     };
-    /* 10: scheduled messages (clock list, edit, cancel; sends by itself while Zanply is open) */
-    function zpSched() { return ZP.get('sched', []).filter(function (x) { return x && x.body && x.to; }); }
+    /* 10: scheduled messages. They live on the server, so they go out on time even when Zanply is closed.
+       Direct messages are encrypted on this phone BEFORE they are scheduled, so the server never sees the text. */
+    function zpSched() { return ZP.get('sched', []).filter(function (x) { return x && x.to && typeof x.id === 'number'; }); }
     function zpLoc(ms) { var d = new Date(ms - new Date().getTimezoneOffset() * 60000); return d.toISOString().slice(0, 16); }
     function zpSchedDialog(it, done) {
       var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
       var c = mk('div'); c.style.cssText = 'background:#1f2430;color:#fff;border-radius:18px;padding:18px;max-width:340px;width:100%';
       c.appendChild(mk('div', '', 'Schedule Message')).style.cssText = 'font-weight:700;font-size:16px;margin-bottom:10px';
-      var ta = mk('textarea'); ta.value = it.body; ta.style.cssText = 'width:100%;min-height:70px;border-radius:12px;padding:10px;box-sizing:border-box'; c.appendChild(ta);
+      var ta = mk('textarea'); ta.value = it.body; ta.maxLength = 2000; ta.style.cssText = 'width:100%;min-height:70px;border-radius:12px;padding:10px;box-sizing:border-box'; c.appendChild(ta);
       var di = document.createElement('input'); di.type = 'datetime-local'; di.min = zpLoc(Date.now() + 60000); di.value = zpLoc(it.at || Date.now() + 3600000); di.style.cssText = 'width:100%;margin-top:10px;padding:10px;border-radius:12px;box-sizing:border-box'; c.appendChild(di);
       function btn(t, fn, pri) { var x = mk('button', '', t); x.style.cssText = 'display:block;width:100%;margin:8px 0 0;padding:11px;border-radius:12px;border:0;font-weight:700;' + (pri ? 'background:#f5b32a;color:#000' : 'background:#2d3445;color:#fff'); x.addEventListener('click', fn); c.appendChild(x); }
       btn('Schedule', function () { var at = new Date(di.value).getTime(), body = ta.value.trim(); if (!body) return toast('Write a message first'); if (!(at > Date.now() + 30000)) return toast('Pick a time in the future'); it.body = body; it.at = at; o.remove(); done(it); }, true);
       btn('Cancel', function () { o.remove(); });
       o.appendChild(c); document.body.appendChild(o);
     }
+    function zpAIErr(e) { if (e && e.premium) window.zPremGate(e.message); else toast((e && e.message) || 'Something went wrong. Try again.'); }
+    /* it = { to, body (plain text), at (ms) }; oldId = the scheduled message this one replaces (edit) */
+    function zpSchedPut(it, oldId) {
+      var api = window.zpChatApi; if (!api || !api.encrypt) return Promise.reject(new Error('Open a chat first.'));
+      return api.encrypt(it.to, it.body).then(function (wire) { return chatCall('sched_add', { to: it.to, body: wire, at: it.at }); }).then(function (r) {
+        if (oldId) chatCall('sched_cancel', { id: oldId }).catch(function () {});
+        var a = zpSched().filter(function (x) { return x.id !== oldId; }); a.push({ id: r.id, to: it.to, at: it.at, body: it.body }); ZP.set('sched', a); return r;
+      });
+    }
+    function zpSchedSync(cb) {
+      chatCall('sched_list', {}).then(function (r) {
+        var old = {}; zpSched().forEach(function (x) { old[x.id] = x; });
+        var a = (r.items || []).map(function (x) { return { id: x.id, to: x.to, at: x.at, failed: !!x.failed, err: x.err || '', body: (old[x.id] && old[x.id].body) || '' }; });
+        ZP.set('sched', a); if (cb) cb(a);
+      }, function () { if (cb) cb(zpSched()); });
+    }
+    /* messages scheduled by the old version (only saved on this phone) are moved to the server once */
+    function zpSchedMigrate() {
+      try {
+        var all = ZP.get('sched', []), old = all.filter(function (x) { return x && typeof x.id === 'string' && x.to && x.body && x.at > Date.now() + 60000; });
+        ZP.set('sched', all.filter(function (x) { return x && typeof x.id === 'number'; }));
+        old.forEach(function (x) { zpSchedPut({ to: x.to, body: x.body, at: x.at }).catch(function () {}); });
+      } catch (e) {}
+    }
     function zpSchedList() {
       zOpenPage('Scheduled messages', function (b) {
-        function draw() {
-          b.innerHTML = ''; var L = zpSched().sort(function (x, y) { return x.at - y.at; });
+        function draw(L) {
+          b.innerHTML = ''; L = (L || zpSched()).slice().sort(function (x, y) { return x.at - y.at; });
           if (!L.length) return b.appendChild(mk('div', 'pd-sec', 'No scheduled messages.'));
           L.forEach(function (x) {
             var r = mk('div', 'pd-sec'); r.style.cssText += ';display:flex;gap:8px;align-items:center';
-            var t = mk('div'); t.style.flex = '1'; t.appendChild(mk('div', '', '\u23F0 Scheduled \u00b7 ' + new Date(x.at).toLocaleString())); t.appendChild(mk('div', '', x.body.slice(0, 120))); r.appendChild(t);
-            var e = mk('button', '', 'Edit'), c = mk('button', '', 'Cancel'); [e, c].forEach(function (z) { z.style.cssText = 'padding:6px 12px;border-radius:99px;border:0;background:#2d3445;color:#fff;font-weight:600'; r.appendChild(z); });
-            e.addEventListener('click', function () { zpSchedDialog(JSON.parse(JSON.stringify(x)), function (n) { ZP.set('sched', ZP.get('sched', []).map(function (y) { return y.id === n.id ? n : y; })); draw(); }); });
-            c.addEventListener('click', function () { ZP.set('sched', ZP.get('sched', []).filter(function (y) { return y.id !== x.id; })); draw(); toast('Cancelled', true); });
+            var t = mk('div'); t.style.flex = '1';
+            t.appendChild(mk('div', '', (x.failed ? '\u26A0 Not sent' : '\u23F0 Scheduled') + ' \u00b7 ' + new Date(x.at).toLocaleString()));
+            t.appendChild(mk('div', '', x.failed ? (x.err || 'Could not send.') : (x.body ? x.body.slice(0, 120) : 'Scheduled message')));
+            r.appendChild(t);
+            var btns = [], c = mk('button', '', 'Cancel');
+            if (x.body && !x.failed) { var e = mk('button', '', 'Edit'); btns.push(e); e.addEventListener('click', function () { zpSchedDialog({ to: x.to, body: x.body, at: x.at }, function (n) { zpSchedPut(n, x.id).then(function () { draw(); toast('Updated', true); }, zpAIErr); }); }); }
+            btns.push(c); btns.forEach(function (z) { z.style.cssText = 'padding:6px 12px;border-radius:99px;border:0;background:#2d3445;color:#fff;font-weight:600'; r.appendChild(z); });
+            c.addEventListener('click', function () { chatCall('sched_cancel', { id: x.id }).then(function () { ZP.set('sched', zpSched().filter(function (y) { return y.id !== x.id; })); draw(); toast('Cancelled', true); }, function () { toast('Could not cancel. Try again.'); }); });
             b.appendChild(r);
           });
         }
-        draw();
+        draw(); zpSchedSync(draw);
       });
     }
     setInterval(function () {
-      var api = window.zpChatApi; if (!api) return; var now = Date.now(), due = zpSched().filter(function (x) { return x.at <= now; });
-      if (due.length) { ZP.set('sched', ZP.get('sched', []).filter(function (x) { return x.at > now; })); due.forEach(function (x) { api.send(x.to, x.body); }); }
-      var chip = document.getElementById('zpSchedChip'), open = api.cur && api.cur(), n = open ? zpSched().filter(function (x) { return x.to === open; }).length : 0, cp = document.getElementById('comp');
+      var api = window.zpChatApi; if (!api) return;
+      var chip = document.getElementById('zpSchedChip'), open = api.cur && api.cur(), n = open ? zpSched().filter(function (x) { return x.to === open && !x.failed; }).length : 0, cp = document.getElementById('comp');
       if (!n || !cp) { if (chip) chip.remove(); return; }
       if (!chip) { chip = mk('button'); chip.id = 'zpSchedChip'; chip.style.cssText = 'position:fixed;left:12px;z-index:50;padding:6px 12px;border-radius:99px;border:0;background:#2d3445;color:#fff;font-weight:600;font-size:12px'; chip.addEventListener('click', zpSchedList); document.body.appendChild(chip); }
       chip.textContent = '\u23F0 Scheduled (' + n + ')'; chip.style.bottom = Math.max(70, window.innerHeight - cp.getBoundingClientRect().top + 6) + 'px';
     }, 5000);
+    setInterval(function () { if (window.zIsPremium()) zpSchedSync(); }, 60000);
+    premStatus(function () { if (window.zIsPremium()) { zpSchedMigrate(); zpSchedSync(); } });
     window.zpOpen.scheduled = zpSchedList;
+
+    /* ===== extra Premium features: Catch me up (AI summary), Ask Zanply AI, Quick replies ===== */
+    function zpTextDialog(title, text) {
+      var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
+      var c = mk('div'); c.style.cssText = 'background:#1f2430;color:#fff;border-radius:18px;padding:18px;max-width:360px;width:100%;max-height:80vh;overflow:auto';
+      c.appendChild(mk('div', '', title)).style.cssText = 'font-weight:700;font-size:16px;margin-bottom:10px';
+      var p = mk('div', '', text); p.style.cssText = 'white-space:pre-wrap;font-size:14px;line-height:1.45;user-select:text'; c.appendChild(p);
+      var x = mk('button', '', 'Close'); x.style.cssText = 'display:block;width:100%;margin-top:14px;padding:11px;border-radius:12px;border:0;font-weight:700;background:#2d3445;color:#fff'; x.addEventListener('click', function () { o.remove(); }); c.appendChild(x);
+      o.appendChild(c); document.body.appendChild(o);
+    }
+    window.zpCatchUp = function () {
+      if (window.zPremGate('To get an AI summary of a chat you need to subscribe to Zanply Premium')) return;
+      var api = window.zpChatApi, th = (api && api.thread && api.thread()) || [];
+      var msgs = th.filter(function (m) { return m && typeof m.body === 'string' && m.body.indexOf('__') !== 0 && m.body.indexOf('e2e1:') !== 0 && m.body.trim(); }).slice(-120).map(function (m) { return { who: m.mine ? 'Me' : (m.fromName || m.from || 'Them'), text: m.body }; });
+      if (msgs.length < 3) return toast('There are not enough messages to summarize yet.');
+      toast('Reading the chat\u2026', true, 2500);
+      chatCall('ai_summary', { messages: msgs }).then(function (r) { zpTextDialog('Catch me up', r.text || 'Nothing to report.'); }, zpAIErr);
+    };
+    function openAskAI() {
+      zOpenPage('Zanply AI', function (b) {
+        var ta = mk('textarea'); ta.placeholder = 'Ask anything, or ask me to write a message'; ta.maxLength = 2000; ta.style.cssText = 'display:block;width:calc(100% - 36px);margin:16px 18px 8px;min-height:90px;border-radius:12px;padding:10px;box-sizing:border-box'; b.appendChild(ta);
+        var go = mk('button', 'zpm-cta', 'Ask'); b.appendChild(go);
+        var out = mk('div', 'pd-sec'); out.style.cssText += ';white-space:pre-wrap;user-select:text'; b.appendChild(out);
+        b.appendChild(mk('div', 'zfoot', window.zIsPremium() ? 'Premium: use AI as much as you want.' : 'Free: 5 questions a day. Premium: no daily limit.'));
+        go.addEventListener('click', function () {
+          var q = ta.value.trim(); if (!q) return; go.disabled = true; go.textContent = 'Thinking\u2026'; out.textContent = '';
+          chatCall('ai_ask', { prompt: q }).then(function (r) { out.textContent = r.text || ''; }, zpAIErr).then(function () { go.disabled = false; go.textContent = 'Ask'; });
+        });
+      });
+    }
+    window.zpOpen.ask = openAskAI;
+    function zpQR() { return ZP.get('qr', []); }
+    function zpQRDialog(done) {
+      var o = mk('div'); o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px';
+      var c = mk('div'); c.style.cssText = 'background:#1f2430;color:#fff;border-radius:18px;padding:18px;max-width:340px;width:100%';
+      c.appendChild(mk('div', '', 'New quick reply')).style.cssText = 'font-weight:700;font-size:16px;margin-bottom:10px';
+      var k = document.createElement('input'); k.placeholder = 'Shortcut, e.g. hours'; k.maxLength = 16; k.style.cssText = 'width:100%;padding:10px;border-radius:12px;box-sizing:border-box;margin-bottom:8px'; c.appendChild(k);
+      var t = mk('textarea'); t.placeholder = 'The message to send'; t.maxLength = 500; t.style.cssText = 'width:100%;min-height:80px;border-radius:12px;padding:10px;box-sizing:border-box'; c.appendChild(t);
+      function btn(l, fn, pri) { var x = mk('button', '', l); x.style.cssText = 'display:block;width:100%;margin:8px 0 0;padding:11px;border-radius:12px;border:0;font-weight:700;' + (pri ? 'background:#f5b32a;color:#000' : 'background:#2d3445;color:#fff'); x.addEventListener('click', fn); c.appendChild(x); }
+      btn('Save', function () { var key = k.value.trim().replace(/[^A-Za-z0-9_-]/g, '').slice(0, 16), txt = t.value.trim(); if (!key || !txt) return toast('Add a shortcut and a message'); if (zpQR().some(function (q) { return q.k.toLowerCase() === key.toLowerCase(); })) return toast('That shortcut already exists'); o.remove(); done({ k: key, t: txt }); }, true);
+      btn('Cancel', function () { o.remove(); });
+      o.appendChild(c); document.body.appendChild(o);
+    }
+    function openQuick() {
+      zOpenPage('Quick replies', function (b) {
+        function draw() {
+          b.innerHTML = ''; b.appendChild(mk('div', 'pd-sec', 'Type / in a chat, then tap a reply to use it. Up to 20 replies.'));
+          zpQR().forEach(function (q, i) {
+            var r = mk('div', 'pd-sec'); r.style.cssText += ';display:flex;gap:8px;align-items:center';
+            var tx = mk('div'); tx.style.flex = '1'; tx.appendChild(mk('div', '', '/' + q.k)).style.fontWeight = '700'; tx.appendChild(mk('div', '', q.t.slice(0, 120))); r.appendChild(tx);
+            var d = mk('button', '', 'Delete'); d.style.cssText = 'padding:6px 12px;border-radius:99px;border:0;background:#2d3445;color:#fff;font-weight:600'; d.addEventListener('click', function () { var a = zpQR(); a.splice(i, 1); ZP.set('qr', a); draw(); }); r.appendChild(d); b.appendChild(r);
+          });
+          var add = mk('button', 'zpm-cta', 'Add quick reply');
+          add.addEventListener('click', function () { if (window.zPremGate('To use Quick Replies you need to subscribe to Zanply Premium')) return; if (zpQR().length >= 20) return toast('You can keep up to 20 quick replies.'); zpQRDialog(function (q) { var a = zpQR(); a.push(q); ZP.set('qr', a); draw(); }); });
+          b.appendChild(add);
+        }
+        draw();
+      });
+    }
+    window.zpOpen.quick = openQuick;
+    (function () {
+      var inp = document.getElementById('msgInput'); if (!inp) return; var bar = null;
+      function hide() { if (bar) { bar.remove(); bar = null; } }
+      inp.addEventListener('input', function () {
+        var v = inp.value; hide(); if (v.charAt(0) !== '/' || v.length > 20 || !window.zIsPremium()) return;
+        var q = v.slice(1).toLowerCase(), L = zpQR().filter(function (x) { return x.k.toLowerCase().indexOf(q) === 0; }).slice(0, 5); if (!L.length) return;
+        bar = mk('div'); bar.style.cssText = 'position:fixed;left:8px;right:8px;z-index:60;background:#1f2430;color:#fff;border-radius:14px;padding:6px;box-shadow:0 4px 18px rgba(0,0,0,.4)';
+        var cp = document.getElementById('comp'), top = cp ? cp.getBoundingClientRect().top : window.innerHeight - 70; bar.style.bottom = Math.max(70, window.innerHeight - top + 6) + 'px';
+        L.forEach(function (x) {
+          var r = mk('button'); r.style.cssText = 'display:block;width:100%;text-align:left;padding:9px 10px;border:0;background:none;color:#fff;border-radius:10px'; r.innerHTML = '<b></b> <span style="opacity:.8"></span>'; r.firstChild.textContent = '/' + x.k; r.lastChild.textContent = x.t.slice(0, 60);
+          r.addEventListener('mousedown', function (e) { e.preventDefault(); });
+          r.addEventListener('click', function () { inp.value = x.t; hide(); try { inp.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} inp.focus(); });
+          bar.appendChild(r);
+        });
+        document.body.appendChild(bar);
+      });
+      inp.addEventListener('blur', function () { setTimeout(hide, 200); });
+    })();
 
     /* ===== typing indicator (sent while typing, respects the Stealth settings on the server) ===== */
     (function () {
@@ -5324,7 +5465,7 @@ ZW|Zimbabwe|263`;
     (function () { var t; document.addEventListener('pointerdown', function (e) { var el = e.target.closest && e.target.closest('#btnSendMsg'); if (!el) return; clearTimeout(t); t = setTimeout(function () {
       lpAt = Date.now(); if (window.zPremGate('To schedule messages you need to subscribe to Zanply Premium')) return;
       var api = window.zpChatApi, text = api && api.text().trim(), to = api && api.cur(); if (!text || !to) return toast('Type a message first');
-      zpSchedDialog({ id: 's' + Date.now(), to: to, body: text, at: 0 }, function (it) { ZP.set('sched', ZP.get('sched', []).concat([it])); api.clear(); toast('Scheduled \u23F0 ' + new Date(it.at).toLocaleString(), true); });
+      zpSchedDialog({ to: to, body: text, at: 0 }, function (it) { zpSchedPut(it).then(function () { api.clear(); toast('Scheduled \u23F0 ' + new Date(it.at).toLocaleString(), true); }, zpAIErr); });
     }, 600); }, true); ['pointerup', 'pointermove', 'pointercancel'].forEach(function (n) { document.addEventListener(n, function () { clearTimeout(t); }, true); }); })();
     /* 12: Translate / Transcribe (Premium) */
     function zpBubble(m) { return document.querySelector('#msgs .bub[data-id="' + m.id + '"]'); }
@@ -5361,7 +5502,7 @@ ZW|Zimbabwe|263`;
           });
         }
         var stc = mk('div', 'pd-st'); stc.style.display = 'none'; b.appendChild(stc); premStatus(function (r) { if (!window.zIsPremium()) return; stc.style.display = ''; var d = r.expires ? new Date(r.expires).toLocaleDateString() : ''; stc.textContent = 'Premium is active' + (d ? (r.renew === false ? ' until ' : ' \u2013 renews on ') + d : '') + '.'; var ab = mk('button', '', r.renew === false ? 'Turn auto-renewal ON' : 'Turn auto-renewal OFF'); ab.addEventListener('click', function () { chatCall('premium_autorenew', { on: r.renew === false }).then(function () { toast('Auto-renewal updated', true); openPremium(); }, function () { toast('Could not change auto-renewal. Try again.'); }); }); stc.appendChild(document.createElement('br')); stc.appendChild(ab); });
-        var one = mk('div', 'pd-sec'); one.style.textAlign = 'center'; one.innerHTML = '<b>ONE Zanply Premium bundle \u2013 all 13 features included.</b><br><span style="opacity:.8">Pick how long you want to subscribe. The features are the same on every plan.</span>'; b.appendChild(one); drawPlans(); b.appendChild(plans);
+        var one = mk('div', 'pd-sec'); one.style.textAlign = 'center'; one.innerHTML = '<b>ONE Zanply Premium bundle \u2013 all ' + PREM_FEATS.length + ' features included.</b><br><span style="opacity:.8">Pick how long you want to subscribe. The features are the same on every plan.</span>'; b.appendChild(one); drawPlans(); b.appendChild(plans);
         var list = mk('div', 'zpm-list');
         PREM_FEATS.forEach(function (f) {
           var r = mk('button', 'zpm-f'); r.innerHTML = '<span class="ic"></span><span class="tx"><b></b><small></small></span><span class="ch">\u203a</span>';
@@ -5923,7 +6064,7 @@ ZW|Zimbabwe|263`;
       $('msgInput').value = ''; syncComp(); queueMsg(openWith, body);
     }
     $('btnSendMsg').addEventListener('click', sendMsg);
-    window.zpChatApi = { send: function (to, body) { queueMsg(to, body); }, cur: function () { return openWith; }, text: function () { return $('msgInput').value; }, clear: function () { $('msgInput').value = ''; try { syncComp(); } catch (e) {} } };
+    window.zpChatApi = { send: function (to, body) { queueMsg(to, body); }, cur: function () { return openWith; }, text: function () { return $('msgInput').value; }, clear: function () { $('msgInput').value = ''; try { syncComp(); } catch (e) {} }, encrypt: function (to, body) { return (isGroupId(to) || isCallMsg(body)) ? Promise.resolve(body) : E2E.encrypt(to, body); }, thread: function () { return thCache.slice(-120); } };
     /* fast refresh so new messages and ticks show up within about a second */
     var pollN = 0;
     setInterval(function () {
@@ -9183,7 +9324,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       zsheet('Mute notifications', [go(8 * H, '8 hours'), go(7 * D, '1 week'), go(36500 * D, 'Always')]);
     }
     if (u.group || isChan(u)) {
-      items = [[isChan(u) ? 'Channel info' : 'Group info', function () { openInfo(); }], [isMuted(ph) ? 'Unmute notifications' : 'Mute notifications', muteToggle], ['Chat theme', function () { window.__cw = ph; openWallpaper(); }]];
+      items = [[isChan(u) ? 'Channel info' : 'Group info', function () { openInfo(); }], [isMuted(ph) ? 'Unmute notifications' : 'Mute notifications', muteToggle], ['Chat theme', function () { window.__cw = ph; openWallpaper(); }], ['Catch me up (AI)', function () { window.zpCatchUp(); }]];
       if (!isChan(u)) items.push(['Exit group', function () { zconfirm('Exit this group?', function () { chatCall('group_leave', { group: ph }).then(function () { closeOv(); setTimeout(closeOv, 80); toast('You left the group', true); setTimeout(loadChats, 300); }).catch(function () { toast('Could not leave'); }); }, 'Exit'); }]);
       items.push(['Clear chat', clearOpenChat]);
     } else {
@@ -9191,6 +9332,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       items = [['New group', function () { openNewGroup(ph); }, 'sep'],
         [isSaved ? 'View contact' : 'Add to contacts', function () { openSave(); }],
         ['Search', function () { chatSearch(); }],
+        ['Catch me up (AI)', function () { window.zpCatchUp(); }],
         ['Media, links, and docs', function () { zsheet('Media, links and docs', [['Media', openMediaGrid], ['Links', openLinks], ['Docs', openDocs]]); }],
         [isMuted(ph) ? 'Unmute notifications' : 'Mute notifications', muteToggle],
         ['Disappearing messages', function () { var v = 'off'; try { v = localStorage.getItem('zaply_dis_' + ph) || 'off'; } catch (e) {} Array.prototype.forEach.call(document.getElementsByName('dis'), function (r) { r.checked = r.value === v; }); openPage('disapView'); }],
