@@ -2817,7 +2817,7 @@ ZW|Zimbabwe|263`;
       shield: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z',
       out: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z'
     };
-    function zico(k) { return '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="' + ZI[k] + '"/></svg>'; }
+    function zico(k) { return '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="' + (ZI[k] || ZI.info || '') + '"/></svg>'; }
     var ZSTACK = [], curTab = 'chats';
     function saveScreen() {
       try { var n = document.querySelectorAll('.zpg').length; localStorage.setItem('zaply_screen', JSON.stringify({ tab: curTab, chat: openWith || '', pages: ZSTACK.slice(0, n) })); } catch (e) {}
@@ -3745,6 +3745,8 @@ ZW|Zimbabwe|263`;
     ZI.archive = 'M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z';
     ZI.trash = 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z';
     ZI.delivery = 'M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z';
+    ZI.verified = 'M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z';
+    var VERIFIED_BLUE = '#1877F2';
 
     /* a settings row with a small description under the title */
     function zrow2(box, icon, title, desc, fn, red) {
@@ -8947,7 +8949,6 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         '.zfab{position:fixed;right:20px;bottom:24px;width:58px;height:58px;border-radius:50%;border:0;color:#fff;font-size:26px;background:linear-gradient(135deg,#25d366,#1aa1d8);box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:70}';
       document.head.appendChild(st);
     })();
-    ZI.verified = 'M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z';
     var VERIFIED_BLUE = '#1877F2';
     var DEVICE_LINKS = [location.origin + '/desktop.html', location.origin + '/desktop.html'];   // replace with your real desktop and web addresses when pairing is set up
     function nowOn() { return !!navigator.onLine; }
