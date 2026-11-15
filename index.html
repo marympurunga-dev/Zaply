@@ -3060,7 +3060,7 @@ ZW|Zimbabwe|263`;
         var ta = mk('textarea'); ta.placeholder = 'Tell us what made you delete this account'; ta.maxLength = 1000; ta.style.cssText = 'display:block;width:100%;box-sizing:border-box;min-height:110px;border-radius:12px;padding:10px;margin-bottom:14px'; w.appendChild(ta);
         var del = mk('button', 'primary', 'Delete account'); del.style.background = '#d9534f'; w.appendChild(del);
         del.addEventListener('click', function () {
-          var p = mk('div', 'zpop'), d = mk('div'); d.appendChild(mk('div', '', 'If this account is deleted, all chats and everything will be deleted and can\u2019t be restored.'));
+          var p = mk('div', 'zpop'), d = mk('div', 'zwb'); d.appendChild(mk('div', '', 'If this account is deleted, all chats and everything will be deleted and can\u2019t be restored.'));
           var l = mk('div', 'zline'), cancel = mk('button', '', 'Cancel'), ok = mk('button', 'primary', 'Delete account'); ok.style.background = '#d9534f'; l.appendChild(cancel); l.appendChild(ok); d.appendChild(l); p.appendChild(d); document.body.appendChild(p);
           cancel.addEventListener('click', function () { p.remove(); });
           ok.addEventListener('click', function () {
@@ -3070,10 +3070,11 @@ ZW|Zimbabwe|263`;
             showLoader('Deleting account', 5000).then(function () { return call1; }).then(function () {
               if (!result.ok) return toast(result.err || 'Could not delete the account.');
               var t0 = getToken(); putAccts(getAccts().filter(function (x) { return x.t !== t0; }));
-              var done = mk('div', 'zpop'), dd = mk('div'); dd.appendChild(mk('div', '', 'Account deleted successfully.')); done.appendChild(dd); document.body.appendChild(done);
+              var done = mk('div', 'zpop'), dd = mk('div', 'zwb'); dd.appendChild(mk('div', '', 'Account deleted successfully.')); done.appendChild(dd); document.body.appendChild(done);
               setTimeout(function () {
                 done.remove(); try { unsubPush(); } catch (e) {} try { if (window.ZanplyNative) ZanplyNative.clearChatKeys(); } catch (e) {}
-                clearToken(); try { Object.keys(localStorage).filter(function (k) { return /^zaply_/.test(k) && k !== 'zaply_accts'; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
+                try { zpPks().filter(function (x) { return x.phone === myPhone; }).forEach(function (x) { try { ZanplyNative.pkDelete(x.keyId); } catch (e) {} }); zpPksSave(zpPks().filter(function (x) { return x.phone !== myPhone; })); } catch (e) {}
+                clearToken(); try { Object.keys(localStorage).filter(function (k) { return /^zaply_/.test(k) && k !== 'zaply_accts' && k !== 'zaply_pks'; }).forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {}
                 document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); showWelcome();
               }, 2500);
             });
@@ -3081,9 +3082,265 @@ ZW|Zimbabwe|263`;
         });
       });
     }
+
+    /* ---------- QR code drawn inside the app (no internet, no outside site) ---------- */
+    var zQR = (function () {
+      var ECC_PER = { L: [-1, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18], M: [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26] };
+      var NBLK = { L: [-1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4], M: [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5] };
+      var FMT = { L: 1, M: 0 };
+      function rawModules(v) { var r = (16 * v + 128) * v + 64; if (v >= 2) { var n = Math.floor(v / 7) + 2; r -= (25 * n - 10) * n - 55; if (v >= 7) r -= 36; } return r; }
+      function dataCw(v, e) { return Math.floor(rawModules(v) / 8) - ECC_PER[e][v] * NBLK[e][v]; }
+      function mul(x, y) { var z = 0; for (var i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; } return z; }
+      function rsDiv(deg) { var r = []; for (var i = 0; i < deg - 1; i++) r.push(0); r.push(1); var root = 1; for (var i2 = 0; i2 < deg; i2++) { for (var j = 0; j < r.length; j++) { r[j] = mul(r[j], root); if (j + 1 < r.length) r[j] ^= r[j + 1]; } root = mul(root, 2); } return r; }
+      function rsRem(data, div) { var r = div.map(function () { return 0; }); data.forEach(function (b) { var f = b ^ r.shift(); r.push(0); div.forEach(function (c, i) { r[i] ^= mul(c, f); }); }); return r; }
+      function make(text, ecl) {
+        ecl = ecl || 'M';
+        var bytes = []; var u = unescape(encodeURIComponent(String(text))); for (var i = 0; i < u.length; i++) bytes.push(u.charCodeAt(i));
+        var ver = 0; for (var v = 1; v <= 10; v++) { var cc = v < 10 ? 8 : 16; if (4 + cc + bytes.length * 8 <= dataCw(v, ecl) * 8) { ver = v; break; } }
+        if (!ver) throw new Error('Text too long for the QR code');
+        var bits = []; function put(val, len) { for (var k = len - 1; k >= 0; k--) bits.push((val >>> k) & 1); }
+        put(4, 4); put(bytes.length, ver < 10 ? 8 : 16); bytes.forEach(function (b) { put(b, 8); });
+        var cap = dataCw(ver, ecl) * 8; put(0, Math.min(4, cap - bits.length)); while (bits.length % 8) bits.push(0);
+        for (var pad = 0xEC; bits.length < cap; pad ^= 0xEC ^ 0x11) put(pad, 8);
+        var data = []; for (var d = 0; d < bits.length; d += 8) { var bt = 0; for (var q = 0; q < 8; q++) bt = (bt << 1) | bits[d + q]; data.push(bt); }
+        var nb = NBLK[ecl][ver], eccLen = ECC_PER[ecl][ver], raw = Math.floor(rawModules(ver) / 8), nShort = nb - raw % nb, shortLen = Math.floor(raw / nb), blocks = [], div = rsDiv(eccLen);
+        for (var bi = 0, kk = 0; bi < nb; bi++) { var dat = data.slice(kk, kk + shortLen - eccLen + (bi < nShort ? 0 : 1)); kk += dat.length; var ecc = rsRem(dat, div); if (bi < nShort) dat.push(0); blocks.push(dat.concat(ecc)); }
+        var all = []; for (var ci = 0; ci < blocks[0].length; ci++) blocks.forEach(function (blk, j) { if (ci !== shortLen - eccLen || j >= nShort) all.push(blk[ci]); });
+        var size = ver * 4 + 17, mod = [], fn = [];
+        for (var y = 0; y < size; y++) { mod.push([]); fn.push([]); for (var x = 0; x < size; x++) { mod[y].push(false); fn[y].push(false); } }
+        function set(x, y, val) { mod[y][x] = !!val; fn[y][x] = true; }
+        for (var t = 0; t < size; t++) { set(6, t, t % 2 === 0); set(t, 6, t % 2 === 0); }
+        function finder(cx, cy) { for (var dy = -4; dy <= 4; dy++) for (var dx = -4; dx <= 4; dx++) { var dist = Math.max(Math.abs(dx), Math.abs(dy)), xx = cx + dx, yy = cy + dy; if (xx >= 0 && xx < size && yy >= 0 && yy < size) set(xx, yy, dist !== 2 && dist !== 4); } }
+        finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+        var pos = []; if (ver > 1) { var na = Math.floor(ver / 7) + 2, step = Math.ceil((ver * 4 + 4) / (na * 2 - 2)) * 2; pos = [6]; for (var pp = size - 7; pos.length < na; pp -= step) pos.splice(1, 0, pp); }
+        pos.forEach(function (ax, i) { pos.forEach(function (ay, j) { if ((i === 0 && j === 0) || (i === 0 && j === pos.length - 1) || (i === pos.length - 1 && j === 0)) return; for (var dy = -2; dy <= 2; dy++) for (var dx = -2; dx <= 2; dx++) set(ax + dx, ay + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1); }); });
+        function fmtBits(mask) {
+          var dd = FMT[ecl] << 3 | mask, rem = dd; for (var i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+          var fb = (dd << 10 | rem) ^ 0x5412; function bt(i) { return ((fb >>> i) & 1) !== 0; }
+          for (var a = 0; a <= 5; a++) set(8, a, bt(a)); set(8, 7, bt(6)); set(8, 8, bt(7)); set(7, 8, bt(8)); for (var b2 = 9; b2 < 15; b2++) set(14 - b2, 8, bt(b2));
+          for (var c = 0; c < 8; c++) set(size - 1 - c, 8, bt(c)); for (var e = 8; e < 15; e++) set(8, size - 15 + e, bt(e)); set(8, size - 8, true);
+        }
+        fmtBits(0);
+        if (ver >= 7) { var vr = ver; for (var vi = 0; vi < 12; vi++) vr = (vr << 1) ^ ((vr >>> 11) * 0x1F25); var vb = ver << 12 | vr; for (var vj = 0; vj < 18; vj++) { var bv = ((vb >>> vj) & 1) !== 0, va = size - 11 + vj % 3, vc = Math.floor(vj / 3); set(va, vc, bv); set(vc, va, bv); } }
+        var ix = 0; for (var right = size - 1; right >= 1; right -= 2) { if (right === 6) right = 5; for (var vert = 0; vert < size; vert++) for (var j2 = 0; j2 < 2; j2++) { var px = right - j2, up = ((right + 1) & 2) === 0, py = up ? size - 1 - vert : vert; if (!fn[py][px] && ix < all.length * 8) { mod[py][px] = ((all[ix >>> 3] >>> (7 - (ix & 7))) & 1) !== 0; ix++; } } }
+        function applyMask(m) { for (var y2 = 0; y2 < size; y2++) for (var x2 = 0; x2 < size; x2++) { var inv; switch (m) { case 0: inv = (x2 + y2) % 2 === 0; break; case 1: inv = y2 % 2 === 0; break; case 2: inv = x2 % 3 === 0; break; case 3: inv = (x2 + y2) % 3 === 0; break; case 4: inv = (Math.floor(x2 / 3) + Math.floor(y2 / 2)) % 2 === 0; break; case 5: inv = x2 * y2 % 2 + x2 * y2 % 3 === 0; break; case 6: inv = (x2 * y2 % 2 + x2 * y2 % 3) % 2 === 0; break; default: inv = ((x2 + y2) % 2 + x2 * y2 % 3) % 2 === 0; } if (!fn[y2][x2] && inv) mod[y2][x2] = !mod[y2][x2]; } }
+        function penalty() {
+          var p = 0, dark = 0, i, j, run, k;
+          for (i = 0; i < size; i++) { run = 1; for (j = 1; j < size; j++) { if (mod[i][j] === mod[i][j - 1]) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1; } }
+          for (j = 0; j < size; j++) { run = 1; for (i = 1; i < size; i++) { if (mod[i][j] === mod[i - 1][j]) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1; } }
+          for (i = 0; i < size - 1; i++) for (j = 0; j < size - 1; j++) { var c0 = mod[i][j]; if (c0 === mod[i][j + 1] && c0 === mod[i + 1][j] && c0 === mod[i + 1][j + 1]) p += 3; }
+          var pa = [1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0], pb = pa.slice().reverse();
+          function hit(get) { for (var s0 = 0; s0 + 11 <= size; s0++) { var a = true, b = true; for (k = 0; k < 11; k++) { var vv = get(s0 + k) ? 1 : 0; if (vv !== pa[k]) a = false; if (vv !== pb[k]) b = false; if (!a && !b) break; } if (a || b) p += 40; } }
+          for (i = 0; i < size; i++) { (function (r) { hit(function (c) { return mod[r][c]; }); hit(function (c) { return mod[c][r]; }); })(i); }
+          for (i = 0; i < size; i++) for (j = 0; j < size; j++) if (mod[i][j]) dark++;
+          p += (Math.ceil(Math.abs(dark * 20 - size * size * 10) / (size * size)) - 1) * 10; return p;
+        }
+        var best = 0, bestP = 1e9; for (var m = 0; m < 8; m++) { applyMask(m); fmtBits(m); var pn = penalty(); if (pn < bestP) { bestP = pn; best = m; } applyMask(m); }
+        applyMask(best); fmtBits(best); return mod;
+      }
+      function svg(text, px) {
+        var m = make(text, 'M'), n = m.length, q = 4, d = '';
+        for (var y = 0; y < n; y++) for (var x = 0; x < n; x++) if (m[y][x]) d += 'M' + (x + q) + ' ' + (y + q) + 'h1v1h-1z';
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + (n + q * 2) + ' ' + (n + q * 2) + '" width="' + px + '" height="' + px + '" shape-rendering="crispEdges" role="img" aria-label="QR code"><rect width="100%" height="100%" fill="#fff"/><path d="' + d + '" fill="#000"/></svg>';
+      }
+      return { make: make, svg: svg };
+    })();
+
+    /* ---------- Passkey (Settings > Account) ---------- */
+    ZI.passkey = 'M9 4a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM2 19.5c0-3 3.2-4.8 7-4.8 1 0 1.9.1 2.8.4a5.2 5.2 0 0 0 .9 3.9V21H3a1 1 0 0 1-1-1.5zM17.5 12a3.5 3.5 0 0 0-1.1 6.8L16.5 21h2v-1.2h1.3v-1.3h1.2l.2-.5-1.8-1.8A3.5 3.5 0 0 0 17.5 12zm0 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2z';
+    function zPkOk() { try { return !!(window.ZanplyNative && ZanplyNative.pkSupported && ZanplyNative.pkSupported()); } catch (e) { return false; } }
+    function zpPks() { var l = []; try { l = JSON.parse(localStorage.getItem('zaply_pks') || '[]'); } catch (e) {} return Array.isArray(l) ? l : []; }
+    function zpPksSave(l) { try { localStorage.setItem('zaply_pks', JSON.stringify(l)); } catch (e) {} try { zpPkRefresh(); } catch (e) {} }
+    function zPkSign(keyId, data) {
+      return new Promise(function (res, rej) {
+        var id = 'p' + Date.now() + Math.floor(Math.random() * 1e6); window.__zBioCb = window.__zBioCb || {};
+        window.__zBioCb[id] = function (r) {
+          delete window.__zBioCb[id]; if (/^ok:/.test(r)) return res(r.slice(3));
+          var e = new Error(r === 'cancel' ? 'Cancelled' : r === 'invalid' ? 'This passkey stopped working because the phone\u2019s fingerprints or screen lock changed. Log in with your number and create a new passkey.' : r === 'lockout' ? 'Too many tries. Try again in a moment.' : r === 'none' ? 'Set up a fingerprint, face or screen lock in your phone Settings first.' : 'Could not use the passkey. Try again.'); e.name = r === 'cancel' ? 'NotAllowedError' : 'Error'; e.invalid = r === 'invalid'; rej(e);
+        };
+        try { ZanplyNative.pkSign(keyId, data, id); } catch (e) { delete window.__zBioCb[id]; rej(e); }
+      });
+    }
+    function pkLogin() {
+      var list = zpPks(); if (!list.length) return;
+      function go(p) {
+        chatCall('pk_challenge', { phone: p.phone, keyId: p.keyId }).then(function (c) {
+          return zPkSign(p.keyId, c.challenge).then(function (sig) { return chatCall('pk_login', { phone: p.phone, keyId: p.keyId, challenge: c.challenge, sig: sig }); });
+        }).then(function (r) {
+          showLoader('Logging in\u2026', 1500).then(function () { setToken(r.token); try { ['zaply_user', 'zaply_chats'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} location.reload(); });
+        }).catch(function (e) {
+          if (e && e.name === 'NotAllowedError') return;
+          if ((e && e.gone) || (e && e.invalid)) { zpPksSave(zpPks().filter(function (x) { return x.keyId !== p.keyId; })); try { ZanplyNative.pkDelete(p.keyId); } catch (x) {} }
+          toast((e && e.message) || 'Could not log in with the passkey.', false, 4500);
+        });
+      }
+      if (list.length === 1) return go(list[0]);
+      wboard(function (d, close) {
+        var t = mk('div', '', 'Log in with passkey'); t.style.cssText = 'font-size:17px;font-weight:600;margin-bottom:10px'; d.appendChild(t);
+        list.forEach(function (p) { var bt = mk('button', 'primary', p.name || 'Account'); bt.style.cssText = 'width:100%;margin-bottom:8px'; bt.addEventListener('click', function () { close(); go(p); }); d.appendChild(bt); });
+        var cn = mk('button', '', 'Cancel'); cn.style.cssText = 'width:100%'; cn.addEventListener('click', close); d.appendChild(cn);
+      });
+    }
+    function zpPkRefresh() {
+      var send = document.getElementById('btnSend'); if (!send) return; var btn = document.getElementById('btnPasskey');
+      if (!btn) { btn = mk('button', '', 'Log in with passkey'); btn.id = 'btnPasskey'; btn.style.cssText = 'margin-top:10px;width:100%'; send.parentNode.insertBefore(btn, send.nextSibling); btn.addEventListener('click', pkLogin); }
+      btn.classList.toggle('hidden', !(zPkOk() && zpPks().length));
+    }
+    setTimeout(function () { try { zpPkRefresh(); } catch (e) {} }, 600);
+    function openPasskey() {
+      zOpenPage('Passkey', function (b) {
+        var w = mk('div'); w.style.cssText = 'padding:22px 22px 30px;text-align:center'; b.appendChild(w);
+        var ic = mk('div'); ic.style.cssText = 'width:84px;height:84px;margin:6px auto 14px;border-radius:50%;background:rgba(33,192,99,.16);color:#21c063;display:flex;align-items:center;justify-content:center'; ic.innerHTML = '<svg viewBox="0 0 24 24" width="46" height="46" fill="currentColor"><path d="' + ZI.passkey + '"/></svg>'; w.appendChild(ic);
+        var t = mk('div', '', 'Passkey'); t.style.cssText = 'font-size:22px;font-weight:700;margin-bottom:8px'; w.appendChild(t);
+        var d = mk('div', '', 'Log in to your account and protect your account.'); d.style.cssText = 'opacity:.8;line-height:1.5;margin-bottom:18px'; w.appendChild(d);
+        var list = mk('div'); list.style.cssText = 'text-align:left;margin:0 auto 22px;max-width:380px'; w.appendChild(list);
+        ['Log in with your face, fingerprint or screen lock', 'Your passkey is stored safely'].forEach(function (r) { var row = mk('div'); row.style.cssText = 'display:flex;gap:10px;align-items:flex-start;margin:10px 0;line-height:1.4'; var c = mk('span', '', '\u2713'); c.style.cssText = 'color:#21c063;font-weight:800;flex:none'; row.appendChild(c); row.appendChild(mk('span', '', r)); list.appendChild(row); });
+        var act = mk('div'); w.appendChild(act);
+        function mine() { return zpPks().filter(function (x) { return x.phone === myPhone; })[0]; }
+        function render() {
+          act.innerHTML = '';
+          if (!zPkOk()) { var n = mk('div', '', 'Passkeys work in the Zanply Android app. Open Zanply on your phone to create one.'); n.style.cssText = 'opacity:.75;line-height:1.5'; act.appendChild(n); return; }
+          var cur = mine();
+          if (cur) {
+            var ok = mk('div', '', 'Passkey created on this phone'); ok.style.cssText = 'color:#21c063;font-weight:700;margin-bottom:6px'; act.appendChild(ok);
+            var s2 = mk('div', '', 'Use "Log in with passkey" on the login screen to open this account without an OTP.'); s2.style.cssText = 'opacity:.7;line-height:1.4;margin-bottom:14px'; act.appendChild(s2);
+            var rm = mk('button', 'primary', 'Remove passkey'); rm.style.background = '#d9534f'; act.appendChild(rm);
+            rm.addEventListener('click', function () {
+              rm.disabled = true; chatCall('pk_remove', { keyId: cur.keyId }).catch(function () {}).then(function () { try { ZanplyNative.pkDelete(cur.keyId); } catch (e) {} zpPksSave(zpPks().filter(function (x) { return x.keyId !== cur.keyId; })); toast('Passkey removed', true); render(); });
+            });
+          } else {
+            var cr = mk('button', 'primary', 'Create passkey'); act.appendChild(cr);
+            cr.addEventListener('click', function () {
+              var st = ''; try { st = ZanplyNative.pkState(); } catch (e) {}
+              if (st === 'none') return toast('Set up a fingerprint, face or screen lock in your phone Settings first, then try again.', false, 4500);
+              cr.disabled = true;
+              var keyId = Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(8)), function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+              (window.zNativeBioAuth ? window.zNativeBioAuth('Create passkey') : Promise.resolve()).then(function () {
+                var pub = ZanplyNative.pkCreate(keyId); if (!pub) throw new Error('Could not create the passkey on this phone.');
+                var nm = (curUser && (curUser.name || curUser.username)) || myPhone || 'Account';
+                return chatCall('pk_register', { keyId: keyId, pub: pub, label: nm }).then(function () { var l = zpPks().filter(function (x) { return x.phone !== myPhone; }); l.push({ phone: myPhone, keyId: keyId, name: nm, at: Date.now() }); zpPksSave(l); toast('Passkey created', true); render(); }, function (e) { try { ZanplyNative.pkDelete(keyId); } catch (x) {} throw e; });
+              }).catch(function (e) { if (e && e.message !== 'Cancelled') toast((e && e.message) || 'Could not create the passkey.'); }).then(function () { cr.disabled = false; });
+            });
+          }
+        }
+        render();
+      });
+    }
+
+    /* ---------- Chat backup with email + Transfer chats ---------- */
+    function zBoard(title, text) { return wboard(function (d, close) { if (title) { var h1 = mk('div', '', title); h1.style.cssText = 'font-size:17px;font-weight:600;margin-bottom:6px'; d.appendChild(h1); } if (text) d.appendChild(mk('div', '', text)).style.opacity = '.75'; var ok = mk('button', 'primary', 'OK'); ok.style.cssText = 'width:100%;margin-top:16px'; ok.addEventListener('click', close); d.appendChild(ok); }); }
+    function backupWithEmail(b) {
+      var sec = mk('div'); sec.style.cssText = 'padding:4px 20px 18px'; b.appendChild(sec);
+      var t = mk('div', '', 'Back up chats with your email'); t.style.cssText = 'font-weight:700;margin-bottom:6px'; sec.appendChild(t);
+      var d = mk('div', '', 'Enter the email that was added to your account. If that account was on another phone, you can bring its chats here.'); d.style.cssText = 'opacity:.75;line-height:1.45;margin-bottom:10px'; sec.appendChild(d);
+      var em = zin('Email address', 'text', 120); em.type = 'email'; em.autocomplete = 'email'; em.style.marginBottom = '10px'; sec.appendChild(em);
+      var go = mk('button', 'primary', 'Continue'); sec.appendChild(go);
+      go.addEventListener('click', function () {
+        var v = em.value.trim().toLowerCase(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return toast('Enter a valid email address.');
+        var res = {}, call = chatCall('backup_lookup', { email: v }).then(function (r) { res.r = r; }, function (e) { res.e = e; });
+        go.disabled = true;
+        showLoader('Checking account related to this email', 5000).then(function () { return call; }).then(function () {
+          go.disabled = false;
+          if (res.e) return toast((res.e && res.e.message) || 'Could not check this email.');
+          if (!res.r.found) return zBoard('', 'This email doesn\u2019t have account added.');
+          if (res.r.same) { zpBackupRun(false).then(function (r) { toast('Backed up ' + r.count + ' messages', true, 3000); }, function (e) { toast((e && e.message) || 'Backup failed'); }); return; }
+          backupVerify(v, res.r.mode);
+        });
+      });
+    }
+    function backupVerify(email, mode) {
+      zOpenPage('Two-step verification', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var t = mk('div', 'ai-res'); t.style.cssText = 'line-height:1.5;margin-bottom:14px'; t.textContent = mode === 'pin' ? 'Enter the two-step verification PIN of the account linked to this email.' : 'We sent a 6-digit code to ' + maskEmail(email) + '. Enter it to confirm this account is yours.'; w.appendChild(t);
+        var c = zin(mode === 'pin' ? '6-digit PIN' : '6-digit code', mode === 'pin' ? 'password' : 'text', 6); c.inputMode = 'numeric'; c.style.marginBottom = '10px'; w.appendChild(c);
+        var m = mk('div', 'zmsg'); w.appendChild(m);
+        var go = mk('button', 'primary', 'Back up chat'); go.style.marginTop = '6px'; w.appendChild(go); c.focus();
+        go.addEventListener('click', function () {
+          m.textContent = ''; if (!/^\d{6}$/.test(c.value.trim())) return m.textContent = 'Enter 6 digits.';
+          go.disabled = true; var res = {}, call = chatCall('backup_claim', { email: email, secret: c.value.trim() }).then(function (r) { res.r = r; }, function (e) { res.e = e; });
+          showLoader('Backing up chat', 3000).then(function () { return call; }).then(function () {
+            go.disabled = false; if (res.e) return m.textContent = (res.e && res.e.message) || 'Something went wrong.';
+            closeOv(); try { loadChats(); } catch (e) {} zBoard('Chat backed up', res.r.count ? res.r.count + ' messages were added to this account.' : 'Everything from that account is already here.');
+          });
+        });
+      });
+    }
+    function openTransfer() {
+      zOpenPage('Transfer chats', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var t = mk('div', 'ai-res'); t.style.cssText = 'line-height:1.5;margin-bottom:16px'; t.textContent = 'Move chats to another Zanply account. All of the chat history since this account was created is moved. Choose how to find the other account.'; w.appendChild(t);
+        var be = mk('button', 'primary', 'Transfer with email'), bq = mk('button', 'primary', 'Transfer with QR code'), br = mk('button', '', 'Receive chats on this account (show QR)');
+        bq.style.marginTop = '10px'; br.style.marginTop = '10px'; [be, bq, br].forEach(function (x) { w.appendChild(x); });
+        be.addEventListener('click', function () { transferPick('email'); }); bq.addEventListener('click', function () { transferPick('qr'); }); br.addEventListener('click', openReceive);
+      });
+    }
+    function openReceive() {
+      zOpenPage('Receive chats', function (b) {
+        var w = mk('div'); w.style.cssText = 'padding:20px;text-align:center'; b.appendChild(w);
+        var t = mk('div', 'ai-res', 'Open Transfer chats on your other account and scan this QR code, or type the code.'); t.style.cssText = 'line-height:1.5;margin-bottom:14px'; w.appendChild(t);
+        var box = mk('div', '', 'Making your code\u2026'); w.appendChild(box);
+        chatCall('transfer_code_new', {}).then(function (r) {
+          box.innerHTML = ''; var qw = mk('div'); qw.style.cssText = 'display:inline-block;background:#fff;padding:8px;border-radius:12px;line-height:0'; qw.innerHTML = zQR.svg('zanply-transfer:' + r.code, 220); box.appendChild(qw);
+          var cd = mk('div', '', r.code); cd.style.cssText = 'font-size:28px;letter-spacing:4px;font-weight:800;margin-top:14px'; box.appendChild(cd);
+          var n = mk('div', '', 'This code works for 10 minutes.'); n.style.cssText = 'opacity:.7;margin-top:6px'; box.appendChild(n);
+        }, function (e) { box.textContent = (e && e.message) || 'Could not make a code.'; });
+      });
+    }
+    function scanTransferCode(onCode) {
+      if (!('BarcodeDetector' in window) || !navigator.mediaDevices) return toast('QR scanning is not supported on this phone. Type the code instead.');
+      var ov = mk('div'); ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:#000;display:flex;flex-direction:column'; var v = document.createElement('video'); v.setAttribute('playsinline', ''); v.muted = true; v.style.cssText = 'flex:1;object-fit:cover;width:100%'; ov.appendChild(v);
+      var x = mk('button', 'primary', 'Cancel'); x.style.cssText = 'margin:14px'; ov.appendChild(x); document.body.appendChild(ov);
+      var stream = null, stop = false; function end() { stop = true; try { stream && stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {} ov.remove(); } x.addEventListener('click', end);
+      var det = new BarcodeDetector({ formats: ['qr_code'] });
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(function (s) { stream = s; v.srcObject = s; return v.play(); }).then(function () {
+        (function loop() { if (stop) return; det.detect(v).then(function (r) { var m = r && r[0] && /^zanply-transfer:([A-Za-z0-9]{4,12})$/.exec(r[0].rawValue || ''); if (m) { end(); onCode(m[1].toUpperCase()); } else setTimeout(loop, 350); }, function () { setTimeout(loop, 500); }); })();
+      }, function () { end(); toast('Allow the camera to scan, or type the code.'); });
+    }
+    function transferPick(kind) {
+      zOpenPage(kind === 'email' ? 'Transfer with email' : 'Transfer with QR code', function (b) {
+        var w = mk('div'); w.style.padding = '16px 20px'; b.appendChild(w);
+        var tgt = kind === 'email' ? zin('Email of the other account', 'text', 120) : zin('Code from the other account', 'text', 12);
+        if (kind === 'email') { tgt.type = 'email'; tgt.autocomplete = 'email'; } else tgt.style.textTransform = 'uppercase'; tgt.style.marginBottom = '10px'; w.appendChild(tgt);
+        if (kind === 'qr') { var sc = mk('button', '', 'Scan QR code'); sc.style.marginBottom = '12px'; sc.addEventListener('click', function () { scanTransferCode(function (c) { tgt.value = c; toast('Code scanned', true, 1800); }); }); w.appendChild(sc); }
+        var hd = mk('div', '', 'Choose chats to transfer'); hd.style.cssText = 'font-weight:700;margin:6px 0 8px'; w.appendChild(hd);
+        var list = (typeof allChats !== 'undefined' ? allChats : []).filter(function (c) { return c && !c.group && /^\+\d{7,15}$/.test(c.phone || ''); }), picks = {};
+        var all = mk('label'); all.style.cssText = 'display:flex;gap:10px;align-items:center;padding:8px 0;font-weight:600'; var ac = document.createElement('input'); ac.type = 'checkbox'; all.appendChild(ac); all.appendChild(mk('span', '', 'Select all')); w.appendChild(all);
+        var boxes = [];
+        list.forEach(function (c) { var r = mk('label'); r.style.cssText = 'display:flex;gap:10px;align-items:center;padding:8px 0'; var cb = document.createElement('input'); cb.type = 'checkbox'; cb.addEventListener('change', function () { if (cb.checked) picks[c.phone] = 1; else delete picks[c.phone]; }); boxes.push([cb, c.phone]); r.appendChild(cb); r.appendChild(mk('span', '', labelOf(c) || c.phone)); w.appendChild(r); });
+        if (!list.length) w.appendChild(mk('div', '', 'You have no chats to transfer yet.')).style.opacity = '.7';
+        ac.addEventListener('change', function () { boxes.forEach(function (p) { p[0].checked = ac.checked; if (ac.checked) picks[p[1]] = 1; else delete picks[p[1]]; }); });
+        var go = mk('button', 'primary', 'Transfer'); go.style.marginTop = '16px'; w.appendChild(go);
+        go.addEventListener('click', function () {
+          var v = tgt.value.trim(); if (kind === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return toast('Enter a valid email address.'); if (kind === 'qr' && !/^[A-Za-z0-9]{4,12}$/.test(v)) return toast('Scan or type the code first.');
+          var peers = Object.keys(picks); if (!peers.length) return toast('Choose at least one chat.');
+          runTransfer(kind === 'email' ? { email: v } : { code: v.toUpperCase() }, peers, kind);
+        });
+      });
+    }
+    function runTransfer(who, peers, kind) {
+      var board = wboard(function (d, close) {
+        var sp = mk('div', 'zspin'); d.appendChild(sp); var t = mk('div', '', kind === 'email' ? 'Finding account linked to this email' : 'Finding the other account'); t.style.fontWeight = '600'; d.appendChild(t); d._t = t; d._sp = sp; d._close = close;
+      });
+      var d = board.firstChild, res = {};
+      var look = chatCall('transfer_lookup', who).then(function (r) { res.r = r; }, function (e) { res.e = e; });
+      var wait = new Promise(function (r) { setTimeout(r, 3000); });
+      function msg(title, text) { d.innerHTML = ''; var h1 = mk('div', '', title); h1.style.cssText = 'font-size:17px;font-weight:600;margin-bottom:6px'; d.appendChild(h1); if (text) d.appendChild(mk('div', '', text)).style.opacity = '.75'; var ok = mk('button', 'primary', 'OK'); ok.style.cssText = 'width:100%;margin-top:16px'; ok.addEventListener('click', function () { board.remove(); }); d.appendChild(ok); }
+      Promise.all([look, wait]).then(function () {
+        if (res.e) return msg('Could not find the account', (res.e && res.e.message) || 'Try again.');
+        if (!res.r.found) return msg(res.r.self ? 'That is this account' : 'No account found', res.r.self ? 'Use the email or code of your other account.' : (kind === 'email' ? 'This email doesn\u2019t have account added.' : 'This code is not valid or has expired.'));
+        d.innerHTML = ''; var t = mk('div', '', 'Transferring chat'); t.style.cssText = 'font-weight:600;margin-bottom:12px'; d.appendChild(t);
+        var track = mk('div'); track.style.cssText = 'height:12px;border-radius:99px;background:rgba(128,128,128,.3);overflow:hidden'; var fill = mk('div'); fill.style.cssText = 'height:100%;width:0;background:#21c063;border-radius:99px;transition:width .35s ease'; track.appendChild(fill); d.appendChild(track);
+        var pc = mk('div', '', '0%'); pc.style.cssText = 'margin-top:8px;opacity:.7;font-size:13px'; d.appendChild(pc);
+        var i = 0, failed = 0;
+        (function next() {
+          if (i >= peers.length) { fill.style.width = '100%'; pc.textContent = '100%'; return setTimeout(function () { failed ? msg('Chats transferred', failed + ' chat(s) could not be transferred.') : msg('Successfully chat transferred', ''); }, 500); }
+          chatCall('transfer_chat', Object.assign({ peer: peers[i] }, who)).then(function () {}, function () { failed++; }).then(function () { i++; var p = Math.round(i / peers.length * 100); fill.style.width = p + '%'; pc.textContent = p + '%'; setTimeout(next, 350); });
+        })();
+      });
+    }
     function openAccount() {
       zOpenPage('Account', function (b) {
-        zrows(b, [['invite', 'Add account', addAccount], '-', ['shield', 'Two-step verification', openTwoStep], '-',
+        zrows(b, [['invite', 'Add account', addAccount], '-', ['shield', 'Two-step verification', openTwoStep], ['passkey', 'Passkey', openPasskey], '-',
           ['out', 'Log out', function () { $('btnLogout').click(); document.querySelectorAll('.zpg').forEach(function (e) { e.remove(); }); }, 1],
           ['trash', 'Delete account', openDeleteAccount, 1]]);
       });
@@ -3271,7 +3528,7 @@ ZW|Zimbabwe|263`;
         zswitchRow(b, 'Keep chats archived', 'Archived chats will remain archived when you receive a new message', s.keepArch, function (v) { setChatSet('keepArch', v); });
         zrow2(b, 'archive', 'Archived chats', 'Press and hold a chat in your list to archive it', openArchived);
         b.appendChild(mk('div', 'zsep'));
-        zrows(b, [['storage', 'Chat backup', function () { window.zpOpen.backup(); }], ['device', 'Transfer chats', soon('Transfer chats')], ['chat', 'Chat history', openChatHistory]]);
+        zrows(b, [['storage', 'Chat backup', function () { window.zpOpen.backup(); }], ['device', 'Transfer chats', openTransfer], ['chat', 'Chat history', openChatHistory]]);
       });
     }
     /* ---------- Chat history: every chat, with a readable copy you can keep on the phone ---------- */
@@ -4200,9 +4457,18 @@ ZW|Zimbabwe|263`;
       var e = expiryMs(); if (!e || !openWith) return; var now = Date.now();
       Array.prototype.slice.call(document.querySelectorAll('#msgs .bub[data-at]')).forEach(function (el) { if (now - (+el.getAttribute('data-at')) > e && !el.classList.contains('kept')) el.remove(); });
     }, 30000);
+    /* real clean-up: every saved chat on this phone loses messages older than the chosen time; Off deletes nothing */
+    function chatExpired(c) { var e = AD_MS[autoDel()] || 0; if (!e || !c || !c.at) return false; var t = new Date(c.at).getTime(); return t > 0 && Date.now() - t > e; }
+    function purgeExpiredAll() {
+      var e = AD_MS[autoDel()] || 0; if (!e) return;
+      try { Object.keys(localStorage).forEach(function (k) { var m = /^zaply_th_(.+)$/.exec(k); if (!m) return; var arr = []; try { arr = JSON.parse(localStorage.getItem(k) || '[]'); } catch (x) {} var keep = arr.filter(function (x) { return !msgExpired(x, m[1]); }); if (keep.length !== arr.length) localStorage.setItem(k, JSON.stringify(keep)); }); } catch (x) {}
+      try { thCache = thCache.filter(function (x) { return !msgExpired(x, openWith); }); Array.prototype.slice.call(document.querySelectorAll('#msgs .bub[data-at]')).forEach(function (el) { if (Date.now() - (+el.getAttribute('data-at')) > e && !el.classList.contains('kept')) el.remove(); }); } catch (x) {}
+      try { renderChats(); } catch (x) {}
+    }
+    setInterval(purgeExpiredAll, 60000); setTimeout(purgeExpiredAll, 4000);
     function openAutoDelete() {
       zOpenPage('Auto-delete messages', function (b) {
-        zradios(b, 'Delete messages from this phone after', AD_OPTS, autoDel(), function (v) { try { localStorage.setItem('zaply_autodel', v); } catch (e) {} });
+        zradios(b, 'Delete messages from this phone after', AD_OPTS, autoDel(), function (v) { try { localStorage.setItem('zaply_autodel', v); } catch (e) {} purgeExpiredAll(); toast(v === 'off' ? 'Auto-delete is off. No messages are deleted.' : 'Messages older than ' + (AD_OPTS.filter(function (o) { return o[0] === v; })[0] || [0, v])[1] + ' were deleted', true, 3000); });
         b.appendChild(mk('div', 'zfoot', 'Messages disappear from this phone once they are older than the time you choose. A chat with its own disappearing-messages setting uses that instead.'));
       });
     }
@@ -4213,6 +4479,7 @@ ZW|Zimbabwe|263`;
         var ua = navigator.userAgent || '', model = (/Android[^;]*;\s*([^;)]+?)(?:\sBuild|[;)])/.exec(ua) || [])[1] || '', os = /Android/i.test(ua) ? 'Android' : /iPhone|iPad|iPod/i.test(ua) ? 'iOS' : /Windows/i.test(ua) ? 'Windows' : /Mac/i.test(ua) ? 'macOS' : /Linux/i.test(ua) ? 'Linux' : 'Unknown';
         var br = /SamsungBrowser/i.test(ua) ? 'Samsung Internet' : /Edg\//i.test(ua) ? 'Edge' : /Firefox/i.test(ua) ? 'Firefox' : /Chrome/i.test(ua) ? 'Chrome' : /Safari/i.test(ua) ? 'Safari' : 'Browser';
         var inst = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+        var art = mk('div', 'zdev'); art.appendChild(deviceArt()); b.appendChild(art);
         b.appendChild(mk('div', 'zsec', 'This device'));
         zrow2(b, 'device', (model && model.length < 40 ? model : os) + ' \u2022 ' + os, (inst ? 'Zanply app' : br) + ' \u2022 Active now', function () {});
         b.appendChild(mk('div', 'zsec', 'Accounts on this device'));
@@ -4220,7 +4487,7 @@ ZW|Zimbabwe|263`;
         if (!accts.length) zrow2(b, 'account', 'Your account', 'Signed in', function () {});
         accts.forEach(function (x) { zrow2(b, 'account', x.n, x.t === cur ? 'Current account' : 'Tap to switch', function () { if (x.t === cur) return; setToken(x.t); try { ['zaply_user', 'zaply_chats'].forEach(function (k) { localStorage.removeItem(k); }); } catch (e) {} location.reload(); }); });
         b.appendChild(mk('div', 'zsec', 'Other devices'));
-        zrow2(b, 'add', 'Link a device', 'Use one account on 2 devices', soon('Link a device'));
+        zrow2(b, 'add', 'Link a device', 'Use one account on 2 devices', function () { openAddDevice(); });
         b.appendChild(mk('div', 'zfoot', 'If you see an account or device here that isn\u2019t yours, log out and change your two-step verification PIN.'));
       });
     }
@@ -4856,6 +5123,7 @@ ZW|Zimbabwe|263`;
     function zpBackupRun(auto) { return chatCall('backup_now', { auto: !!auto }).then(function (r) { ZP.set('bk_last', Date.now()); return r; }); }
     function openBackupPage() {
       zOpenPage('Chat Backup', function (b) {
+        backupWithEmail(b);
         var info = mk('div', 'pd-sec', 'Checking your backup\u2026'); b.appendChild(info);
         function refresh() { chatCall('backup_info', {}).then(function (r) { info.textContent = r.backup ? 'Last backup: ' + new Date(r.backup.at).toLocaleString() + ' \u2022 ' + r.backup.count + ' messages' : 'No backup yet.'; }, function () { info.textContent = 'Could not read backup status.'; }); }
         refresh();
@@ -5105,7 +5373,7 @@ ZW|Zimbabwe|263`;
       updateCounts(); try { archiveSweep(); } catch (e) {}
       allChats.forEach(function (c) { var s = savedName(c.phone); if (s) c.name = s; if (!c.mine && isCallMsg(c.last)) ringFor(c.last, c.at, c); });
       var q = ($('chatSearch').value || '').toLowerCase().trim(), fv = favs();
-      var base = withPending(allChats).filter(function (c) { if (isLocked(c.phone)) return false; return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1 || (typeof c.last === 'string' && c.last.indexOf(E2E.PREFIX) !== 0 && c.last.toLowerCase().indexOf(q) > -1); });
+      var base = withPending(allChats).filter(function (c) { if (isLocked(c.phone)) return false; if (chatExpired(c)) return false; return !q || (c.name || '').toLowerCase().indexOf(q) > -1 || (c.phone || '').indexOf(q) > -1 || (typeof c.last === 'string' && c.last.indexOf(E2E.PREFIX) !== 0 && c.last.toLowerCase().indexOf(q) > -1); });
       var shown = base.filter(function (c) {
         if (isArchived(c) || isHidden(c)) return false;
         if (/^f:/.test(filt)) return inFolder(filt.slice(2), c);
@@ -8998,6 +9266,24 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     return _bg().catch(function (e) { if (e && (e.name === 'NotSupportedError' || e.name === 'SecurityError') && localStorage.getItem('zaply_lockpin')) return pinDialog('check'); throw e; });
   };
   lockAuth = function () { if (!localStorage.getItem('zaply_lockid')) return enableLock(); return bioGet(); };
+  /* inside the Android app the phone itself asks for fingerprint / face / screen lock (a WebView cannot do WebAuthn) */
+  function nbOn() { try { return !!(window.ZanplyNative && ZanplyNative.bioAuth && ZanplyNative.bioState && ZanplyNative.bioState() !== 'unsupported'); } catch (e) { return false; } }
+  function nbAuth(title) {
+    return new Promise(function (res, rej) {
+      var id = 'b' + Date.now() + Math.floor(Math.random() * 1e6); window.__zBioCb = window.__zBioCb || {};
+      window.__zBioCb[id] = function (r) { delete window.__zBioCb[id]; if (r === 'ok') return res(); var e = new Error(r === 'cancel' ? 'Cancelled' : r === 'lockout' ? 'Too many tries. Try again in a moment.' : r === 'none' ? 'Set up a fingerprint, face or screen lock in your phone Settings first.' : 'Could not unlock. Try again.'); e.name = r === 'cancel' ? 'NotAllowedError' : 'Error'; rej(e); };
+      try { ZanplyNative.bioAuth(title, id); } catch (e) { delete window.__zBioCb[id]; rej(e); }
+    });
+  }
+  var _en2 = enableLock;
+  enableLock = function () {
+    if (!nbOn()) return _en2();
+    if (ZanplyNative.bioState() === 'none') return Promise.reject(new Error('Set up a fingerprint, face or screen lock in your phone Settings first, then try again.'));
+    return nbAuth('Turn on app lock').then(function () { localStorage.setItem('zaply_lockid', 'native'); try { localStorage.removeItem('zaply_lockpin'); } catch (e) {} });
+  };
+  var _bg2 = bioGet;
+  bioGet = function () { if (localStorage.getItem('zaply_lockid') === 'native' && nbOn()) return nbAuth('Unlock Zanply'); return _bg2(); };
+  window.zNativeBioAuth = function (t) { return nbOn() ? nbAuth(t) : Promise.reject(new Error('unsupported')); };
 
   try { renderChats(); } catch (e) {}
 })();
