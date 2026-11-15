@@ -451,21 +451,6 @@ async function stealthOf(phone, extraRaw) {
     return { online: !!s.hide_online, seen: !!s.hide_seen || !!s.hide_online };
   } catch (e) { return {}; }
 }
-/* Premium auto-reply: answers a new message for the receiver (Always / When Offline-or-Busy), once per person every 12 hours. */
-async function autoReplyFor(sender, owner) {
-  try {
-    const [pr] = await db().query('SELECT extra, (is_online = 1 AND last_active > NOW() - INTERVAL 60 SECOND) AS online FROM profiles WHERE phone = ?', [owner]);
-    if (!pr[0]) return;
-    const st = parseExtra(pr[0].extra).pset || {}, msg = String(st.ar_msg || '').trim();
-    if (!st.ar_on || !msg) return;
-    if (!(await isPremium(owner))) return;
-    if ((st.ar_when || 'Always') !== 'Always' && Number(pr[0].online) === 1) return;
-    const [dup] = await db().query('SELECT 1 FROM messages WHERE sender = ? AND receiver = ? AND body = ? AND created_at > NOW() - INTERVAL 12 HOUR LIMIT 1', [owner, sender, msg]);
-    if (dup.length) return;
-    await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [owner, sender, msg]);
-    await rt.signal([sender], 'msg', { from: owner });
-  } catch (e) {}
-}
 async function ticksHidden(phone) {
   try { const [r] = await db().query('SELECT extra FROM profiles WHERE phone = ?', [phone]); if (!r[0]) return false; const st = parseExtra(r[0].extra).pset || {}; return !!st.hide_ticks && (await isPremium(phone)); } catch (e) { return false; }
 }
@@ -490,14 +475,162 @@ async function watchAllowed(me, list) {
   return out;
 }
 
+/* ===== Zanply Premium server: payments, renewals, scheduled messages, AI ===== */
+const PAY_USD = { monthly: 3.99, six: 19.99, annual: 29.99 };
+const PAY_SPAN = { monthly: '1 MONTH', six: '6 MONTH', annual: '1 YEAR' };
+/* Only currencies Paystack can really charge. These rates must match PREM_CUR in index.html. */
+const PAY_RATE = { USD: 1, KES: 129, NGN: 1550, GHS: 15, ZAR: 18 };
+function payAmount(plan, cur) {
+  const rate = PAY_RATE[cur] || 1; let v = PAY_USD[plan] * rate;
+  v = rate >= 50 ? Math.round(v / 10) * 10 : Math.round(v * 100) / 100;
+  return Math.round(v * 100); // Paystack wants the smallest unit
+}
+let payReady = null;
+function payTable() {
+  if (!payReady) payReady = premTable().then(() => db().query("CREATE TABLE IF NOT EXISTS pay_refs (ref VARCHAR(64) NOT NULL PRIMARY KEY, phone VARCHAR(20) NOT NULL, plan VARCHAR(10) NOT NULL, amount BIGINT NOT NULL, cur VARCHAR(5) NOT NULL, status VARCHAR(12) NOT NULL DEFAULT 'pending', created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_p (phone))"))
+    .then(() => Promise.all(["ALTER TABLE premium ADD COLUMN auth_code VARCHAR(80) NOT NULL DEFAULT ''", "ALTER TABLE premium ADD COLUMN auth_email VARCHAR(190) NOT NULL DEFAULT ''", 'ALTER TABLE premium ADD COLUMN amt BIGINT NOT NULL DEFAULT 0', "ALTER TABLE premium ADD COLUMN cur VARCHAR(5) NOT NULL DEFAULT ''", 'ALTER TABLE premium ADD COLUMN last_try DATETIME NULL'].map((q) => db().query(q).catch(() => {}))))
+    .catch((e) => { payReady = null; throw e; });
+  return payReady;
+}
+async function premGrant(phone, plan, amt, cur, auth, email) {
+  const span = PAY_SPAN[plan]; if (!span) return false;
+  await payTable();
+  await db().query("INSERT INTO premium (phone, plan, until_at, renew, auth_code, auth_email, amt, cur) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL " + span + "), 1, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE plan = VALUES(plan), until_at = DATE_ADD(GREATEST(until_at, NOW()), INTERVAL " + span + "), renew = 1, auth_code = IF(VALUES(auth_code) <> '', VALUES(auth_code), auth_code), auth_email = IF(VALUES(auth_email) <> '', VALUES(auth_email), auth_email), amt = VALUES(amt), cur = VALUES(cur)", [phone, plan, auth || '', email || '', amt, cur]);
+  return true;
+}
+/* Ask Paystack if a reference was really paid (correct amount + currency), then give Premium exactly once. */
+async function payVerify(ref) {
+  ref = String(ref || '').replace(/[^A-Za-z0-9_.-]/g, '').slice(0, 64);
+  const key = process.env.PAYSTACK_SECRET_KEY;
+  if (!ref) return { ok: false, error: 'Bad request.' };
+  if (!key) return { ok: false, error: 'Payments are being connected. No charge was made.' };
+  await payTable();
+  const [rows] = await db().query('SELECT phone, plan, amount, cur, status FROM pay_refs WHERE ref = ?', [ref]);
+  if (!rows[0]) return { ok: false, error: 'We could not find this payment.' };
+  if (rows[0].status === 'paid') return { ok: true, phone: rows[0].phone, already: true };
+  const r = await fetch('https://api.paystack.co/transaction/verify/' + encodeURIComponent(ref), { headers: { Authorization: 'Bearer ' + key } });
+  const j = await r.json().catch(() => ({})), d = j && j.data;
+  if (!j.status || !d) return { ok: false, error: 'Could not check the payment. Try again.' };
+  if (d.status !== 'success') return { ok: false, pending: d.status === 'pending' || d.status === 'ongoing' || d.status === 'processing', error: 'The payment was not completed.' };
+  if (Number(d.amount) < Number(rows[0].amount) || String(d.currency || '').toUpperCase() !== rows[0].cur) return { ok: false, error: 'The payment amount did not match.' };
+  const [u] = await db().query("UPDATE pay_refs SET status = 'paid' WHERE ref = ? AND status = 'pending'", [ref]);
+  if (!u.affectedRows) return { ok: true, phone: rows[0].phone, already: true };
+  const au = d.authorization || {};
+  await premGrant(rows[0].phone, rows[0].plan, Number(rows[0].amount), rows[0].cur, au.reusable ? au.authorization_code : '', (d.customer && d.customer.email) || '');
+  return { ok: true, phone: rows[0].phone };
+}
+/* Auto-renewal: charge the saved card/authorization for people whose plan ends within a day (retries for 3 days). */
+async function renewDue() {
+  const key = process.env.PAYSTACK_SECRET_KEY; if (!key) return 0;
+  await payTable();
+  const [rows] = await db().query("SELECT phone, plan, auth_code, auth_email, amt, cur FROM premium WHERE renew = 1 AND auth_code <> '' AND amt > 0 AND until_at < DATE_ADD(NOW(), INTERVAL 1 DAY) AND until_at > DATE_SUB(NOW(), INTERVAL 3 DAY) AND (last_try IS NULL OR last_try < DATE_SUB(NOW(), INTERVAL 12 HOUR)) LIMIT 25");
+  let n = 0;
+  for (const p of rows) {
+    await db().query('UPDATE premium SET last_try = NOW() WHERE phone = ?', [p.phone]);
+    const ref = 'zpr_' + crypto.randomBytes(10).toString('hex');
+    await db().query('INSERT INTO pay_refs (ref, phone, plan, amount, cur) VALUES (?, ?, ?, ?, ?)', [ref, p.phone, p.plan, p.amt, p.cur]);
+    try {
+      const r = await fetch('https://api.paystack.co/transaction/charge_authorization', { method: 'POST', headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' }, body: JSON.stringify({ authorization_code: p.auth_code, email: p.auth_email, amount: Number(p.amt), currency: p.cur, reference: ref, metadata: { phone: p.phone, plan: p.plan, renewal: true } }) });
+      const j = await r.json().catch(() => ({}));
+      if (j.status && j.data && j.data.status === 'success') { const v = await payVerify(ref); if (v.ok) n++; }
+    } catch (e) {}
+  }
+  return n;
+}
+/* ---- scheduled messages (Premium). Direct messages are encrypted by the phone BEFORE they are scheduled, so the server never sees the text. ---- */
+let schedReady = null;
+function schedTable() {
+  if (!schedReady) schedReady = db().query("CREATE TABLE IF NOT EXISTS sched_msgs (id BIGINT AUTO_INCREMENT PRIMARY KEY, sender VARCHAR(20) NOT NULL, receiver VARCHAR(24) NOT NULL, body TEXT NOT NULL, send_at DATETIME NOT NULL, done TINYINT NOT NULL DEFAULT 0, err VARCHAR(120) NOT NULL DEFAULT '', INDEX idx_due (done, send_at), INDEX idx_s (sender, done))").catch((e) => { schedReady = null; throw e; });
+  return schedReady;
+}
+async function deliverMsg(me, to, body) {
+  if (isGroup(to)) {
+    const g = gid(to); if (!(await isMember(g, me))) return 'You are not in this group.';
+    await db().query('INSERT INTO group_messages (group_id, sender, body) VALUES (?, ?, ?)', [g, me, body]);
+    const [gn] = await db().query('SELECT name FROM chat_groups WHERE id = ?', [g]);
+    if (rt.on()) { const [gm] = await db().query('SELECT phone FROM group_members WHERE group_id = ? AND phone <> ?', [g, me]); await rt.signal(gm.map((x) => x.phone), 'msg', { from: 'g:' + g }); }
+    await notifyGroup(me, g, (gn[0] && gn[0].name) || 'Group', body);
+    return '';
+  }
+  if (!phoneOk(to)) return 'Bad request.';
+  if (!(await findUser(to))) return "That number isn't on Zanply yet.";
+  const bs = await blockState(me, to); if (bs.iBlocked || bs.blockedMe) return "You can't message this person.";
+  await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [me, to, body]);
+  await rt.signal([to], 'msg', { from: me });
+  await notify(me, to, body);
+  return '';
+}
+async function runScheduled() {
+  await schedTable();
+  const [rows] = await db().query('SELECT id, sender, receiver, body FROM sched_msgs WHERE done = 0 AND send_at <= NOW() ORDER BY send_at LIMIT 40');
+  let n = 0;
+  for (const m of rows) {
+    const [c] = await db().query('UPDATE sched_msgs SET done = 1 WHERE id = ? AND done = 0', [m.id]);
+    if (!c.affectedRows) continue; // another run took it
+    let err = ''; try { err = await deliverMsg(m.sender, m.receiver, m.body); } catch (e) { err = 'Could not send.'; }
+    if (err) await db().query('UPDATE sched_msgs SET done = 2, err = ? WHERE id = ?', [String(err).slice(0, 120), m.id]); else n++;
+  }
+  db().query('DELETE FROM sched_msgs WHERE done > 0 AND send_at < DATE_SUB(NOW(), INTERVAL 7 DAY)').catch(() => {});
+  return n;
+}
+let schedLast = 0;
+function schedKick() { if (Date.now() - schedLast < 20000) return; schedLast = Date.now(); runScheduled().catch(() => {}); }
+/* ---- AI (Anthropic for text, Whisper for voice notes) ---- */
+let aiReady = null;
+function aiTable() {
+  if (!aiReady) aiReady = db().query('CREATE TABLE IF NOT EXISTS ai_usage (phone VARCHAR(20) NOT NULL, day DATE NOT NULL, n INT NOT NULL DEFAULT 0, PRIMARY KEY (phone, day))').catch((e) => { aiReady = null; throw e; });
+  return aiReady;
+}
+/* free people get a small daily number; Premium has no limit for normal use (a very high guard stops abuse) */
+async function aiUse(me, prem, freeLimit) {
+  await aiTable();
+  const lim = prem ? 1000 : freeLimit;
+  const [r] = await db().query('SELECT n FROM ai_usage WHERE phone = ? AND day = CURDATE()', [me]);
+  if ((r[0] ? Number(r[0].n) : 0) >= lim) return false;
+  await db().query('INSERT INTO ai_usage (phone, day, n) VALUES (?, CURDATE(), 1) ON DUPLICATE KEY UPDATE n = n + 1', [me]);
+  return true;
+}
+async function aiText(system, user, max) {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) throw new Error('AI is not set up on the server yet.');
+  const r = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' }, body: JSON.stringify({ model: process.env.AI_MODEL || 'claude-haiku-5-5', max_tokens: max || 800, system, messages: [{ role: 'user', content: user }] }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !Array.isArray(j.content)) throw new Error('AI is busy. Try again in a moment.');
+  return j.content.filter((c) => c.type === 'text').map((c) => c.text).join('').trim();
+}
+async function aiTranscribe(b64, mime) {
+  const oa = process.env.OPENAI_API_KEY, gq = process.env.GROQ_API_KEY;
+  if (!oa && !gq) throw new Error('Voice-to-text is not set up on the server yet.');
+  const buf = Buffer.from(String(b64 || ''), 'base64');
+  if (!buf.length) throw new Error('No audio found.');
+  if (buf.length > 3 * 1024 * 1024) throw new Error('This voice note is too long to transcribe.');
+  mime = String(mime || 'audio/webm').slice(0, 40);
+  const ext = /ogg/.test(mime) ? 'ogg' : /mp4|m4a|aac/.test(mime) ? 'm4a' : /mpeg|mp3/.test(mime) ? 'mp3' : /wav/.test(mime) ? 'wav' : 'webm';
+  const fd = new FormData(); fd.append('file', new Blob([buf], { type: mime }), 'voice.' + ext); fd.append('model', oa ? 'whisper-1' : 'whisper-large-v3-turbo');
+  const r = await fetch(oa ? 'https://api.openai.com/v1/audio/transcriptions' : 'https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: 'Bearer ' + (oa || gq) }, body: fd });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error('Could not transcribe this voice note.');
+  return String(j.text || '').trim();
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method === 'GET' && /cron/.test(String(req.url || ''))) {
+    const want = 'Bearer ' + (process.env.CRON_SECRET || ''), got = String(req.headers.authorization || '');
+    if (!process.env.CRON_SECRET || got.length !== want.length || !crypto.timingSafeEqual(Buffer.from(got), Buffer.from(want))) return res.status(401).json({ error: 'No.' });
+    try { const sent = await runScheduled(), renewed = await renewDue().catch(() => 0); return res.json({ ok: true, sent, renewed }); } catch (e) { return res.status(500).json({ error: 'Failed.' }); }
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const b = req.body || {};
+    /* Paystack webhook: never trusted by itself. We only take the reference and ask Paystack if it really was paid. */
+    if (req.headers['x-paystack-signature']) {
+      try { const ref = b && b.data && b.data.reference; if (b.event === 'charge.success' && ref) await payVerify(ref); } catch (e) {}
+      return res.status(200).json({ ok: true });
+    }
     /* Passkey login (no token yet): the phone signs a short-lived challenge with the key kept in its Keystore */
     if (b.action === 'pk_challenge' || b.action === 'pk_login') {
       const keyId = String(b.keyId || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 40), phone = String(b.phone || '');
@@ -785,7 +918,6 @@ module.exports = async (req, res) => {
       const [r] = await db().query('INSERT INTO messages (sender, receiver, body) VALUES (?, ?, ?)', [me, b.to, body]);
       await rt.signal([b.to], 'msg', { from: me });
       await notify(me, b.to, body);
-      await autoReplyFor(me, b.to);
       return res.json({ message: { id: r.insertId, mine: true, body, at: new Date().toISOString(), st: 1 } });
     }
 
@@ -857,6 +989,7 @@ module.exports = async (req, res) => {
       }
     }
     // Online / last seen. The app pings every ~25s while open; "online" = pinged within the last 60s.
+    if (b.action === 'presence_ping' || b.action === 'list') { schedKick(); }
     if (b.action === 'presence_ping') {
       await db().query('INSERT INTO profiles (phone, last_active, is_online) VALUES (?, NOW(), ?) ON DUPLICATE KEY UPDATE session_prev = IF(is_online = 1 AND last_active > NOW() - INTERVAL 90 SECOND, session_prev, last_active), last_active = NOW(), is_online = VALUES(is_online)', [me, b.online === false ? 0 : 1]);
       return res.json({ ok: true });
@@ -1124,24 +1257,33 @@ module.exports = async (req, res) => {
       await premTable(); await db().query('UPDATE premium SET renew = ? WHERE phone = ?', [b.on ? 1 : 0, me]);
       const i = await premInfo(me); return res.json(Object.assign({}, i, { expires: i.until }));
     }
-    // Premium checkout (Paystack: cards + M-Pesa in Kenya). Needs PAYSTACK_SECRET_KEY (and optional PAYSTACK_CALLBACK) in Vercel.
+    // Premium checkout (Paystack: cards + M-Pesa in Kenya). Needs PAYSTACK_SECRET_KEY (and PAYSTACK_CALLBACK = your app link) in Vercel.
+    // The amount is worked out here on the server, never taken from the phone.
     if (b.action === 'premium_checkout') {
-      const usd = { monthly: 3.99, six: 19.99, annual: 29.99 }[b.plan];
-      if (!usd) return res.status(400).json({ error: 'Bad request.' });
+      if (!PAY_USD[b.plan]) return res.status(400).json({ error: 'Bad request.' });
       if (!process.env.PAYSTACK_SECRET_KEY) return res.status(402).json({ error: 'Payments are being connected. No charge was made.' });
-      const rate = { KES: 129, NGN: 1600, GHS: 15, ZAR: 18, USD: 1 }, cur = rate[b.currency] ? b.currency : 'USD';
+      await payTable();
+      const cur = PAY_RATE[b.currency] ? b.currency : 'USD', amount = payAmount(b.plan, cur), ref = 'zp_' + crypto.randomBytes(12).toString('hex');
       const em = await db().query('SELECT email FROM profiles WHERE phone = ?', [me]).then((r) => (r[0][0] && r[0][0].email) || '').catch(() => '');
+      await db().query('INSERT INTO pay_refs (ref, phone, plan, amount, cur) VALUES (?, ?, ?, ?, ?)', [ref, me, b.plan, amount, cur]);
       const r = await fetch('https://api.paystack.co/transaction/initialize', { method: 'POST', headers: { Authorization: 'Bearer ' + process.env.PAYSTACK_SECRET_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: em || (me + '@zanply.app'), amount: Math.round(usd * rate[cur] * 100), currency: cur, callback_url: process.env.PAYSTACK_CALLBACK || undefined, metadata: { phone: me, plan: b.plan } }) });
+        body: JSON.stringify({ email: em || (me.replace(/\D/g, '') + '@zanply.app'), amount, currency: cur, reference: ref, callback_url: process.env.PAYSTACK_CALLBACK || undefined, metadata: { phone: me, plan: b.plan } }) });
       const j = await r.json().catch(() => ({}));
-      if (!j.status || !j.data) return res.status(502).json({ error: 'Could not start payment. No charge was made.' });
-      return res.json({ url: j.data.authorization_url });
+      if (!j.status || !j.data) { await db().query("UPDATE pay_refs SET status = 'failed' WHERE ref = ?", [ref]).catch(() => {}); return res.status(502).json({ error: 'Could not start payment. No charge was made.' }); }
+      return res.json({ url: j.data.authorization_url, ref, currency: cur, amount: amount / 100 });
     }
-    // Stealth / auto-reply / backup settings. Typing "contacts"/"nobody" is free; everything else here is Premium.
+    // The app calls this when the person comes back from the payment page (and the Paystack webhook calls payVerify too).
+    if (b.action === 'premium_verify') {
+      const v = await payVerify(b.ref);
+      if (v.ok && v.phone !== me) return res.status(403).json({ error: 'This payment belongs to another account.' });
+      if (!v.ok) return res.status(v.pending ? 202 : 400).json({ error: v.error, pending: !!v.pending });
+      const i = await premInfo(me); return res.json(Object.assign({}, i, { expires: i.until }));
+    }
+    // Stealth / backup settings. Typing "contacts"/"nobody" is free; everything else here is Premium.
     if (b.action === 'premium_setting') {
-      const K = ['typ_see', 'typ_view', 'hide_online', 'hide_typing', 'hide_ticks', 'hide_seen', 'ar_on', 'ar_msg', 'ar_when', 'cloud_unlimited'];
+      const K = ['typ_see', 'typ_view', 'hide_online', 'hide_typing', 'hide_ticks', 'hide_seen', 'cloud_unlimited'];
       const key = String(b.key || ''); if (K.indexOf(key) < 0) return res.status(400).json({ error: 'Bad request.' });
-      let val = b.value; if (key === 'ar_msg') val = String(val || '').slice(0, 500); else if (key === 'ar_when') val = ['Always', 'When Busy', 'When Offline'].indexOf(val) > -1 ? val : 'Always'; else if (/^typ_/.test(key)) val = ['Everyone', 'Contacts', 'Nobody'].indexOf(val) > -1 ? val : 'Contacts'; else val = !!val;
+      let val = b.value; if (/^typ_/.test(key)) val = ['Everyone', 'Contacts', 'Nobody'].indexOf(val) > -1 ? val : 'Contacts'; else val = !!val;
       if (!(/^typ_/.test(key) && val !== 'Everyone') && !(await isPremium(me))) return res.status(403).json({ error: 'This is part of Zanply Premium.', premium: true });
       let ex = parseExtra(null); try { const [cur] = await db().query('SELECT extra FROM profiles WHERE phone = ?', [me]); ex = parseExtra(cur && cur[0] && cur[0].extra); } catch (e) {}
       ex.pset[key] = val;
@@ -1160,6 +1302,51 @@ module.exports = async (req, res) => {
       await premTable();
       await db().query('INSERT INTO premium (phone, plan, until_at, renew) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ' + span + '), 1) ON DUPLICATE KEY UPDATE plan = VALUES(plan), until_at = DATE_ADD(GREATEST(until_at, NOW()), INTERVAL ' + span + '), renew = 1', [me, b.plan]);
       return res.json(await premInfo(me));
+    }
+
+    // ---- Scheduled messages (Premium) ----
+    if (b.action === 'sched_add') {
+      if (!(await isPremium(me))) return res.status(403).json({ error: 'To schedule messages you need to subscribe to Zanply Premium', premium: true });
+      const to = String(b.to || ''), raw = String(b.body || '').trim();
+      if (!(phoneOk(to) || isGroup(to)) || !raw || raw.length > 2000) return res.status(400).json({ error: 'Bad request.' });
+      const secs = Math.floor((Number(b.at) - Date.now()) / 1000);
+      if (!(secs >= 20 && secs <= 366 * 86400)) return res.status(400).json({ error: 'Pick a time in the future (within one year).' });
+      if (isGroup(to) && !(await isMember(gid(to), me))) return res.status(403).json({ error: 'You are not in this group.' });
+      await schedTable();
+      const [cn] = await db().query('SELECT COUNT(*) AS n FROM sched_msgs WHERE sender = ? AND done = 0', [me]);
+      if (Number(cn[0].n) >= 50) return res.status(403).json({ error: 'You can keep up to 50 scheduled messages.' });
+      const [r] = await db().query('INSERT INTO sched_msgs (sender, receiver, body, send_at) VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL ? SECOND))', [me, to, raw, secs]);
+      return res.json({ id: r.insertId, at: Number(b.at) });
+    }
+    if (b.action === 'sched_list') {
+      await schedTable();
+      const [rows] = await db().query('SELECT id, receiver, done, err, TIMESTAMPDIFF(SECOND, NOW(), send_at) AS secs FROM sched_msgs WHERE sender = ? AND (done = 0 OR (done = 2 AND send_at > DATE_SUB(NOW(), INTERVAL 2 DAY))) ORDER BY send_at LIMIT 60', [me]);
+      return res.json({ items: rows.map((x) => ({ id: x.id, to: x.receiver, failed: x.done === 2, err: x.err, at: Date.now() + Number(x.secs) * 1000 })) });
+    }
+    if (b.action === 'sched_cancel') {
+      await schedTable(); await db().query('DELETE FROM sched_msgs WHERE id = ? AND sender = ? AND done IN (0, 2)', [Number(b.id) || 0, me]);
+      return res.json({ ok: true });
+    }
+    // ---- AI: translate, voice-to-text, chat summary (Premium) and Ask Zanply AI (free: 5 a day, Premium: no limit) ----
+    if (b.action === 'ai_translate' || b.action === 'ai_transcribe' || b.action === 'ai_summary' || b.action === 'ai_ask') {
+      const prem = await isPremium(me);
+      if (b.action !== 'ai_ask' && !prem) return res.status(403).json({ error: 'This is part of Zanply Premium.', premium: true });
+      if (!(await aiUse(me, prem, 5))) return res.status(429).json({ error: prem ? 'Too many AI requests today. Try again tomorrow.' : 'You used your 5 free AI questions today. Subscribe to Zanply Premium for unlimited AI.', premium: !prem });
+      try {
+        if (b.action === 'ai_translate') {
+          const text = String(b.text || '').slice(0, 2000), lang = String(b.lang || 'English').replace(/[^A-Za-z \-()]/g, '').slice(0, 30) || 'English';
+          if (!text.trim()) return res.status(400).json({ error: 'Bad request.' });
+          return res.json({ text: await aiText('You translate chat messages. Translate the message the user sends into ' + lang + '. Reply with the translation only, no notes.', text, 900) });
+        }
+        if (b.action === 'ai_transcribe') return res.json({ text: await aiTranscribe(b.audio, b.mime) });
+        if (b.action === 'ai_summary') {
+          const list = (Array.isArray(b.messages) ? b.messages : []).slice(-120).map((m) => String((m && m.who) || '').slice(0, 30) + ': ' + String((m && m.text) || '').slice(0, 300)).join('\n').slice(-12000);
+          if (list.length < 20) return res.status(400).json({ error: 'There is not enough to summarize yet.' });
+          return res.json({ text: await aiText('You summarize a chat so someone can catch up fast. Give a short summary in plain sentences (max 6 lines), then any questions waiting for the reader or things they must do. Use the same language as the chat. Do not invent anything.', list, 700) });
+        }
+        const q = String(b.prompt || '').trim().slice(0, 2000); if (!q) return res.status(400).json({ error: 'Bad request.' });
+        return res.json({ text: await aiText('You are Zanply AI, a friendly assistant inside a chat app. Be helpful and brief. Answer in the same language the person writes in.', q, 900) });
+      } catch (e) { return res.status(503).json({ error: (e && e.message) || 'AI is not available right now.' }); }
     }
 
     // Channels: create one, and list the ones I own or follow.
