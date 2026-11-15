@@ -1327,10 +1327,10 @@ module.exports = async (req, res) => {
       await schedTable(); await db().query('DELETE FROM sched_msgs WHERE id = ? AND sender = ? AND done IN (0, 2)', [Number(b.id) || 0, me]);
       return res.json({ ok: true });
     }
-    // ---- AI: translate, voice-to-text, chat summary (Premium) and Ask Zanply AI (free: 5 a day, Premium: no limit) ----
-    if (b.action === 'ai_translate' || b.action === 'ai_transcribe' || b.action === 'ai_summary' || b.action === 'ai_ask') {
+    // ---- AI: translate, voice-to-text, chat summary (Premium) ----
+    if (b.action === 'ai_translate' || b.action === 'ai_transcribe' || b.action === 'ai_summary') {
       const prem = await isPremium(me);
-      if (b.action !== 'ai_ask' && !prem) return res.status(403).json({ error: 'This is part of Zanply Premium.', premium: true });
+      if (!prem) return res.status(403).json({ error: 'This is part of Zanply Premium.', premium: true });
       if (!(await aiUse(me, prem, 5))) return res.status(429).json({ error: prem ? 'Too many AI requests today. Try again tomorrow.' : 'You used your 5 free AI questions today. Subscribe to Zanply Premium for unlimited AI.', premium: !prem });
       try {
         if (b.action === 'ai_translate') {
@@ -1344,8 +1344,6 @@ module.exports = async (req, res) => {
           if (list.length < 20) return res.status(400).json({ error: 'There is not enough to summarize yet.' });
           return res.json({ text: await aiText('You summarize a chat so someone can catch up fast. Give a short summary in plain sentences (max 6 lines), then any questions waiting for the reader or things they must do. Use the same language as the chat. Do not invent anything.', list, 700) });
         }
-        const q = String(b.prompt || '').trim().slice(0, 2000); if (!q) return res.status(400).json({ error: 'Bad request.' });
-        return res.json({ text: await aiText('You are Zanply AI, a friendly assistant inside a chat app. Be helpful and brief. Answer in the same language the person writes in.', q, 900) });
       } catch (e) { return res.status(503).json({ error: (e && e.message) || 'AI is not available right now.' }); }
     }
 
