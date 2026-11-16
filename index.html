@@ -1217,6 +1217,15 @@ html,body{overflow-x:hidden}
 <style id="themefix">
 /* ===== Light theme: used when Light is selected, or System default on a light phone ===== */
 html.islight body{background:#f0f2f5}
+/* social links on someone's Profile page */
+#profileView .pvsoc{padding:12px 0 4px;border-top:1px solid var(--border)}
+#profileView .pvsoc:first-child{border-top:0}
+#profileView .pvsoc-h{font-size:13px;color:var(--muted);margin-bottom:2px}
+#profileView .zsoc2 a{border-bottom-color:var(--border)}
+#profileView .zsoc2 .bt b{color:var(--text)}
+#profileView .zsoc2 .bt small{color:var(--muted)}
+/* my profile editor (Profile page): follow light theme instead of the forced dark card */
+html.islight .zprof .zcard{background:transparent!important;border:0!important;box-shadow:none!important}
 /* welcome, sign-in, country list, loaders */
 html.islight .welcome,html.islight .auth,html.islight .cv{background:#fff!important;color:#111b21!important}
 html.islight .w-terms{color:#667781}
@@ -10175,6 +10184,29 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       list.appendChild(a);
     });
     soc.appendChild(list);
+  };
+
+  /* someone else's Profile page: show every social link they added (all 12 networks), for personal and business accounts */
+  var _rpr = renderProfileRows;
+  renderProfileRows = function (phone, p) {
+    _rpr.apply(this, arguments);
+    var card = $('pvCard'); if (!card || !p) return;
+    var old = card.querySelector('.pvsoc'); if (old) old.remove();
+    var S = (p.biz && p.biz.social) || p.social || {}, found = {}, order = [];
+    Object.keys(S).forEach(function (k) { var c = KEYMAP[String(k).toLowerCase()], v = String(S[k] || '').trim(); if (c && v && !found[c]) { found[c] = v; order.push(c); } });
+    if (!order.length) return;
+    var box = document.createElement('div'); box.className = 'pvsoc';
+    box.innerHTML = '<div class="pvsoc-h">Social media</div>';
+    var list = document.createElement('div'); list.className = 'zsoc2';
+    order.forEach(function (c) {
+      var u = found[c], href = /^https?:\/\//i.test(u) ? u : (/\./.test(u) ? 'https://' + u.replace(/^\/+/, '') : '#');
+      if ((c === 'wc' || c === 'dc') && !/^https?:\/\//i.test(u)) href = '#';
+      var a = document.createElement('a'); a.href = href; a.target = '_blank'; a.rel = 'noopener';
+      if (href === '#') { a.removeAttribute('target'); a.addEventListener('click', function (e) { e.preventDefault(); try { copyText(u, 'Copied'); } catch (x) {} }); }
+      a.innerHTML = brandTile(c) + '<span class="bt"><b>' + esc(KNAME[c]) + '</b><small>' + esc(u.replace(/^https?:\/\/(www\.)?/i, '')) + '</small></span>';
+      list.appendChild(a);
+    });
+    box.appendChild(list); card.appendChild(box);
   };
 
   /* ---------- Message selection bar (top bar like screen C) ---------- */
