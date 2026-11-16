@@ -656,7 +656,9 @@
     .zbc button.on .zwk{display:flex}
     /* Premium */
     :root{--zp-bg:#f3f5fa;--zp-card:#ffffff;--zp-line:rgba(0,0,0,.1)}
-    html.isdark{--zp-bg:#141a26;--zp-card:#202a3a;--zp-line:rgba(255,255,255,.12)}
+    @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--zp-bg:#141a26;--zp-card:#202a3a;--zp-line:rgba(255,255,255,.12)}}
+    :root[data-theme="dark"]{--zp-bg:#141a26;--zp-card:#202a3a;--zp-line:rgba(255,255,255,.12)}
+    :root[data-theme="light"]{--zp-bg:#f3f5fa;--zp-card:#ffffff;--zp-line:rgba(0,0,0,.1)}
     .zpg.zprem{background:var(--zp-bg);color:var(--text)}
     .zprem .zpg-h{background:transparent}
     .zpm-hero{text-align:center;padding:10px 20px 6px;position:relative}
@@ -668,8 +670,9 @@
     .zpm-plan+.zpm-plan{border-top:1px solid var(--zp-line)}
     .zpm-plan .rd{width:34px;height:34px;border-radius:50%;border:2px solid #8a93a3;color:#fff;flex:none;display:flex;align-items:center;justify-content:center}
     .zpm-plan.on .rd{background:#4d9bff;border-color:#4d9bff}
-    .zpm-plan .nm{flex:1}.zpm-plan .nm s{opacity:.6}
-    .zpm-plan .badge{background:#3b82f6;border-radius:8px;font-size:12px;padding:2px 6px;margin-left:6px}
+    .zpm-plan .nm{flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}.zpm-plan .nm s{opacity:.6}
+    .zpm-plan .nm>div{flex-basis:100%;color:var(--muted)}
+    .zpm-plan .badge{background:#3b82f6;color:#fff;border-radius:999px;font-size:11px;font-weight:600;line-height:1.2;padding:3px 9px;margin:0;white-space:nowrap}
     .zpm-f{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;width:100%;background:none;border:0;color:inherit;text-align:left;cursor:pointer}
     .zpm-f+.zpm-f{border-top:1px solid var(--zp-line)}
     .zpm-f .ic svg{display:block}.zpm-f .ic{width:36px;height:36px;border-radius:9px;flex:none;display:flex;align-items:center;justify-content:center;font-size:18px}
@@ -4826,45 +4829,59 @@ ZW|Zimbabwe|263`;
         });
       }
       function smsTo(num) { location.href = 'sms:' + num + (/iPhone|iPad/.test(navigator.userAgent) ? '&' : '?') + 'body=' + encodeURIComponent(txt); }
-      /* In the Android app, use the same contacts permission as the New chat screen (so once allowed there, it works here too). */
-      function inviteNative() {
-        var N = window.ZanplyNative;
-        zOpenPage('Invite from contacts', function (b) {
-          var top = mk('div'); top.style.padding = '10px 16px 4px';
-          var q = mk('input', 'zin'); q.placeholder = 'Search your contacts'; top.appendChild(q); b.appendChild(top);
-          var list = mk('div'), all = null; b.appendChild(list);
+      /* Invite a friend: clean contacts list (avatar, name, number, green Invite), A to Z, with search */
+      st.textContent += '.zic-sec{position:sticky;top:0;z-index:2;background:var(--bg);padding:14px 20px 8px;font-size:14px;font-weight:600;color:var(--muted)}.zic-row{display:flex;align-items:center;gap:16px;padding:10px 20px}.zic-av{flex:none;width:52px;height:52px;border-radius:50%;background:rgba(128,128,128,.2);display:flex;align-items:center;justify-content:center;color:var(--muted)}.zic-av svg{width:28px;height:28px;fill:currentColor}.zic-t{flex:1;min-width:0}.zic-t b{display:block;font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.zic-t small{display:block;margin-top:2px;font-size:14px;color:var(--muted)}.zic-go{flex:none;border:0;border-radius:8px;background:transparent;color:#21c063;font-size:15px;font-weight:700;padding:10px 4px 10px 12px}.zic-go.done{color:var(--muted);font-weight:600}';
+      var PERSON = 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z';
+      var SEARCH = 'M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z';
+      function invList(raw) {
+        var seen = {}, out = [];
+        (raw || []).forEach(function (c) { var d = String((c && c.p) || '').replace(/\D/g, ''); if (!d || seen[d]) return; seen[d] = 1; out.push({ n: String(c.n || '').trim(), p: String(c.p) }); });
+        out.sort(function (x, y) { return (x.n || x.p).toLowerCase().localeCompare((y.n || y.p).toLowerCase()); });
+        return out;
+      }
+      function invPage(getAll) {
+        zOpenPage('Invite a friend', function (b) {
+          var hd = b.parentNode.querySelector('.zpg-h'), sb = mk('button'); sb.style.marginLeft = 'auto'; sb.setAttribute('aria-label', 'Search');
+          sb.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="' + SEARCH + '"/></svg>'; hd.appendChild(sb);
+          var bar = mk('div', 'hidden'), q = mk('input', 'zin'); bar.style.padding = '8px 16px 2px'; q.placeholder = 'Search name or number'; bar.appendChild(q); b.appendChild(bar);
+          var list = mk('div'); b.appendChild(list);
           function paint() {
             list.innerHTML = '';
-            var granted = false; try { granted = N.contactsGranted(); } catch (e) {}
-            if (!granted) { zempty(list, 'Allow Zanply to see your phone contacts so you can invite friends from your address book.', 'Allow contacts', function () { askContactsThen(function (ok) { if (ok) paint(); else toast('Contacts permission was not allowed'); }); }); return; }
-            if (!all) { try { all = JSON.parse(N.phoneContacts() || '[]'); } catch (e) { all = []; } }
-            var t = q.value.trim().toLowerCase(), n = 0;
+            var all = getAll(list, paint); if (!all) return;
+            var t = q.value.trim().toLowerCase(), td = t.replace(/\D/g, ''), n = 0, rows = mk('div');
             all.forEach(function (c) {
-              if (n >= 150) return; if (t && (c.n || '').toLowerCase().indexOf(t) < 0 && c.p.indexOf(t.replace(/\D/g, '') || '\u0000') < 0) return; n++;
-              var row = mk('div', 'row'); row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px';
-              var l = mk('div'); l.appendChild(mk('b', '', c.n || c.p)); if (c.n) l.appendChild(mk('div', 'sub', c.p));
-              var bt = mk('button', 'primary', 'Invite'); bt.style.cssText = 'padding:8px 18px;border-radius:999px'; bt.addEventListener('click', function () { smsTo(String(c.p).replace(/[^\d+]/g, '')); });
-              row.appendChild(l); row.appendChild(bt); list.appendChild(row);
+              if (n >= 300) return;
+              if (t && (c.n || '').toLowerCase().indexOf(t) < 0 && (!td || String(c.p).replace(/\D/g, '').indexOf(td) < 0)) return; n++;
+              var r = mk('div', 'zic-row'), av = mk('div', 'zic-av'), tx = mk('div', 'zic-t'), go = mk('button', 'zic-go', 'Invite');
+              av.innerHTML = '<svg viewBox="0 0 24 24"><path d="' + PERSON + '"/></svg>';
+              tx.appendChild(mk('b', '', c.n || c.p)); if (c.n) tx.appendChild(mk('small', '', c.p));
+              go.addEventListener('click', function () { smsTo(String(c.p).replace(/[^\d+]/g, '')); go.textContent = 'Invited'; go.className = 'zic-go done'; });
+              r.appendChild(av); r.appendChild(tx); r.appendChild(go); rows.appendChild(r);
             });
-            if (!n) zempty(list, all.length ? 'No contact matches your search.' : 'No contacts with a phone number were found on this phone.');
+            if (!n) { zempty(list, all.length ? 'No contact matches your search.' : 'No contacts with a phone number were found on this phone.'); return; }
+            list.appendChild(mk('div', 'zic-sec', 'From contacts')); list.appendChild(rows);
           }
+          sb.addEventListener('click', function () { var hid = bar.classList.toggle('hidden'); if (hid) { q.value = ''; paint(); } else q.focus(); });
           q.addEventListener('input', paint); paint();
+        });
+      }
+      /* In the Android app, use the same contacts permission as the New chat screen (so once allowed there, it works here too). */
+      function inviteNative() {
+        var N = window.ZanplyNative, cache = null;
+        invPage(function (list, repaint) {
+          var granted = false; try { granted = N.contactsGranted(); } catch (e) {}
+          if (!granted) { zempty(list, 'Allow Zanply to see your phone contacts so you can invite friends from your address book.', 'Allow contacts', function () { askContactsThen(function (ok) { if (ok) repaint(); else toast('Contacts permission was not allowed'); }); }); return null; }
+          if (!cache) { var raw = []; try { raw = JSON.parse(N.phoneContacts() || '[]'); } catch (e) {} cache = invList(raw); }
+          return cache;
         });
       }
       function fromContacts() {
         if (window.ZanplyNative && typeof window.ZanplyNative.contactsGranted === 'function') { inviteNative(); return; }
         if (navigator.contacts && navigator.contacts.select) {
           navigator.contacts.select(['name', 'tel'], { multiple: true }).then(function (list) {
-            var rows = []; (list || []).forEach(function (c) { var n = (c.tel || [])[0]; if (n) rows.push({ name: (c.name || [])[0] || n, num: String(n).replace(/[^\d+]/g, '') }); });
+            var rows = []; (list || []).forEach(function (c) { var n = (c.tel || [])[0]; if (n) rows.push({ n: (c.name || [])[0] || '', p: String(n).replace(/[^\d+]/g, '') }); });
             if (!rows.length) return toast('No contacts selected');
-            zOpenPage('Invite from contacts', function (b) {
-              rows.forEach(function (r) {
-                var row = mk('div', 'row'); row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px';
-                var l = mk('div'); l.appendChild(mk('b', '', r.name)); var sm = mk('div', 'sub', r.num); l.appendChild(sm);
-                var bt = mk('button', 'primary', 'Invite'); bt.style.cssText = 'padding:8px 18px;border-radius:999px'; bt.addEventListener('click', function () { smsTo(r.num); });
-                row.appendChild(l); row.appendChild(bt); b.appendChild(row);
-              });
-            });
+            var data = invList(rows); invPage(function () { return data; });
           }).catch(function () { toast('Allow contacts access to invite friends'); });
         } else if (navigator.share) { navigator.share({ title: 'Zanply', text: txt, url: url }).catch(function () {}); }
         else copy('Contact picking is not supported here. Invite link copied.');
@@ -9666,8 +9683,8 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
           ['Real human support.', 'Normal users get only automated forms. With the blue check, you get 24/7 chat with a real human. If your account gets hacked, it gets fixed fast.']]);
         bizSection(z, '2. What you need to get the verification badge', null, [
           ['Age:', 'be 18 years or older.'],
-          ['Document:', 'a document (not just an ID) such as a National identity card (ID), driving licence, passport or church card.'],
-          ['Fee:', 'first users to apply for the Zanply verification badge get a trial for ' + premPrice(1) + ' / month (about US$1). After the first month you renew for ' + premPrice(8.99) + ' / month (about US$8.99).']]);
+          ['Document:', 'a valid document, not just an ID. For example a National identity card (ID), driving licence, passport or church card.'],
+          ['Fee:', 'first users to apply for the Zanply verification badge get a trial for ' + premPrice(1) + ' / month. After the first month you renew for ' + premPrice(8.99) + ' / month.']]);
         var rn = mk('p', 'sub', 'You can cancel any time and you can turn off renewal.'); rn.style.margin = '-4px 2px 10px'; z.appendChild(rn);
         z.appendChild(mk('p', '', 'If you turned your account into a business account, you also need a Business certificate.'));
         var nx = mk('button', 'primary cta', 'Next'); nx.addEventListener('click', function () { toast('This step is coming soon'); }); z.appendChild(nx);
@@ -11827,7 +11844,7 @@ ZFAQ.push(["Verification badge",[
 ["How old must I be?","You must be **18 years or older**."],
 ["Which ID do I need?","A valid **ID that matches your profile name**, such as a driving licence or other accepted ID."],
 ["Does my profile name need to match my ID?","Yes. **The names must match.**"],
-["How much does verification cost?","The verification fee is **$8.90**."],
+["How much does verification cost?","The fee is shown in **your local currency** on the Verification badge page: a low trial price for the first month, then a monthly renewal."],
 ["Do I pay if my application is rejected?","Terms are shown before payment. **Read them carefully** when verification opens."],
 ["What do business accounts need?","A **Business certificate** in addition to the other requirements."],
 ["Where does the badge appear?","Next to your name on your **profile and in chats**."],
