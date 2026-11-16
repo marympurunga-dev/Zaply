@@ -1382,7 +1382,8 @@ html.islight #infoView #inAv{border-color:#25d366!important}
 .zbrow{display:flex;align-items:center;gap:16px;padding:12px 16px;text-decoration:none;color:inherit;border-top:1px solid var(--border)}
 .zbrow .bi{flex:none;display:flex;color:#21c063}
 .zbrow .bt{display:flex;flex-direction:column;min-width:0}.zbrow .bt b{font-weight:600;font-size:16px;word-break:break-word}.zbrow .bt small{color:var(--muted);font-size:12.5px;margin-top:2px}
-.zbrow.g .bt b{color:#21c063}
+.zbrow.g .bt b{color:#0b5fff}
+html.isdark .zbrow.g .bt b,html[data-theme=dark] .zbrow.g .bt b{color:#4d9bff}
 .zbrow .bt{flex:1}
 .zbrow.one .bt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;word-break:normal;font-size:16px}
 .zbrow .bi{width:26px;justify-content:center}
@@ -6591,7 +6592,7 @@ ZW|Zimbabwe|263`;
       var box = $('inBiz'), soc = $('inSoc'); if (!box) return; box.innerHTML = ''; box.style.display = 'none'; soc.innerHTML = '';
       var bio = $('inBio'), det = $('inBizD');
       if (!bio) { bio = mk('div', 'zcard'); bio.id = 'inBio'; var anchor = document.querySelector('#infoView .acts4'); var after = $('sProfileBtn') || anchor; after.parentNode.insertBefore(bio, after.nextSibling); }
-      if (!det) { det = mk('div', 'zcard'); det.id = 'inBizD'; soc.parentNode.insertBefore(det, soc.nextSibling); }
+      if (!det) { det = mk('div', 'zcard'); det.id = 'inBizD'; } if (det.parentNode !== soc.parentNode || det.nextSibling !== soc) soc.parentNode.insertBefore(det, soc); /* details card (phone, hours...) first, then the social media card */
       bio.innerHTML = ''; det.innerHTML = ''; bio.style.display = 'none'; det.style.display = 'none';
       infoSocialCard(soc, p);
       var ipEl = $('inPhone'); if (ipEl) ipEl.style.display = (p && p.acct === 'business') ? 'none' : ''; /* business: the number is in the details card, the header shows only the name */
@@ -6601,8 +6602,8 @@ ZW|Zimbabwe|263`;
       var ph = (phone && !p.phone_hidden) ? phone : ''; if (ph) els.push(bizRow('phone', ph, '', '', { cls: 'one wh', mu: true }));
       var H = bizHours(B); if (H) bizHoursRow(H).forEach(function (e) { els.push(e); });
       var what = String(B.bio || '').trim() || cat; if (what) els.push(bizRow('shapes', what, '', '', { mu: true }));
-      if (B.address) els.push(bizRow('pin', B.address, '', '', { mu: true }));
-      if (B.email) els.push(bizRow('mail', B.email, '', '', { cls: 'one', mu: true }));
+      if (B.address) els.push(bizRow('pin', B.address, '', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(B.address), { mu: true }));
+      if (B.email) els.push(bizRow('mail', B.email, '', 'mailto:' + B.email, { cls: 'one', mu: true }));
       if (B.link) els.push(bizRow('globe', String(B.link), '', bizHref(B.link), { cls: 'one', mu: true }));
       links.forEach(function (u) { els.push(bizRow('link', String(u), '', bizHref(u), { cls: 'one', mu: true })); });
       det.style.display = ''; els.forEach(function (e) { det.appendChild(e); });
@@ -9319,7 +9320,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         var bx = mk('div'), b = mk('b'); if (typeof node === 'string') b.textContent = node; else b.appendChild(node);
         bx.appendChild(b); if (label) bx.appendChild(mk('small', '', label)); r.appendChild(bx); return r;
       }
-      function blueHref(href, text) { var a = mk('a', 'zblue', text); a.href = href; return a; }
+      function blueHref(href, text) { var a = mk('a', 'zblue', text); a.href = href; if (!/^mailto:/i.test(href)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; } return a; }
       var add = function (el, has) { if (has) card.appendChild(el); };
       if (!biz) {
         /* personal account: bio, links, social media (added by the wrapper below), pets. Only what was added is shown */
@@ -9338,8 +9339,8 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
           var ds = H.days.length && H.days.length < 7 ? order.filter(function (d) { return H.days.indexOf(d) > -1; }).join(', ') : 'Every day';
           card.appendChild(proRow('clock', (st ? st + '\n' : '') + ds + (H.right ? ': ' + H.right : ''), 'Opening hours'));
         }
-        if (B.email) card.appendChild(proRow('mail', String(B.email), 'Business email'));
-        add(profRow('pin', B.address, 'Business address'), !!B.address);
+        if (B.email) card.appendChild(proRow('mail', blueHref('mailto:' + B.email, B.email), 'Business email'));
+        if (B.address) card.appendChild(proRow('pin', blueHref('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(B.address), B.address), 'Business address'));
         add(linkRow('link', 'Business links', blinks), blinks.length > 0);
         if (phone && !p.phone_hidden) { var ph = proRow('phone', String(phone), 'Business phone number'); ph.classList.add('pv-after'); card.appendChild(ph); }
         var nt = proRow('info', 'This is a business account', ''); nt.classList.add('pv-after'); card.appendChild(nt);
