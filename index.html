@@ -1217,6 +1217,14 @@ html,body{overflow-x:hidden}
 <style id="themefix">
 /* ===== Light theme: used when Light is selected, or System default on a light phone ===== */
 html.islight body{background:#f0f2f5}
+/* Info page social links: plain rows like WhatsApp (round app icon, green app name, grey link) */
+#infoView #inSoc{background:transparent!important;border:0!important;box-shadow:none!important;padding:0 18px!important;margin:6px 0!important}
+#infoView #inSoc .zsoc2 a{gap:16px;padding:12px 0;border-bottom:0!important}
+#infoView #inSoc .zsoc2 .bi{width:44px;height:44px;border-radius:50%}
+#infoView #inSoc .zsoc2 .bt b{color:#25d366!important;font-size:19px;font-weight:600}
+#infoView #inSoc .zsoc2 .bt small{color:#9fb0ba!important;font-size:15px}
+html.islight #infoView #inSoc .zsoc2 .bt b{color:#1fa855!important}
+html.islight #infoView #inSoc .zsoc2 .bt small{color:#667781!important}
 /* social links on someone's Profile page */
 #profileView .pvsoc{padding:12px 0 4px;border-top:1px solid var(--border)}
 #profileView .pvsoc:first-child{border-top:0}
@@ -2904,7 +2912,7 @@ ZW|Zimbabwe|263`;
     function setResume(o) { try { localStorage.setItem('zaply_resume', JSON.stringify(o)); } catch (e) {} }
     function clearResume() { try { localStorage.removeItem('zaply_resume'); } catch (e) {} }
     function fullBody(P, k, v) {
-      var o = { username: P.username || '', email: P.email || '', address: P.address || '', bio: P.bio || '', birthday: P.birthday || '', pet: P.pet || '', links: P.links || '' }; if (k) o[k] = v; return o;
+      var o = { username: P.username || '', email: P.email || '', address: P.address || '', bio: P.bio || '', birthday: P.birthday || '', pet: P.pet || '', links: P.links || '' }; if (P.social && typeof P.social === 'object') o.social = P.social; if (k) o[k] = v; return o;
     }
     ZI.phone = 'M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z';
     ZI.at = 'M12 2a10 10 0 100 20h5v-2h-5a8 8 0 118-8v1.43c0 .79-.71 1.57-1.5 1.57s-1.5-.78-1.5-1.57V12a5 5 0 10-1.46 3.54A3.5 3.5 0 0021.5 13.4V12A10 10 0 0012 2zm0 13a3 3 0 110-6 3 3 0 010 6z';
@@ -9164,7 +9172,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
             sv.disabled = true;
             var ex;
             if (mode === 'biz') { var B = JSON.parse(JSON.stringify(P.biz || {})); B.links = B.links || []; B.social = draft; ex = { biz: B }; } else ex = { social: draft };
-            saveProfile(P, ex).then(function (r) { mergeProfile(P, r); toast('Saved', true); done(); closeOv(); })
+            saveProfile(P, ex).then(function (r) { mergeProfile(P, r); if (mode !== 'biz' && !(r && r.profile && r.profile.social)) { P.social = draft; cacheMyProf(P); } toast('Saved', true); done(); closeOv(); })
               .catch(function (e) { if (isOffErr(e)) noNet(go); else { msg.textContent = (e && e.message) || 'Could not save.'; sv.disabled = false; } });
           }
           needNet(go);
@@ -10170,8 +10178,10 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
   };
   var HOSTS = [['wa', 'WhatsApp', /wa\.me|whatsapp\.com/i], ['fb', 'Facebook', /facebook\.com|fb\.com|fb\.me/i], ['ig', 'Instagram', /instagram\.com/i], ['tt', 'TikTok', /tiktok\.com/i], ['tg', 'Telegram', /t\.me|telegram\./i], ['x', 'X', /twitter\.com|x\.com/i], ['yt', 'YouTube', /youtube\.com|youtu\.be/i], ['li', 'LinkedIn', /linkedin\.com/i], ['sc', 'Snapchat', /snapchat\.com/i], ['sp', 'Spotify', /spotify\.com/i], ['dc', 'Discord', /discord\.(com|gg)/i]];
   var KEYMAP = { whatsapp: 'wa', facebook: 'fb', instagram: 'ig', tiktok: 'tt', telegram: 'tg', x: 'x', twitter: 'x', youtube: 'yt', linkedin: 'li', snapchat: 'sc', wechat: 'wc', discord: 'dc', spotify: 'sp' }, KNAME = { wa: 'WhatsApp', fb: 'Facebook', ig: 'Instagram', tt: 'TikTok', tg: 'Telegram', x: 'X', yt: 'YouTube', li: 'LinkedIn', sc: 'Snapchat', wc: 'WeChat', dc: 'Discord', sp: 'Spotify' };
+  /* personal accounts keep social links in p.social, business accounts in p.biz.social; an empty p.biz.social ({}) must not hide p.social */
+  function socOf(p) { var a = (p && p.social) || {}, b = (p && p.biz && p.biz.social) || {}, biz = !!(p && p.acct === 'business'), o = {}; [biz ? a : b, biz ? b : a].forEach(function (x) { if (x && typeof x === 'object') for (var k in x) if (x[k]) o[k] = x[k]; }); return o; }
   infoSocialCard = function (soc, p) {
-    var B = (p && p.biz && p.biz.social) || (p && p.social) || {}, found = {}, order = [];
+    var B = socOf(p), found = {}, order = [];
     Object.keys(B).forEach(function (k) { var c = KEYMAP[k.toLowerCase()], v = String(B[k] || '').trim(); if (c && v && !found[c]) { found[c] = v; order.push(c); } });
     String((p && p.links) || '').split(/[\s,]+/).forEach(function (u) { if (!/^(https?:\/\/)?[\w.-]+\.\w{2,}/i.test(u)) return; HOSTS.forEach(function (h) { if (h[2].test(u) && !found[h[0]]) { found[h[0]] = u; order.push(h[0]); } }); });
     soc.style.display = order.length ? '' : 'none'; if (!order.length) return;
@@ -10192,7 +10202,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     _rpr.apply(this, arguments);
     var card = $('pvCard'); if (!card || !p) return;
     var old = card.querySelector('.pvsoc'); if (old) old.remove();
-    var S = (p.biz && p.biz.social) || p.social || {}, found = {}, order = [];
+    var S = socOf(p), found = {}, order = [];
     Object.keys(S).forEach(function (k) { var c = KEYMAP[String(k).toLowerCase()], v = String(S[k] || '').trim(); if (c && v && !found[c]) { found[c] = v; order.push(c); } });
     if (!order.length) return;
     var box = document.createElement('div'); box.className = 'pvsoc';
