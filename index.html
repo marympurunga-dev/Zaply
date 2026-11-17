@@ -1190,7 +1190,8 @@ html,body{overflow-x:hidden}
 /* profile info: text was dark on dark */
 #infoView .itl,#infoView #inName{color:#fff!important}
 #infoView .zsoc2 .bt b,#infoView .prow b{color:#fff!important}
-#infoView .zsoc2 .bt small,#infoView .prow small{color:#9fb0ba!important}
+#infoView .prow small{color:#9fb0ba!important}
+#infoView .zsoc2 .bt small{color:#4d9bff!important}
 #infoView .zsoc2 a:first-child{padding-top:10px}
 /* search bar */
 #csBar{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#0e1519;border-bottom:1px solid rgba(255,255,255,.06)}
@@ -1220,10 +1221,10 @@ html.islight body{background:#f0f2f5}
 /* Info page social links: inside a card like the phone / Business Account cards (round app icon, green app name, grey link) */
 #infoView #inSoc .zsoc2 a{gap:16px;padding:12px 0}
 #infoView #inSoc .zsoc2 .bi{width:44px;height:44px;border-radius:50%}
-#infoView #inSoc .zsoc2 .bt b{color:#25d366!important;font-size:19px;font-weight:600}
-#infoView #inSoc .zsoc2 .bt small{color:#9fb0ba!important;font-size:15px}
-html.islight #infoView #inSoc .zsoc2 .bt b{color:#1fa855!important}
-html.islight #infoView #inSoc .zsoc2 .bt small{color:#667781!important}
+#infoView #inSoc .zsoc2 .bt b{color:#fff!important;font-size:19px;font-weight:600}
+#infoView #inSoc .zsoc2 .bt small{color:#4d9bff!important;font-size:15px}
+html.islight #infoView #inSoc .zsoc2 .bt b{color:#111b21!important}
+html.islight #infoView #inSoc .zsoc2 .bt small{color:#0b5fff!important}
 /* social links on someone's Profile page */
 #profileView .pvsoc{padding:12px 0 4px;border-top:0;border-bottom:1px solid var(--border)}
 #profileView .pvsoc:last-child{border-bottom:0}
@@ -1308,7 +1309,8 @@ html.islight #infoView .zcard .rt,html.islight #infoView .zcard .chev{color:#111
 html.islight #infoView .zcard:not(.redlist) .srow i{color:#54656f}
 html.islight #infoView .zcard .srow i.g{color:#1fa855}
 html.islight #infoView .zsoc2 .bt b,html.islight #infoView .prow b,html.islight #infoView .zcard.bizc .prow b{color:#111b21!important}
-html.islight #infoView .zsoc2 .bt small,html.islight #infoView .prow small{color:#667781!important}
+html.islight #infoView .prow small{color:#667781!important}
+html.islight #infoView .zsoc2 .bt small{color:#0b5fff!important}
 html.islight #infoView .zsoc2 a{border-bottom-color:#e1e5e8}
 html.islight #infoView .prow{border-bottom-color:#e1e5e8}
 html.islight .abtn{background:#fff!important;color:#111b21;border:1px solid #e1e5e8}
@@ -1389,6 +1391,7 @@ html.isdark .zbrow.g .bt b,html[data-theme=dark] .zbrow.g .bt b{color:#4d9bff}
 .zbrow .bi{width:26px;justify-content:center}
 .zbrow .bi.mu{color:var(--muted)}
 .zbrow.hrs{cursor:pointer}
+#infoView .abx{display:none!important}
 .zbrow .hs{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .zbrow .hs .st{color:#21c063;font-weight:600;font-size:16px;white-space:nowrap}.zbrow .hs .st.c{color:#e5484d}
 .zbrow .hs .rt2{font-weight:600;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1663,7 +1666,7 @@ html.noanim-stk .stkbar,html.noanim-stk .stkbar *,html.noanim-stk #msgs .bub.stk
     <div class="sset"><div id="inCover" class="hidden"></div><div class="pv-top si-top"><div class="av big" id="inAv"></div><div class="pv-name" id="inName"></div><div class="sub" id="inPhone" style="margin:4px 0 0"></div></div>
     <div class="acts4"><button id="sMsgBtn" class="abtn" style="display:none" aria-hidden="true"></button><button id="sVideoBtn" class="abtn" aria-label="Video call"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="3"/><path d="M15.5 10.5l5-3v9l-5-3"/></svg><span>Video</span></button><button id="sCall" class="abtn" aria-label="Voice call"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>Call</span></button><button id="sFwdBtn" class="abtn" aria-label="Forward"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg><span>Forward</span></button><button id="sShareBtn" class="abtn" aria-label="Share"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg><span>Share</span></button></div>
     <button id="sProfileBtn" style="display:none" aria-hidden="true"></button><button id="sMoreBtn" style="display:none" aria-hidden="true"></button>
-    <div class="zcard gc"><div class="srow" id="sAbout"><i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span class="rt">About<small id="sAboutS">Available</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
+    <div class="zcard gc abx"><div class="srow" id="sAbout"><i class="g"><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></i><span class="rt">About<small id="sAboutS">Available</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
     <div class="zcard" id="inLinksCard"><div class="srow" id="sLinks"><i class=""><svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></i><span class="rt">Shared links<small id="sLinksS">No links</small></span><svg class="chev" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></div></div>
     <div class="zcard" id="inSoc"></div>
     <div class="zcard" id="inMedia"></div>
@@ -5325,7 +5328,7 @@ ZW|Zimbabwe|263`;
       }).catch(function () { back(); toast('Payments are not available yet. No charge was made and Premium stays locked.'); });
     }
     function premCta(plan) { var P = PREM_PLANS[plan]; return 'Subscribe for ' + premPrice(P.usd) + ' / ' + P.per; }
-    function premTerms() { return mk('div', 'pd-sec', 'You can cancel anytime. You can turn auto-renewal ON or OFF.' + (premCur()[0] === 'USD' ? ' Billed in US dollars.' : '')); }
+    function premTerms() { var d = mk('div', 'pd-sec', premCur()[0] === 'USD' ? 'Billed in US dollars.' : ''); if (premCur()[0] !== 'USD') d.style.display = 'none'; return d; }
     /* ---- Premium gate: lock icon + popup (Cancel / Subscribe) ---- */
     premStatus(function () {});
     (function () {
@@ -5356,7 +5359,7 @@ ZW|Zimbabwe|263`;
     };
     /* ===== Zanply Premium features 1-13 (gated) ===== */
     var ZP = { get: function (k, d) { try { var v = localStorage.getItem('zp_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }, set: function (k, v) { try { localStorage.setItem('zp_' + k, JSON.stringify(v)); } catch (e) {} } };
-    var ZP_PRICE = 'You can cancel anytime. You can turn auto-renewal ON or OFF.';
+    var ZP_PRICE = '';
     function zpDay() { return new Date().toISOString().slice(0, 10); }
     function zpCount(k) { var o = ZP.get('cnt_' + k, {}); return o.d === zpDay() ? o.n : 0; }
     function zpBump(k) { ZP.set('cnt_' + k, { d: zpDay(), n: zpCount(k) + 1 }); }
@@ -5374,7 +5377,7 @@ ZW|Zimbabwe|263`;
             g.appendChild(c);
           });
         }
-        draw(); b.appendChild(g); var f = mk('div', 'pd-sec', ZP_PRICE); b.appendChild(f);
+        draw(); b.appendChild(g);
         if (!window.zIsPremium()) { var s = mk('button', 'zpm-cta', 'Subscribe to Zanply Premium'); s.addEventListener('click', openPremium); b.appendChild(s); }
       });
     }
@@ -6556,7 +6559,9 @@ ZW|Zimbabwe|263`;
       globe: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M2.5 12h19M12 2.5c2.6 2.6 4 5.9 4 9.5s-1.4 6.9-4 9.5c-2.6-2.6-4-5.9-4-9.5s1.4-6.9 4-9.5z"/></svg>',
       shapes: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 8 9.5h8z"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><circle cx="17.2" cy="17" r="3.5"/></svg>',
       info: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5M12 7.6v.1"/></svg>',
-      clock: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 6.8V12l3.4 2"/></svg>'
+      clock: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 6.8V12l3.4 2"/></svg>',
+      paw: '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><circle cx="6.5" cy="10" r="2"/><circle cx="10" cy="5.8" r="2"/><circle cx="14" cy="5.8" r="2"/><circle cx="17.5" cy="10" r="2"/><path d="M12 11c-3 0-5.5 3.2-5.5 5.6 0 1.6 1.2 2.4 2.6 2.4 1 0 1.8-.5 2.9-.5s1.9.5 2.9.5c1.4 0 2.6-.8 2.6-2.4C17.5 14.2 15 11 12 11z"/></svg>',
+      cake: '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16v-6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v6zM4 16c2 1.5 3 1.5 4 0s2-1.5 4 0 3 1.5 4 0 2-1.5 4 0M12 12V8M12 5.2c.8-.9.8-1.6 0-2.4-.8.8-.8 1.5 0 2.4z"/></svg>'
     };
     function bizHref(u) { u = String(u || '').trim(); return /^(https?:|mailto:|tel:)/i.test(u) ? u : 'https://' + u.replace(/^\/+/, ''); }
     function bizRow(icon, text, label, href, opt) {
@@ -6596,7 +6601,21 @@ ZW|Zimbabwe|263`;
       bio.innerHTML = ''; det.innerHTML = ''; bio.style.display = 'none'; det.style.display = 'none';
       infoSocialCard(soc, p);
       var ipEl = $('inPhone'); if (ipEl) ipEl.style.display = (p && p.acct === 'business') ? 'none' : ''; /* business: the number is in the details card, the header shows only the name */
-      if (!p || p.acct !== 'business') return;
+      var per = $('inPers'); if (!per) { per = mk('div', 'zcard'); per.id = 'inPers'; soc.parentNode.insertBefore(per, soc.nextSibling); }
+      per.innerHTML = ''; per.style.display = 'none';
+      var lkc = $('inLinksCard'); if (lkc && lkc.previousSibling !== per) per.parentNode.insertBefore(lkc, per.nextSibling); /* chat shared links sit after the profile details */
+      if (!p || p.acct !== 'business') {
+        if (!p) return;
+        /* personal account: about, links, social media (card above), pet, birthday. Plain rows, nothing opens another page; only links are tappable (blue) */
+        var r1 = [], r2 = [], ab = String(p.bio || '').trim(), pls = String(p.links || '').split(/[\s,]+/).filter(function (u) { return /^(https?:\/\/)?[\w.-]+\.\w{2,}/i.test(u); });
+        if (ab) r1.push(bizRow('info', ab, 'About', '', { mu: true }));
+        pls.forEach(function (u) { r1.push(bizRow('link', u, '', bizHref(u), { cls: 'one', mu: true })); });
+        if (p.pet) r2.push(bizRow('paw', petIcon(p.pet) + ' ' + p.pet, 'Pet', '', { mu: true }));
+        if (p.birthday) r2.push(bizRow('cake', fmtBday(p.birthday), 'Birthday', '', { mu: true }));
+        if (r1.length) { bio.style.display = ''; r1.forEach(function (e) { bio.appendChild(e); }); bio.querySelector('.zbrow').style.borderTop = '0'; }
+        if (r2.length) { per.style.display = ''; r2.forEach(function (e) { per.appendChild(e); }); per.querySelector('.zbrow').style.borderTop = '0'; }
+        return;
+      }
       var B = p.biz || {}, cat = B.cat === 'Other' && B.catOther ? B.catOther : (B.cat || ''), links = (B.links || []).filter(Boolean), els = [];
       /* same order as WhatsApp Business: phone, hours, what it does, address, email, website, other links. No small grey labels, and the business username is not shown to the other person */
       var ph = (phone && !p.phone_hidden) ? phone : ''; if (ph) els.push(bizRow('phone', ph, '', '', { cls: 'one wh', mu: true }));
@@ -9328,6 +9347,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         add(profRow('info', bio, 'About'), !!bio);
         add(linkRow('link', 'Links', pl), pl.length > 0);
         if (p.pet) { var pr = profRow('paw', petIcon(p.pet) + ' ' + p.pet, 'Pet'); pr.classList.add('pv-after'); card.appendChild(pr); }
+        if (p.birthday) { var bd = profRow('cake', fmtBday(p.birthday), 'Birthday'); bd.classList.add('pv-after'); card.appendChild(bd); }
       } else {
         /* business account: what it does, opening hours, email, address, links, social media (added by the wrapper below), phone number, then the Business Account text. Only what was added is shown */
         var B = p.biz || {}, catTxt = String(B.bio || '').trim() || (B.cat === 'Other' && B.catOther ? B.catOther : B.cat), blinks = [];
@@ -9717,7 +9737,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
           ['Document:', 'a valid document, not just an ID. For example a National identity card (ID), driving licence, passport or church card.'],
           ['Fee:', 'first users to apply for the Zanply verification badge get a trial for ' + premPrice(1) + ' / month. After the first month you renew for ' + premPrice(8.99) + ' / month.']]);
         var rn = mk('p', 'sub', 'You can cancel any time and you can turn off renewal.'); rn.style.margin = '-4px 2px 10px'; z.appendChild(rn);
-        z.appendChild(mk('p', '', 'If you turned your account into a business account, you also need a Business certificate.'));
+        z.appendChild(mk('p', '', 'For business accounts you can use a registered company certificate or business certificate to get your business verified.'));
         var nx = mk('button', 'primary cta', 'Next'); nx.addEventListener('click', function () { toast('This step is coming soon'); }); z.appendChild(nx);
       });
     }
