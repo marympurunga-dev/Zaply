@@ -6546,7 +6546,7 @@ ZW|Zimbabwe|263`;
       if (!members.length) { $('grMsg').textContent = 'Pick at least one person.'; return; }
       grBusy = true; $('grMsg').textContent = '';
       chatCall('group_create', { name: name, members: members }).then(function (r) {
-        var fromThread = !!openWith, g = r.group;
+        var fromThread = !!openWith, g = r.group; try { gMetaSet(g.phone, { owner: myPhone }); } catch (e) {}
         closeOv(); setTimeout(closeOv, 80);
         setTimeout(function () { loadChats(); openThread(g); }, 240);
       }).catch(function (e) { $('grMsg').textContent = e.message || 'Could not create the group.'; }).then(function () { grBusy = false; });
@@ -6591,22 +6591,143 @@ ZW|Zimbabwe|263`;
         function go(ms, l) { return [l, function () { setMute(ph, Date.now() + ms); try { renderChats(); } catch (e) {} toast('Muted', true); paint(); }]; }
         zsheet('Mute notifications', [go(8 * H, '8 hours'), go(7 * D, '1 week'), go(36500 * D, 'Always')]);
       }
+      /* admin / owner of this group? (server fields first, then the creator saved on this device) */
+      function iAmAdmin() {
+        var x = extra || {}, gm0 = gMeta()[ph] || {}, me0 = myPhone;
+        if (x.is_admin || x.is_owner || x.admin === true || x.owner === true || x.my_role === 'admin' || x.my_role === 'owner' || x.role === 'admin' || x.role === 'owner') return true;
+        if ([x.owner, x.admin, x.created_by, x.creator, x.owner_phone].indexOf(me0) > -1) return true;
+        if (Array.isArray(x.admins) && x.admins.indexOf(me0) > -1) return true;
+        if (gm0.owner === me0) return true;
+        return (members || []).some(function (m) { return m.phone === me0 && (m.is_admin || m.is_owner || m.admin === true || m.role === 'admin' || m.role === 'owner'); });
+      }
+      var GP_DEF = { edit: 'admins', send: 'all', add: 'admins' };
+      function gPerms() { var gm1 = gMeta()[ph] || {}; return Object.assign({}, GP_DEF, (extra && extra.permissions) || {}, gm1.perms || {}); }
+      function openPerms() {
+        zOpenPage('Group permissions', function (b) {
+          var pr = gPerms(), w = mk('div'); w.style.padding = '6px 0 30px'; b.appendChild(w);
+          var note = mk('div', 'sub', 'Choose what members can do. Admins can always do everything.'); note.style.cssText = 'margin:10px 20px 6px;line-height:1.5'; w.appendChild(note);
+          function save(k, v) {
+            pr[k] = v; var all = Object.assign({}, gMeta()[ph] && gMeta()[ph].perms || {}); all[k] = v; gMetaSet(ph, { perms: all });
+            chatCall('group_permissions', { group: ph, permissions: pr }).catch(function () {});
+          }
+          zswitchRow(w, 'Edit group info', 'Let all members change the name, picture and description.', pr.edit === 'all', function (v) { save('edit', v ? 'all' : 'admins'); });
+          zswitchRow(w, 'Send messages', 'Let all members send messages. Turn off so only admins can write.', pr.send !== 'admins', function (v) { save('send', v ? 'all' : 'admins'); });
+          zswitchRow(w, 'Add members', 'Let all members add new people to this group.', pr.add === 'all', function (v) { save('add', v ? 'all' : 'admins'); });
+        });
+      }
+      function editDesc() {
+        var gm2 = gMeta()[ph] || {}, cur = (extra && (extra.description || extra.desc)) || gm2.desc || '';
+        zOpenPage(cur ? 'Edit description' : 'Add description', function (b) {
+          var w = mk('div'); w.style.padding = '18px 20px'; b.appendChild(w);
+          var ta = document.createElement('textarea'); ta.value = cur; ta.maxLength = 500; ta.rows = 5; ta.placeholder = 'Group description';
+          ta.style.cssText = 'width:100%;font:inherit;font-size:17px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:transparent;color:inherit;resize:vertical;box-sizing:border-box'; w.appendChild(ta);
+          var sv = mk('button', 'primary', 'Save'); sv.style.marginTop = '14px'; w.appendChild(sv);
+          sv.addEventListener('click', function () {
+            var v = ta.value.trim(); gMetaSet(ph, { desc: v }); if (extra) { extra.description = v; extra.desc = v; }
+            chatCall('group_update', { group: ph, description: v }).catch(function () {});
+            closeOv(); toast(v ? 'Description saved' : 'Description removed', true); paint();
+          });
+        });
+      }
+      function editGroup() {
+        var gm3 = gMeta()[ph] || {}, curName = g.name || '', curUn = (extra && extra.username) || gm3.username || '', curPhoto = (extra && extra.photo_url) || groupPhoto(g) || '';
+        zOpenPage('Edit group', function (b) {
+          var w = mk('div'); w.style.cssText = 'padding:18px 20px 30px;text-align:center'; b.appendChild(w);
+          var av = mk('div', 'zav'); av.style.cssText = 'width:112px;height:112px;font-size:46px;margin:0 auto 6px;position:relative;cursor:pointer';
+          var newPic = null;
+          function paintAv(url) { av.textContent = url ? '' : firstCh(nm.value || curName); if (url) { paintBg(av, url); } else av.style.background = AVC[((curName || '#').charCodeAt(0) + (curName || '#').length) % AVC.length]; }
+          var cap = mk('div', '', 'Change group profile'); cap.style.cssText = 'color:#25d366;font-weight:600;font-size:15px;margin-bottom:18px;cursor:pointer';
+          var fi = document.createElement('input'); fi.type = 'file'; fi.accept = 'image/*'; fi.hidden = true;
+          var nmL = mk('div', 'sub', 'Group name'); nmL.style.cssText = 'text-align:left;margin:0 2px 6px';
+          var nm = zin('Group name', 'text', 80); nm.value = curName;
+          var unL = mk('div', 'sub', 'Group username'); unL.style.cssText = 'text-align:left;margin:12px 2px 6px';
+          var un2 = zin('username', 'text', 25); un2.value = curUn; un2.autocapitalize = 'none'; un2.autocomplete = 'off';
+          un2.addEventListener('input', function () { var v = un2.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 25); if (v !== un2.value) un2.value = v; });
+          var hint = mk('div', 'sub', 'Letters and numbers only. People can join with the link /chats/username.'); hint.style.cssText = 'text-align:left;margin:6px 2px 0;font-size:13px';
+          var msg = mk('div', 'msg'); msg.style.cssText = 'text-align:left;margin:10px 2px 0;min-height:20px;color:#ff5a5f';
+          var sv = mk('button', 'primary', 'Save'); sv.style.marginTop = '10px';
+          [nm, un2].forEach(function (i) { i.style.cssText += ';width:100%;margin:0'; });
+          paintAv(curPhoto);
+          function pick() { fi.click(); } av.addEventListener('click', pick); cap.addEventListener('click', pick);
+          fi.addEventListener('change', function () {
+            var f = fi.files && fi.files[0]; fi.value = ''; if (!f) return;
+            squarePic(f, 512).then(function (blob) { newPic = blob; paintAv(URL.createObjectURL(blob)); }).catch(function () { toast('Could not use that picture. Try another one.'); });
+          });
+          [av, cap, fi, nmL, nm, unL, un2, hint, msg, sv].forEach(function (e) { w.appendChild(e); });
+          var busy = false;
+          sv.addEventListener('click', function () {
+            var name = nm.value.trim(), user = un2.value.trim();
+            if (!name) { msg.textContent = 'Give the group a name.'; return; }
+            if (busy) return; busy = true; msg.textContent = ''; sv.disabled = true; sv.textContent = 'Saving...';
+            var up = newPic ? chatCall('avatar_sign', {}).then(function (sg) {
+              var fd = new FormData(); fd.append('file', newPic); fd.append('api_key', sg.api_key); fd.append('timestamp', sg.timestamp); fd.append('signature', sg.signature); fd.append('public_id', sg.public_id);
+              return fetch('https://api.cloudinary.com/v1_1/' + sg.cloud_name + '/image/upload', { method: 'POST', body: fd }).then(function (r) { return r.json(); });
+            }).then(function (j) { if (!j.secure_url) throw new Error('Upload failed. Try again.'); return j.secure_url; }) : Promise.resolve('');
+            up.then(function (url) {
+              var patch = { name: name, username: user }; if (url) patch.photo = url;
+              gMetaSet(ph, patch); g.name = name;
+              if (extra) { extra.name = name; extra.username = user; if (url) extra.photo_url = url; }
+              var req = { group: ph, name: name, username: user }; if (url) req.photo_url = url;
+              chatCall('group_update', req).catch(function () {});
+              try { renderChats(); } catch (e) {}
+              closeOv(); toast('Group updated', true); paint();
+            }).catch(function (e) { busy = false; sv.disabled = false; sv.textContent = 'Save'; msg.textContent = (e && e.message) || 'Could not save. Try again.'; });
+          });
+        });
+      }
+      function addMemberPage() {
+        var have = {}; (members || []).forEach(function (m) { have[m.phone] = 1; });
+        var people = (allChats || []).filter(function (c) { return !c.group && !have[c.phone]; }), picked = {};
+        if (!people.length) return toast('Everyone you chat with is already in this group.');
+        zOpenPage('Add member', function (b) {
+          var q = zin('Search', 'search', 40); q.style.cssText = 'margin:8px 16px;width:calc(100% - 32px);border-radius:999px'; b.appendChild(q);
+          var list = mk('div'); b.appendChild(list); var gap = mk('div'); gap.style.height = '96px'; b.appendChild(gap);
+          function count() { return Object.keys(picked).filter(function (k) { return picked[k]; }).length; }
+          function draw() {
+            list.innerHTML = ''; var t = q.value.toLowerCase().trim();
+            people.forEach(function (c) {
+              var lab = labelOf(c); if (t && (lab + ' ' + (c.name || '')).toLowerCase().indexOf(t) < 0 && c.phone.indexOf(t) < 0) return;
+              var r = mk('button', 'zpick' + (picked[c.phone] ? ' on' : '')), av = mk('div', 'zav2'), tx = mk('div'), ck = mk('span', 'zck', picked[c.phone] ? '\u2713' : '');
+              av.textContent = firstCh(lab); usePhoto(av, c.phone); tx.appendChild(mk('div', '', shortUser(lab))); var sub = mk('div', 'zl', c.phone); sub.style.cssText = 'font-size:13px;opacity:.6'; tx.appendChild(sub);
+              r.appendChild(av); r.appendChild(tx); r.appendChild(ck); r.addEventListener('click', function () { picked[c.phone] = !picked[c.phone]; draw(); }); list.appendChild(r);
+            });
+          }
+          q.addEventListener('input', draw); draw();
+          var fab = mk('button', 'zfab'); fab.textContent = '\u2713'; fab.style.cssText = 'display:flex;align-items:center;justify-content:center;padding:0;font-size:26px'; fab.setAttribute('aria-label', 'Add'); b.parentNode.appendChild(fab);
+          var busy = false;
+          fab.addEventListener('click', function () {
+            var ids = Object.keys(picked).filter(function (k) { return picked[k]; }); if (!ids.length) return toast('Pick at least one person'); if (busy) return; busy = true;
+            chatCall('group_add', { group: ph, members: ids }).then(function () {
+              closeOv(); toast(ids.length === 1 ? 'Member added' : ids.length + ' members added', true);
+              return chatCall('group_info', { group: ph }).then(function (r) { members = r.members || members; extra = r.group || r; paint(); });
+            }).catch(function (e) { busy = false; toast((e && e.message) || 'Could not add members'); });
+          });
+        });
+      }
       function paint() {
         var st = body.scrollTop; body.innerHTML = '';
+        try { var tl0 = $('ginfoView').querySelector('.itl'); tl0.textContent = g.name || 'Group'; tl0.style.cssText += ';min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'; } catch (e) {}
+        try {
+          var hd0 = $('ginfoView').querySelector('.th-head'), pen0 = $('giEdit');
+          if (members && iAmAdmin()) {
+            if (!pen0) { pen0 = mk('button'); pen0.id = 'giEdit'; pen0.setAttribute('aria-label', 'Edit group'); pen0.style.marginLeft = 'auto'; pen0.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>'; hd0.appendChild(pen0); }
+            pen0.onclick = editGroup;
+          } else if (pen0) pen0.remove();
+        } catch (e) {}
         var gm = gMeta()[ph] || {}, un = (extra && extra.username) || gm.username || '', ds = (extra && (extra.description || extra.desc)) || gm.desc || '';
         /* top: picture, name, member count */
         var top = mk('div', 'gi-top'), av = mk('div', 'zav'), photo = (extra && extra.photo_url) || groupPhoto(g);
         av.textContent = firstCh(g.name); if (photo) paintBg(av, photo); else av.style.background = AVC[((g.name || '#').charCodeAt(0) + (g.name || '#').length) % AVC.length];
         top.appendChild(av); top.appendChild(mk('div', 'gi-name', g.name || 'Group'));
         if (members) top.appendChild(mk('div', 'gi-count', members.length + (members.length === 1 ? ' member' : ' members')));
-        if (un) { var u = mk('div', '', '@' + un); u.style.cssText = 'color:#3b9cf5;font-weight:600;margin-top:6px'; top.appendChild(u); }
-        if (ds) { var d = mk('div', 'gi-desc', ds); top.appendChild(d); }
+        var admin = !!members && iAmAdmin();
         body.appendChild(top);
         /* Message / Mute / Leave */
         var acts = mk('div', 'acts4'), muted = isMuted(ph);
         function ab(svg, label, fn, red) { var b = mk('button', 'abtn'); b.innerHTML = svg + '<span>' + label + '</span>'; if (red) b.style.color = '#ff5a5f'; b.addEventListener('click', fn); acts.appendChild(b); }
         ab(SV.msg, 'Message', function () { closeOv(); });
         ab(muted ? SV.belloff : SV.bell, muted ? 'Unmute' : 'Mute', muteGroup);
+        ab('<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>', 'Share', function () { var nm = g.name || 'this group', u2 = un ? ' (@' + un + ')' : ''; if (window.openShareSheet) window.openShareSheet('Share', 'Join the group ' + nm + u2 + ' on Zanply', location.origin + '/'); else toast('Sharing is not available'); });
         ab(SV.leave, 'Leave', leaveGroup, true);
         body.appendChild(acts);
         /* members: first 5, then "See all" */
@@ -6620,7 +6741,26 @@ ZW|Zimbabwe|263`;
             mc.appendChild(more);
           }
         }
+        if (admin) {
+          var am = mk('button', 'gi-more'); am.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-5px;margin-right:10px"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6"/></svg>Add member';
+          am.addEventListener('click', addMemberPage); mc.appendChild(am);
+        }
         body.appendChild(mc);
+        /* group permissions (admin / owner only) */
+        if (members && iAmAdmin()) {
+          var pc = mk('div', 'zcard');
+          pc.appendChild(srow('<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3z"/><path d="M9 12l2 2 4-4"/></svg>', 'Group permissions', 'Choose what members can do', { chev: true, fn: openPerms }));
+          body.appendChild(pc);
+        }
+        /* description: "Add description" for admins when empty, the text itself once added */
+        if (ds || admin) {
+          var dc = mk('div', 'zcard'), PEN = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+          if (ds) {
+            var dr = srow(PEN, 'Description', ds, admin ? { chev: true, fn: editDesc } : {});
+            dr.querySelector('small').style.cssText = 'display:block;white-space:pre-wrap;margin-top:4px'; dc.appendChild(dr);
+          } else dc.appendChild(srow(PEN, 'Add description', '', { chev: true, fn: editDesc }));
+          body.appendChild(dc);
+        }
         /* shared medias */
         var sc = mk('div', 'zcard'), ms = {}; try { ms = mediaStats(); } catch (e) {}
         var parts = []; if (ms.ph) parts.push(ms.ph + (ms.ph === 1 ? ' photo' : ' photos')); if (ms.vd) parts.push(ms.vd + (ms.vd === 1 ? ' video' : ' videos'));
@@ -6628,6 +6768,14 @@ ZW|Zimbabwe|263`;
         var im = []; try { im = mediaImgs().slice(-4).reverse(); } catch (e) {}
         if (im.length) { var th = mk('div', 'gi-th'); im.forEach(function (i) { var t = mk('div', 'gi-tt'), c = document.createElement('img'); c.src = i.src; t.appendChild(c); t.addEventListener('click', function () { openViewer(i.src, 'photo'); }); th.appendChild(t); }); sc.appendChild(th); }
         body.appendChild(sc);
+        /* copy group link: app link / chats / group username */
+        if (un) {
+          var lc = mk('div', 'zcard'), glink = location.origin + '/chats/' + un;
+          lc.appendChild(srow('<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5"/></svg>', 'Copy group link', glink.replace(/^https?:\/\//, ''), { fn: function () {
+            if (navigator.clipboard) navigator.clipboard.writeText(glink).then(function () { toast('Group link copied', true); }, function () { toast('Link: ' + glink); }); else toast('Link: ' + glink);
+          } }));
+          body.appendChild(lc);
+        }
         /* chat lock + favourites */
         var oc = mk('div', 'zcard'), locked = isLocked(ph), fv = favs().indexOf(ph) > -1;
         oc.appendChild(srow(SV.lock, 'Chat lock', 'Lock and hide this chat on this device.', { sw: true, on: locked, fn: function () {
@@ -9972,7 +10120,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
             });
             Promise.all([job, wait]).then(function (a) {
               var x = a[0], g = x.r.group || {}; if (!g.phone) throw new Error('Could not create the group.');
-              gMetaSet(g.phone, { photo: x.url || '', username: S.user, desc: desc, name: g.name || S.name });
+              gMetaSet(g.phone, { photo: x.url || '', username: S.user, desc: desc, name: g.name || S.name, owner: myPhone });
               d.innerHTML = ''; d.appendChild(okMark()); var tt = mk('div', '', 'Group Created'); tt.style.cssText = 'font-weight:700;font-size:18px;color:#000'; d.appendChild(tt);
               setTimeout(function () {
                 close();
