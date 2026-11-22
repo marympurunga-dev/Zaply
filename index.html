@@ -13010,7 +13010,7 @@ ZFAQ.push(["Safety, rules and contact",[
     hbell.onclick = bell.onclick = function () { try { window.chanUI.bell(window.__chPh, paintBell); } catch (e) {} };
     gift.onclick = function () { try { window.chanUI.gift(); } catch (e) {} };
   }
-  function paintBell() { var m = st().muted; if (hbell) hbell.innerHTML = m ? I.bellOff : I.bell; if (bell) bell.innerHTML = m ? I.bellOff : I.bell; }
+  function paintBell() { var m = st().muted ? '1' : '0'; [hbell, bell].forEach(function (x) { if (x && x.getAttribute('data-m') !== m) { x.setAttribute('data-m', m); x.innerHTML = m === '1' ? I.bellOff : I.bell; } }); }
   function dayLabel(t) {
     var d = new Date(t), n = new Date(); if (isNaN(d)) return 'Today';
     if (d.toDateString() === n.toDateString()) return 'Today';
@@ -13040,7 +13040,7 @@ ZFAQ.push(["Safety, rules and contact",[
     var S = st(), name = (nameEl && nameEl.getAttribute('data-n')) || (nameEl ? nameEl.textContent : '') || S.name || 'Channel', first = msgs.querySelector('.bub');
     if (nameEl) { var cur = nameEl.querySelector('.chvf'); if (S.verified && !cur) { var v = document.createElement('span'); v.className = 'chvf'; v.innerHTML = I.ver; nameEl.appendChild(v); } else if (!S.verified && cur) cur.remove(); }
     paintBell();
-    if (inp) { inp.setAttribute('placeholder', 'Broadcast a message\u2026'); inp.disabled = tv.classList.contains('chanro'); }
+    if (inp) { if (inp.getAttribute('placeholder') !== 'Broadcast a message\u2026') inp.setAttribute('placeholder', 'Broadcast a message\u2026'); var ro2 = tv.classList.contains('chanro'); if (inp.disabled !== ro2) inp.disabled = ro2; }
     var day = first ? dayLabel(+first.getAttribute('data-at')) : 'Today'; if (msgs.getAttribute('data-day') !== day) msgs.setAttribute('data-day', day);
     if (first) { var sp = banner.querySelector('.tx span'), nt = plainText(first).slice(0, 90) || 'New post'; if (sp.textContent !== nt) sp.textContent = nt; }
     var key = name + '|' + (S.verified ? 1 : 0);
@@ -13062,13 +13062,20 @@ ZFAQ.push(["Safety, rules and contact",[
       var vw = b.getAttribute('data-views'); if (sm && vw != null) { var e = sm.querySelector('.chvw'); if (!e) { e = document.createElement('span'); e.className = 'chvw'; sm.insertBefore(e, sm.firstChild); } var lab = I.eye + short(vw); if (e.getAttribute('data-l') !== lab) { e.setAttribute('data-l', lab); e.innerHTML = lab; } }
     });
   }
-  function off() { if (inp) { inp.setAttribute('placeholder', ph0); inp.disabled = false; } if (banner) banner.classList.remove('off'); }
-  new MutationObserver(function () { if (tv.classList.contains('chanview')) enhance(); else off(); }).observe(tv, { attributes: true, attributeFilter: ['class'], childList: true, subtree: true });
+  function off() { if (inp) { if (inp.getAttribute('placeholder') !== ph0) inp.setAttribute('placeholder', ph0); if (inp.disabled) inp.disabled = false; } if (banner && banner.classList.contains('off')) banner.classList.remove('off'); }
+  var cfg = { attributes: true, attributeFilter: ['class'], childList: true, subtree: true }, pend = false, obs;
+  function run() {
+    pend = false; obs.disconnect();
+    try { if (tv.classList.contains('chanview')) enhance(); else off(); } catch (e) {}
+    obs.observe(tv, cfg);
+  }
+  obs = new MutationObserver(function () { if (!pend) { pend = true; requestAnimationFrame(run); } });
+  obs.observe(tv, cfg);
   window.chanViewsMerge = function (map) {
     Object.keys(map || {}).forEach(function (id) { var el = msgs.querySelector('.bub[data-id="' + id + '"]'); if (el) el.setAttribute('data-views', String(map[id])); });
-    enhance();
+    if (!pend) { pend = true; requestAnimationFrame(run); }
   };
-  document.addEventListener('chaninfo', enhance);
+  document.addEventListener('chaninfo', function () { if (!pend) { pend = true; requestAnimationFrame(run); } });
 })();
 </script>
 </body>
