@@ -154,6 +154,9 @@ function ensureTable() {
         post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, emoji VARCHAR(16) NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_post (post_id))`).catch(() => {});
       await db().query(`CREATE TABLE IF NOT EXISTS channel_mutes (
         channel_id INT NOT NULL, phone VARCHAR(20) NOT NULL, PRIMARY KEY (channel_id, phone))`).catch(() => {});
+      // one row per person who has seen a post (the owner's own views are not counted)
+      await db().query(`CREATE TABLE IF NOT EXISTS channel_views (
+        post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_vpost (post_id))`).catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN privacy VARCHAR(1500) NOT NULL DEFAULT ''").catch(() => {});
       /* online / last seen: last_active = last time their app told us it was open, is_online = 0 once they close it */
       await db().query("ALTER TABLE profiles ADD COLUMN last_active TIMESTAMP NULL").catch(() => {});
@@ -377,7 +380,7 @@ const gid = (x) => Number(x.slice(2));
 /* ---- channels: ids look like "c:12". One owner, any number of subscribers. Only the owner posts; subscribers read and react. ---- */
 const isChanId = (x) => typeof x === 'string' && /^c:\d{1,9}$/.test(x);
 const cidOf = (x) => Number(String(x).slice(2));
-const CHAN_EMOJI = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
+const CHAN_EMOJI = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F525}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
 async function chanRow(id) {
   const [r] = await db().query('SELECT id, owner, name, description, photo_url, subscribers, is_private, created_at FROM channels WHERE id = ?', [id]);
   return r[0] || null;
@@ -406,6 +409,18 @@ async function chanReacts(postIds, me) {
   postIds.forEach((p) => { out[p] = { c: {}, m: '' }; });
   cnt.forEach((x) => { out[x.post_id].c[x.emoji] = Number(x.n); });
   mine.forEach((x) => { out[x.post_id].m = x.emoji; });
+  return out;
+}
+/* views: how many different people have seen each post. Posts handed to someone other than the owner count as seen by them. */
+async function chanViews(postIds, me, owner, markIds) {
+  const out = {};
+  if (!postIds.length) return out;
+  if (me !== owner && markIds && markIds.length) {
+    await db().query('INSERT IGNORE INTO channel_views (post_id, phone) VALUES ?', [markIds.map((id) => [id, me])]).catch(() => {});
+  }
+  const [vc] = await db().query('SELECT post_id, COUNT(*) AS n FROM channel_views WHERE post_id IN (?) GROUP BY post_id', [postIds]).catch(() => [[]]);
+  postIds.forEach((p) => { out[p] = 0; });
+  vc.forEach((x) => { out[x.post_id] = Number(x.n); });
   return out;
 }
 // The server cannot read end-to-end encrypted messages, so notifications must not show the scrambled text.
@@ -915,7 +930,11 @@ module.exports = async (req, res) => {
         const track = (Array.isArray(b.track) ? b.track : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 60);
         const ids = Array.from(new Set(pr.map((m) => Number(m.id)).concat(track)));
         const rx = await chanReacts(ids, me);
-        return res.json({ rx, messages: pr.map((m) => ({ id: Number(m.id), mine: ch.owner === me, body: m.body, at: m.created_at, from: '' })) });
+        /* every post of this channel that is on this person's screen counts as seen (checked against this channel only) */
+        let seen = [];
+        if (ids.length) { const [own] = await db().query('SELECT id FROM channel_posts WHERE channel_id = ? AND id IN (?)', [cid, ids]).catch(() => [[]]); seen = own.map((x) => Number(x.id)); }
+        const vw = await chanViews(ids, me, ch.owner, seen);
+        return res.json({ rx, vw, messages: pr.map((m) => ({ id: Number(m.id), mine: ch.owner === me, body: m.body, at: m.created_at, from: '', views: vw[Number(m.id)] || 0 })) });
       }
       if (!phoneOk(b.with)) return res.status(400).json({ error: 'Bad request.' });
       /* the chat is open on my screen, so what they sent me is read (blue ticks for them) */
@@ -1597,6 +1616,7 @@ module.exports = async (req, res) => {
             if (own[0] && own[0].owner === me) {
               await db().query('DELETE FROM channel_subs WHERE channel_id = ?', [cid]).catch(() => {});
               await db().query('DELETE FROM channel_reacts WHERE post_id IN (SELECT id FROM channel_posts WHERE channel_id = ?)', [cid]).catch(() => {});
+              await db().query('DELETE FROM channel_views WHERE post_id IN (SELECT id FROM channel_posts WHERE channel_id = ?)', [cid]).catch(() => {});
               await db().query('DELETE FROM channel_posts WHERE channel_id = ?', [cid]).catch(() => {});
               await db().query('DELETE FROM channel_mutes WHERE channel_id = ?', [cid]).catch(() => {});
               await db().query('DELETE FROM channels WHERE id = ?', [cid]).catch(() => {});
