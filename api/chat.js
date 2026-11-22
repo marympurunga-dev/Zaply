@@ -1,5 +1,6 @@
 // POST /api/chat  — actions: list, start, history, send, media_sign, media_get, block, unblock, blockstate, report, setkey, getkey,
-//                           group_create, group_info, group_leave (groups are chats with the id "g:<number>"),
+//                           group_create, group_info, group_leave, group_update, group_add, group_remove, group_admin, group_permissions,
+//                           group_requests, group_approve, group_join (groups are chats with the id "g:<number>"),
 //                           profile_get, profile_set (username, email, address, bio, birthday, pet),
 //                           status_list, status_post, status_sign, status_view, status_like, status_delete (24-hour status updates),
 //                           presence_ping, presence_get, presence_bulk (online / last seen), ably_auth (real-time token)
@@ -131,12 +132,28 @@ function ensureTable() {
       await db().query("ALTER TABLE profiles MODIFY COLUMN links VARCHAR(700) NOT NULL DEFAULT ''").catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN extra TEXT NULL").catch(() => {});
       await db().query("ALTER TABLE chat_groups MODIFY COLUMN name VARCHAR(255) NOT NULL").catch(() => {});
+      // group profile (username, description, picture), settings and roles
+      await db().query("ALTER TABLE chat_groups ADD COLUMN username VARCHAR(40) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query("ALTER TABLE chat_groups ADD COLUMN description VARCHAR(1300) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query("ALTER TABLE chat_groups ADD COLUMN photo_url VARCHAR(400) NOT NULL DEFAULT ''").catch(() => {});
+      await db().query("ALTER TABLE chat_groups ADD COLUMN perms TEXT NULL").catch(() => {});
+      await db().query("ALTER TABLE group_members ADD COLUMN role VARCHAR(10) NOT NULL DEFAULT 'member'").catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS group_requests (
+        group_id INT NOT NULL, phone VARCHAR(20) NOT NULL, added_by VARCHAR(20) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (group_id, phone))`).catch(() => {});
       // channels: one row per channel, one row per subscriber (posts are stored once, never copied per subscriber)
       await db().query(`CREATE TABLE IF NOT EXISTS channels (
         id INT AUTO_INCREMENT PRIMARY KEY, owner VARCHAR(20) NOT NULL, name VARCHAR(120) NOT NULL, description VARCHAR(500) NOT NULL DEFAULT '',
         photo_url VARCHAR(300) NOT NULL DEFAULT '', subscribers INT NOT NULL DEFAULT 1, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_o (owner))`).catch(() => {});
       await db().query(`CREATE TABLE IF NOT EXISTS channel_subs (
         channel_id INT NOT NULL, phone VARCHAR(20) NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (channel_id, phone), INDEX idx_p (phone))`).catch(() => {});
+      await db().query("ALTER TABLE channels ADD COLUMN is_private TINYINT NOT NULL DEFAULT 0").catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS channel_posts (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY, channel_id INT NOT NULL, body VARCHAR(2000) NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, INDEX idx_c (channel_id, id))`).catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS channel_reacts (
+        post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, emoji VARCHAR(16) NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_post (post_id))`).catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS channel_mutes (
+        channel_id INT NOT NULL, phone VARCHAR(20) NOT NULL, PRIMARY KEY (channel_id, phone))`).catch(() => {});
       await db().query("ALTER TABLE profiles ADD COLUMN privacy VARCHAR(1500) NOT NULL DEFAULT ''").catch(() => {});
       /* online / last seen: last_active = last time their app told us it was open, is_online = 0 once they close it */
       await db().query("ALTER TABLE profiles ADD COLUMN last_active TIMESTAMP NULL").catch(() => {});
@@ -357,6 +374,40 @@ const MAX_GROUP_PREM = 1000000; // Premium: 1M members
 const MEDIA_MAX = 10 * 1024 * 1024; // Cloudinary free plan allows 10 MB per raw file
 const isGroup = (x) => typeof x === 'string' && /^g:\d{1,9}$/.test(x);
 const gid = (x) => Number(x.slice(2));
+/* ---- channels: ids look like "c:12". One owner, any number of subscribers. Only the owner posts; subscribers read and react. ---- */
+const isChanId = (x) => typeof x === 'string' && /^c:\d{1,9}$/.test(x);
+const cidOf = (x) => Number(String(x).slice(2));
+const CHAN_EMOJI = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
+async function chanRow(id) {
+  const [r] = await db().query('SELECT id, owner, name, description, photo_url, subscribers, is_private, created_at FROM channels WHERE id = ?', [id]);
+  return r[0] || null;
+}
+async function chanSubbed(id, phone) {
+  const [r] = await db().query('SELECT 1 FROM channel_subs WHERE channel_id = ? AND phone = ?', [id, phone]);
+  return r.length > 0;
+}
+/* owner and subscribers can always read; anyone can read a public channel; a private one needs a subscription */
+async function chanCanRead(id, phone) {
+  const ch = await chanRow(id); if (!ch) return false;
+  if (ch.owner === phone || !ch.is_private) return true;
+  return chanSubbed(id, phone);
+}
+const chanKey = (id) => crypto.createHash('sha256').update('chan-invite:' + id + SECRET).digest('hex').slice(0, 16);
+async function chanRecount(id) {
+  await db().query('UPDATE channels SET subscribers = (SELECT COUNT(*) FROM channel_subs WHERE channel_id = ?) WHERE id = ?', [id, id]);
+  const [r] = await db().query('SELECT subscribers FROM channels WHERE id = ?', [id]);
+  return r[0] ? Number(r[0].subscribers) : 0;
+}
+async function chanReacts(postIds, me) {
+  const out = {};
+  if (!postIds.length) return out;
+  const [cnt] = await db().query('SELECT post_id, emoji, COUNT(*) AS n FROM channel_reacts WHERE post_id IN (?) GROUP BY post_id, emoji', [postIds]);
+  const [mine] = await db().query('SELECT post_id, emoji FROM channel_reacts WHERE post_id IN (?) AND phone = ?', [postIds, me]);
+  postIds.forEach((p) => { out[p] = { c: {}, m: '' }; });
+  cnt.forEach((x) => { out[x.post_id].c[x.emoji] = Number(x.n); });
+  mine.forEach((x) => { out[x.post_id].m = x.emoji; });
+  return out;
+}
 // The server cannot read end-to-end encrypted messages, so notifications must not show the scrambled text.
 function preview(text) {
   if (String(text).indexOf('e2e1:') === 0) return 'New message';
@@ -374,6 +425,24 @@ async function blockState(a, b) {
 async function isMember(g, phone) {
   const [r] = await db().query('SELECT 1 FROM group_members WHERE group_id = ? AND phone = ?', [g, phone]);
   return r.length > 0;
+}
+/* ---- group roles and settings ---- */
+const GP_DEFAULT = { edit: 'admins', send: 'all', add: 'admins', approval: false, adminPerms: {} };
+function parsePerms(t) { let o = {}; try { o = JSON.parse(t || '{}') || {}; } catch (e) {} return Object.assign({}, GP_DEFAULT, o, { adminPerms: (o && typeof o.adminPerms === 'object' && o.adminPerms) || {} }); }
+/* who am I in this group? null = not a member */
+async function groupCtx(g, me) {
+  const [r] = await db().query('SELECT g.creator, g.perms, m.role FROM chat_groups g JOIN group_members m ON m.group_id = g.id AND m.phone = ? WHERE g.id = ?', [me, g]);
+  if (!r.length) return null;
+  const perms = parsePerms(r[0].perms), isOwner = r[0].creator === me, isAdmin = isOwner || r[0].role === 'admin', ap = perms.adminPerms[me] || {};
+  return { creator: r[0].creator, perms, isOwner, isAdmin, can: (k) => isOwner || (isAdmin && ap[k] !== false) };
+}
+async function groupCanSend(g, me) { const c = await groupCtx(g, me); return !!c && (c.perms.send !== 'admins' || c.isAdmin); }
+const cleanUrl = (u) => { u = String(u || '').trim(); return /^https:\/\/[^\s]{1,380}$/.test(u) ? u : ''; };
+const cleanGroupUser = (u) => String(u || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 25);
+const cleanDesc = (d) => Array.from(String(d || '').trim()).slice(0, 1200).join('');
+async function groupUserTaken(un, exceptId) {
+  const [t] = await db().query('SELECT 1 FROM chat_groups WHERE LOWER(username) = ? AND id <> ? LIMIT 1', [un.toLowerCase(), exceptId || 0]);
+  return t.length > 0;
 }
 async function pushTo(subs, payload) {
   await Promise.allSettled(subs.map(async (r) => {
@@ -447,6 +516,23 @@ async function notifyGroup(from, g, groupName, text) {
       await fcmTable();
       const [rows] = await db().query('SELECT t.id, t.token, t.chan FROM fcm_tokens t JOIN group_members m ON m.phone = t.phone WHERE m.group_id = ? AND t.phone <> ?', [g, from]);
       await fcmPush(rows, { type: 'msg', title: groupName, body, sender: 'g:' + g });
+    }
+  } catch (e) { console.error(e); }
+}
+/* push to every subscriber who has NOT muted this channel, so a muted channel stays silent when the app is closed */
+async function notifyChannel(ch, text) {
+  try {
+    const body = preview(text), tag = 'c:' + ch.id;
+    if (pushOn) {
+      const [subs] = await db().query(
+        'SELECT s.id, s.sub FROM push_subs s JOIN channel_subs m ON m.phone = s.phone WHERE m.channel_id = ? AND s.phone <> ? AND s.phone NOT IN (SELECT phone FROM channel_mutes WHERE channel_id = ?) LIMIT 5000', [ch.id, ch.owner, ch.id]);
+      await pushTo(subs, JSON.stringify({ title: ch.name, body, tag, from: tag }));
+    }
+    if (fcmOn()) {
+      await fcmTable();
+      const [rows] = await db().query(
+        'SELECT t.id, t.token, t.chan FROM fcm_tokens t JOIN channel_subs m ON m.phone = t.phone WHERE m.channel_id = ? AND t.phone <> ? AND t.phone NOT IN (SELECT phone FROM channel_mutes WHERE channel_id = ?) LIMIT 5000', [ch.id, ch.owner, ch.id]);
+      await fcmPush(rows, { type: 'msg', title: ch.name, body, sender: tag });
     }
   } catch (e) { console.error(e); }
 }
@@ -592,6 +678,7 @@ function schedTable() {
 async function deliverMsg(me, to, body) {
   if (isGroup(to)) {
     const g = gid(to); if (!(await isMember(g, me))) return 'You are not in this group.';
+    if (!(await groupCanSend(g, me))) return 'Only admins can send messages to this group.';
     await db().query('INSERT INTO group_messages (group_id, sender, body) VALUES (?, ?, ?)', [g, me, body]);
     const [gn] = await db().query('SELECT name FROM chat_groups WHERE id = ?', [g]);
     if (rt.on()) { const [gm] = await db().query('SELECT phone FROM group_members WHERE group_id = ? AND phone <> ?', [g, me]); await rt.signal(gm.map((x) => x.phone), 'msg', { from: 'g:' + g }); }
@@ -768,7 +855,7 @@ module.exports = async (req, res) => {
         mine: m.sender === me, at: m.created_at,
         st: m.sender === me ? (m.read_at && !hideT[others[i]] ? 3 : m.delivered_at ? 2 : 1) : 0 }));
       const [gsAll] = await db().query(
-        `SELECT g.id, g.name, g.created_at,
+        `SELECT g.id, g.name, g.created_at, g.photo_url, g.username,
            (SELECT id FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS mid,
            (SELECT body FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS body,
            (SELECT sender FROM group_messages WHERE group_id = g.id ORDER BY id DESC LIMIT 1) AS sender,
@@ -784,8 +871,16 @@ module.exports = async (req, res) => {
         gnames = await displayNames(senders);
       }
       gs.forEach((g) => chats.push({
-        phone: 'g:' + g.id, name: g.name, group: true, last: g.body || '', mine: g.sender === me,
+        phone: 'g:' + g.id, name: g.name, group: true, photo_url: g.photo_url || '', username: g.username || '', last: g.body || '', mine: g.sender === me,
         from: g.sender ? (gnames[g.sender] || g.sender) : '', at: g.mat || g.created_at }));
+      try {
+        const [cs] = await db().query(
+          `SELECT c.id, c.name, c.photo_url, c.owner, c.is_private, c.created_at,
+             (SELECT body FROM channel_posts WHERE channel_id = c.id ORDER BY id DESC LIMIT 1) AS body,
+             (SELECT created_at FROM channel_posts WHERE channel_id = c.id ORDER BY id DESC LIMIT 1) AS pat
+           FROM channels c JOIN channel_subs s ON s.channel_id = c.id WHERE s.phone = ?`, [me]);
+        cs.forEach((c) => chats.push({ phone: 'c:' + c.id, name: c.name, group: true, channel: true, photo_url: c.photo_url || '', owner: c.owner, priv: !!c.is_private, last: c.body || '', mine: c.owner === me, at: c.pat || c.created_at }));
+      } catch (e) { console.error(e); }
       chats.sort((a, b) => new Date(b.at) - new Date(a.at));
       return res.json({ chats });
     }
@@ -811,6 +906,16 @@ module.exports = async (req, res) => {
         const gdn = await displayNames([...new Set(gr.map((m) => m.sender))]);
         return res.json({ messages: gr.map((m) => ({
           id: m.id, mine: m.sender === me, body: m.body, at: m.created_at, from: gdn[m.sender] || m.sender })) });
+      }
+      if (isChanId(b.with)) {
+        const cid = cidOf(b.with), ch = await chanRow(cid);
+        if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
+        if (!(await chanCanRead(cid, me))) return res.status(403).json({ error: 'This is a private channel.' });
+        const [pr] = await db().query('SELECT id, body, created_at FROM channel_posts WHERE channel_id = ? AND id > ? ORDER BY id ASC LIMIT 200', [cid, after]);
+        const track = (Array.isArray(b.track) ? b.track : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 60);
+        const ids = Array.from(new Set(pr.map((m) => Number(m.id)).concat(track)));
+        const rx = await chanReacts(ids, me);
+        return res.json({ rx, messages: pr.map((m) => ({ id: Number(m.id), mine: ch.owner === me, body: m.body, at: m.created_at, from: '' })) });
       }
       if (!phoneOk(b.with)) return res.status(400).json({ error: 'Bad request.' });
       /* the chat is open on my screen, so what they sent me is read (blue ticks for them) */
@@ -1008,11 +1113,22 @@ module.exports = async (req, res) => {
         if (!body) return res.status(400).json({ error: 'Bad request.' });
         const g = gid(b.to);
         if (!(await isMember(g, me))) return res.status(403).json({ error: 'You are not in this group.' });
+        if (!(await groupCanSend(g, me))) return res.status(403).json({ error: 'Only admins can send messages to this group.' });
         const [gr] = await db().query('INSERT INTO group_messages (group_id, sender, body) VALUES (?, ?, ?)', [g, me, body]);
         const [gn] = await db().query('SELECT name FROM chat_groups WHERE id = ?', [g]);
         if (rt.on()) { const [gm] = await db().query('SELECT phone FROM group_members WHERE group_id = ? AND phone <> ?', [g, me]); await rt.signal(gm.map((x) => x.phone), 'msg', { from: 'g:' + g }); }
         await notifyGroup(me, g, (gn[0] && gn[0].name) || 'Group', body);
         return res.json({ message: { id: gr.insertId, mine: true, body, at: new Date().toISOString(), from: '' } });
+      }
+      if (isChanId(b.to)) {
+        if (!body) return res.status(400).json({ error: 'Bad request.' });
+        const ch = await chanRow(cidOf(b.to));
+        if (!ch) return res.status(404).json({ error: 'This channel no longer exists.' });
+        if (ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can send messages.' });
+        const [pr] = await db().query('INSERT INTO channel_posts (channel_id, body) VALUES (?, ?)', [ch.id, body]);
+        if (rt.on()) { const [sb] = await db().query('SELECT phone FROM channel_subs WHERE channel_id = ? AND phone <> ? LIMIT 2000', [ch.id, me]); await rt.signal(sb.map((x) => x.phone), 'msg', { from: 'c:' + ch.id }); }
+        await notifyChannel(ch, body);
+        return res.json({ message: { id: Number(pr.insertId), mine: true, body, at: new Date().toISOString(), from: '' } });
       }
       if (!phoneOk(b.to) || !body) return res.status(400).json({ error: 'Bad request.' });
       if (!(await findUser(b.to))) return res.status(404).json({ error: "That number isn't on Zanply yet." });
@@ -1047,7 +1163,7 @@ module.exports = async (req, res) => {
     if (b.action === 'report') {
       const text = String(b.text || '').trim().slice(0, 2000);
       const about = String(b.to || '');
-      if (!text || !(phoneOk(about) || isGroup(about))) return res.status(400).json({ error: 'Bad request.' });
+      if (!text || !(phoneOk(about) || isGroup(about) || isChanId(about))) return res.status(400).json({ error: 'Bad request.' });
       await db().query('INSERT INTO reports (reporter, reported, text) VALUES (?, ?, ?)', [me, about, text]);
       return res.json({ ok: true });
     }
@@ -1465,9 +1581,9 @@ module.exports = async (req, res) => {
       const description = Array.from(String(b.description || '').trim()).slice(0, 255).join('');
       const url = String(b.photo_url || '');
       const photo = cloudOn() && url.length <= 300 && url.indexOf('https://res.cloudinary.com/' + process.env.CLOUDINARY_CLOUD_NAME + '/' + 'image' + '/upload/') === 0 ? url : '';
-      const [c] = await db().query('INSERT INTO channels (owner, name, description, photo_url) VALUES (?, ?, ?, ?)', [me, name, description, photo]);
+      const [c] = await db().query('INSERT INTO channels (owner, name, description, photo_url, is_private) VALUES (?, ?, ?, ?, ?)', [me, name, description, photo, b.is_private ? 1 : 0]);
       await db().query('INSERT INTO channel_subs (channel_id, phone) VALUES (?, ?)', [c.insertId, me]);
-      return res.json({ channel: { id: c.insertId, name, description, photo_url: photo, subscribers: 1 } });
+      return res.json({ channel: { id: c.insertId, name, description, photo_url: photo, subscribers: 1, is_private: b.is_private ? 1 : 0, owner: me } });
     }
     /* Delete chat / group chat / channel. The chat disappears from every list on every device of this account and its old messages never
        come back. It returns only when a NEW message arrives. The other person keeps their own copy. A channel you own is deleted for everyone. */
@@ -1480,6 +1596,9 @@ module.exports = async (req, res) => {
             const [own] = await db().query('SELECT owner FROM channels WHERE id = ?', [cid]).catch(() => [[]]);
             if (own[0] && own[0].owner === me) {
               await db().query('DELETE FROM channel_subs WHERE channel_id = ?', [cid]).catch(() => {});
+              await db().query('DELETE FROM channel_reacts WHERE post_id IN (SELECT id FROM channel_posts WHERE channel_id = ?)', [cid]).catch(() => {});
+              await db().query('DELETE FROM channel_posts WHERE channel_id = ?', [cid]).catch(() => {});
+              await db().query('DELETE FROM channel_mutes WHERE channel_id = ?', [cid]).catch(() => {});
               await db().query('DELETE FROM channels WHERE id = ?', [cid]).catch(() => {});
             } else if (own[0]) {
               const [del] = await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, me]).catch(() => [{}]);
@@ -1505,6 +1624,60 @@ module.exports = async (req, res) => {
       const [del] = await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, me]);
       if (del.affectedRows) await db().query('UPDATE channels SET subscribers = GREATEST(subscribers - 1, 0) WHERE id = ?', [cid]);
       return res.json({ ok: true });
+    }
+    /* ---- channel info / subscribe / unsubscribe / react / mute / settings ---- */
+    if (['channel_info', 'channel_subscribe', 'channel_unsubscribe', 'channel_react', 'channel_mute', 'channel_update'].indexOf(b.action) > -1) {
+      const cid = isChanId(String(b.channel || '')) ? cidOf(b.channel) : (parseInt(b.channel, 10) || 0);
+      if (b.action === 'channel_react') {
+        const pid = Number(b.post) || 0;
+        const [pp] = await db().query('SELECT channel_id FROM channel_posts WHERE id = ?', [pid]);
+        if (!pp[0]) return res.status(404).json({ error: 'That post is gone.' });
+        const ch0 = await chanRow(pp[0].channel_id);
+        if (!ch0 || !(ch0.owner === me || (await chanSubbed(ch0.id, me)))) return res.status(403).json({ error: 'Subscribe to the channel to react.' });
+        const em = String(b.emoji || '');
+        if (!em) await db().query('DELETE FROM channel_reacts WHERE post_id = ? AND phone = ?', [pid, me]);
+        else {
+          if (CHAN_EMOJI.indexOf(em) < 0) return res.status(400).json({ error: 'Bad request.' });
+          await db().query('INSERT INTO channel_reacts (post_id, phone, emoji) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE emoji = VALUES(emoji)', [pid, me, em]);
+        }
+        const rx = await chanReacts([pid], me);
+        return res.json({ rx: rx[pid] });
+      }
+      if (!cid) return res.status(400).json({ error: 'Bad request.' });
+      const ch = await chanRow(cid);
+      if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
+      const subbed = ch.owner === me || (await chanSubbed(cid, me));
+      if (b.action === 'channel_info') {
+        if (ch.is_private && !subbed && String(b.k || '') !== chanKey(cid)) return res.status(403).json({ error: 'This is a private channel. Ask the owner for the invite link.' });
+        let muted = false;
+        if (subbed) { const [mm] = await db().query('SELECT 1 FROM channel_mutes WHERE channel_id = ? AND phone = ?', [cid, me]); muted = mm.length > 0; }
+        const mine = ch.owner === me;
+        return res.json({ channel: { id: ch.id, phone: 'c:' + ch.id, name: ch.name, description: ch.description, photo_url: ch.photo_url, subscribers: Number(ch.subscribers), is_private: !!ch.is_private, owner: ch.owner, mine, subscribed: !!subbed, muted, key: (ch.is_private && subbed) ? chanKey(cid) : '' } });
+      }
+      if (b.action === 'channel_subscribe') {
+        if (ch.is_private && !subbed && String(b.k || '') !== chanKey(cid)) return res.status(403).json({ error: 'This is a private channel. Ask the owner for the invite link.' });
+        await db().query('INSERT IGNORE INTO channel_subs (channel_id, phone) VALUES (?, ?)', [cid, me]);
+        return res.json({ subscribed: true, subscribers: await chanRecount(cid) });
+      }
+      if (b.action === 'channel_unsubscribe') {
+        if (ch.owner === me) return res.status(400).json({ error: 'You own this channel. You can delete it instead.' });
+        await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, me]);
+        await db().query('DELETE FROM channel_mutes WHERE channel_id = ? AND phone = ?', [cid, me]);
+        return res.json({ subscribed: false, subscribers: await chanRecount(cid) });
+      }
+      if (b.action === 'channel_mute') {
+        if (!subbed) return res.status(403).json({ error: 'Subscribe to the channel first.' });
+        if (b.muted) await db().query('INSERT IGNORE INTO channel_mutes (channel_id, phone) VALUES (?, ?)', [cid, me]);
+        else await db().query('DELETE FROM channel_mutes WHERE channel_id = ? AND phone = ?', [cid, me]);
+        return res.json({ muted: !!b.muted });
+      }
+      if (b.action === 'channel_update') {
+        if (ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can change this.' });
+        if (typeof b.is_private !== 'undefined') await db().query('UPDATE channels SET is_private = ? WHERE id = ?', [b.is_private ? 1 : 0, cid]);
+        if (typeof b.name === 'string' && b.name.trim()) await db().query('UPDATE channels SET name = ? WHERE id = ?', [Array.from(b.name.trim()).slice(0, 100).join(''), cid]);
+        if (typeof b.description === 'string') await db().query('UPDATE channels SET description = ? WHERE id = ?', [Array.from(b.description.trim()).slice(0, 255).join(''), cid]);
+        return res.json({ ok: true });
+      }
     }
     if (b.action === 'channel_list') {
       const [r] = await db().query('SELECT c.id, c.name, c.description, c.photo_url, c.subscribers, c.owner FROM channels c JOIN channel_subs s ON s.channel_id = c.id WHERE s.phone = ? ORDER BY c.id DESC LIMIT 200', [me]);
@@ -1589,18 +1762,155 @@ module.exports = async (req, res) => {
       const [found] = await db().query('SELECT phone FROM users WHERE phone IN (?)', [wanted]);
       const members = found.map((x) => x.phone);
       if (!members.length) return res.status(400).json({ error: 'None of those people are on Zanply.' });
-      const [g] = await db().query('INSERT INTO chat_groups (name, creator) VALUES (?, ?)', [name, me]);
+      const gun = cleanGroupUser(b.username);
+      if (gun && (await groupUserTaken(gun, 0))) return res.status(409).json({ error: 'That group username is taken. Pick another one.' });
+      const gdesc = cleanDesc(b.description), gphoto = cleanUrl(b.photo_url);
+      const [g] = await db().query('INSERT INTO chat_groups (name, creator, username, description, photo_url) VALUES (?, ?, ?, ?, ?)', [name, me, gun, gdesc, gphoto]);
       const rows = [me].concat(members).map((p) => [g.insertId, p]);
       await db().query('INSERT INTO group_members (group_id, phone) VALUES ?', [rows]);
-      return res.json({ group: { phone: 'g:' + g.insertId, name, group: true, members: rows.length } });
+      return res.json({ group: { phone: 'g:' + g.insertId, name, group: true, members: rows.length, photo_url: gphoto, username: gun } });
     }
 
     if (b.action === 'group_info') {
-      if (!isGroup(b.group) || !(await isMember(gid(b.group), me))) return res.status(403).json({ error: 'You are not in this group.' });
-      const [g] = await db().query('SELECT name, creator FROM chat_groups WHERE id = ?', [gid(b.group)]);
-      const [m] = await db().query('SELECT gm.phone FROM group_members gm WHERE gm.group_id = ?', [gid(b.group)]);
-      const mdn = await displayNames(m.map((x) => x.phone));
-      return res.json({ name: g[0] ? g[0].name : '', creator: g[0] ? g[0].creator : '', members: m.map((x) => ({ phone: x.phone, name: mdn[x.phone] || '' })) });
+      if (!isGroup(b.group)) return res.status(403).json({ error: 'You are not in this group.' });
+      const g = gid(b.group), ctx = await groupCtx(g, me);
+      if (!ctx) return res.status(403).json({ error: 'You are not in this group.' });
+      const [gr] = await db().query('SELECT name, creator, username, description, photo_url FROM chat_groups WHERE id = ?', [g]);
+      const [m] = await db().query('SELECT phone, role FROM group_members WHERE group_id = ?', [g]);
+      const phones = m.map((x) => x.phone), mdn = await displayNames(phones), unm = {}, hid = {};
+      if (phones.length) {
+        const [pr] = await db().query('SELECT phone, username, extra, privacy FROM profiles WHERE phone IN (?)', [phones]).catch(() => [[]]);
+        pr.forEach((x) => { if (x.username && parseExtra(x.extra).acct !== 'business') unm[x.phone] = x.username; if (parsePv(x.privacy).hidePhone) hid[x.phone] = true; });
+      }
+      let pending = 0;
+      if (ctx.can('approve')) { const [pc] = await db().query('SELECT COUNT(*) AS n FROM group_requests WHERE group_id = ?', [g]).catch(() => [[{ n: 0 }]]); pending = Number(pc[0].n) || 0; }
+      const gg = gr[0] || {}, admins = [gg.creator].concat(m.filter((x) => x.role === 'admin' && x.phone !== gg.creator).map((x) => x.phone));
+      return res.json({ name: gg.name || '', creator: gg.creator || '', username: gg.username || '', description: gg.description || '', photo_url: gg.photo_url || '',
+        permissions: ctx.perms, admins, my_role: ctx.isOwner ? 'owner' : ctx.isAdmin ? 'admin' : 'member', pending,
+        members: m.map((x) => ({ phone: x.phone, name: mdn[x.phone] || '', username: unm[x.phone] || '', hid: !!hid[x.phone], role: x.phone === gg.creator ? 'owner' : x.role })) });
+    }
+
+    /* change name / username / description / picture. Admins, or everyone when the admins allowed it. */
+    if (b.action === 'group_update') {
+      if (!isGroup(b.group)) return res.status(400).json({ error: 'Bad request.' });
+      const g = gid(b.group), ctx = await groupCtx(g, me);
+      if (!ctx) return res.status(403).json({ error: 'You are not in this group.' });
+      if (!(ctx.can('edit') || ctx.perms.edit === 'all')) return res.status(403).json({ error: 'Only admins can change the group info.' });
+      const sets = [], vals = [];
+      if (b.name !== undefined) { const n = Array.from(String(b.name || '').trim()).slice(0, 250).join(''); if (!n) return res.status(400).json({ error: 'Give the group a name.' }); sets.push('name = ?'); vals.push(n); }
+      if (b.username !== undefined) { const u = cleanGroupUser(b.username); if (u && (await groupUserTaken(u, g))) return res.status(409).json({ error: 'That group username is taken. Pick another one.' }); sets.push('username = ?'); vals.push(u); }
+      if (b.description !== undefined) { sets.push('description = ?'); vals.push(cleanDesc(b.description)); }
+      if (b.photo_url !== undefined) { sets.push('photo_url = ?'); vals.push(cleanUrl(b.photo_url)); }
+      if (!sets.length) return res.json({ ok: true });
+      await db().query('UPDATE chat_groups SET ' + sets.join(', ') + ' WHERE id = ?', vals.concat([g]));
+      return res.json({ ok: true });
+    }
+
+    /* add people. With "Require admin approval" on, members who are not admins only send a request. */
+    if (b.action === 'group_add') {
+      if (!isGroup(b.group)) return res.status(400).json({ error: 'Bad request.' });
+      const g = gid(b.group), ctx = await groupCtx(g, me);
+      if (!ctx) return res.status(403).json({ error: 'You are not in this group.' });
+      if (!(ctx.can('add') || ctx.perms.add === 'all')) return res.status(403).json({ error: 'Only admins can add members.' });
+      const wanted = Array.from(new Set((Array.isArray(b.members) ? b.members : []).filter((p) => phoneOk(p) && p !== me))).slice(0, 200);
+      if (!wanted.length) return res.status(400).json({ error: 'Pick at least one person.' });
+      const [found] = await db().query('SELECT phone FROM users WHERE phone IN (?)', [wanted]);
+      if (!found.length) return res.status(404).json({ error: 'That number is not registered to Zanply.' });
+      const [have] = await db().query('SELECT phone FROM group_members WHERE group_id = ? AND phone IN (?)', [g, found.map((x) => x.phone)]);
+      const hs = new Set(have.map((x) => x.phone)), fresh = found.map((x) => x.phone).filter((p) => !hs.has(p));
+      if (!fresh.length) return res.status(400).json({ error: 'They are already in this group.' });
+      if (ctx.perms.approval && !ctx.isAdmin) {
+        await db().query('INSERT IGNORE INTO group_requests (group_id, phone, added_by) VALUES ?', [fresh.map((p) => [g, p, me])]);
+        return res.json({ ok: true, pending: fresh.length });
+      }
+      const [cn] = await db().query('SELECT COUNT(*) AS n FROM group_members WHERE group_id = ?', [g]);
+      const cap = (await isPremium(ctx.creator)) ? MAX_GROUP_PREM : MAX_GROUP;
+      if (Number(cn[0].n) + fresh.length > cap) return res.status(403).json({ error: 'This group is full.' });
+      await db().query('INSERT IGNORE INTO group_members (group_id, phone) VALUES ?', [fresh.map((p) => [g, p])]);
+      await db().query('DELETE FROM group_requests WHERE group_id = ? AND phone IN (?)', [g, fresh]).catch(() => {});
+      if (rt.on()) await rt.signal(fresh, 'msg', { from: 'g:' + g }).catch(() => {});
+      return res.json({ ok: true, added: fresh.length });
+    }
+
+    if (b.action === 'group_remove') {
+      if (!isGroup(b.group) || !phoneOk(b.member)) return res.status(400).json({ error: 'Bad request.' });
+      const g = gid(b.group), ctx = await groupCtx(g, me);
+      if (!ctx) return res.status(403).json({ error: 'You are not in this group.' });
+      if (!ctx.can('remove')) return res.status(403).json({ error: 'You cannot remove members.' });
+      if (b.member === ctx.creator) return res.status(403).json({ error: 'The group owner cannot be removed.' });
+      const [t] = await db().query('SELECT role FROM group_members WHERE group_id = ? AND phone = ?', [g, b.member]);
+      if (!t.length) return res.json({ ok: true });
+      if (t[0].role === 'admin' && !ctx.isOwner) return res.status(403).json({ error: 'Only the group owner can remove an admin.' });
+      await db().query('DELETE FROM group_members WHERE group_id = ? AND phone = ?', [g, b.member]);
+      if (rt.on()) await rt.signal([b.member], 'msg', { from: 'g:' + g }).catch(() => {});
+      return res.json({ ok: true });
+    }
+
+    /* make people admins (any admin) or take admin away (owner only) */
+    if (b.action === 'group_admin') {
+      if (!isGroup(b.group)) return res.status(400).json({ error: 'Bad request.' });
+      const g = gid(b.group), ctx = await groupCtx(g, me);
+      if (!ctx) return res.status(403).json({ error: 'You are not in this group.' });
+      const grant = b.admin !== false, list = (Array.isArray(b.members) ? b.members : (b.member ? [b.member] : [])).filter((p) => phoneOk(p) && p !== ctx.creator).slice(0, 50);
+      if (!list.length) return res.status(400).json({ error: 'Pick at least one member.' });
+      if (!(grant ? ctx.isAdmin : ctx.isOwner)) return res.status(403).json({ error: grant ? 'Only admins can add admins.' : 'Only the group owner can remove an admin.' });
+      await db().query('UPDATE group_members SET role = ? WHERE group_id = ? AND phone IN (?)', [grant ? 'admin' : 'member', g, list]);
+      return res.json({ ok: true });
+    }
+
+    /* group permissions: who can add / send / edit, approval, and what each admin may do */
+    if (b.action === 'group_permissions') {
+      if (!isGroup(b.group)) return res.status(400).json({ error: 'Bad request.' });
+      const g = gid(b.group), ctx = await groupCtx(g, me);
+      if (!ctx) return res.status(403).json({ error: 'You are not in this group.' });
+      if (!ctx.isAdmin) return res.status(403).json({ error: 'Only admins can change group permissions.' });
+      const inp = (b.permissions && typeof b.permissions === 'object') ? b.permissions : {}, o = Object.assign({}, ctx.perms);
+      ['edit', 'send', 'add'].forEach((k) => { if (inp[k] === 'all' || inp[k] === 'admins') o[k] = inp[k]; });
+      if (typeof inp.approval === 'boolean') o.approval = inp.approval;
+      if (ctx.isOwner && inp.adminPerms && typeof inp.adminPerms === 'object') {
+        const ap = {};
+        Object.keys(inp.adminPerms).filter(phoneOk).slice(0, 200).forEach((ph) => { const v = inp.adminPerms[ph] || {}; ap[ph] = { edit: v.edit !== false, approve: v.approve !== false, add: v.add !== false, remove: v.remove !== false }; });
+        o.adminPerms = ap;
+      }
+      await db().query('UPDATE chat_groups SET perms = ? WHERE id = ?', [JSON.stringify(o), g]);
+      return res.json({ ok: true, permissions: o });
+    }
+
+    /* people waiting for approval */
+    if (b.action === 'group_requests') {
+      if (!isGroup(b.group)) return res.status(400).json({ error: 'Bad request.' });
+      const g = gid(b.group), ctx = await groupCtx(g, me);
+      if (!ctx || !ctx.can('approve')) return res.status(403).json({ error: 'Only admins can see join requests.' });
+      const [rq] = await db().query('SELECT phone, added_by, created_at FROM group_requests WHERE group_id = ? ORDER BY created_at LIMIT 200', [g]);
+      const nm = await displayNames(rq.map((x) => x.phone).concat(rq.map((x) => x.added_by)));
+      return res.json({ requests: rq.map((x) => ({ phone: x.phone, name: nm[x.phone] || '', by: x.added_by, by_name: nm[x.added_by] || '' })) });
+    }
+    if (b.action === 'group_approve') {
+      if (!isGroup(b.group)) return res.status(400).json({ error: 'Bad request.' });
+      const g = gid(b.group), ctx = await groupCtx(g, me);
+      if (!ctx || !ctx.can('approve')) return res.status(403).json({ error: 'Only admins can approve members.' });
+      const list = (Array.isArray(b.members) ? b.members : []).filter(phoneOk).slice(0, 200);
+      if (!list.length) return res.status(400).json({ error: 'Bad request.' });
+      if (b.approve !== false) {
+        const [rq] = await db().query('SELECT phone FROM group_requests WHERE group_id = ? AND phone IN (?)', [g, list]);
+        if (rq.length) await db().query('INSERT IGNORE INTO group_members (group_id, phone) VALUES ?', [rq.map((x) => [g, x.phone])]);
+        if (rt.on() && rq.length) await rt.signal(rq.map((x) => x.phone), 'msg', { from: 'g:' + g }).catch(() => {});
+      }
+      await db().query('DELETE FROM group_requests WHERE group_id = ? AND phone IN (?)', [g, list]);
+      return res.json({ ok: true });
+    }
+
+    /* join through the group link (/chats/<group username>) */
+    if (b.action === 'group_join') {
+      const un = cleanGroupUser(b.username);
+      if (!un) return res.status(400).json({ error: 'Bad request.' });
+      const [gr] = await db().query('SELECT id, name, photo_url, perms FROM chat_groups WHERE LOWER(username) = ? LIMIT 1', [un.toLowerCase()]);
+      if (!gr.length) return res.status(404).json({ error: 'This group link is not valid.' });
+      const g = gr[0].id, out = { phone: 'g:' + g, name: gr[0].name, group: true, photo_url: gr[0].photo_url || '' };
+      if (await isMember(g, me)) return res.json({ group: out, joined: true });
+      if (parsePerms(gr[0].perms).approval) { await db().query('INSERT IGNORE INTO group_requests (group_id, phone, added_by) VALUES (?, ?, ?)', [g, me, me]); return res.json({ group: out, pending: true }); }
+      await db().query('INSERT IGNORE INTO group_members (group_id, phone) VALUES (?, ?)', [g, me]);
+      return res.json({ group: out, joined: true });
     }
 
     if (b.action === 'group_leave') {
@@ -1610,6 +1920,7 @@ module.exports = async (req, res) => {
       if (!left[0].n) {
         await db().query('DELETE FROM group_messages WHERE group_id = ?', [gid(b.group)]);
         await db().query('DELETE FROM chat_groups WHERE id = ?', [gid(b.group)]);
+        await db().query('DELETE FROM group_requests WHERE group_id = ?', [gid(b.group)]).catch(() => {});
       }
       return res.json({ ok: true });
     }
@@ -1622,8 +1933,12 @@ module.exports = async (req, res) => {
       const size = Number(b.size) || 0;
       if (size < 1) return res.status(400).json({ error: 'Bad request.' });
       { const prem = await isPremium(me), cap = (prem ? 150 : 30) * 1024 * 1024; if (size > cap) return res.status(413).json({ error: prem ? 'That file is too big. The limit is 150 MB.' : 'To send a file above 30 MB you have to subscribe to Zanply Premium', premium: !prem }); }
-      if (isGroup(to)) {
+      if (isChanId(to)) {
+        const ch = await chanRow(cidOf(to));
+        if (!ch || ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can send files.' });
+      } else if (isGroup(to)) {
         if (!(await isMember(gid(to), me))) return res.status(403).json({ error: 'You are not in this group.' });
+        if (!(await groupCanSend(gid(to), me))) return res.status(403).json({ error: 'Only admins can send messages to this group.' });
       } else {
         if (!phoneOk(to) || !(await findUser(to))) return res.status(404).json({ error: "That number isn't on Zanply yet." });
         const bs = await blockState(me, to);
@@ -1645,7 +1960,7 @@ module.exports = async (req, res) => {
         if (!cloudOn()) return res.status(500).json({ error: 'File storage is not set up on the server yet.' });
         const [m] = await db().query('SELECT owner, peer, public_id FROM cloud_media WHERE id = ?', [id]);
         const row = m[0];
-        const allowed = row && (row.owner === me || row.peer === me || (isGroup(row.peer) && (await isMember(gid(row.peer), me))));
+        const allowed = row && (row.owner === me || row.peer === me || (isGroup(row.peer) && (await isMember(gid(row.peer), me))) || (isChanId(row.peer) && (await chanCanRead(cidOf(row.peer), me))));
         if (!allowed) return res.status(404).json({ error: 'File not found.' });
         const url = cloud().url(row.public_id, { resource_type: 'raw', type: 'authenticated', sign_url: true, secure: true });
         return res.json({ url });
@@ -1653,7 +1968,7 @@ module.exports = async (req, res) => {
       // Old files sent before the move to Cloudinary are still readable from the database.
       const [m] = await db().query('SELECT owner, peer, data FROM media WHERE id = ?', [id]);
       const row = m[0];
-      const allowed = row && (row.owner === me || row.peer === me || (isGroup(row.peer) && (await isMember(gid(row.peer), me))));
+      const allowed = row && (row.owner === me || row.peer === me || (isGroup(row.peer) && (await isMember(gid(row.peer), me))) || (isChanId(row.peer) && (await chanCanRead(cidOf(row.peer), me))));
       if (!allowed) return res.status(404).json({ error: 'File not found.' });
       return res.json({ data: Buffer.from(row.data).toString('base64') });
     }
