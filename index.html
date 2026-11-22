@@ -6931,7 +6931,7 @@ ZW|Zimbabwe|263`;
         var top = mk('div', 'gi-top'), av = mk('div', 'zav'), photo = (extra && extra.photo_url) || gm.photo || groupPhoto(g);
         av.textContent = firstCh(g.name); if (photo) paintBg(av, photo); else av.style.background = AVC[((g.name || '#').charCodeAt(0) + (g.name || '#').length) % AVC.length];
         top.appendChild(av); top.appendChild(mk('div', 'gi-name', g.name || 'Group'));
-        if (members) var gcnt = mk('div', 'gi-count', members.length + (members.length === 1 ? ' member' : ' members')); gcnt.style.cssText = 'color:#3b9cf5;font-weight:600'; top.appendChild(gcnt);
+        if (members) { var gcnt = mk('div', 'gi-count', members.length + (members.length === 1 ? ' member' : ' members')); gcnt.style.cssText = 'color:#3b9cf5;font-weight:600'; top.appendChild(gcnt); }
         if (GON[ph] != null) { var gol = mk('div', 'gi-count'); gol.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;margin-top:3px;font-weight:700;color:var(--text)'; gol.innerHTML = '<i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#25d366"></i>' + GON[ph] + ' online'; top.appendChild(gol); }
         var admin = !!members && iAmAdmin();
         body.appendChild(top);
@@ -7923,6 +7923,7 @@ ZW|Zimbabwe|263`;
     /* profile details of the other person */
     var oi = openInfo;
     openInfo = function () {
+      if (openWith && /^c:/.test(openWith) && window.chanInfoOpen) return window.chanInfoOpen(openWith);
       if (openUser && openUser.group) return openGroupInfo();
       oi(); if (!openUser) return;
       chatCall('blockstate', { with: openUser.phone }).then(function (r) { curBlocked = !!r.blocked; setBlockedUI(); }).catch(function () {});
@@ -10474,7 +10475,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     window.__cw = null;
     if (isChan(u)) { u.group = true; u.channel = true; }
     _ot.apply(this, arguments);
-    var ch = isChan(u); $('threadView').classList.toggle('chanro', ch && !ownsChan(u.phone));
+    var ch = isChan(u); $('threadView').classList.toggle('chanro', ch && !ownsChan(u.phone)); $('threadView').classList.toggle('chanview', !!ch);
     if (ch) {
       $('thVideo').style.display = 'none'; $('thAudio').style.display = 'none';
       chanHeadStart(u.phone);
@@ -11231,6 +11232,31 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
 .zi-vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:5;background:#000}.zi.hasvid .zi-sc,.zi.hasvid .zi-cp{display:none}
 .zi-cp b{color:#21c063}
 .zi-go{position:absolute;left:24px;right:24px;bottom:calc(20px + env(safe-area-inset-bottom,0px));width:auto}
+
+/* ---- Channel layout (colours come from the app theme) ---- */
+#threadView.chanview #msgs{gap:12px!important;padding:10px 12px 14px!important}
+#threadView.chanview #msgs::before{content:attr(data-day);align-self:center;margin:4px 0;padding:6px 20px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);font-weight:600;font-size:15px}
+#threadView.chanview #msgs .bub{align-self:flex-start!important;width:auto;max-width:calc(100% - 56px)!important;min-width:60%;margin-right:56px;border-radius:18px!important;padding:10px 14px 8px!important;font-size:16px;line-height:1.45;display:block!important;position:relative;overflow:visible!important}
+#threadView.chanview #msgs .bub::before{display:none!important}
+#threadView.chanview #msgs .bub.media{padding:10px 10px 8px!important}
+#threadView.chanview #msgs .bub.media img,#threadView.chanview #msgs .bub.media video{width:100%;border-radius:12px;display:block}
+#threadView.chanview #msgs .bub small{display:block!important;text-align:right;margin:4px 0 0!important;padding:0!important;font-size:12.5px!important}
+.chph{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.chph b{color:var(--acc,#21c063);font-size:17px;font-weight:700}
+.chph .adm{margin-left:auto;background:rgba(128,128,128,.22);color:inherit;font-size:12.5px;padding:3px 12px;border-radius:999px}
+.chshare{position:absolute;right:-52px;bottom:6px;width:42px;height:42px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;padding:0}
+.chshare svg{width:22px;height:22px;fill:currentColor}
+#threadView.chanview .crx{margin:8px 0 0;gap:8px}
+#threadView.chanview .crx button{padding:5px 12px;font-size:15px}
+#chBanner{display:none;align-items:center;gap:10px;margin:8px 10px 0;padding:10px 12px;border-radius:16px;border:1px solid var(--border);background:var(--card);color:var(--text)}
+#threadView.chanview #chBanner:not(.off){display:flex}
+#chBanner .mi{flex:none;font-size:24px}
+#chBanner .tx{flex:1;min-width:0}#chBanner .tx b{display:block;color:var(--acc,#21c063);font-size:14.5px}#chBanner .tx span{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#chBanner .vw{border:none;background:var(--acc,#21c063);color:#06140c;font-weight:700;padding:9px 18px;border-radius:999px}
+#chBanner .cl{border:none;background:none;color:var(--muted);font-size:20px;padding:4px}
+#chRO{display:none;margin:6px 10px calc(10px + env(safe-area-inset-bottom,0px));padding:12px;border-radius:999px;background:var(--acc,#21c063);color:#06140c;text-align:center;font-size:16px;font-weight:600}
+#threadView.chanro #chRO{display:block}
+#threadView.chanview:not(.chanro) .comp{border-radius:32px;margin:6px 10px calc(8px + env(safe-area-inset-bottom,0px))}
 </style>
 <script>
 (function () {
@@ -12902,6 +12928,52 @@ ZFAQ.push(["Safety, rules and contact",[
   }
   new MutationObserver(clean).observe(document.documentElement, { childList: true, subtree: true });
   clean();
+})();
+</script>
+<script>
+/* Zanply channel design: header banner, post headers, share buttons, read-only bar */
+(function () {
+  var tv = document.getElementById('threadView'), msgs = document.getElementById('msgs'), inp = document.getElementById('msgInput');
+  if (!tv || !msgs) return;
+  var ph0 = inp ? inp.getAttribute('placeholder') : 'Message', banner, ro;
+  var SHARE = '<svg viewBox="0 0 24 24"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>';
+  function build() {
+    if (banner) return;
+    banner = document.createElement('div'); banner.id = 'chBanner';
+    banner.innerHTML = '<span class="mi">\uD83D\uDCE2</span><div class="tx"><b>Channel Announcement</b><span></span></div><button class="vw" type="button">View</button><button class="cl" type="button" aria-label="Close">\u2715</button>';
+    var head = tv.querySelector('.th-head'); head.parentNode.insertBefore(banner, head.nextSibling);
+    banner.querySelector('.cl').onclick = function () { banner.classList.add('off'); };
+    banner.querySelector('.vw').onclick = function () { var f = msgs.querySelector('.bub'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+    ro = document.createElement('div'); ro.id = 'chRO'; ro.textContent = '\u24D8  This channel is read-only.';
+    var comp = document.getElementById('comp'); comp.parentNode.insertBefore(ro, comp);
+  }
+  function dayLabel(t) {
+    var d = new Date(t), n = new Date(); if (isNaN(d)) return 'Today';
+    if (d.toDateString() === n.toDateString()) return 'Today';
+    var y = new Date(n); y.setDate(n.getDate() - 1); if (d.toDateString() === y.toDateString()) return 'Yesterday';
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  function enhance() {
+    if (!tv.classList.contains('chanview')) return; build();
+    var name = (document.getElementById('thName') || {}).textContent || 'Channel', first = msgs.querySelector('.bub');
+    msgs.setAttribute('data-day', first ? dayLabel(+first.getAttribute('data-at')) : 'Today');
+    if (first) { var t = (first.cloneNode(true)); Array.prototype.forEach.call(t.querySelectorAll('small,.crx,.chph,.chshare'), function (n) { n.remove(); }); var sp = banner.querySelector('.tx span'), nt = (t.textContent || '').trim().slice(0, 90) || 'New post'; if (sp.textContent !== nt) sp.textContent = nt; }
+    Array.prototype.forEach.call(msgs.querySelectorAll('.bub'), function (b) {
+      if (b.getAttribute('data-ch') === name) return; b.setAttribute('data-ch', name);
+      var old = b.querySelector('.chph'); if (old) old.remove(); var os = b.querySelector('.chshare'); if (os) os.remove();
+      var h = document.createElement('div'); h.className = 'chph'; var n = document.createElement('b'); n.textContent = name; var a = document.createElement('span'); a.className = 'adm'; a.textContent = 'Admin'; h.appendChild(n); h.appendChild(a);
+      b.insertBefore(h, b.firstChild);
+      var sh = document.createElement('button'); sh.type = 'button'; sh.className = 'chshare'; sh.setAttribute('aria-label', 'Share'); sh.innerHTML = SHARE;
+      sh.onclick = function (e) { e.stopPropagation(); var c = b.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('small,.crx,.chph,.chshare'), function (x) { x.remove(); }); var tx = (c.textContent || '').trim(); try { if (navigator.share) navigator.share({ title: name, text: tx }); else if (navigator.clipboard) navigator.clipboard.writeText(tx); } catch (x) {} };
+      b.appendChild(sh);
+    });
+  }
+  new MutationObserver(function () {
+    var on = tv.classList.contains('chanview');
+    if (inp) inp.setAttribute('placeholder', on ? 'Broadcast a message\u2026' : ph0);
+    if (banner && !on) banner.classList.remove('off');
+    enhance();
+  }).observe(tv, { attributes: true, attributeFilter: ['class'], childList: true, subtree: true });
 })();
 </script>
 </body>
