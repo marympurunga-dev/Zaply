@@ -6241,7 +6241,7 @@ ZW|Zimbabwe|263`;
       else b = mk('div', 'bub' + (m.mine ? ' mine' : '') + (isStickerBody(m.body) ? ' stk' : ''), m.body);
       var sm = mk('small', '', hhmm(m.at)); b.appendChild(sm);
       if (m.mine && m.st && !wasCall && bd.indexOf('__game__') !== 0 && !(openUser && openUser.group)) sm.appendChild(tickEl(m.st));
-      if (m.id) b.setAttribute('data-id', String(m.id));
+      if (m.id) b.setAttribute('data-id', String(m.id)); if (m.views != null) b.setAttribute('data-views', String(m.views));
       if (m.id && openWith && keptMap(openWith)[m.id]) b.classList.add('kept');
       if (openUser && openUser.group && !m.mine && m.from) b.insertBefore(mk('span', 'gfrom', m.from), b.firstChild);
       if (m.id && openWith && /^c:/.test(openWith) && window.chanRxRow) b.appendChild(window.chanRxRow(m.id));
@@ -6279,6 +6279,7 @@ ZW|Zimbabwe|263`;
       chatCall('history', { with: who, after: lastId, track: track }).then(function (res) {
         tk = res.ticks || null;
         if (res.rx) { try { window.chanRxMerge(res.rx); } catch (e) {} }
+        if (res.vw) { try { window.chanViewsMerge(res.vw); } catch (e) {} }
         return Promise.all(res.messages.map(function (m) {
           if (isGroupId(who) || isCallMsg(m.body)) return m;
           return E2E.decrypt(who, m.body).then(function (t) { return Object.assign({}, m, { body: t }); });
@@ -10475,7 +10476,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     window.__cw = null;
     if (isChan(u)) { u.group = true; u.channel = true; }
     _ot.apply(this, arguments);
-    var ch = isChan(u); $('threadView').classList.toggle('chanro', ch && !ownsChan(u.phone)); $('threadView').classList.toggle('chanview', !!ch);
+    var ch = isChan(u); $('threadView').classList.toggle('chanro', ch && !ownsChan(u.phone)); $('threadView').classList.toggle('chanview', !!ch); window.__chPh = ch ? u.phone : '';
     if (ch) {
       $('thVideo').style.display = 'none'; $('thAudio').style.display = 'none';
       chanHeadStart(u.phone);
@@ -10484,7 +10485,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         $('threadView').classList.toggle('chanro', !c.mine);
         $('thName').textContent = c.name;
         try { setAv($('thAv'), { phone: u.phone, name: c.name, group: true, channel: true, photo_url: c.photo_url }); } catch (e) {}
-        chanHeadStart(u.phone, true);
+        chanHeadStart(u.phone, true); try { document.dispatchEvent(new Event('chaninfo')); } catch (x) {}
       }).catch(function (e) { if (e && e.gone && openWith === u.phone) toast('This channel no longer exists.'); });
     }
     try { applyTheme(); pinBarUpdate(); } catch (e) {}
@@ -10493,7 +10494,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
 
   /* ---------- Channels: header, reactions, info page, subscribe ---------- */
   var CHI = {}, CHK = {}, CHX = {}, chHeadT = 0, chPhase = '', chInfoAt = 0;
-  var CH_EMO = ['\uD83D\uDC4D', '\u2764\uFE0F', '\uD83D\uDE02', '\uD83D\uDE2E', '\uD83D\uDE22', '\uD83D\uDE4F'];
+  var CH_EMO = ['\uD83D\uDC4D', '\u2764\uFE0F', '\uD83D\uDD25', '\uD83D\uDE02', '\uD83D\uDE2E', '\uD83D\uDE22', '\uD83D\uDE4F'];
   (function () {
     var st = document.createElement('style');
     st.textContent = '#chanBar{display:none!important}#threadView.chanro #comp,#threadView.chanro .comp,#threadView.chanro #plusMenu,#threadView.chanro #emojiBox{display:none!important}' +
@@ -10507,7 +10508,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     document.head.appendChild(st);
   })();
   function shortNum(n) {
-    n = Number(n) || 0; var u = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'k']];
+    n = Number(n) || 0; var u = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
     for (var i = 0; i < u.length; i++) if (n >= u[i][0]) { var v = n / u[i][0], t = v >= 100 ? Math.floor(v) : Math.floor(v * 10) / 10; return String(t).replace(/\.0$/, '') + u[i][1]; }
     return String(n);
   }
@@ -10542,7 +10543,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       if (!d.c[e]) return; var b = mk('button', d.m === e ? 'on' : '', e + ' ' + shortNum(d.c[e])); b.type = 'button';
       b.addEventListener('click', function (ev) { ev.stopPropagation(); rxSend(id, d.m === e ? '' : e); }); row.appendChild(b);
     });
-    var add = mk('button', 'crxa', '\u263A+'); add.type = 'button'; add.setAttribute('aria-label', 'React');
+    var add = mk('button', 'crxa', '+'); add.type = 'button'; add.setAttribute('aria-label', 'React');
     add.addEventListener('click', function (ev) { ev.stopPropagation(); row.classList.add('open'); }); row.appendChild(add);
     var pk = mk('span', 'crxp');
     CH_EMO.forEach(function (e) { var b = mk('button', '', e); b.type = 'button'; b.addEventListener('click', function (ev) { ev.stopPropagation(); row.classList.remove('open'); rxSend(id, d.m === e ? '' : e); }); pk.appendChild(b); });
@@ -10556,6 +10557,23 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     chatCall('channel_react', { post: id, emoji: emoji }).then(function (r) { if (r && r.rx) { var o = {}; o[id] = r.rx; window.chanRxMerge(o); } })
       .catch(function (e) { toast((e && e.message) || 'Could not react.'); try { fetchMsgs(); } catch (x) {} });
   }
+  /* hooks used by the channel design script */
+  window.chanUI = {
+    state: function (ph) {
+      var c = CHI[ph] || {}, ver = false, mu = false;
+      try { ver = !!(c.verified || c.owner_verified || (c.mine && typeof Pf !== 'undefined' && Pf && Pf.verified)); } catch (e) {}
+      try { mu = isMuted(ph) || !!c.muted; } catch (e) {}
+      return { name: c.name || '', verified: ver, muted: mu, mine: !!c.mine };
+    },
+    bell: function (ph, cb) {
+      var c = CHI[ph]; if (!c) return; var nv = !(isMuted(ph) || !!c.muted);
+      try { setMute(ph, nv ? Date.now() + 36500 * 864e5 : 0); renderChats(); } catch (e) {}
+      chatCall('channel_mute', { channel: ph, muted: nv }).then(function () { c.muted = nv; CHI[ph] = c; toast(nv ? 'Channel muted' : 'Notifications on', true); if (cb) cb(); })
+        .catch(function (e) { try { setMute(ph, !nv ? Date.now() + 36500 * 864e5 : 0); } catch (x) {} toast((e && e.message) || 'Could not change this.'); if (cb) cb(); });
+      if (cb) cb();
+    },
+    gift: function () { try { if (typeof openGift === 'function') openGift(); else toast('Gifts are not available here'); } catch (e) { toast('Gifts are not available here'); } }
+  };
   /* channel info page */
   window.chanInfoOpen = function (ph) {
     if (Date.now() - chInfoAt < 600) return; chInfoAt = Date.now();
@@ -11257,6 +11275,36 @@ html.islight .zst-fab:not(.main){background:#e9edef;color:#111b21}
 #chRO{display:none;margin:6px 10px calc(10px + env(safe-area-inset-bottom,0px));padding:12px;border-radius:999px;background:var(--acc,#21c063);color:#06140c;text-align:center;font-size:16px;font-weight:600}
 #threadView.chanro #chRO{display:block}
 #threadView.chanview:not(.chanro) .comp{border-radius:32px;margin:6px 10px calc(8px + env(safe-area-inset-bottom,0px))}
+#threadView.chanview #msgs .bub .chtitle{font-size:19px;font-weight:700;margin:0 0 6px}
+#threadView.chanview #msgs .bub .chck{display:flex;align-items:center;gap:10px;margin:3px 0}
+.chck i{flex:none;width:22px;height:22px;border-radius:6px;background:var(--acc,#21c063);display:flex;align-items:center;justify-content:center}
+.chck i svg{width:15px;height:15px}
+.chft{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;margin-top:8px}
+.chft .crx{margin:0!important;flex:1}
+#threadView.chanview #msgs .bub .chft small{margin:0!important;white-space:nowrap;display:flex!important;align-items:center;gap:4px}
+.chvw{display:inline-flex;align-items:center;gap:4px;margin-right:6px}.chvw svg{width:16px;height:16px;fill:currentColor}
+.chlearn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:9px 16px;border-radius:999px;background:rgba(128,128,128,.22);color:var(--acc,#21c063)!important;font-weight:600;text-decoration:none}
+.chvf{display:inline-flex;vertical-align:-3px;margin-left:5px}.chvf svg{width:18px;height:18px}
+#thName .chvf{margin-left:6px}
+#chHBell,#chGift,#chBell{display:none;border:none;padding:0;align-items:center;justify-content:center;flex:none}
+#chHBell{background:none;color:inherit;width:42px;height:42px}#chHBell svg{width:26px;height:26px}
+#chGift,#chBell{width:46px;height:46px;border-radius:50%;background:var(--acc,#21c063);color:#06140c}#chGift svg,#chBell svg{width:24px;height:24px}
+#threadView.chanview #chHBell{display:flex}
+#threadView.chanview #chGift{display:flex;order:1}
+#threadView.chanview.chanro #chBell{display:flex;order:9}
+#threadView.chanview .comp{align-items:center}
+#threadView.chanview #btnExpand,#threadView.chanview #btnGallery,#threadView.chanview #btnMic{display:none!important}
+#threadView.chanview #compLeft{display:contents!important}
+#threadView.chanview .inbox{display:contents!important}
+#threadView.chanview #btnEmoji{order:2}
+#threadView.chanview #msgInput{order:3;flex:1;min-width:0;border-radius:24px;padding:12px 14px;background:rgba(128,128,128,.16)}
+#threadView.chanview #btnPlus{order:4}#threadView.chanview #btnCamera{order:5}
+#threadView.chanview #btnLike,#threadView.chanview #btnSendMsg{order:9}
+#threadView.chanview.chanro #comp,#threadView.chanview.chanro .comp{display:flex!important}
+#threadView.chanview.chanro #btnLike,#threadView.chanview.chanro #btnSendMsg{display:none!important}
+#threadView.chanview.chanro #btnEmoji,#threadView.chanview.chanro #btnPlus,#threadView.chanview.chanro #btnCamera,#threadView.chanview.chanro #msgInput{pointer-events:none;opacity:.7}
+#threadView.chanview #msgs .bub.media .chshare{display:none}
+#threadView.chanview #msgs .bub.media .mfwd{left:auto!important;right:-52px!important;top:auto;bottom:6px;margin-top:0;width:42px;height:42px;background:var(--card);color:var(--text);border:1px solid var(--border)}
 </style>
 <script>
 (function () {
@@ -12931,12 +12979,23 @@ ZFAQ.push(["Safety, rules and contact",[
 })();
 </script>
 <script>
-/* Zanply channel design: header banner, post headers, share buttons, read-only bar */
+/* Zanply channel design: header bell + verified badge, banner, formatted posts, views, share, gift and bell */
 (function () {
-  var tv = document.getElementById('threadView'), msgs = document.getElementById('msgs'), inp = document.getElementById('msgInput');
-  if (!tv || !msgs) return;
-  var ph0 = inp ? inp.getAttribute('placeholder') : 'Message', banner, ro;
-  var SHARE = '<svg viewBox="0 0 24 24"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>';
+  var tv = document.getElementById('threadView'), msgs = document.getElementById('msgs'), inp = document.getElementById('msgInput'), comp = document.getElementById('comp');
+  if (!tv || !msgs || !comp) return;
+  var ph0 = inp ? inp.getAttribute('placeholder') : 'Message', banner, ro, gift, bell, hbell, nameEl = document.getElementById('thName');
+  var I = {
+    share: '<svg viewBox="0 0 24 24"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>',
+    eye: '<svg viewBox="0 0 24 24"><path d="M12 5C7 5 2.7 8.1 1 12.5 2.7 16.9 7 20 12 20s9.3-3.1 11-7.5C21.3 8.1 17 5 12 5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>',
+    ck: '<svg viewBox="0 0 24 24" fill="none" stroke="#06140c" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    bell: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16V11a6 6 0 1 0-12 0v5l-2 2h16zM10 21h4"/></svg>',
+    bellOff: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 16V11a6 6 0 0 0-9.3-5M6 11v5l-2 2h14M10 21h4M3 3l18 18"/></svg>',
+    gift: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 7h-2.2A3 3 0 0 0 12 4.8 3 3 0 0 0 6.2 7H4a1 1 0 0 0-1 1v3h18V8a1 1 0 0 0-1-1zM9 7a1 1 0 1 1 2 0v0H9zm4 0a1 1 0 1 1 2 0h-2zM4 13v7a1 1 0 0 0 1 1h6v-8zm9 0v8h6a1 1 0 0 0 1-1v-7z"/></svg>',
+    ver: '<svg viewBox="0 0 24 24" fill="#1877F2"><path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72l-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z"/></svg>'
+  };
+  function st() { try { return window.chanUI.state(window.__chPh); } catch (e) { return { name: '', verified: false, muted: false, mine: false }; } }
+  function short(n) { n = +n || 0; var u = [[1e9, 'B'], [1e6, 'M'], [1e3, 'K']]; for (var i = 0; i < u.length; i++) if (n >= u[i][0]) return (Math.floor(n / u[i][0] * 10) / 10 + '').replace(/\.0$/, '') + u[i][1]; return '' + n; }
+  function btn(id, cls, html, label) { var b = document.createElement('button'); b.type = 'button'; b.id = id; if (cls) b.className = cls; b.setAttribute('aria-label', label); b.innerHTML = html; return b; }
   function build() {
     if (banner) return;
     banner = document.createElement('div'); banner.id = 'chBanner';
@@ -12944,36 +13003,72 @@ ZFAQ.push(["Safety, rules and contact",[
     var head = tv.querySelector('.th-head'); head.parentNode.insertBefore(banner, head.nextSibling);
     banner.querySelector('.cl').onclick = function () { banner.classList.add('off'); };
     banner.querySelector('.vw').onclick = function () { var f = msgs.querySelector('.bub'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
-    ro = document.createElement('div'); ro.id = 'chRO'; ro.textContent = '\u24D8  This channel is read-only.';
-    var comp = document.getElementById('comp'); comp.parentNode.insertBefore(ro, comp);
+    ro = document.createElement('div'); ro.id = 'chRO'; ro.textContent = '\u24D8  This channel is read-only.'; comp.parentNode.insertBefore(ro, comp);
+    hbell = btn('chHBell', 'ic ghost', I.bell, 'Notifications'); var ib = document.getElementById('thInfoBtn'); ib.parentNode.insertBefore(hbell, ib);
+    gift = btn('chGift', 'ic', I.gift, 'Gift'); comp.insertBefore(gift, comp.firstChild);
+    bell = btn('chBell', 'ic', I.bell, 'Notifications'); comp.appendChild(bell);
+    hbell.onclick = bell.onclick = function () { try { window.chanUI.bell(window.__chPh, paintBell); } catch (e) {} };
+    gift.onclick = function () { try { window.chanUI.gift(); } catch (e) {} };
   }
+  function paintBell() { var m = st().muted; if (hbell) hbell.innerHTML = m ? I.bellOff : I.bell; if (bell) bell.innerHTML = m ? I.bellOff : I.bell; }
   function dayLabel(t) {
     var d = new Date(t), n = new Date(); if (isNaN(d)) return 'Today';
     if (d.toDateString() === n.toDateString()) return 'Today';
     var y = new Date(n); y.setDate(n.getDate() - 1); if (d.toDateString() === y.toDateString()) return 'Yesterday';
     return d.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
   }
+  function plainText(b) { var c = b.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('small,.crx,.chph,.chshare,.chft,.chlearn'), function (x) { x.remove(); }); return (c.textContent || '').trim(); }
+  function format(b) {
+    if (b.getAttribute('data-fmt')) return; b.setAttribute('data-fmt', '1');
+    if (b.className.indexOf('media') > -1 || b.className.indexOf('loc') > -1 || b.className.indexOf('game') > -1 || b.className.indexOf('stk') > -1 || b.className.indexOf('callb') > -1) return;
+    var tn = null; Array.prototype.forEach.call(b.childNodes, function (n) { if (n.nodeType === 3 && !tn) tn = n; }); if (!tn) return;
+    var text = tn.nodeValue || '', lines = text.split(/\n/), body = document.createElement('div'); body.className = 'chbody'; body.style.whiteSpace = 'normal';
+    var multi = lines.filter(function (l) { return l.trim(); }).length > 1, first = true;
+    lines.forEach(function (l) {
+      if (!l.trim()) return; var d = document.createElement('div');
+      var m = l.match(/^\s*(?:\u2705|\u2611\uFE0F?|\u2714\uFE0F?)\s*(.*)$/);
+      if (m) { d.className = 'chck'; var i = document.createElement('i'); i.innerHTML = I.ck; var sp = document.createElement('span'); sp.textContent = m[1]; d.appendChild(i); d.appendChild(sp); }
+      else { d.textContent = l.trim(); if (first && multi) d.className = 'chtitle'; }
+      first = false; body.appendChild(d);
+    });
+    b.replaceChild(body, tn);
+    var u = text.match(/https?:\/\/[^\s<>"']+/);
+    if (u) { var a = document.createElement('a'); a.className = 'chlearn'; a.href = u[0]; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'Learn More \u2192'; b.appendChild(a); }
+  }
   function enhance() {
     if (!tv.classList.contains('chanview')) return; build();
-    var name = (document.getElementById('thName') || {}).textContent || 'Channel', first = msgs.querySelector('.bub');
-    msgs.setAttribute('data-day', first ? dayLabel(+first.getAttribute('data-at')) : 'Today');
-    if (first) { var t = (first.cloneNode(true)); Array.prototype.forEach.call(t.querySelectorAll('small,.crx,.chph,.chshare'), function (n) { n.remove(); }); var sp = banner.querySelector('.tx span'), nt = (t.textContent || '').trim().slice(0, 90) || 'New post'; if (sp.textContent !== nt) sp.textContent = nt; }
+    var S = st(), name = (nameEl && nameEl.getAttribute('data-n')) || (nameEl ? nameEl.textContent : '') || S.name || 'Channel', first = msgs.querySelector('.bub');
+    if (nameEl) { var cur = nameEl.querySelector('.chvf'); if (S.verified && !cur) { var v = document.createElement('span'); v.className = 'chvf'; v.innerHTML = I.ver; nameEl.appendChild(v); } else if (!S.verified && cur) cur.remove(); }
+    paintBell();
+    if (inp) { inp.setAttribute('placeholder', 'Broadcast a message\u2026'); inp.disabled = tv.classList.contains('chanro'); }
+    var day = first ? dayLabel(+first.getAttribute('data-at')) : 'Today'; if (msgs.getAttribute('data-day') !== day) msgs.setAttribute('data-day', day);
+    if (first) { var sp = banner.querySelector('.tx span'), nt = plainText(first).slice(0, 90) || 'New post'; if (sp.textContent !== nt) sp.textContent = nt; }
+    var key = name + '|' + (S.verified ? 1 : 0);
     Array.prototype.forEach.call(msgs.querySelectorAll('.bub'), function (b) {
-      if (b.getAttribute('data-ch') === name) return; b.setAttribute('data-ch', name);
-      var old = b.querySelector('.chph'); if (old) old.remove(); var os = b.querySelector('.chshare'); if (os) os.remove();
-      var h = document.createElement('div'); h.className = 'chph'; var n = document.createElement('b'); n.textContent = name; var a = document.createElement('span'); a.className = 'adm'; a.textContent = 'Admin'; h.appendChild(n); h.appendChild(a);
-      b.insertBefore(h, b.firstChild);
-      var sh = document.createElement('button'); sh.type = 'button'; sh.className = 'chshare'; sh.setAttribute('aria-label', 'Share'); sh.innerHTML = SHARE;
-      sh.onclick = function (e) { e.stopPropagation(); var c = b.cloneNode(true); Array.prototype.forEach.call(c.querySelectorAll('small,.crx,.chph,.chshare'), function (x) { x.remove(); }); var tx = (c.textContent || '').trim(); try { if (navigator.share) navigator.share({ title: name, text: tx }); else if (navigator.clipboard) navigator.clipboard.writeText(tx); } catch (x) {} };
-      b.appendChild(sh);
+      format(b);
+      if (b.getAttribute('data-chv') !== key) {
+        b.setAttribute('data-chv', key);
+        var old = b.querySelector('.chph'); if (old) old.remove();
+        var h = document.createElement('div'); h.className = 'chph'; var n = document.createElement('b'); n.textContent = name; h.appendChild(n);
+        if (S.verified) { var vv = document.createElement('span'); vv.className = 'chvf'; vv.innerHTML = I.ver; h.appendChild(vv); }
+        var a = document.createElement('span'); a.className = 'adm'; a.textContent = 'Admin'; h.appendChild(a); b.insertBefore(h, b.firstChild);
+      }
+      if (!b.querySelector('.chshare')) {
+        var sh = btn('', 'chshare', I.share, 'Share'); sh.onclick = function (e) { e.stopPropagation(); var tx = plainText(b); try { if (navigator.share) navigator.share({ title: name, text: tx }); else if (navigator.clipboard) navigator.clipboard.writeText(tx); } catch (x) {} }; b.appendChild(sh);
+      }
+      var sm = b.querySelector('small'), rx = b.querySelector('.crx'), ft = b.querySelector('.chft');
+      if (sm && !ft) { ft = document.createElement('div'); ft.className = 'chft'; b.insertBefore(ft, sm); if (rx) ft.appendChild(rx); ft.appendChild(sm); }
+      else if (ft && rx && rx.parentNode !== ft) ft.insertBefore(rx, ft.firstChild);
+      var vw = b.getAttribute('data-views'); if (sm && vw != null) { var e = sm.querySelector('.chvw'); if (!e) { e = document.createElement('span'); e.className = 'chvw'; sm.insertBefore(e, sm.firstChild); } var lab = I.eye + short(vw); if (e.getAttribute('data-l') !== lab) { e.setAttribute('data-l', lab); e.innerHTML = lab; } }
     });
   }
-  new MutationObserver(function () {
-    var on = tv.classList.contains('chanview');
-    if (inp) inp.setAttribute('placeholder', on ? 'Broadcast a message\u2026' : ph0);
-    if (banner && !on) banner.classList.remove('off');
+  function off() { if (inp) { inp.setAttribute('placeholder', ph0); inp.disabled = false; } if (banner) banner.classList.remove('off'); }
+  new MutationObserver(function () { if (tv.classList.contains('chanview')) enhance(); else off(); }).observe(tv, { attributes: true, attributeFilter: ['class'], childList: true, subtree: true });
+  window.chanViewsMerge = function (map) {
+    Object.keys(map || {}).forEach(function (id) { var el = msgs.querySelector('.bub[data-id="' + id + '"]'); if (el) el.setAttribute('data-views', String(map[id])); });
     enhance();
-  }).observe(tv, { attributes: true, attributeFilter: ['class'], childList: true, subtree: true });
+  };
+  document.addEventListener('chaninfo', enhance);
 })();
 </script>
 </body>
