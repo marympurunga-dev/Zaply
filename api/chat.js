@@ -154,6 +154,10 @@ function ensureTable() {
         post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, emoji VARCHAR(16) NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_post (post_id))`).catch(() => {});
       await db().query(`CREATE TABLE IF NOT EXISTS channel_mutes (
         channel_id INT NOT NULL, phone VARCHAR(20) NOT NULL, PRIMARY KEY (channel_id, phone))`).catch(() => {});
+      await db().query('ALTER TABLE channels ADD COLUMN pinned_post BIGINT NULL').catch(() => {});
+      await db().query('ALTER TABLE channel_posts ADD COLUMN edited TINYINT NOT NULL DEFAULT 0').catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS channel_votes (
+        post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, opt TINYINT NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_vp (post_id))`).catch(() => {});
       // one row per person who has seen a post (the owner's own views are not counted)
       await db().query(`CREATE TABLE IF NOT EXISTS channel_views (
         post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_vpost (post_id))`).catch(() => {});
@@ -382,7 +386,7 @@ const isChanId = (x) => typeof x === 'string' && /^c:\d{1,9}$/.test(x);
 const cidOf = (x) => Number(String(x).slice(2));
 const CHAN_EMOJI = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F525}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
 async function chanRow(id) {
-  const [r] = await db().query('SELECT id, owner, name, description, photo_url, subscribers, is_private, created_at FROM channels WHERE id = ?', [id]);
+  const [r] = await db().query('SELECT id, owner, name, description, photo_url, subscribers, is_private, created_at, pinned_post FROM channels WHERE id = ?', [id]);
   return r[0] || null;
 }
 async function chanSubbed(id, phone) {
@@ -411,6 +415,16 @@ async function chanReacts(postIds, me) {
   mine.forEach((x) => { out[x.post_id].m = x.emoji; });
   return out;
 }
+/* polls: a poll is a normal post whose body is __poll__ + JSON {q, o:[options]}. One vote per person; votes can be changed. */
+async function chanPolls(postIds, me) {
+  const out = {};
+  if (!postIds.length) return out;
+  const [cnt] = await db().query('SELECT post_id, opt, COUNT(*) AS n FROM channel_votes WHERE post_id IN (?) GROUP BY post_id, opt', [postIds]).catch(() => [[]]);
+  const [mine] = await db().query('SELECT post_id, opt FROM channel_votes WHERE post_id IN (?) AND phone = ?', [postIds, me]).catch(() => [[]]);
+  cnt.forEach((x) => { const o = out[x.post_id] || (out[x.post_id] = { c: [0, 0, 0, 0], m: -1 }); o.c[x.opt] = Number(x.n); });
+  mine.forEach((x) => { const o = out[x.post_id] || (out[x.post_id] = { c: [0, 0, 0, 0], m: -1 }); o.m = x.opt; });
+  return out;
+}
 /* views: how many different people have seen each post. Posts handed to someone other than the owner count as seen by them. */
 async function chanViews(postIds, me, owner, markIds) {
   const out = {};
@@ -429,6 +443,7 @@ function preview(text) {
   if (String(text).indexOf('__call__') === 0) return 'Incoming call';
   if (String(text).indexOf('__media__') === 0) return 'Sent an attachment';
   if (String(text).indexOf('__loc__') === 0) return 'Shared a location';
+  if (String(text).indexOf('__poll__') === 0) return 'New poll';
   if (String(text).indexOf('__game__') === 0) return 'Game move';
   return String(text).slice(0, 140);
 }
@@ -931,10 +946,12 @@ module.exports = async (req, res) => {
         const ids = Array.from(new Set(pr.map((m) => Number(m.id)).concat(track)));
         const rx = await chanReacts(ids, me);
         /* every post of this channel that is on this person's screen counts as seen (checked against this channel only) */
-        let seen = [];
-        if (ids.length) { const [own] = await db().query('SELECT id FROM channel_posts WHERE channel_id = ? AND id IN (?)', [cid, ids]).catch(() => [[]]); seen = own.map((x) => Number(x.id)); }
+        let seen = [], upd = {};
+        if (ids.length) { const [own] = await db().query('SELECT id, body, edited FROM channel_posts WHERE channel_id = ? AND id IN (?)', [cid, ids]).catch(() => [[]]); seen = own.map((x) => Number(x.id)); own.forEach((x) => { upd[Number(x.id)] = { body: x.body, edited: !!x.edited }; }); }
+        const gone = track.filter((id) => seen.indexOf(id) < 0);
         const vw = await chanViews(ids, me, ch.owner, seen);
-        return res.json({ rx, vw, messages: pr.map((m) => ({ id: Number(m.id), mine: ch.owner === me, body: m.body, at: m.created_at, from: '', views: vw[Number(m.id)] || 0 })) });
+        const pv = await chanPolls(ids, me);
+        return res.json({ rx, vw, pv, upd, gone, pin: Number(ch.pinned_post) || 0, messages: pr.map((m) => ({ id: Number(m.id), mine: ch.owner === me, body: m.body, at: m.created_at, from: '', views: vw[Number(m.id)] || 0, edited: !!(upd[Number(m.id)] && upd[Number(m.id)].edited) })) });
       }
       if (!phoneOk(b.with)) return res.status(400).json({ error: 'Bad request.' });
       /* the chat is open on my screen, so what they sent me is read (blue ticks for them) */
@@ -1644,6 +1661,43 @@ module.exports = async (req, res) => {
       const [del] = await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, me]);
       if (del.affectedRows) await db().query('UPDATE channels SET subscribers = GREATEST(subscribers - 1, 0) WHERE id = ?', [cid]);
       return res.json({ ok: true });
+    }
+    if (b.action === 'channel_vote') {
+      const pid = Number(b.post) || 0, opt = Number(b.opt);
+      const [pp] = await db().query('SELECT channel_id, body FROM channel_posts WHERE id = ?', [pid]);
+      if (!pp[0] || String(pp[0].body).indexOf('__poll__') !== 0) return res.status(404).json({ error: 'That poll is gone.' });
+      const ch0 = await chanRow(pp[0].channel_id);
+      if (!ch0 || !(ch0.owner === me || (await chanSubbed(ch0.id, me)))) return res.status(403).json({ error: 'Subscribe to the channel to vote.' });
+      let n = 0; try { n = (JSON.parse(String(pp[0].body).slice(8)).o || []).length; } catch (e) {}
+      if (!Number.isInteger(opt) || opt < 0 || opt >= Math.min(n, 4)) return res.status(400).json({ error: 'Bad request.' });
+      await db().query('INSERT INTO channel_votes (post_id, phone, opt) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE opt = VALUES(opt)', [pid, me, opt]);
+      const pv = await chanPolls([pid], me);
+      return res.json({ pv: pv[pid] });
+    }
+    /* ---- channel posts: edit, delete, pin (owner only) ---- */
+    if (['channel_post_edit', 'channel_post_delete', 'channel_post_pin'].indexOf(b.action) > -1) {
+      const pid = Number(b.post) || 0;
+      const [pp] = await db().query('SELECT channel_id FROM channel_posts WHERE id = ?', [pid]);
+      if (!pp[0]) return res.status(404).json({ error: 'That post is gone.' });
+      const ch = await chanRow(pp[0].channel_id);
+      if (!ch || ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can change posts.' });
+      if (b.action === 'channel_post_edit') {
+        const nb = String(b.body || '').trim().slice(0, 2000);
+        if (!nb) return res.status(400).json({ error: 'A post cannot be empty.' });
+        await db().query('UPDATE channel_posts SET body = ?, edited = 1 WHERE id = ?', [nb, pid]);
+        return res.json({ ok: true, body: nb });
+      }
+      if (b.action === 'channel_post_delete') {
+        await db().query('DELETE FROM channel_reacts WHERE post_id = ?', [pid]).catch(() => {});
+        await db().query('DELETE FROM channel_views WHERE post_id = ?', [pid]).catch(() => {});
+        await db().query('DELETE FROM channel_votes WHERE post_id = ?', [pid]).catch(() => {});
+        await db().query('DELETE FROM channel_posts WHERE id = ?', [pid]);
+        await db().query('UPDATE channels SET pinned_post = NULL WHERE id = ? AND pinned_post = ?', [ch.id, pid]);
+        return res.json({ ok: true });
+      }
+      const on = b.pin !== false;
+      await db().query('UPDATE channels SET pinned_post = ? WHERE id = ?', [on ? pid : null, ch.id]);
+      return res.json({ ok: true, pin: on ? pid : 0 });
     }
     /* ---- channel info / subscribe / unsubscribe / react / mute / settings ---- */
     if (['channel_info', 'channel_subscribe', 'channel_unsubscribe', 'channel_react', 'channel_mute', 'channel_update'].indexOf(b.action) > -1) {
