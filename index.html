@@ -13194,5 +13194,74 @@ ZFAQ.push(["Safety, rules and contact",[
   document.addEventListener('chaninfo', function () { if (!pend) { pend = true; requestAnimationFrame(run); } });
 })();
 </script>
+<style id="chanPolish">
+/* Channel polish: reference layout, app colours (--acc / --card / --border) */
+#threadView.chanview #msgs{background-image:radial-gradient(circle at 85% 12%,color-mix(in srgb,var(--acc,#21c063) 22%,transparent),transparent 45%),radial-gradient(circle at 10% 70%,color-mix(in srgb,var(--acc,#21c063) 14%,transparent),transparent 50%),radial-gradient(circle,rgba(255,255,255,.07) 1px,transparent 1.5px);background-size:auto,auto,26px 26px;background-attachment:fixed,fixed,fixed;scroll-behavior:smooth}
+#threadView.chanview #msgs .bub{border:1px solid var(--border);box-shadow:0 2px 10px rgba(0,0,0,.18);transition:transform .15s}
+#threadView.chanview #msgs .bub:active{transform:scale(.99)}
+#threadView.chanview #msgs .bub.media{display:grid!important;grid-template-columns:38% 1fr;column-gap:12px;align-items:start}
+#threadView.chanview #msgs .bub.media>.chph,#threadView.chanview #msgs .bub.media>.chft{grid-column:1/-1}
+#threadView.chanview #msgs .bub.media>img,#threadView.chanview #msgs .bub.media>video{grid-column:1;grid-row:2;aspect-ratio:1;object-fit:cover;cursor:zoom-in}
+#threadView.chanview #msgs .bub.media>:not(.chph):not(.chft):not(img):not(video):not(.chshare):not(.mfwd){grid-column:2}
+@media(max-width:340px){#threadView.chanview #msgs .bub.media{grid-template-columns:1fr}#threadView.chanview #msgs .bub.media>img,#threadView.chanview #msgs .bub.media>video,#threadView.chanview #msgs .bub.media>:not(.chph):not(.chft){grid-column:1}}
+.chday{align-self:center;padding:6px 18px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:15px;font-weight:600;position:sticky;top:6px;z-index:2}
+#chBanner{border-color:color-mix(in srgb,var(--acc,#21c063) 55%,var(--border));background:color-mix(in srgb,var(--acc,#21c063) 12%,var(--card));animation:chIn .25s ease}
+#chBanner .tx span{color:var(--muted)}
+#chBanner button:active,#chRO:active,#chGift:active,#chBell:active,.chshare:active{transform:scale(.92)}
+#chRO{display:none;align-items:center;justify-content:center;gap:8px}#threadView.chanro #chRO{display:flex}
+@keyframes chIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+#threadView.chanview .crx button{transition:transform .15s,background .15s}#threadView.chanview .crx button:active{transform:scale(1.2)}
+</style>
+<script>
+/* Per-day separator pills (Today / Yesterday / date), regrouped whenever posts change */
+(function(){
+  var tv=document.getElementById('threadView'),msgs=document.getElementById('msgs');if(!tv||!msgs)return;
+  function lab(t){var d=new Date(t),n=new Date();if(isNaN(d))return'Today';if(d.toDateString()===n.toDateString())return'Today';var y=new Date(n);y.setDate(n.getDate()-1);if(d.toDateString()===y.toDateString())return'Yesterday';return d.toLocaleDateString(undefined,{day:'numeric',month:'long',year:'numeric'});}
+  var sig='',pend=false,obs,cfg={childList:true,subtree:false};
+  function run(){pend=false;obs.disconnect();
+    try{
+      var on=tv.classList.contains('chanview');
+      var bubs=Array.prototype.filter.call(msgs.children,function(e){return e.classList.contains('bub');});
+      var s=on?bubs.map(function(b){return(b.getAttribute('data-id')||'')+':'+lab(+b.getAttribute('data-at'));}).join('|'):'off';
+      if(s!==sig||msgs.querySelectorAll('.chday').length!==(on?new Set(bubs.map(function(b){return lab(+b.getAttribute('data-at'));})).size:0)){
+        sig=s;Array.prototype.forEach.call(msgs.querySelectorAll('.chday'),function(e){e.remove();});
+        if(on){var prev='';bubs.forEach(function(b){var l=lab(+b.getAttribute('data-at'));if(l!==prev){var p=document.createElement('div');p.className='chday';p.textContent=l;msgs.insertBefore(p,b);prev=l;}});}
+      }
+    }catch(e){}
+    obs.observe(msgs,cfg);}
+  obs=new MutationObserver(function(){if(!pend){pend=true;requestAnimationFrame(run);}});
+  obs.observe(msgs,cfg);
+  new MutationObserver(function(){if(!pend){pend=true;requestAnimationFrame(run);}}).observe(tv,{attributes:true,attributeFilter:['class']});
+  run();
+})();
+</script>
+<style id="chanViewerCss">
+#chViewer{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;animation:chIn .2s ease}
+#chViewer img,#chViewer video{max-width:100%;max-height:100%;object-fit:contain;touch-action:pinch-zoom}
+#chViewer button{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.14);color:#fff;font-size:22px;padding:0}
+#chViewer .x{right:12px}#chViewer .dl{right:64px;display:flex;align-items:center;justify-content:center;text-decoration:none;color:#fff;position:absolute;top:calc(10px + env(safe-area-inset-top,0px));width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.14);font-size:20px}
+</style>
+<script>
+/* Full-screen image/video viewer for channel posts */
+(function(){
+  var tv=document.getElementById('threadView'),msgs=document.getElementById('msgs');if(!tv||!msgs)return;
+  function close(){var v=document.getElementById('chViewer');if(v){var m=v.querySelector('video');if(m)try{m.pause();}catch(e){}v.remove();}document.removeEventListener('keydown',key);}
+  function key(e){if(e.key==='Escape')close();}
+  msgs.addEventListener('click',function(e){
+    if(!tv.classList.contains('chanview'))return;
+    var m=e.target.closest&&e.target.closest('.bub.media img,.bub.media video');if(!m)return;
+    e.preventDefault();e.stopPropagation();
+    var src=m.currentSrc||m.src;if(!src)return;close();
+    var v=document.createElement('div');v.id='chViewer';
+    var el=m.tagName==='VIDEO'?document.createElement('video'):document.createElement('img');
+    el.src=src;if(m.tagName==='VIDEO'){el.controls=true;el.autoplay=true;el.playsInline=true;}
+    var x=document.createElement('button');x.className='x';x.textContent='\u2715';x.setAttribute('aria-label','Close');x.onclick=close;
+    var d=document.createElement('a');d.className='dl';d.href=src;d.target='_blank';d.rel='noopener';d.setAttribute('download','');d.textContent='\u2193';d.setAttribute('aria-label','Download');
+    v.onclick=function(ev){if(ev.target===v)close();};
+    v.appendChild(el);v.appendChild(d);v.appendChild(x);document.body.appendChild(v);
+    document.addEventListener('keydown',key);
+  },true);
+})();
+</script>
 </body>
 </html>
