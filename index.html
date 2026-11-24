@@ -10516,6 +10516,34 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
     return String(n);
   }
   function fullNum(n) { return (Number(n) || 0).toLocaleString('en-US'); }
+  function chAdmins(ph) {
+    var o = mk('div', 'chov'), box = mk('div'), list = mk('div'), inp = mk('input'), add = mk('button', '', 'Add admin');
+    var h = mk('b', '', 'Channel admins'); h.style.cssText = 'display:block;margin-bottom:4px;font-size:18px';
+    var hint = mk('div', '', 'Admins can publish, edit, delete and pin posts. Only you can add or remove admins.'); hint.style.cssText = 'color:var(--muted);font-size:13.5px;margin-bottom:10px';
+    inp.type = 'tel'; inp.placeholder = 'Phone number with country code, e.g. +254712345678'; inp.style.cssText = 'width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:12px;background:transparent;color:inherit;font:inherit;padding:11px 12px;margin-top:12px';
+    add.type = 'button'; add.style.cssText = 'width:100%;margin-top:10px;border:none;border-radius:999px;background:var(--acc,#21c063);color:#06140c;font-weight:700;padding:12px';
+    var done = mk('button', '', 'Close'); done.type = 'button'; done.style.cssText = 'width:100%;margin-top:6px;border:none;background:none;color:var(--muted);padding:10px';
+    box.appendChild(h); box.appendChild(hint); box.appendChild(list); box.appendChild(inp); box.appendChild(add); box.appendChild(done); o.appendChild(box); document.body.appendChild(o);
+    function close() { o.remove(); }
+    o.addEventListener('click', function (e) { if (e.target === o) close(); }); done.addEventListener('click', close);
+    function paintList(a) {
+      list.textContent = '';
+      if (!a.length) { var n = mk('div', '', 'No admins yet.'); n.style.cssText = 'padding:10px 0;color:var(--muted)'; list.appendChild(n); return; }
+      a.forEach(function (x) {
+        var row = mk('div'); row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0';
+        var t = mk('div'); t.style.cssText = 'flex:1;min-width:0'; var nm = mk('div', '', x.name || x.phone); nm.style.fontWeight = '600'; t.appendChild(nm); if (x.name) { var ph2 = mk('div', '', x.phone); ph2.style.cssText = 'color:var(--muted);font-size:13px'; t.appendChild(ph2); }
+        var rm = mk('button', '', 'Remove'); rm.type = 'button'; rm.style.cssText = 'border:none;background:none;color:#ff5a5f;font-weight:600;padding:6px 4px';
+        rm.addEventListener('click', function () { rm.disabled = true; chatCall('channel_admin_remove', { channel: ph, phone: x.phone }).then(function (r) { paintList(r.admins || []); toast('Admin removed', true); }).catch(function (e) { rm.disabled = false; toast((e && e.message) || 'Could not remove this admin.'); }); });
+        row.appendChild(t); row.appendChild(rm); list.appendChild(row);
+      });
+    }
+    chatCall('channel_admins', { channel: ph }).then(function (r) { paintList(r.admins || []); }).catch(function (e) { toast((e && e.message) || 'Could not load admins.'); close(); });
+    add.addEventListener('click', function () {
+      var v = String(inp.value || '').replace(/[\s\-()]/g, ''); if (!v) return; if (v.charAt(0) !== '+') v = '+' + v;
+      add.disabled = true;
+      chatCall('channel_admin_add', { channel: ph, phone: v }).then(function (r) { add.disabled = false; inp.value = ''; paintList(r.admins || []); toast('Admin added', true); }).catch(function (e) { add.disabled = false; toast((e && e.message) || 'Could not add this admin.'); });
+    });
+  }
   function chanFetch(ph, k) { return chatCall('channel_info', { channel: ph, k: k || '' }).then(function (r) { var c = r.channel; CHI[ph] = c; if (c.key) CHK[ph] = c.key; return c; }); }
   function chanLink(c) { return location.origin + '/?channel=' + c.id + (c.is_private && (c.key || CHK['c:' + c.id]) ? '&k=' + (c.key || CHK['c:' + c.id]) : ''); }
   /* header of a channel chat: "Public channel" / "Private channel" for 2 seconds, then the number of subscribers (short: 1k, 1M, 1B, 1T) */
@@ -10566,7 +10594,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
       var c = CHI[ph] || {}, ver = false, mu = false;
       try { ver = !!(c.verified || c.owner_verified || (c.mine && typeof Pf !== 'undefined' && Pf && Pf.verified)); } catch (e) {}
       try { mu = isMuted(ph) || !!c.muted; } catch (e) {}
-      return { name: c.name || '', verified: ver, muted: mu, mine: !!c.mine, subs: Number(c.subscribers) || 0 };
+      return { name: c.name || '', verified: ver, muted: mu, mine: !!c.mine, noFwd: !!c.noFwd, subs: Number(c.subscribers) || 0 };
     },
     bell: function (ph, cb) {
       var c = CHI[ph]; if (!c) return; var nv = !(isMuted(ph) || !!c.muted);
@@ -10608,6 +10636,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
         var fw = mk('button', 'chcard'); fw.type = 'button'; fw.innerHTML = svg(ICO.fwd) + '<span>Forward</span>'; cards.appendChild(fw);
         fw.addEventListener('click', function () { window.openForward(c.name + '\n' + chanLink(c)); });
         var sh = mk('button', 'chcard'); sh.type = 'button'; sh.innerHTML = svg(ICO.share) + '<span>Share</span>'; cards.appendChild(sh);
+        if (c.noFwd && !c.mine) { fw.remove(); sh.remove(); }
         sh.addEventListener('click', function () { var u = chanLink(c), t = c.name + ' on Zanply'; if (navigator.share) navigator.share({ title: t, text: t, url: u }).catch(function () {}); else copyText(u, 'Channel link copied'); });
         /* description */
         if (c.description) { var ds = mk('div', 'chsec'); ds.style.padding = '14px 16px'; var dl = mk('div', '', 'Description'); dl.style.cssText = 'color:var(--muted);font-size:13px;margin-bottom:6px'; ds.appendChild(dl); var dt = mk('div', '', c.description); dt.style.cssText = 'font-size:16px;line-height:1.45;white-space:pre-wrap;word-break:break-word'; ds.appendChild(dt); w.appendChild(ds); }
@@ -10623,7 +10652,7 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
           });
         }
         /* owner: public / private switch (private channels can only be joined with the invite link) */
-        if (c.mine) {
+        if (c.isOwner) {
           var r2 = mk('div', 'zir'), t2 = mk('div', 'zt'), sw2 = mk('button', 'zsw' + (c.is_private ? ' on' : '')); sw2.type = 'button';
           t2.appendChild(mk('div', '', 'Private channel')); t2.appendChild(mk('div', 'zl', c.is_private ? 'Only people with your invite link can subscribe' : 'Public: anyone can find the link and subscribe')); r2.appendChild(t2); r2.appendChild(sw2); sec.appendChild(r2);
           sw2.addEventListener('click', function () {
@@ -10631,6 +10660,15 @@ id:`Selamat datang di Zanply|Baca <a href="#">Kebijakan Privasi</a> kami. Ketuk 
             chatCall('channel_update', { channel: ph, is_private: nv }).then(function () { c.is_private = nv; CHI[ph] = c; chanFetch(ph).then(function (x) { c = x; chanHeadStart(ph, true); paint(c); }).catch(function () { paint(c); }); toast(nv ? 'Channel is now private' : 'Channel is now public', true); })
               .catch(function (e) { sw2.disabled = false; toast((e && e.message) || 'Could not change this.'); });
           });
+          var r4 = mk('div', 'zir'), t4 = mk('div', 'zt'), sw4 = mk('button', 'zsw' + (c.noFwd ? ' on' : '')); sw4.type = 'button';
+          t4.appendChild(mk('div', '', 'Restrict forwarding')); t4.appendChild(mk('div', 'zl', c.noFwd ? 'Subscribers cannot share or forward posts' : 'Subscribers can share and forward posts')); r4.appendChild(t4); r4.appendChild(sw4); sec.appendChild(r4);
+          sw4.addEventListener('click', function () {
+            var nv = !sw4.classList.contains('on'); sw4.disabled = true;
+            chatCall('channel_update', { channel: ph, no_fwd: nv }).then(function () { c.noFwd = nv; CHI[ph] = c; sw4.disabled = false; sw4.classList.toggle('on', nv); t4.lastChild.textContent = nv ? 'Subscribers cannot share or forward posts' : 'Subscribers can share and forward posts'; toast(nv ? 'Forwarding restricted' : 'Forwarding allowed', true); })
+              .catch(function (e) { sw4.disabled = false; toast((e && e.message) || 'Could not change this.'); });
+          });
+          var adb = mk('button', 'zrow'); adb.type = 'button'; adb.innerHTML = svg(ICO.plus) + '<span>Admins</span>'; sec.appendChild(adb);
+          adb.addEventListener('click', function () { chAdmins(ph); });
         } else {
           var r3 = mk('div', 'zir'), t3 = mk('div', 'zt'); t3.appendChild(mk('div', '', c.is_private ? 'Private channel' : 'Public channel')); t3.appendChild(mk('div', 'zl', c.is_private ? 'Only people with the invite link can subscribe' : 'Anyone with the link can subscribe')); r3.appendChild(t3); sec.appendChild(r3);
         }
@@ -13170,7 +13208,8 @@ ZFAQ.push(["Safety, rules and contact",[
         if (S.mine) { var mo = btn('', 'chmore', '\u22EF', 'Post options'); mo.onclick = function (e) { e.stopPropagation(); postMenu(b, S); }; h.appendChild(mo); }
         b.insertBefore(h, b.firstChild);
       }
-      if (!b.querySelector('.chshare')) {
+      var shOld = b.querySelector('.chshare'); if (shOld && S.noFwd && !S.mine) shOld.remove();
+      if (!b.querySelector('.chshare') && !(S.noFwd && !S.mine)) {
         var sh = btn('', 'chshare', I.share, 'Share'); sh.onclick = function (e) { e.stopPropagation(); var tx = plainText(b); try { if (navigator.share) navigator.share({ title: name, text: tx }); else if (navigator.clipboard) navigator.clipboard.writeText(tx); } catch (x) {} }; b.appendChild(sh);
       }
       var sm = b.querySelector('small'), rx = b.querySelector('.crx'), ft = b.querySelector('.chft');
