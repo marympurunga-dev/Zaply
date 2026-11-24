@@ -7824,8 +7824,9 @@ ZW|Zimbabwe|263`;
     /* Message box: when you start typing it takes the space of the side buttons (they fold into a ">" button), like a chat app should. */
     var compExpanded = false;
     function syncComp() {
-      var inp = $('msgInput'), has = inp.value.length > 0, focus = document.activeElement === inp;
-      $('comp').classList.toggle('typing', (has || focus) && !compExpanded);
+      var inp = $('msgInput'); if (inp.value && !inp.value.trim()) inp.value = '';
+      var has = inp.value.length > 0;
+      $('comp').classList.toggle('typing', has && !compExpanded);
       $('comp').classList.toggle('hastext', has);
       try { autoGrow(); stkUpdate(); } catch (e) {}
     }
@@ -13341,6 +13342,15 @@ html body .th-head .pgback,html body .th-head #crBack,html body #infoView .th-he
   background:var(--card,#fff)!important;border:none!important;box-shadow:0 1px 5px rgba(0,0,0,.28)!important;color:var(--text,#1a1d29)!important;
   display:flex!important;align-items:center;justify-content:center}
 html body .th-head .pgback svg,html body .th-head #crBack svg,html body #infoView .th-head #infoBack svg{width:24px!important;height:24px!important;display:block;margin:0}
+</style>
+<style id="tgComposer2">
+/* composer: slim pill. Empty box keeps placeholder + paperclip + mic even when focused; send only appears with text */
+#threadView #comp.typing #btnPlus{display:flex!important}
+#threadView #comp #btnMic,#threadView #comp #btnSendMsg,#threadView #comp.typing #btnMic,#threadView #comp.typing #btnSendMsg{margin:0!important}
+#threadView #comp .inbox,#threadView #comp.typing .inbox{padding-right:4px!important;min-height:46px!important}
+#threadView #comp .inbox #btnPlus{margin:0!important}
+#threadView #comp #msgInput{font-weight:600}
+#threadView #comp #msgInput::placeholder{color:var(--muted,#8a949c)!important;font-weight:600;opacity:1}
 </style>
 </body>
 </html>
