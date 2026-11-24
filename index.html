@@ -13031,10 +13031,7 @@ ZFAQ.push(["Safety, rules and contact",[
     srch = btn('chSearch', 'ic ghost', I.search, 'Search'); srch.onclick = searchPosts;
     pollB = btn('chPollB', 'ic ghost', I.poll, 'Create poll'); pollB.onclick = newPoll; pollB.style.display = 'none';
     hbell = btn('chHBell', 'ic ghost', I.bell, 'Notifications'); var ib = document.getElementById('thInfoBtn'); ib.parentNode.insertBefore(pollB, ib); ib.parentNode.insertBefore(srch, ib); ib.parentNode.insertBefore(hbell, ib);
-    gift = btn('chGift', 'ic', I.gift, 'Gift'); comp.insertBefore(gift, comp.firstChild);
-    bell = btn('chBell', 'ic', I.bell, 'Notifications'); comp.appendChild(bell);
-    hbell.onclick = bell.onclick = function () { try { window.chanUI.bell(window.__chPh, paintBell); } catch (e) {} };
-    gift.onclick = function () { try { window.chanUI.gift(); } catch (e) {} };
+    hbell.onclick = function () { try { window.chanUI.bell(window.__chPh, paintBell); } catch (e) {} };
   }
   var curFull = '';
   function dis() { try { return JSON.parse(localStorage.getItem('zaply_chban') || '{}') || {}; } catch (e) { return {}; } }
@@ -13143,8 +13140,11 @@ ZFAQ.push(["Safety, rules and contact",[
       item(c, 'Cancel', close);
     });
   }
+  var camEl = document.getElementById('btnCamera'), camMark = null;
+  function camOut() { if (camEl && camEl.parentNode) { if (!camMark) camMark = document.createComment('cam'); camEl.parentNode.insertBefore(camMark, camEl); camEl.remove(); } }
+  function camBack() { if (camEl && !camEl.parentNode && camMark && camMark.parentNode) { camMark.parentNode.insertBefore(camEl, camMark); camMark.remove(); camMark = null; } }
   function enhance() {
-    if (!tv.classList.contains('chanview')) return; build();
+    if (!tv.classList.contains('chanview')) return; build(); camOut();
     var S = st(), name = (nameEl && nameEl.getAttribute('data-n')) || (nameEl ? nameEl.textContent : '') || S.name || 'Channel', first = msgs.querySelector('.bub');
     if (nameEl) { var cur = nameEl.querySelector('.chvf'); if (S.verified && !cur) { var v = document.createElement('span'); v.className = 'chvf'; v.innerHTML = I.ver; nameEl.appendChild(v); } else if (!S.verified && cur) cur.remove(); }
     paintBell(); var pd = S.mine ? 'flex' : 'none'; if (pollB.style.display !== pd) pollB.style.display = pd;
@@ -13179,7 +13179,7 @@ ZFAQ.push(["Safety, rules and contact",[
       var vw = b.getAttribute('data-views'); if (sm && vw != null) { var e = sm.querySelector('.chvw'); if (!e) { e = document.createElement('span'); e.className = 'chvw'; sm.insertBefore(e, sm.firstChild); } var lab = I.eye + short(vw); if (e.getAttribute('data-l') !== lab) { e.setAttribute('data-l', lab); e.innerHTML = lab; } }
     });
   }
-  function off() { if (inp) { if (inp.getAttribute('placeholder') !== ph0) inp.setAttribute('placeholder', ph0); if (inp.disabled) inp.disabled = false; } if (banner && banner.classList.contains('off')) banner.classList.remove('off'); }
+  function off() { camBack(); if (inp) { if (inp.getAttribute('placeholder') !== ph0) inp.setAttribute('placeholder', ph0); if (inp.disabled) inp.disabled = false; } if (banner && banner.classList.contains('off')) banner.classList.remove('off'); }
   var cfg = { attributes: true, attributeFilter: ['class'], childList: true, subtree: true }, pend = false, obs;
   function run() {
     pend = false; obs.disconnect();
@@ -13356,6 +13356,10 @@ html body .th-head .pgback svg,html body .th-head #crBack svg,html body #infoVie
 /* emoji/sticker suggestions: float above the composer instead of adding a white strip behind it */
 #threadView .stkbar{position:absolute!important;left:8px;right:8px;bottom:calc(var(--dockH,0px) + 4px);z-index:7;
   background:var(--card,#fff)!important;border:none!important;border-radius:24px;box-shadow:0 1px 5px rgba(0,0,0,.28);padding:4px 10px!important}
+</style>
+<style id="chPollHide">
+/* the poll button is for channel owners only; never show it in 1:1 or group chats */
+#threadView:not(.chanview) #chPollB,#threadView:not(.chanview) #chSearch,#threadView:not(.chanview) #chHBell,#threadView:not(.chanview) #chGift{display:none!important}
 </style>
 </body>
 </html>
