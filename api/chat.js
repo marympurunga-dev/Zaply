@@ -158,6 +158,9 @@ function ensureTable() {
       await db().query('ALTER TABLE channel_posts ADD COLUMN edited TINYINT NOT NULL DEFAULT 0').catch(() => {});
       await db().query(`CREATE TABLE IF NOT EXISTS channel_votes (
         post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, opt TINYINT NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_vp (post_id))`).catch(() => {});
+      await db().query(`CREATE TABLE IF NOT EXISTS channel_admins (
+        channel_id INT NOT NULL, phone VARCHAR(20) NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (channel_id, phone), INDEX idx_ap (phone))`).catch(() => {});
+      await db().query('ALTER TABLE channels ADD COLUMN no_fwd TINYINT NOT NULL DEFAULT 0').catch(() => {});
       // one row per person who has seen a post (the owner's own views are not counted)
       await db().query(`CREATE TABLE IF NOT EXISTS channel_views (
         post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_vpost (post_id))`).catch(() => {});
@@ -386,9 +389,19 @@ const isChanId = (x) => typeof x === 'string' && /^c:\d{1,9}$/.test(x);
 const cidOf = (x) => Number(String(x).slice(2));
 const CHAN_EMOJI = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F525}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
 async function chanRow(id) {
-  const [r] = await db().query('SELECT id, owner, name, description, photo_url, subscribers, is_private, created_at, pinned_post FROM channels WHERE id = ?', [id]);
+  const [r] = await db().query('SELECT id, owner, name, description, photo_url, subscribers, is_private, created_at, pinned_post, no_fwd FROM channels WHERE id = ?', [id]);
   return r[0] || null;
 }
+/* admins can publish, edit, delete and pin posts; only the owner manages admins, privacy and deletes the channel */
+async function chanIsAdmin(id, phone) {
+  const [r] = await db().query('SELECT 1 FROM channel_admins WHERE channel_id = ? AND phone = ?', [id, phone]).catch(() => [[]]);
+  return r.length > 0;
+}
+/* tell subscribers a post changed (edit, delete, pin) so their screen refreshes within a second or two */
+async function chanPing(cid, me) {
+  try { if (!rt.on()) return; const [sb] = await db().query('SELECT phone FROM channel_subs WHERE channel_id = ? AND phone <> ? LIMIT 2000', [cid, me]); await rt.signal(sb.map((x) => x.phone), 'msg', { from: 'c:' + cid }); } catch (e) { console.error(e); }
+}
+async function chanCanPost(ch, me) { return !!ch && (ch.owner === me || (await chanIsAdmin(ch.id, me))); }
 async function chanSubbed(id, phone) {
   const [r] = await db().query('SELECT 1 FROM channel_subs WHERE channel_id = ? AND phone = ?', [id, phone]);
   return r.length > 0;
@@ -397,7 +410,7 @@ async function chanSubbed(id, phone) {
 async function chanCanRead(id, phone) {
   const ch = await chanRow(id); if (!ch) return false;
   if (ch.owner === phone || !ch.is_private) return true;
-  return chanSubbed(id, phone);
+  return (await chanSubbed(id, phone)) || (await chanIsAdmin(id, phone));
 }
 const chanKey = (id) => crypto.createHash('sha256').update('chan-invite:' + id + SECRET).digest('hex').slice(0, 16);
 async function chanRecount(id) {
@@ -550,18 +563,18 @@ async function notifyGroup(from, g, groupName, text) {
   } catch (e) { console.error(e); }
 }
 /* push to every subscriber who has NOT muted this channel, so a muted channel stays silent when the app is closed */
-async function notifyChannel(ch, text) {
+async function notifyChannel(ch, text, poster) {
   try {
     const body = preview(text), tag = 'c:' + ch.id;
     if (pushOn) {
       const [subs] = await db().query(
-        'SELECT s.id, s.sub FROM push_subs s JOIN channel_subs m ON m.phone = s.phone WHERE m.channel_id = ? AND s.phone <> ? AND s.phone NOT IN (SELECT phone FROM channel_mutes WHERE channel_id = ?) LIMIT 5000', [ch.id, ch.owner, ch.id]);
+        'SELECT s.id, s.sub FROM push_subs s JOIN channel_subs m ON m.phone = s.phone WHERE m.channel_id = ? AND s.phone <> ? AND s.phone NOT IN (SELECT phone FROM channel_mutes WHERE channel_id = ?) LIMIT 5000', [ch.id, poster || ch.owner, ch.id]);
       await pushTo(subs, JSON.stringify({ title: ch.name, body, tag, from: tag }));
     }
     if (fcmOn()) {
       await fcmTable();
       const [rows] = await db().query(
-        'SELECT t.id, t.token, t.chan FROM fcm_tokens t JOIN channel_subs m ON m.phone = t.phone WHERE m.channel_id = ? AND t.phone <> ? AND t.phone NOT IN (SELECT phone FROM channel_mutes WHERE channel_id = ?) LIMIT 5000', [ch.id, ch.owner, ch.id]);
+        'SELECT t.id, t.token, t.chan FROM fcm_tokens t JOIN channel_subs m ON m.phone = t.phone WHERE m.channel_id = ? AND t.phone <> ? AND t.phone NOT IN (SELECT phone FROM channel_mutes WHERE channel_id = ?) LIMIT 5000', [ch.id, poster || ch.owner, ch.id]);
       await fcmPush(rows, { type: 'msg', title: ch.name, body, sender: tag });
     }
   } catch (e) { console.error(e); }
@@ -909,7 +922,9 @@ module.exports = async (req, res) => {
              (SELECT body FROM channel_posts WHERE channel_id = c.id ORDER BY id DESC LIMIT 1) AS body,
              (SELECT created_at FROM channel_posts WHERE channel_id = c.id ORDER BY id DESC LIMIT 1) AS pat
            FROM channels c JOIN channel_subs s ON s.channel_id = c.id WHERE s.phone = ?`, [me]);
-        cs.forEach((c) => chats.push({ phone: 'c:' + c.id, name: c.name, group: true, channel: true, photo_url: c.photo_url || '', owner: c.owner, priv: !!c.is_private, last: c.body || '', mine: c.owner === me, at: c.pat || c.created_at }));
+        const [ad] = await db().query('SELECT channel_id FROM channel_admins WHERE phone = ?', [me]).catch(() => [[]]);
+        const adSet = new Set(ad.map((x) => Number(x.channel_id)));
+        cs.forEach((c) => chats.push({ phone: 'c:' + c.id, name: c.name, group: true, channel: true, photo_url: c.photo_url || '', owner: c.owner, priv: !!c.is_private, last: c.body || '', mine: c.owner === me || adSet.has(Number(c.id)), at: c.pat || c.created_at }));
       } catch (e) { console.error(e); }
       chats.sort((a, b) => new Date(b.at) - new Date(a.at));
       return res.json({ chats });
@@ -949,9 +964,10 @@ module.exports = async (req, res) => {
         let seen = [], upd = {};
         if (ids.length) { const [own] = await db().query('SELECT id, body, edited FROM channel_posts WHERE channel_id = ? AND id IN (?)', [cid, ids]).catch(() => [[]]); seen = own.map((x) => Number(x.id)); own.forEach((x) => { upd[Number(x.id)] = { body: x.body, edited: !!x.edited }; }); }
         const gone = track.filter((id) => seen.indexOf(id) < 0);
+        const canP = await chanCanPost(ch, me);
         const vw = await chanViews(ids, me, ch.owner, seen);
         const pv = await chanPolls(ids, me);
-        return res.json({ rx, vw, pv, upd, gone, pin: Number(ch.pinned_post) || 0, messages: pr.map((m) => ({ id: Number(m.id), mine: ch.owner === me, body: m.body, at: m.created_at, from: '', views: vw[Number(m.id)] || 0, edited: !!(upd[Number(m.id)] && upd[Number(m.id)].edited) })) });
+        return res.json({ rx, vw, pv, upd, gone, pin: Number(ch.pinned_post) || 0, messages: pr.map((m) => ({ id: Number(m.id), mine: canP, body: m.body, at: m.created_at, from: '', views: vw[Number(m.id)] || 0, edited: !!(upd[Number(m.id)] && upd[Number(m.id)].edited) })) });
       }
       if (!phoneOk(b.with)) return res.status(400).json({ error: 'Bad request.' });
       /* the chat is open on my screen, so what they sent me is read (blue ticks for them) */
@@ -1160,10 +1176,10 @@ module.exports = async (req, res) => {
         if (!body) return res.status(400).json({ error: 'Bad request.' });
         const ch = await chanRow(cidOf(b.to));
         if (!ch) return res.status(404).json({ error: 'This channel no longer exists.' });
-        if (ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can send messages.' });
+        if (!(await chanCanPost(ch, me))) return res.status(403).json({ error: 'Only the channel owner and admins can send messages.' });
         const [pr] = await db().query('INSERT INTO channel_posts (channel_id, body) VALUES (?, ?)', [ch.id, body]);
         if (rt.on()) { const [sb] = await db().query('SELECT phone FROM channel_subs WHERE channel_id = ? AND phone <> ? LIMIT 2000', [ch.id, me]); await rt.signal(sb.map((x) => x.phone), 'msg', { from: 'c:' + ch.id }); }
-        await notifyChannel(ch, body);
+        await notifyChannel(ch, body, me);
         return res.json({ message: { id: Number(pr.insertId), mine: true, body, at: new Date().toISOString(), from: '' } });
       }
       if (!phoneOk(b.to) || !body) return res.status(400).json({ error: 'Bad request.' });
@@ -1636,6 +1652,7 @@ module.exports = async (req, res) => {
               await db().query('DELETE FROM channel_views WHERE post_id IN (SELECT id FROM channel_posts WHERE channel_id = ?)', [cid]).catch(() => {});
               await db().query('DELETE FROM channel_posts WHERE channel_id = ?', [cid]).catch(() => {});
               await db().query('DELETE FROM channel_mutes WHERE channel_id = ?', [cid]).catch(() => {});
+              await db().query('DELETE FROM channel_admins WHERE channel_id = ?', [cid]).catch(() => {});
               await db().query('DELETE FROM channels WHERE id = ?', [cid]).catch(() => {});
             } else if (own[0]) {
               const [del] = await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, me]).catch(() => [{}]);
@@ -1680,11 +1697,12 @@ module.exports = async (req, res) => {
       const [pp] = await db().query('SELECT channel_id FROM channel_posts WHERE id = ?', [pid]);
       if (!pp[0]) return res.status(404).json({ error: 'That post is gone.' });
       const ch = await chanRow(pp[0].channel_id);
-      if (!ch || ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can change posts.' });
+      if (!ch || !(await chanCanPost(ch, me))) return res.status(403).json({ error: 'Only the channel owner and admins can change posts.' });
       if (b.action === 'channel_post_edit') {
         const nb = String(b.body || '').trim().slice(0, 2000);
         if (!nb) return res.status(400).json({ error: 'A post cannot be empty.' });
         await db().query('UPDATE channel_posts SET body = ?, edited = 1 WHERE id = ?', [nb, pid]);
+        await chanPing(ch.id, me);
         return res.json({ ok: true, body: nb });
       }
       if (b.action === 'channel_post_delete') {
@@ -1693,10 +1711,12 @@ module.exports = async (req, res) => {
         await db().query('DELETE FROM channel_votes WHERE post_id = ?', [pid]).catch(() => {});
         await db().query('DELETE FROM channel_posts WHERE id = ?', [pid]);
         await db().query('UPDATE channels SET pinned_post = NULL WHERE id = ? AND pinned_post = ?', [ch.id, pid]);
+        await chanPing(ch.id, me);
         return res.json({ ok: true });
       }
       const on = b.pin !== false;
       await db().query('UPDATE channels SET pinned_post = ? WHERE id = ?', [on ? pid : null, ch.id]);
+      await chanPing(ch.id, me);
       return res.json({ ok: true, pin: on ? pid : 0 });
     }
     /* ---- channel info / subscribe / unsubscribe / react / mute / settings ---- */
@@ -1720,13 +1740,14 @@ module.exports = async (req, res) => {
       if (!cid) return res.status(400).json({ error: 'Bad request.' });
       const ch = await chanRow(cid);
       if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
-      const subbed = ch.owner === me || (await chanSubbed(cid, me));
+      const isAdm = ch.owner !== me && (await chanIsAdmin(cid, me));
+      const subbed = ch.owner === me || isAdm || (await chanSubbed(cid, me));
       if (b.action === 'channel_info') {
         if (ch.is_private && !subbed && String(b.k || '') !== chanKey(cid)) return res.status(403).json({ error: 'This is a private channel. Ask the owner for the invite link.' });
         let muted = false;
         if (subbed) { const [mm] = await db().query('SELECT 1 FROM channel_mutes WHERE channel_id = ? AND phone = ?', [cid, me]); muted = mm.length > 0; }
-        const mine = ch.owner === me;
-        return res.json({ channel: { id: ch.id, phone: 'c:' + ch.id, name: ch.name, description: ch.description, photo_url: ch.photo_url, subscribers: Number(ch.subscribers), is_private: !!ch.is_private, owner: ch.owner, mine, subscribed: !!subbed, muted, key: (ch.is_private && subbed) ? chanKey(cid) : '' } });
+        const mine = ch.owner === me || isAdm;
+        return res.json({ channel: { isOwner: ch.owner === me, isAdmin: isAdm, noFwd: !!ch.no_fwd, id: ch.id, phone: 'c:' + ch.id, name: ch.name, description: ch.description, photo_url: ch.photo_url, subscribers: Number(ch.subscribers), is_private: !!ch.is_private, owner: ch.owner, mine, subscribed: !!subbed, muted, key: (ch.is_private && subbed) ? chanKey(cid) : '' } });
       }
       if (b.action === 'channel_subscribe') {
         if (ch.is_private && !subbed && String(b.k || '') !== chanKey(cid)) return res.status(403).json({ error: 'This is a private channel. Ask the owner for the invite link.' });
@@ -1735,6 +1756,7 @@ module.exports = async (req, res) => {
       }
       if (b.action === 'channel_unsubscribe') {
         if (ch.owner === me) return res.status(400).json({ error: 'You own this channel. You can delete it instead.' });
+        await db().query('DELETE FROM channel_admins WHERE channel_id = ? AND phone = ?', [cid, me]).catch(() => {});
         await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, me]);
         await db().query('DELETE FROM channel_mutes WHERE channel_id = ? AND phone = ?', [cid, me]);
         return res.json({ subscribed: false, subscribers: await chanRecount(cid) });
@@ -1748,14 +1770,44 @@ module.exports = async (req, res) => {
       if (b.action === 'channel_update') {
         if (ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can change this.' });
         if (typeof b.is_private !== 'undefined') await db().query('UPDATE channels SET is_private = ? WHERE id = ?', [b.is_private ? 1 : 0, cid]);
+        if (typeof b.no_fwd !== 'undefined') await db().query('UPDATE channels SET no_fwd = ? WHERE id = ?', [b.no_fwd ? 1 : 0, cid]);
         if (typeof b.name === 'string' && b.name.trim()) await db().query('UPDATE channels SET name = ? WHERE id = ?', [Array.from(b.name.trim()).slice(0, 100).join(''), cid]);
         if (typeof b.description === 'string') await db().query('UPDATE channels SET description = ? WHERE id = ?', [Array.from(b.description.trim()).slice(0, 255).join(''), cid]);
         return res.json({ ok: true });
       }
     }
+    /* ---- channel admins (owner only): list, add by phone number, remove ---- */
+    if (['channel_admins', 'channel_admin_add', 'channel_admin_remove'].indexOf(b.action) > -1) {
+      const cid = isChanId(String(b.channel || '')) ? cidOf(b.channel) : (parseInt(b.channel, 10) || 0);
+      const ch = cid ? await chanRow(cid) : null;
+      if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
+      if (ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can manage admins.' });
+      const names = async (phones) => {
+        if (!phones.length) return {};
+        const [pr] = await db().query('SELECT phone, name, photo_url FROM profiles WHERE phone IN (?)', [phones]).catch(() => [[]]);
+        const m = {}; pr.forEach((x) => { m[x.phone] = { name: x.name || '', photo_url: x.photo_url || '' }; }); return m;
+      };
+      if (b.action === 'channel_admin_add') {
+        const ph = String(b.phone || '').replace(/[^\d+]/g, '');
+        if (!phoneOk(ph)) return res.status(400).json({ error: 'Enter a valid phone number with the country code.' });
+        if (ph === me) return res.status(400).json({ error: 'You already own this channel.' });
+        if (!(await findUser(ph))) return res.status(404).json({ error: "That number isn't on Zanply yet." });
+        const [cn] = await db().query('SELECT COUNT(*) AS n FROM channel_admins WHERE channel_id = ?', [cid]);
+        if (Number(cn[0].n) >= 20) return res.status(400).json({ error: 'A channel can have up to 20 admins.' });
+        await db().query('INSERT IGNORE INTO channel_subs (channel_id, phone) VALUES (?, ?)', [cid, ph]);
+        await db().query('INSERT IGNORE INTO channel_admins (channel_id, phone) VALUES (?, ?)', [cid, ph]);
+        await chanRecount(cid);
+      }
+      if (b.action === 'channel_admin_remove') {
+        await db().query('DELETE FROM channel_admins WHERE channel_id = ? AND phone = ?', [cid, String(b.phone || '')]);
+      }
+      const [ar] = await db().query('SELECT phone FROM channel_admins WHERE channel_id = ? ORDER BY created_at ASC', [cid]);
+      const nm = await names(ar.map((x) => x.phone));
+      return res.json({ admins: ar.map((x) => ({ phone: x.phone, name: (nm[x.phone] && nm[x.phone].name) || '', photo_url: (nm[x.phone] && nm[x.phone].photo_url) || '' })) });
+    }
     if (b.action === 'channel_list') {
-      const [r] = await db().query('SELECT c.id, c.name, c.description, c.photo_url, c.subscribers, c.owner FROM channels c JOIN channel_subs s ON s.channel_id = c.id WHERE s.phone = ? ORDER BY c.id DESC LIMIT 200', [me]);
-      return res.json({ channels: r.map((x) => ({ id: x.id, name: x.name, description: x.description, photo_url: x.photo_url, subscribers: x.subscribers, mine: x.owner === me })) });
+      const [r] = await db().query('SELECT c.id, c.name, c.description, c.photo_url, c.subscribers, c.owner, (SELECT 1 FROM channel_admins a WHERE a.channel_id = c.id AND a.phone = ?) AS adm FROM channels c JOIN channel_subs s ON s.channel_id = c.id WHERE s.phone = ? ORDER BY c.id DESC LIMIT 200', [me, me]);
+      return res.json({ channels: r.map((x) => ({ id: x.id, name: x.name, description: x.description, photo_url: x.photo_url, subscribers: x.subscribers, mine: x.owner === me || !!x.adm })) });
     }
 
     // Two-step verification PIN (needs an email on the profile, because email + PIN are used to recover chats).
@@ -2009,7 +2061,7 @@ module.exports = async (req, res) => {
       { const prem = await isPremium(me), cap = (prem ? 150 : 30) * 1024 * 1024; if (size > cap) return res.status(413).json({ error: prem ? 'That file is too big. The limit is 150 MB.' : 'To send a file above 30 MB you have to subscribe to Zanply Premium', premium: !prem }); }
       if (isChanId(to)) {
         const ch = await chanRow(cidOf(to));
-        if (!ch || ch.owner !== me) return res.status(403).json({ error: 'Only the channel owner can send files.' });
+        if (!ch || !(await chanCanPost(ch, me))) return res.status(403).json({ error: 'Only the channel owner and admins can send files.' });
       } else if (isGroup(to)) {
         if (!(await isMember(gid(to), me))) return res.status(403).json({ error: 'You are not in this group.' });
         if (!(await groupCanSend(gid(to), me))) return res.status(403).json({ error: 'Only admins can send messages to this group.' });
