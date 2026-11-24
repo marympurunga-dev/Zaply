@@ -3940,7 +3940,7 @@ ZW|Zimbabwe|263`;
       var i = $('msgInput'); if (i) i.setAttribute('enterkeyhint', s.enterSend ? 'send' : 'enter');
       try { stkUpdate(); } catch (e) {}
     }
-    function autoGrow() { var i = $('msgInput'); if (!i) return; i.style.height = 'auto'; var h = i.scrollHeight; if (!h) { i.style.height = ''; return; } i.style.height = Math.min(Math.max(h, 52), 132) + 'px'; }
+    function autoGrow() { var i = $('msgInput'); if (!i) return; i.style.height = 'auto'; var h = i.scrollHeight; if (!h) { i.style.height = ''; return; } i.style.height = Math.min(Math.max(h, 44), 132) + 'px'; }
 
     /* sticker suggestions: big emoji "stickers" that you can tap to send while typing */
     var STK = {
@@ -13249,25 +13249,29 @@ ZFAQ.push(["Safety, rules and contact",[
   margin:calc(-1*var(--dockH)) 0 0 0!important;padding:6px 8px calc(8px + env(safe-area-inset-bottom,0px))!important;gap:8px!important;align-items:flex-end!important}
 #threadView.chanro #comp.comp{margin-top:0!important}
 #threadView.chanro #chRO{position:relative;z-index:6;margin:calc(-1*var(--dockH)) 8px 6px!important}
-#threadView #comp .inbox{display:flex!important;flex:1 1 0!important;min-width:0;order:1;align-items:center;background:var(--card,#fff)!important;border:none!important;border-radius:26px!important;min-height:50px;
+#threadView #comp .inbox{display:flex!important;flex:1 1 0!important;min-width:0;order:1;align-items:center;background:var(--card,#fff)!important;border:none!important;border-radius:26px!important;min-height:44px!important;
   box-shadow:0 1px 5px rgba(0,0,0,.28);padding:0 4px!important}
 #threadView #comp .inbox textarea,#threadView #comp #msgInput{flex:1 1 0!important;width:0!important;min-width:0!important;order:3;background:transparent!important;border:none!important;border-radius:0!important;
-  box-shadow:none!important;padding:13px 6px!important;min-height:50px;height:auto;font-size:17px}
+  box-shadow:none!important;padding:10px 6px!important;min-height:44px!important;height:44px;line-height:22px!important;font-size:17px!important}
 #threadView #comp .inbox #btnEmoji{order:1;margin:0}
 #threadView #comp .inbox #btnPlus,#threadView #comp .inbox #btnCamera{order:4;width:40px!important;height:40px!important;margin:0!important;position:static!important;background:transparent!important;border:none!important;color:var(--muted,#8a949c)!important}
 #threadView #comp .inbox #btnEmoji{color:var(--muted,#8a949c)!important}
-#threadView #comp .inbox .ghost svg{width:26px!important;height:26px!important}
+#threadView #comp .inbox .ghost svg{width:24px!important;height:24px!important}
+#threadView #comp .inbox .ghost{width:38px!important;height:38px!important}
+#threadView #comp .inbox #btnPlus,#threadView #comp .inbox #btnCamera{width:38px!important;height:38px!important}
+#threadView #comp.typing .inbox textarea,#threadView #comp.typing #msgInput{padding:10px 6px!important;font-size:17px!important}
+#threadView #comp #msgInput::placeholder{font-size:16px!important}
 #threadView #comp #btnExpand,#threadView #comp #btnLike,#threadView #comp #btnGallery{display:none!important}
-#threadView #comp #btnMic,#threadView #comp #btnSendMsg,#threadView #comp #chBell{order:5;flex:none;width:50px;height:50px;border-radius:50%;padding:0;border:none;
+#threadView #comp #btnMic,#threadView #comp #btnSendMsg,#threadView #comp #chBell{order:5;flex:none;width:44px;height:44px;border-radius:50%;padding:0;border:none;
   background:var(--acc,#21c063)!important;color:#06140c;box-shadow:0 1px 5px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center}
-#threadView #comp #btnMic,#threadView #comp #btnSendMsg,#threadView #comp #chBell,#threadView #comp #chGift{width:50px!important;height:50px!important;min-width:50px}
+#threadView #comp #btnMic,#threadView #comp #btnSendMsg,#threadView #comp #chBell,#threadView #comp #chGift{width:44px!important;height:44px!important;min-width:44px}
 #threadView #comp #msgInput{overflow:hidden!important}
 #threadView #comp #msgInput::placeholder{font-size:16px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#threadView #comp #btnMic svg,#threadView #comp #btnSendMsg svg,#threadView #comp #chBell svg{width:26px;height:26px}
+#threadView #comp #btnMic svg,#threadView #comp #btnSendMsg svg,#threadView #comp #chBell svg{width:22px;height:22px}
 #threadView #comp.hastext #btnMic,#threadView #comp.hastext #chBell{display:none!important}
 #threadView #comp:not(.hastext) #btnSendMsg{display:none!important}
 #threadView #comp.hastext #btnSendMsg{display:flex!important}
-#threadView #comp #chGift{order:0;flex:none;width:50px;height:50px;box-shadow:0 1px 5px rgba(0,0,0,.28)}
+#threadView #comp #chGift{order:0;flex:none;width:44px;height:44px;box-shadow:0 1px 5px rgba(0,0,0,.28)}
 #threadView.chanview #comp #btnCamera{display:flex!important}
 #threadView.chanview #comp #btnMic{display:none!important}
 #threadView:not(.chanview) #comp #chBell,#threadView:not(.chanview) #comp #chGift{display:none!important}
@@ -13279,6 +13283,7 @@ ZFAQ.push(["Safety, rules and contact",[
 (function(){
   var tv=document.getElementById('threadView'),comp=document.getElementById('comp');if(!tv||!comp)return;
   var inbox=comp.querySelector('.inbox');
+  var sb=document.getElementById('btnSendMsg');if(sb)sb.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4l17.45-7.48a1 1 0 0 0 0-1.84L3.4 3.6a.993.993 0 0 0-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z"/></svg>';
   ['btnPlus','btnCamera'].forEach(function(id){var b=document.getElementById(id);if(b&&inbox&&b.parentNode!==inbox)inbox.appendChild(b);});
   function upd(){
     var h=comp.offsetHeight;
@@ -13288,6 +13293,46 @@ ZFAQ.push(["Safety, rules and contact",[
   try{new ResizeObserver(upd).observe(comp);}catch(e){}
   new MutationObserver(function(){requestAnimationFrame(upd);}).observe(tv,{attributes:true,attributeFilter:['class']});
   window.addEventListener('resize',upd);upd();
+})();
+</script>
+<style id="tgHeader">
+/* Telegram-style header: three floating pills (back | profile | actions), wallpaper runs behind */
+#threadView{--topH:0px}
+html body #threadView #thHeadBar.th-head{position:relative;z-index:6;background:transparent!important;border:none!important;box-shadow:none!important;gap:8px!important;
+  padding:calc(8px + env(safe-area-inset-top,0px)) 8px 6px!important;align-items:center!important}
+#threadView #chBanner{position:relative;z-index:6}
+#threadView #msgs#msgs{margin-top:calc(-1*var(--topH))!important;padding-top:calc(var(--topH) + 8px)!important}
+.thp{display:flex;align-items:center;height:44px;background:var(--card,#fff);border-radius:999px;box-shadow:0 1px 5px rgba(0,0,0,.28);min-width:0;color:var(--text)}
+.thp-back{flex:none;width:44px;justify-content:center}
+.thp-id{flex:1 1 0;overflow:hidden;padding:0 14px 0 4px}
+.thp-act{flex:none;padding:0 4px;gap:0}
+html body #threadView #thHeadBar.th-head .thp button{background:transparent!important;border:none!important;box-shadow:none!important;border-radius:50%!important;box-sizing:border-box;
+  width:34px!important;height:40px!important;min-width:0;padding:8px 5px!important;margin:0!important;color:var(--text)!important;order:0!important}
+html body #threadView #thHeadBar.th-head .thp button svg{display:block;width:24px!important;height:24px!important;margin:auto}
+html body #threadView #thHeadBar.th-head .thp-back button{width:44px!important;height:44px!important;padding:10px!important;color:var(--text)!important}
+html body #threadView #thHeadBar.th-head .thp .av{width:36px!important;height:36px!important;min-width:36px;margin:0 10px 0 4px!important;box-shadow:none!important;font-size:16px!important;flex:none}
+html body #threadView #thHeadBar.th-head .thinfo{flex:1 1 0;min-width:0;padding:0}
+html body #threadView #thHeadBar.th-head .thinfo b{font-size:17px!important;line-height:1.2;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html body #threadView #thHeadBar.th-head .thinfo small{font-size:13px!important;line-height:1.2;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+<script>
+(function(){
+  var tv=document.getElementById('threadView'),head=tv&&tv.querySelector('.th-head');if(!head)return;head.id='thHeadBar';
+  function mkp(c){var d=document.createElement('div');d.className='thp '+c;return d;}
+  if(!head.querySelector('.thp')){
+    var kids=Array.prototype.slice.call(head.children),w1=mkp('thp-back'),w2=mkp('thp-id'),w3=mkp('thp-act');
+    kids.forEach(function(k){if(k.id==='thBack')w1.appendChild(k);else if(k.id==='thAv'||k.id==='thInfo')w2.appendChild(k);else w3.appendChild(k);});
+    head.appendChild(w1);head.appendChild(w2);head.appendChild(w3);
+  }
+  var pend=false;
+  function upd(){pend=false;var t=tv.getBoundingClientRect().top,b=head.getBoundingClientRect().bottom,bn=document.getElementById('chBanner');
+    if(bn&&getComputedStyle(bn).display!=='none')b=Math.max(b,bn.getBoundingClientRect().bottom);
+    var v=(tv.getBoundingClientRect().height?Math.max(0,Math.round(b-t)):0)+'px';
+    if(tv.style.getPropertyValue('--topH')!==v)tv.style.setProperty('--topH',v);}
+  function q(){if(!pend){pend=true;requestAnimationFrame(upd);}}
+  try{new ResizeObserver(q).observe(head);}catch(e){}
+  new MutationObserver(q).observe(tv,{attributes:true,attributeFilter:['class','style'],subtree:true,childList:true});
+  window.addEventListener('resize',q);q();
 })();
 </script>
 </body>
