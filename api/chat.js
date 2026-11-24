@@ -1805,6 +1805,56 @@ module.exports = async (req, res) => {
       const nm = await names(ar.map((x) => x.phone));
       return res.json({ admins: ar.map((x) => ({ phone: x.phone, name: (nm[x.phone] && nm[x.phone].name) || '', photo_url: (nm[x.phone] && nm[x.phone].photo_url) || '' })) });
     }
+    /* ---- analytics + subscriber management (owner and admins), all from real data ---- */
+    if (['channel_stats', 'channel_members', 'channel_member_remove'].indexOf(b.action) > -1) {
+      const cid = isChanId(String(b.channel || '')) ? cidOf(b.channel) : (parseInt(b.channel, 10) || 0);
+      const ch = cid ? await chanRow(cid) : null;
+      if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
+      if (!(await chanCanPost(ch, me))) return res.status(403).json({ error: 'Only the channel owner and admins can see this.' });
+      const refOf = (ph) => crypto.createHash('sha256').update(cid + ':' + ph).digest('hex').slice(0, 20);
+      if (b.action === 'channel_stats') {
+        const one = async (sql, args) => { const [r] = await db().query(sql, args).catch(() => [[{}]]); return r[0] || {}; };
+        const subs = Number((await one('SELECT COUNT(*) AS n FROM channel_subs WHERE channel_id = ?', [cid])).n) || 0;
+        const n7 = Number((await one('SELECT COUNT(*) AS n FROM channel_subs WHERE channel_id = ? AND created_at >= (NOW() - INTERVAL 7 DAY)', [cid])).n) || 0;
+        const n30 = Number((await one('SELECT COUNT(*) AS n FROM channel_subs WHERE channel_id = ? AND created_at >= (NOW() - INTERVAL 30 DAY)', [cid])).n) || 0;
+        const [dr] = await db().query('SELECT DATE_FORMAT(created_at, \'%Y-%m-%d\') AS d, COUNT(*) AS n FROM channel_subs WHERE channel_id = ? AND created_at >= (NOW() - INTERVAL 13 DAY) GROUP BY d', [cid]).catch(() => [[]]);
+        const dm = {}; dr.forEach((x) => { dm[x.d] = Number(x.n); });
+        const growth = []; for (let i = 13; i >= 0; i--) { const d = new Date(Date.now() - i * 864e5).toISOString().slice(0, 10); growth.push({ d, n: dm[d] || 0 }); }
+        const posts = Number((await one('SELECT COUNT(*) AS n FROM channel_posts WHERE channel_id = ?', [cid])).n) || 0;
+        const posts7 = Number((await one('SELECT COUNT(*) AS n FROM channel_posts WHERE channel_id = ? AND created_at >= (NOW() - INTERVAL 7 DAY)', [cid])).n) || 0;
+        const vw = await one('SELECT COUNT(*) AS n, COUNT(DISTINCT v.phone) AS u FROM channel_views v JOIN channel_posts p ON p.id = v.post_id WHERE p.channel_id = ?', [cid]);
+        const [re] = await db().query('SELECT r.emoji AS e, COUNT(*) AS n FROM channel_reacts r JOIN channel_posts p ON p.id = r.post_id WHERE p.channel_id = ? GROUP BY r.emoji ORDER BY n DESC LIMIT 8', [cid]).catch(() => [[]]);
+        const [rp] = await db().query('SELECT id, LEFT(body, 80) AS body, created_at FROM channel_posts WHERE channel_id = ? ORDER BY id DESC LIMIT 100', [cid]).catch(() => [[]]);
+        const ids = rp.map((x) => Number(x.id)); const pv = {}, pr = {};
+        if (ids.length) {
+          const [a1] = await db().query('SELECT post_id, COUNT(*) AS n FROM channel_views WHERE post_id IN (?) GROUP BY post_id', [ids]).catch(() => [[]]); a1.forEach((x) => { pv[x.post_id] = Number(x.n); });
+          const [a2] = await db().query('SELECT post_id, COUNT(*) AS n FROM channel_reacts WHERE post_id IN (?) GROUP BY post_id', [ids]).catch(() => [[]]); a2.forEach((x) => { pr[x.post_id] = Number(x.n); });
+        }
+        const top = rp.map((x) => ({ id: Number(x.id), text: String(x.body || ''), at: x.created_at, views: pv[x.id] || 0, reactions: pr[x.id] || 0 })).sort((a, c) => (c.views + c.reactions) - (a.views + a.reactions)).slice(0, 5);
+        const views = Number(vw.n) || 0, rtot = re.reduce((t, x) => t + Number(x.n), 0);
+        return res.json({ stats: { subs, new7: n7, new30: n30, growth, posts, posts7, views, viewers: Number(vw.u) || 0, avgViews: posts ? Math.round((views / posts) * 10) / 10 : 0,
+          reach: posts && subs ? Math.round((views / posts / subs) * 1000) / 10 : 0, reactions: rtot, reactionsBy: re.map((x) => ({ e: x.e, n: Number(x.n) })), top } });
+      }
+      if (b.action === 'channel_members') {
+        const off = Math.max(0, parseInt(b.offset, 10) || 0);
+        const [tot] = await db().query('SELECT COUNT(*) AS n FROM channel_subs WHERE channel_id = ?', [cid]);
+        const [sr] = await db().query('SELECT s.phone, s.created_at, p.name, p.username, p.photo_url FROM channel_subs s LEFT JOIN profiles p ON p.phone = s.phone WHERE s.channel_id = ? ORDER BY s.created_at DESC LIMIT 61 OFFSET ?', [cid, off]);
+        const [ad] = await db().query('SELECT phone FROM channel_admins WHERE channel_id = ?', [cid]).catch(() => [[]]);
+        const adm = new Set(ad.map((x) => x.phone));
+        return res.json({ total: Number(tot[0].n), more: sr.length > 60, members: sr.slice(0, 60).map((x) => ({ ref: refOf(x.phone), name: x.name || x.username || 'Subscriber', photo_url: x.photo_url || '', joined: x.created_at, role: x.phone === ch.owner ? 'owner' : (adm.has(x.phone) ? 'admin' : ''), you: x.phone === me })) });
+      }
+      /* channel_member_remove */
+      const [all] = await db().query('SELECT phone FROM channel_subs WHERE channel_id = ?', [cid]);
+      const hit = all.find((x) => refOf(x.phone) === String(b.ref || ''));
+      if (!hit) return res.status(404).json({ error: 'That subscriber is no longer in the channel.' });
+      if (hit.phone === ch.owner) return res.status(403).json({ error: "You can't remove the channel owner." });
+      if (hit.phone === me) return res.status(400).json({ error: 'Use Leave channel to remove yourself.' });
+      const tAdmin = await chanIsAdmin(cid, hit.phone);
+      if (tAdmin && ch.owner !== me) return res.status(403).json({ error: 'Only the owner can remove an admin.' });
+      await db().query('DELETE FROM channel_admins WHERE channel_id = ? AND phone = ?', [cid, hit.phone]).catch(() => {});
+      await db().query('DELETE FROM channel_subs WHERE channel_id = ? AND phone = ?', [cid, hit.phone]);
+      return res.json({ ok: true, subscribers: await chanRecount(cid) });
+    }
     if (b.action === 'channel_list') {
       const [r] = await db().query('SELECT c.id, c.name, c.description, c.photo_url, c.subscribers, c.owner, (SELECT 1 FROM channel_admins a WHERE a.channel_id = c.id AND a.phone = ?) AS adm FROM channels c JOIN channel_subs s ON s.channel_id = c.id WHERE s.phone = ? ORDER BY c.id DESC LIMIT 200', [me, me]);
       return res.json({ channels: r.map((x) => ({ id: x.id, name: x.name, description: x.description, photo_url: x.photo_url, subscribers: x.subscribers, mine: x.owner === me || !!x.adm })) });
