@@ -487,11 +487,80 @@ async function chanViews(postIds, me, owner, markIds) {
   vc.forEach((x) => { out[x.post_id] = Number(x.n); });
   return out;
 }
+/* reaction details: who reacted. Each reactor decides who may see that (privacy.reacts = everyone | contacts | nobody).
+   The counts are always real; people who chose to stay hidden are only counted in `hidden`. Owners and admins get no exception. */
+async function chanWho(pid, me, emoji) {
+  const [rows] = await db().query('SELECT r.phone, r.emoji, p.privacy FROM channel_reacts r LEFT JOIN profiles p ON p.phone = r.phone WHERE r.post_id = ?' + (emoji ? ' AND r.emoji = ?' : '') + ' ORDER BY r.emoji LIMIT 500', emoji ? [pid, emoji] : [pid]);
+  const theirContacts = new Set();
+  const needSaved = rows.filter((x) => x.phone !== me && parsePv(x.privacy).reacts === 'contacts').map((x) => x.phone);
+  if (needSaved.length) { const [sv] = await db().query('SELECT owner FROM saved_contacts WHERE phone = ? AND owner IN (?)', [me, needSaved]).catch(() => [[]]); sv.forEach((x) => theirContacts.add(x.owner)); }
+  const vis = []; let hidden = 0;
+  for (const x of rows) {
+    const rule = parsePv(x.privacy).reacts || 'everyone';
+    if (x.phone === me || rule === 'everyone' || (rule === 'contacts' && theirContacts.has(x.phone))) vis.push(x); else hidden++;
+  }
+  const nm = await displayNames(vis.map((x) => x.phone)).catch(() => ({}));
+  const hid = {};
+  if (vis.length) { const [pp] = await db().query('SELECT phone, privacy FROM profiles WHERE phone IN (?)', [vis.map((x) => x.phone)]).catch(() => [[]]); pp.forEach((x) => { if (parsePv(x.privacy).hidePhone) hid[x.phone] = true; }); }
+  return { hidden, total: rows.length, who: vis.map((x) => ({ me: x.phone === me, emoji: x.emoji, name: nm[x.phone] || (hid[x.phone] && x.phone !== me ? 'Zanply user' : x.phone), phone: hid[x.phone] && x.phone !== me ? '' : x.phone })) };
+}
 // The server cannot read end-to-end encrypted messages, so notifications must not show the scrambled text.
+/* ---- link previews for channel posts: the server reads the page's title / description / picture, never a private address ---- */
+const dnsP = require('dns').promises, netM = require('net');
+function ipPrivate(ip) {
+  if (netM.isIPv4(ip)) {
+    const p = ip.split('.').map(Number);
+    return p[0] === 0 || p[0] === 10 || p[0] === 127 || p[0] >= 224 || (p[0] === 169 && p[1] === 254) || (p[0] === 172 && p[1] >= 16 && p[1] <= 31) || (p[0] === 192 && p[1] === 168) || (p[0] === 192 && p[1] === 0 && p[2] === 0) || (p[0] === 100 && p[1] >= 64 && p[1] <= 127);
+  }
+  if (netM.isIPv6(ip)) { const l = ip.toLowerCase(); if (l === '::1' || l === '::') return true; if (l.indexOf('::ffff:') === 0) return ipPrivate(l.slice(7)); return /^f[cd]/.test(l) || /^fe[89ab]/.test(l); }
+  return true;
+}
+async function lpFetch(u0) {
+  let u = u0;
+  for (let hop = 0; hop < 4; hop++) {
+    let url; try { url = new URL(u); } catch (e) { return null; }
+    if (!/^https?:$/.test(url.protocol) || url.username || url.password) return null;
+    if (url.port && url.port !== '80' && url.port !== '443') return null;
+    const host = url.hostname.replace(/^\[|\]$/g, '');
+    if (!host || /^localhost$|\.local$|\.internal$/i.test(host)) return null;
+    let addrs; try { addrs = netM.isIP(host) ? [{ address: host }] : await dnsP.lookup(host, { all: true }); } catch (e) { return null; }
+    if (!addrs.length || addrs.some((a) => ipPrivate(a.address))) return null;
+    const ac = new AbortController(), tm = setTimeout(() => ac.abort(), 5000);
+    try {
+      const r = await fetch(url.href, { redirect: 'manual', signal: ac.signal, headers: { 'user-agent': 'Mozilla/5.0 (compatible; ZanplyLinkPreview/1.0)', accept: 'text/html,application/xhtml+xml', 'accept-language': 'en' } });
+      if (r.status >= 300 && r.status < 400 && r.headers.get('location')) { u = new URL(r.headers.get('location'), url.href).href; continue; }
+      if (!r.ok || !/html/i.test(r.headers.get('content-type') || '')) return null;
+      const rd = r.body.getReader(), chunks = []; let got = 0;
+      while (got < 400000) { const { done, value } = await rd.read(); if (done) break; chunks.push(Buffer.from(value)); got += value.length; }
+      try { rd.cancel(); } catch (e) {}
+      return { html: Buffer.concat(chunks).toString('utf8'), url: url.href };
+    } catch (e) { return null; } finally { clearTimeout(tm); }
+  }
+  return null;
+}
+function lpMeta(html, base) {
+  const head = html.slice(0, 250000), meta = {};
+  const dec = (x) => String(x || '').replace(/&(#x[0-9a-f]+|#\d+|amp|lt|gt|quot|apos);/gi, (m, e) => { const l = e.toLowerCase(); if (l === 'amp') return '&'; if (l === 'lt') return '<'; if (l === 'gt') return '>'; if (l === 'quot') return '"'; if (l === 'apos') return "'"; try { return String.fromCodePoint(l[1] === 'x' ? parseInt(l.slice(2), 16) : parseInt(l.slice(1), 10)); } catch (er) { return ''; } }).replace(/\s+/g, ' ').trim();
+  (head.match(/<meta\b[^>]*>/gi) || []).forEach((t) => {
+    const k = (t.match(/(?:property|name)\s*=\s*["']([^"']+)["']/i) || [])[1], v = (t.match(/content\s*=\s*"([^"]*)"/i) || t.match(/content\s*=\s*'([^']*)'/i) || [])[1];
+    if (k && v != null && meta[k.toLowerCase()] === undefined) meta[k.toLowerCase()] = v;
+  });
+  const ttl = (head.match(/<title[^>]*>([^<]*)<\/title>/i) || [])[1];
+  let img = meta['og:image:secure_url'] || meta['og:image'] || meta['twitter:image'] || '';
+  if (img) { try { const iu = new URL(dec(img), base); img = iu.protocol === 'https:' ? iu.href : ''; } catch (e) { img = ''; } }
+  let host = ''; try { host = new URL(base).hostname.replace(/^www\./, ''); } catch (e) {}
+  return { t: dec(meta['og:title'] || meta['twitter:title'] || ttl).slice(0, 140), d: dec(meta['og:description'] || meta['twitter:description'] || meta.description).slice(0, 220), i: String(img).slice(0, 500), s: dec(meta['og:site_name']).slice(0, 60) || host };
+}
+let lpReady = null; const lpHits = new Map();
+function lpTable() {
+  if (!lpReady) lpReady = db().query('CREATE TABLE IF NOT EXISTS link_previews (h CHAR(40) PRIMARY KEY, data TEXT NOT NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)').catch((e) => { lpReady = null; throw e; });
+  return lpReady;
+}
 function preview(text) {
   if (String(text).indexOf('e2e1:') === 0) return 'New message';
   if (String(text).indexOf('__call__') === 0) return 'Incoming call';
   if (String(text).indexOf('__media__') === 0) return 'Sent an attachment';
+  if (String(text).indexOf('__album__') === 0) return 'Sent photos';
   if (String(text).indexOf('__loc__') === 0) return 'Shared a location';
   if (String(text).indexOf('__poll__') === 0) return 'New poll';
   if (String(text).indexOf('__fwd__') === 0) return 'Forwarded post';
@@ -1217,6 +1286,17 @@ module.exports = async (req, res) => {
         if (fv.error) return res.status(fv.status || 400).json({ error: fv.error });
         body = fv.body;
       }
+      if (body.indexOf('__album__') === 0) {
+        if (!isChanId(b.to)) return res.status(400).json({ error: 'Photo albums can only be posted in channels.' });
+        let al = null; try { al = JSON.parse(body.slice(9)); } catch (e) {}
+        const its = al && Array.isArray(al.i) ? al.i.slice(0, 10) : [];
+        const ids = its.map((x) => Number(x && x.id)).filter((n) => Number.isInteger(n) && n > 0);
+        if (ids.length < 2 || ids.length !== its.length || new Set(ids).size !== ids.length) return res.status(400).json({ error: 'Add at least 2 photos.' });
+        const [own] = await db().query('SELECT id FROM cloud_media WHERE id IN (?) AND owner = ? AND peer = ?', [ids, me, b.to]);
+        if (own.length !== ids.length) return res.status(400).json({ error: 'Those photos could not be checked. Upload them again.' });
+        body = '__album__' + JSON.stringify({ t: String(al.t || '').slice(0, 600), i: its.map((x) => ({ id: Number(x.id), w: Math.min(9999, Math.max(0, Number(x.w) || 0)), h: Math.min(9999, Math.max(0, Number(x.h) || 0)) })) });
+        if (body.length > 2000) return res.status(400).json({ error: 'The caption is too long.' });
+      }
       if (isGroup(b.to)) {
         if (!body) return res.status(400).json({ error: 'Bad request.' });
         const g = gid(b.to);
@@ -1300,7 +1380,7 @@ module.exports = async (req, res) => {
       let pv; try { pv = JSON.parse(String(b.privacy || '{}')); } catch (e) { return res.status(400).json({ error: 'Bad request.' }); }
       const ok = ['everyone', 'contacts', 'except', 'nobody'], clean = {
         lastseen: pv.lastseen === 'except' ? 'contacts' : ['everyone', 'contacts', 'nobody'].includes(pv.lastseen) ? pv.lastseen : 'everyone', online: ['everyone', 'contacts', 'same'].includes(pv.online) ? pv.online : 'everyone',
-        photo: ok.includes(pv.photo) ? pv.photo : 'everyone', hidePhone: !!pv.hidePhone,
+        photo: ok.includes(pv.photo) ? pv.photo : 'everyone', hidePhone: !!pv.hidePhone, reacts: ['everyone', 'contacts', 'nobody'].includes(pv.reacts) ? pv.reacts : 'everyone',
         ex: { lastseen: (pv.ex && Array.isArray(pv.ex.lastseen) ? pv.ex.lastseen : []).filter(phoneOk).slice(0, 60), photo: (pv.ex && Array.isArray(pv.ex.photo) ? pv.ex.photo : []).filter(phoneOk).slice(0, 60) }
       };
       await db().query('INSERT INTO profiles (phone, privacy) VALUES (?, ?) ON DUPLICATE KEY UPDATE privacy = VALUES(privacy)', [me, JSON.stringify(clean)]);
@@ -1785,7 +1865,34 @@ module.exports = async (req, res) => {
       if (!ids.length) return res.json({ vw: {} });
       const [okr] = await db().query('SELECT id FROM channel_posts WHERE channel_id = ? AND id IN (?)', [cid, ids]);
       const valid = okr.map((x) => Number(x.id));
-      return res.json({ vw: await chanViews(valid, me, ch.owner, valid) });
+      /* the owner and admins write the posts, so they never add to the view count (passing `me` as owner switches counting off) */
+      const writer = await chanCanPost(ch, me);
+      return res.json({ vw: await chanViews(valid, me, writer ? me : ch.owner, valid) });
+    }
+    /* ---- forwarding permission: can I forward this post, and may I post where I want to send it? Called before every forward. ---- */
+    if (b.action === 'channel_fwd_check') {
+      const src = String(b.channel || ''), pid = Number(b.post) || 0, to = String(b.to || '');
+      if (!isChanId(src) || !pid) return res.status(400).json({ error: 'Bad request.' });
+      const ch = await chanRow(cidOf(src));
+      if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
+      const [pp] = await db().query('SELECT id FROM channel_posts WHERE id = ? AND channel_id = ?', [pid, ch.id]);
+      if (!pp[0]) return res.status(404).json({ error: 'That post is gone.' });
+      if (!(await chanCanRead(ch.id, me))) return res.status(403).json({ error: 'This is a private channel.' });
+      if (ch.no_fwd && !(await chanCanPost(ch, me))) return res.status(403).json({ error: 'The channel owner restricted forwarding.', restricted: true });
+      if (isChanId(to)) {
+        const dc = await chanRow(cidOf(to));
+        if (!dc) return res.status(404).json({ error: 'That channel no longer exists.' });
+        if (!(await chanCanPost(dc, me))) return res.status(403).json({ error: 'Only the owner and admins can post in that channel.' });
+      } else if (isGroup(to)) {
+        if (!(await isMember(gid(to), me))) return res.status(403).json({ error: 'You are not in that group.' });
+        if (!(await groupCanSend(gid(to), me))) return res.status(403).json({ error: 'Only admins can send messages to that group.' });
+      } else if (phoneOk(to)) {
+        const bs = await blockState(me, to);
+        if (bs.iBlocked) return res.status(403).json({ error: 'You blocked this contact.' });
+        if (bs.blockedMe) return res.status(403).json({ error: "You can't message this person." });
+        if (!(await findUser(to))) return res.status(404).json({ error: "That number isn't on Zanply yet." });
+      } else return res.status(400).json({ error: 'Bad request.' });
+      return res.json({ ok: true });
     }
     /* ---- announcements: only the owner and admins can create, edit or remove ---- */
     if (b.action === 'channel_announce' || b.action === 'channel_announce_remove') {
@@ -1806,8 +1913,16 @@ module.exports = async (req, res) => {
       return res.json({ ok: true, ann: { title, body, at } });
     }
     /* ---- channel info / subscribe / unsubscribe / react / mute / settings ---- */
-    if (['channel_info', 'channel_subscribe', 'channel_unsubscribe', 'channel_react', 'channel_mute', 'channel_update'].indexOf(b.action) > -1) {
+    if (['channel_info', 'channel_subscribe', 'channel_unsubscribe', 'channel_react', 'channel_react_who', 'channel_mute', 'channel_update'].indexOf(b.action) > -1) {
       const cid = isChanId(String(b.channel || '')) ? cidOf(b.channel) : (parseInt(b.channel, 10) || 0);
+      if (b.action === 'channel_react_who') {
+        const pid = Number(b.post) || 0;
+        const [pw] = await db().query('SELECT channel_id FROM channel_posts WHERE id = ?', [pid]);
+        if (!pw[0]) return res.status(404).json({ error: 'That post is gone.' });
+        if (!(await chanCanRead(pw[0].channel_id, me))) return res.status(403).json({ error: 'This is a private channel.' });
+        const em = String(b.emoji || '');
+        return res.json(await chanWho(pid, me, em && isOneEmoji(em) ? em : ''));
+      }
       if (b.action === 'channel_react') {
         const pid = Number(b.post) || 0;
         const [pp] = await db().query('SELECT channel_id FROM channel_posts WHERE id = ?', [pid]);
@@ -2219,6 +2334,21 @@ module.exports = async (req, res) => {
       return res.json({ id: r.insertId, cloud_name: process.env.CLOUDINARY_CLOUD_NAME, api_key: process.env.CLOUDINARY_API_KEY, timestamp, signature, public_id: publicId, type: 'authenticated' });
     }
 
+    if (b.action === 'link_preview') {
+      const raw = String(b.url || '').trim().slice(0, 500);
+      if (!/^https?:\/\/[^\s]+$/i.test(raw)) return res.status(400).json({ error: 'Bad request.' });
+      const now = Date.now(), hits = (lpHits.get(me) || []).filter((t) => now - t < 60000);
+      if (hits.length >= 40) return res.status(429).json({ error: 'Too many previews. Try again in a minute.' });
+      hits.push(now); lpHits.set(me, hits);
+      await lpTable();
+      const h = crypto.createHash('sha1').update(raw).digest('hex');
+      const [c] = await db().query('SELECT data FROM link_previews WHERE h = ? AND created_at > (NOW() - INTERVAL 7 DAY)', [h]);
+      if (c[0]) { try { return res.json({ p: JSON.parse(c[0].data) }); } catch (e) {} }
+      const got = await lpFetch(raw); let p = null;
+      if (got) { const x = lpMeta(got.html, got.url); if (x.t) p = x; }
+      await db().query('REPLACE INTO link_previews (h, data) VALUES (?, ?)', [h, JSON.stringify(p)]).catch(() => {});
+      return res.json({ p });
+    }
     if (b.action === 'media_get') {
       const id = Number(b.id);
       if (!id) return res.status(400).json({ error: 'Bad request.' });
