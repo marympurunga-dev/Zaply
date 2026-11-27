@@ -155,6 +155,9 @@ function ensureTable() {
       await db().query(`CREATE TABLE IF NOT EXISTS channel_mutes (
         channel_id INT NOT NULL, phone VARCHAR(20) NOT NULL, PRIMARY KEY (channel_id, phone))`).catch(() => {});
       await db().query('ALTER TABLE channels ADD COLUMN pinned_post BIGINT NULL').catch(() => {});
+      await db().query('ALTER TABLE channels ADD COLUMN ann_title VARCHAR(120) NULL').catch(() => {});
+      await db().query('ALTER TABLE channels ADD COLUMN ann_body VARCHAR(1000) NULL').catch(() => {});
+      await db().query('ALTER TABLE channels ADD COLUMN ann_at BIGINT NULL').catch(() => {});
       await db().query('ALTER TABLE channel_posts ADD COLUMN edited TINYINT NOT NULL DEFAULT 0').catch(() => {});
       await db().query(`CREATE TABLE IF NOT EXISTS channel_votes (
         post_id BIGINT NOT NULL, phone VARCHAR(20) NOT NULL, opt TINYINT NOT NULL, PRIMARY KEY (post_id, phone), INDEX idx_vp (post_id))`).catch(() => {});
@@ -389,8 +392,42 @@ const isChanId = (x) => typeof x === 'string' && /^c:\d{1,9}$/.test(x);
 const cidOf = (x) => Number(String(x).slice(2));
 const CHAN_EMOJI = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F525}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F64F}'];
 async function chanRow(id) {
-  const [r] = await db().query('SELECT id, owner, name, description, photo_url, subscribers, is_private, created_at, pinned_post, no_fwd FROM channels WHERE id = ?', [id]);
+  const [r] = await db().query('SELECT id, owner, name, description, photo_url, subscribers, is_private, created_at, pinned_post, no_fwd, ann_title, ann_body, ann_at FROM channels WHERE id = ?', [id]);
   return r[0] || null;
+}
+/* any single emoji can be used as a reaction (flags, skin tones and joined emoji included) */
+function isOneEmoji(s) {
+  s = String(s || ''); const a = Array.from(s);
+  return a.length >= 1 && a.length <= 12 && s.length <= 28 && /^[\p{Extended_Pictographic}\p{Emoji_Modifier}\p{Regional_Indicator}\u200D\uFE0F\u20E3]+$/u.test(s) && /[\p{Extended_Pictographic}\p{Regional_Indicator}]/u.test(s);
+}
+/* a forwarded post travels as __fwd__ + JSON. For groups and channels the server rebuilds it from the real post, so the source name and text cannot be faked. */
+async function fwdVerify(body, me, depth) {
+  let j; try { j = JSON.parse(String(body).slice(7)); } catch (e) { return { error: 'Bad request.' }; }
+  const ph = String(j && j.c || ''), pid = Number(j && j.p) || 0;
+  if (!isChanId(ph) || !pid) return { error: 'Bad request.' };
+  const ch = await chanRow(cidOf(ph));
+  if (!ch) return { error: 'This channel no longer exists.', status: 404 };
+  const [pp] = await db().query('SELECT id, body FROM channel_posts WHERE id = ? AND channel_id = ?', [pid, ch.id]);
+  if (!pp[0]) return { error: 'That post is gone.', status: 404 };
+  if (!(await chanCanRead(ch.id, me))) return { error: 'This is a private channel.', status: 403 };
+  if (ch.no_fwd && !(await chanCanPost(ch, me))) return { error: 'The channel owner restricted forwarding.', status: 403 };
+  let t = String(pp[0].body || ''), k = 'text';
+  if (t.indexOf('__fwd__') === 0) { if ((depth || 0) > 0) return { error: 'Bad request.' }; try { const inner = JSON.parse(t.slice(7)); return await fwdVerify('__fwd__' + JSON.stringify({ c: inner.c, p: inner.p }), me, 1); } catch (e) { return { error: 'Bad request.' }; } }
+  if (t.indexOf('__poll__') === 0) { k = 'poll'; try { const q = JSON.parse(t.slice(8)); t = '\u{1F4CA} ' + String(q.q || 'Poll') + '\n' + (Array.isArray(q.o) ? q.o.slice(0, 4).map((o) => '\u2022 ' + String(o)).join('\n') : ''); } catch (e) { t = '\u{1F4CA} Poll'; } }
+  else if (t.indexOf('__media__') === 0) { k = 'media'; let cap = ''; try { cap = String(JSON.parse(t.slice(9)).t || ''); } catch (e) {} t = '\u{1F4F7} ' + (cap || 'Media'); }
+  const v = !!((await premInfo(ch.owner).catch(() => ({}))) || {}).active;
+  return { body: '__fwd__' + JSON.stringify({ c: 'c:' + ch.id, n: ch.name, p: Number(pp[0].id), k, v: v ? 1 : 0, pr: ch.is_private ? 1 : 0, t: t.trim().slice(0, 600) }) };
+}
+/* announcement (title + description written by the owner or an admin) and the preview of the pinned post */
+function chanAnn(ch) { return ch && ch.ann_title ? { title: ch.ann_title, body: ch.ann_body || '', at: Number(ch.ann_at) || 0 } : null; }
+async function chanPinInfo(ch) {
+  const id = ch ? Number(ch.pinned_post) || 0 : 0; if (!id) return null;
+  const [r] = await db().query('SELECT body FROM channel_posts WHERE id = ? AND channel_id = ?', [id, ch.id]).catch(() => [[]]);
+  if (!r[0]) return null;
+  let t = String(r[0].body || '');
+  if (t.indexOf('__poll__') === 0) { try { t = '\u{1F4CA} ' + String(JSON.parse(t.slice(8)).q || 'Poll'); } catch (e) { t = '\u{1F4CA} Poll'; } }
+  else if (t.indexOf('__media__') === 0) { let cap = ''; try { cap = String(JSON.parse(t.slice(9)).t || ''); } catch (e) {} t = '\u{1F4F7} ' + (cap || 'Media'); }
+  return { id, text: t.replace(/\s+/g, ' ').trim().slice(0, 140) };
 }
 /* admins can publish, edit, delete and pin posts; only the owner manages admins, privacy and deletes the channel */
 async function chanIsAdmin(id, phone) {
@@ -457,6 +494,7 @@ function preview(text) {
   if (String(text).indexOf('__media__') === 0) return 'Sent an attachment';
   if (String(text).indexOf('__loc__') === 0) return 'Shared a location';
   if (String(text).indexOf('__poll__') === 0) return 'New poll';
+  if (String(text).indexOf('__fwd__') === 0) return 'Forwarded post';
   if (String(text).indexOf('__game__') === 0) return 'Game move';
   return String(text).slice(0, 140);
 }
@@ -956,7 +994,20 @@ module.exports = async (req, res) => {
         const cid = cidOf(b.with), ch = await chanRow(cid);
         if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
         if (!(await chanCanRead(cid, me))) return res.status(403).json({ error: 'This is a private channel.' });
-        const [pr] = await db().query('SELECT id, body, created_at FROM channel_posts WHERE channel_id = ? AND id > ? ORDER BY id ASC LIMIT 200', [cid, after]);
+        /* paged feed: newest page first, older pages with `before`, and only what is new since `after` while the chat is open.
+           More than 200 new posts since `after` would leave a gap, so the client is told to reset to the newest page. */
+        const bef = Number(b.before) || 0, lim = Math.min(Math.max(parseInt(b.limit, 10) || 30, 1), 50);
+        let pr, hasMore, reset = false;
+        const newestPage = async (beforeId) => {
+          const [rows] = await db().query('SELECT id, body, created_at FROM channel_posts WHERE channel_id = ? AND id > ?' + (beforeId ? ' AND id < ?' : '') + ' ORDER BY id DESC LIMIT ?', beforeId ? [cid, after, beforeId, lim + 1] : [cid, after, lim + 1]);
+          return [rows.slice(0, lim).reverse(), rows.length > lim];
+        };
+        if (bef) { [pr, hasMore] = await newestPage(bef); }
+        else if (!Number(b.after)) { [pr, hasMore] = await newestPage(0); }
+        else {
+          const [rows] = await db().query('SELECT id, body, created_at FROM channel_posts WHERE channel_id = ? AND id > ? ORDER BY id ASC LIMIT 201', [cid, after]);
+          if (rows.length > 200) { [pr, hasMore] = await newestPage(0); reset = true; } else pr = rows;
+        }
         const track = (Array.isArray(b.track) ? b.track : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 60);
         const ids = Array.from(new Set(pr.map((m) => Number(m.id)).concat(track)));
         const rx = await chanReacts(ids, me);
@@ -965,9 +1016,9 @@ module.exports = async (req, res) => {
         if (ids.length) { const [own] = await db().query('SELECT id, body, edited FROM channel_posts WHERE channel_id = ? AND id IN (?)', [cid, ids]).catch(() => [[]]); seen = own.map((x) => Number(x.id)); own.forEach((x) => { upd[Number(x.id)] = { body: x.body, edited: !!x.edited }; }); }
         const gone = track.filter((id) => seen.indexOf(id) < 0);
         const canP = await chanCanPost(ch, me);
-        const vw = await chanViews(ids, me, ch.owner, seen);
+        const vw = await chanViews(ids, me, ch.owner, []);
         const pv = await chanPolls(ids, me);
-        return res.json({ rx, vw, pv, upd, gone, pin: Number(ch.pinned_post) || 0, messages: pr.map((m) => ({ id: Number(m.id), mine: canP, body: m.body, at: m.created_at, from: '', views: vw[Number(m.id)] || 0, edited: !!(upd[Number(m.id)] && upd[Number(m.id)].edited) })) });
+        return res.json({ rx, vw, pv, upd, gone, pin: Number(ch.pinned_post) || 0, pinInfo: await chanPinInfo(ch), ann: chanAnn(ch), hasMore, reset, older: !!bef, messages: pr.map((m) => ({ id: Number(m.id), mine: canP, body: m.body, at: m.created_at, from: '', views: vw[Number(m.id)] || 0, edited: !!(upd[Number(m.id)] && upd[Number(m.id)].edited) })) });
       }
       if (!phoneOk(b.with)) return res.status(400).json({ error: 'Bad request.' });
       /* the chat is open on my screen, so what they sent me is read (blue ticks for them) */
@@ -1160,7 +1211,12 @@ module.exports = async (req, res) => {
       const raw = String(b.body || '').trim();
       // an encrypted message cut short can never be decrypted, so refuse it instead of truncating
       if (raw.length > 2000 && raw.indexOf('e2e1:') === 0) return res.status(400).json({ error: 'Message too long.' });
-      const body = raw.slice(0, 2000);
+      let body = raw.slice(0, 2000);
+      if (body.indexOf('__fwd__') === 0 && (isGroup(b.to) || isChanId(b.to))) {
+        const fv = await fwdVerify(body, me, 0);
+        if (fv.error) return res.status(fv.status || 400).json({ error: fv.error });
+        body = fv.body;
+      }
       if (isGroup(b.to)) {
         if (!body) return res.status(400).json({ error: 'Bad request.' });
         const g = gid(b.to);
@@ -1719,6 +1775,36 @@ module.exports = async (req, res) => {
       await chanPing(ch.id, me);
       return res.json({ ok: true, pin: on ? pid : 0 });
     }
+    /* ---- views: the app reports posts that were really on screen; each person counts once per post, the owner never counts ---- */
+    if (b.action === 'channel_view') {
+      const cid = isChanId(String(b.channel || '')) ? cidOf(b.channel) : (parseInt(b.channel, 10) || 0);
+      const ch = cid ? await chanRow(cid) : null;
+      if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
+      if (!(await chanCanRead(cid, me))) return res.status(403).json({ error: 'This is a private channel.' });
+      const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 50);
+      if (!ids.length) return res.json({ vw: {} });
+      const [okr] = await db().query('SELECT id FROM channel_posts WHERE channel_id = ? AND id IN (?)', [cid, ids]);
+      const valid = okr.map((x) => Number(x.id));
+      return res.json({ vw: await chanViews(valid, me, ch.owner, valid) });
+    }
+    /* ---- announcements: only the owner and admins can create, edit or remove ---- */
+    if (b.action === 'channel_announce' || b.action === 'channel_announce_remove') {
+      const cid = isChanId(String(b.channel || '')) ? cidOf(b.channel) : (parseInt(b.channel, 10) || 0);
+      const ch = cid ? await chanRow(cid) : null;
+      if (!ch) return res.status(404).json({ error: 'This channel no longer exists.', gone: true });
+      if (!(await chanCanPost(ch, me))) return res.status(403).json({ error: 'Only the channel owner and admins can manage announcements.' });
+      if (b.action === 'channel_announce_remove') {
+        await db().query('UPDATE channels SET ann_title = NULL, ann_body = NULL, ann_at = NULL WHERE id = ?', [ch.id]);
+        await chanPing(ch.id, me);
+        return res.json({ ok: true, ann: null });
+      }
+      const title = String(b.title || '').trim().slice(0, 80), body = String(b.body || '').trim().slice(0, 500);
+      if (!title) return res.status(400).json({ error: 'Give the announcement a title.' });
+      const at = Date.now();
+      await db().query('UPDATE channels SET ann_title = ?, ann_body = ?, ann_at = ? WHERE id = ?', [title, body, at, ch.id]);
+      await chanPing(ch.id, me);
+      return res.json({ ok: true, ann: { title, body, at } });
+    }
     /* ---- channel info / subscribe / unsubscribe / react / mute / settings ---- */
     if (['channel_info', 'channel_subscribe', 'channel_unsubscribe', 'channel_react', 'channel_mute', 'channel_update'].indexOf(b.action) > -1) {
       const cid = isChanId(String(b.channel || '')) ? cidOf(b.channel) : (parseInt(b.channel, 10) || 0);
@@ -1731,7 +1817,11 @@ module.exports = async (req, res) => {
         const em = String(b.emoji || '');
         if (!em) await db().query('DELETE FROM channel_reacts WHERE post_id = ? AND phone = ?', [pid, me]);
         else {
-          if (CHAN_EMOJI.indexOf(em) < 0) return res.status(400).json({ error: 'Bad request.' });
+          if (!isOneEmoji(em)) return res.status(400).json({ error: 'Pick a single emoji.' });
+          if (CHAN_EMOJI.indexOf(em) < 0) {
+            const [dc] = await db().query('SELECT COUNT(DISTINCT emoji) AS n, SUM(emoji = ?) AS has FROM channel_reacts WHERE post_id = ?', [em, pid]);
+            if (Number(dc[0].n) >= 24 && !Number(dc[0].has)) return res.status(400).json({ error: 'This post already has the maximum number of different reactions.' });
+          }
           await db().query('INSERT INTO channel_reacts (post_id, phone, emoji) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE emoji = VALUES(emoji)', [pid, me, em]);
         }
         const rx = await chanReacts([pid], me);
@@ -1747,7 +1837,7 @@ module.exports = async (req, res) => {
         let muted = false;
         if (subbed) { const [mm] = await db().query('SELECT 1 FROM channel_mutes WHERE channel_id = ? AND phone = ?', [cid, me]); muted = mm.length > 0; }
         const mine = ch.owner === me || isAdm;
-        return res.json({ channel: { isOwner: ch.owner === me, isAdmin: isAdm, noFwd: !!ch.no_fwd, id: ch.id, phone: 'c:' + ch.id, name: ch.name, description: ch.description, photo_url: ch.photo_url, subscribers: Number(ch.subscribers), is_private: !!ch.is_private, owner: ch.owner, mine, subscribed: !!subbed, muted, key: (ch.is_private && subbed) ? chanKey(cid) : '' } });
+        return res.json({ channel: { isOwner: ch.owner === me, isAdmin: isAdm, noFwd: !!ch.no_fwd, pin: Number(ch.pinned_post) || 0, pinInfo: await chanPinInfo(ch), ann: chanAnn(ch), id: ch.id, phone: 'c:' + ch.id, name: ch.name, description: ch.description, photo_url: ch.photo_url, subscribers: Number(ch.subscribers), is_private: !!ch.is_private, owner: ch.owner, mine, subscribed: !!subbed, muted, verified: !!((await premInfo(ch.owner).catch(() => ({}))) || {}).active, key: (ch.is_private && subbed) ? chanKey(cid) : '' } });
       }
       if (b.action === 'channel_subscribe') {
         if (ch.is_private && !subbed && String(b.k || '') !== chanKey(cid)) return res.status(403).json({ error: 'This is a private channel. Ask the owner for the invite link.' });
